@@ -9,12 +9,12 @@ import { environment } from '../../../../../environments/environment';
 
 interface LoginResponse {
     token: string;
-    usuario: {
-        id: number;
+    userInfo: {
+        id: string;
         email: string;
         nombre: string;
         apellido: string;
-        rol: string;
+        rolPrincipal: string;
     };
 }
 
@@ -36,10 +36,10 @@ export class AuthHttpRepositoryImpl extends AuthRepository {
         }).pipe(
             map(response => {
                 const user: User = {
-                    id: response.usuario.id.toString(),
-                    email: response.usuario.email,
-                    fullName: `${response.usuario.nombre} ${response.usuario.apellido}`,
-                    role: this.mapBackendRole(response.usuario.rol),
+                    id: response.userInfo.id,
+                    email: response.userInfo.email,
+                    fullName: `${response.userInfo.nombre} ${response.userInfo.apellido}`,
+                    role: this.mapBackendRole(response.userInfo.rolPrincipal),
                     token: response.token
                 };
 
