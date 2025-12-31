@@ -1,59 +1,168 @@
-# LuminaCorePortal
+# 🎓 Lumina Core Portal
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.3.
+Portal de gestión académica para estudiantes, profesores y administradores de Lumina.Core.
 
-## Development server
+## 📋 Descripción
 
-To start a local development server, run:
+Este proyecto es la **Fase 2** de la plataforma Lumina.Core, enfocada en los portales de gestión para diferentes roles (Estudiante, Profesor, Administrador). Implementa una arquitectura **Feature-Sliced Clean Architecture** con Angular 21 y se conecta al microservicio de backend .NET.
 
-```bash
-ng serve
+## 🏗️ Arquitectura
+
+```
+src/app/
+├── core/              # Servicios globales, interceptors
+├── features/          # Features organizadas por dominio
+│   └── auth/
+│       ├── domain/           # Modelos e interfaces
+│       ├── infrastructure/   # Implementaciones HTTP
+│       ├── application/      # Casos de uso
+│       └── presentation/     # Componentes UI
+└── shared/            # Componentes y utilidades compartidas
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Path Aliases Configurados
 
-## Code scaffolding
+- `@core/*` → `src/app/core/*`
+- `@features/*` → `src/app/features/*`
+- `@shared/*` → `src/app/shared/*`
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## 🚀 Tecnologías
 
-```bash
-ng generate component component-name
-```
+- **Angular 21** - Framework principal
+- **TypeScript 5.9** - Lenguaje
+- **Tailwind CSS v3** - Estilos
+- **RxJS 7.8** - Programación reactiva
+- **pnpm** - Gestor de paquetes
+- **Zone.js** - Change detection
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## 📦 Instalación
 
 ```bash
-ng build
+# Instalar dependencias
+pnpm install
+
+# Iniciar servidor de desarrollo (puerto 4201)
+pnpm start
+
+# Build de producción
+pnpm build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 🔧 Configuración
 
-## Running unit tests
+### Variables de Entorno
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Edita `src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5004/api'  // URL de tu backend
+};
+```
+
+### Backend Requerido
+
+El frontend espera que el backend esté corriendo en `http://localhost:5004` con los siguientes endpoints:
+
+#### Login
+**POST** `/api/auth/login`
+
+**Request:**
+```json
+{
+  "email": "usuario@ejemplo.com",
+  "password": "contraseña"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "jwt-token",
+  "userInfo": {
+    "id": "guid",
+    "email": "usuario@ejemplo.com",
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "rolPrincipal": "ESTUDIANTE"
+  }
+}
+```
+
+## 🎨 Features Implementadas
+
+### ✅ Autenticación
+- Login con validación de formularios
+- Selección de rol (Estudiante, Docente, Administrador)
+- Gestión de JWT tokens
+- Interceptor HTTP para autenticación automática
+- Persistencia de sesión en localStorage
+
+### 🎨 UI/UX
+- Diseño split-screen responsive
+- Dark mode ready (Tailwind CSS)
+- Animaciones suaves
+- Validación de formularios en tiempo real
+
+## 🧪 Testing
 
 ```bash
-ng test
+# Ejecutar tests unitarios
+pnpm test
+
+# Tests con coverage
+pnpm test:coverage
 ```
 
-## Running end-to-end tests
+## 📱 Puertos
 
-For end-to-end (e2e) testing, run:
+- **Frontend:** `http://localhost:4201`
+- **Backend:** `http://localhost:5004`
+
+## 🔐 Roles Soportados
+
+| Rol Backend | Rol Frontend | Dashboard |
+|-------------|--------------|-----------|
+| `ESTUDIANTE` | `STUDENT` | `/student/dashboard` |
+| `PROFESOR` / `DOCENTE` | `TEACHER` | `/teacher/dashboard` |
+| `ADMIN` / `ADMINISTRADOR` | `ADMIN` | `/admin/dashboard` |
+
+## 📂 Estructura de Features
+
+Cada feature sigue la estructura:
+
+```
+features/
+└── [feature-name]/
+    ├── domain/           # Modelos, interfaces, repositorios abstractos
+    ├── infrastructure/   # Implementaciones concretas (HTTP, storage)
+    ├── application/      # Casos de uso, lógica de negocio
+    └── presentation/     # Componentes, páginas, layouts
+```
+
+## 🛠️ Scripts Disponibles
 
 ```bash
-ng e2e
+pnpm start          # Servidor de desarrollo
+pnpm build          # Build de producción
+pnpm test           # Tests unitarios
+pnpm lint           # Linter
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 📝 Próximos Pasos
 
-## Additional Resources
+- [ ] Dashboard de Estudiante
+- [ ] Dashboard de Profesor
+- [ ] Dashboard de Administrador
+- [ ] Gestión de cursos
+- [ ] Sistema de calificaciones
+- [ ] Mensajería interna
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 👥 Autor
+
+Desarrollado como parte del proyecto académico Lumina.Core
+
+## 📄 Licencia
+
+Este proyecto es privado y de uso educativo.

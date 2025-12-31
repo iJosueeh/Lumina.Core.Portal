@@ -1,0 +1,175 @@
+<div class="p-6 space-y-6">
+    <!-- Header con saludo -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Hola, {{ teacherName }} 👋
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+                Aquí tienes el resumen de tu actividad académica para hoy.
+            </p>
+        </div>
+        <button 
+            class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2"
+            [routerLink]="['/teacher/announcements/new']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo Anuncio
+        </button>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Cursos Activos -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Cursos Activos</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ totalCourses }}</p>
+                    <p class="text-sm text-teal-600 mt-1">+1 este semestre</p>
+                </div>
+                <div class="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
+                    <svg class="w-8 h-8 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Alumnos -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Alumnos</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ totalStudents }}</p>
+                    <p class="text-sm text-gray-500 mt-1">98% de asistencia promedio</p>
+                </div>
+                <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tareas por Calificar -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pendiente de Calificar</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ pendingGrades }}</p>
+                    <p class="text-sm text-orange-600 mt-1">
+                        <a [routerLink]="['/teacher/grades']" class="hover:underline">Ver pendientes →</a>
+                    </p>
+                </div>
+                <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                    <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Clases -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Clases Hoy</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ upcomingClasses }}</p>
+                    <p class="text-sm text-purple-600 mt-1">
+                        <a [routerLink]="['/teacher/schedule']" class="hover:underline">Ver horario →</a>
+                    </p>
+                </div>
+                <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cursos Asignados -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Cursos Asignados</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gestiona tus cursos activos</p>
+            </div>
+            <button 
+                class="text-teal-600 hover:text-teal-700 text-sm font-medium"
+                [routerLink]="['/teacher/courses']">
+                Ver todos →
+            </button>
+        </div>
+
+        <div class="p-6" *ngIf="isLoadingCourses">
+            <div class="flex items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            </div>
+        </div>
+
+        <div class="p-6" *ngIf="!isLoadingCourses && courses.length === 0">
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay cursos asignados</h3>
+                <p class="mt-1 text-sm text-gray-500">Ponte en contacto con el administrador para asignarte cursos.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6" *ngIf="!isLoadingCourses && courses.length > 0">
+            <div 
+                *ngFor="let course of courses"
+                class="border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer group"
+                (click)="navigateToCourse(course.id)">
+                
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{{ course.codigo }}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-teal-600 transition-colors">
+                            {{ course.titulo }}
+                        </h3>
+                    </div>
+                    <span 
+                        class="px-3 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="getStatusColor(course.estadoCurso)">
+                        {{ course.estadoCurso }}
+                    </span>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        {{ course.totalAlumnos }} alumnos
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Promedio: {{ course.promedioGeneral | number:'1.1-1' }}
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Asistencia: {{ course.asistenciaPromedio | number:'1.0-0' }}%
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600 dark:text-gray-400">{{ course.creditos }} créditos</span>
+                        <span class="text-teal-600 font-medium group-hover:translate-x-1 transition-transform">
+                            Ver detalles →
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

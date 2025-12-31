@@ -64,31 +64,60 @@ export class LoginPageComponent implements OnInit {
         this.loginUseCase.execute(credentials).subscribe({
             next: (user) => {
                 this.isLoading = false;
-                console.log('Login successful', user);
+                console.log('✅ Login successful en component, user recibido:', user);
+                console.log('✅ user.id:', user?.id);
+                console.log('✅ user.role:', user?.role);
+                
+                if (!user) {
+                    console.error('❌ User es null o undefined en next()');
+                    this.errorMessage = 'Error: No se recibió información del usuario';
+                    return;
+                }
+                
+                if (!user.role) {
+                    console.error('❌ User no tiene role:', user);
+                    this.errorMessage = 'Error: Usuario sin rol asignado';
+                    return;
+                }
+                
                 this.redirectUser(user.role);
             },
             error: (err) => {
                 this.isLoading = false;
-                this.errorMessage = err.message || 'Error al iniciar sesión. Verifique sus credenciales.';
+                
+                console.error('❌ Login error en component:', err);
+                console.error('❌ Error type:', typeof err);
+                console.error('❌ Error status:', err?.status);
+                console.error('❌ Error message:', err?.message);
+                
+                // Manejar diferentes tipos de error
+                if (err.status === 401) {
+                    this.errorMessage = err.error?.message || 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
+                } else if (err.status === 0) {
+                    this.errorMessage = 'No se pudo conectar con el servidor. Verifica que la API esté funcionando.';
+                } else if (err.message) {
+                    // Error lanzado desde el map() con throw new Error()
+                    this.errorMessage = err.message;
+                } else {
+                    this.errorMessage = err.error?.message || err.message || 'Error al iniciar sesión. Por favor, intenta nuevamente.';
+                }
+                
+                console.error('❌ Error message mostrado:', this.errorMessage);
             }
         });
     }
 
     private redirectUser(role: string): void {
-        // Placeholder redirection - Phase 2 will implement these dashboards
-        /*
         switch (role) {
-          case 'STUDENT':
-            this.router.navigate(['/student/dashboard']);
-            break;
-          case 'TEACHER':
-            this.router.navigate(['/teacher/dashboard']);
-            break;
-          case 'ADMIN':
-            this.router.navigate(['/admin/dashboard']);
-            break;
+            case 'STUDENT':
+                this.router.navigate(['/student/dashboard']);
+                break;
+            case 'TEACHER':
+                this.router.navigate(['/teacher/dashboard']);
+                break;
+            case 'ADMIN':
+                alert('Dashboard de Admin próximamente');
+                break;
         }
-        */
-        alert(`Bienvenido ${role}! Redirigiendo a dashboard...`);
     }
 }

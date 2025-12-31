@@ -1,0 +1,135 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { GradeStats, CourseGrade } from '@features/student/domain/models/grade.model';
+import { GetStudentGradesUseCase } from '@features/student/application/use-cases/get-student-grades.usecase';
+import { GetGradeStatsUseCase } from '@features/student/application/use-cases/get-grade-stats.usecase';
+import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+
+type SemesterFilter = '2024-1' | '2023-II' | '2023-I' | 'all';
+
+@Component({
+    selector: 'app-grades',
+    standalone: true,
+    imports: [CommonModule],
+    templateUrl: './grades.component.html',
+    styles: ``
+})
+export class GradesComponent implements OnInit {
+    activeSemester: SemesterFilter = '2024-1';
+    isLoading = true;
+    errorMessage = '';
+
+    semesters = [
+        { id: '2024-1' as SemesterFilter, label: '2024-I' },
+        { id: '2023-II' as SemesterFilter, label: '2023-II' },
+        { id: '2023-I' as SemesterFilter, label: '2023-I' },
+        { id: 'all' as SemesterFilter, label: 'Todos' }
+    ];
+
+    stats: GradeStats = {
+        promedioGeneral: 0,
+        creditosAprobados: 0,
+        totalCreditos: 0,
+        cursosCompletados: 0,
+        rankingClase: 'Cargando...',
+        percentilRanking: 0,
+        ultimaActualizacion: new Date()
+    };
+
+    courses: CourseGrade[] = [];
+    allCourses: CourseGrade[] = [];
+
+    constructor(
+        private getStudentGradesUseCase: GetStudentGradesUseCase,
+        private getGradeStatsUseCase: GetGradeStatsUseCase,
+        private authRepository: AuthRepository
+    ) { }
+
+    ngOnInit(): void {
+        this.loadGrades();
+    }
+
+    private loadGrades(): void {
+        const currentUser = this.authRepository.getCurrentUser();
+        if (!currentUser) {
+            this.errorMessage = 'No se pudo obtener la información del usuario';
+            this.isLoading = false;
+            return;
+        }
+
+        this.isLoading = true;
+        this.errorMessage = '';
+
+        // Cargar calificaciones
+        this.getStudentGradesUseCase.execute(currentUser.id).subscribe({
+            next: (grades) => {
+                console.log('✅ Calificaciones cargadas:', grades);
+                this.allCourses = grades;
+                this.courses = grades;
+                this.isLoading = false;
+            },
+            error: (err) => {
+                console.error('❌ Error cargando calificaciones:', err);
+                this.errorMessage = 'Error al cargar las calificaciones. Intenta nuevamente.';
+                this.isLoading = false;
+            }
+        });
+
+        // Cargar estadísticas
+        this.getGradeStatsUseCase.execute(currentUser.id).subscribe({
+            next: (stats) => {
+                this.stats = stats;
+            },
+            error: (err) => {
+                console.error('❌ Error cargando estadísticas:', err);
+            }
+        });
+    }
+
+    setSemester(semester: SemesterFilter): void {
+        this.activeSemester = semester;
+        // TODO: Filtrar cursos por semestre cuando el backend lo soporte
+        if (semester === 'all') {
+            this.courses = this.allCourses;
+        } else {
+            // Por ahora mostrar todos
+            this.courses = this.allCourses;
+        }
+    }
+
+    toggleCourse(course: CourseGrade): void {
+        course.isExpanded = !course.isExpanded;
+    }
+
+    getEstadoColor(estado: string): string {
+        const colors: Record<string, string> = {
+            'Aprobado': 'text-green-600 dark:text-green-400',
+            'En Curso': 'text-blue-600 dark:text-blue-400',
+            'En Riesgo': 'text-red-600 dark:text-red-400'
+        };
+        return colors[estado] || 'text-gray-600';
+    }
+
+    getEstadoBadge(estado: string): string {
+        const badges: Record<string, string> = {
+            'Completado': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+            'Pendiente': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+        };
+        return badges[estado] || 'bg-gray-100 text-gray-700';
+    }
+
+    getPromedioColor(promedio: number): string {
+        if (promedio >= 17) return 'text-green-600 dark:text-green-400 font-bold';
+        if (promedio >= 14) return 'text-blue-600 dark:text-blue-400 font-bold';
+        if (promedio >= 11) return 'text-yellow-600 dark:text-yellow-400 font-bold';
+        return 'text-red-600 dark:text-red-400 font-bold';
+    }
+
+    exportGrades(): void {
+        console.log('Exportando calificaciones...');
+    }
+
+    printGrades(): void {
+        console.log('Imprimiendo calificaciones...');
+    }
+}

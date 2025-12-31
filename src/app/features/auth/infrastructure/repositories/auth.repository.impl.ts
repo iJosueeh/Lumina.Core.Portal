@@ -1,35 +1,57 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap, map } from 'rxjs';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { LoginCredentials } from '@features/auth/domain/models/login-credentials.model';
 import { User } from '@features/auth/domain/models/user.model';
+import { environment } from '@environments/environment';
+
+interface AuthResponse {
+    token: string;
+    userInfo: {
+        id: string;
+        email: string;
+        nombre: string;
+        apellido: string;
+        rolPrincipal: string;
+    }
+}
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthRepositoryImpl extends AuthRepository {
-
-    // Mock users for testing
-    private mockUsers: User[] = [
-        { id: '1', email: 'estudiante@lumina.edu', fullName: 'Juan Pérez', role: 'STUDENT', token: 'mock-jwt-student' },
-        { id: '2', email: 'docente@lumina.edu', fullName: 'Dra. Ana López', role: 'TEACHER', token: 'mock-jwt-teacher' },
-        { id: '3', email: 'admin@lumina.edu', fullName: 'Admin General', role: 'ADMIN', token: 'mock-jwt-admin' }
-    ];
-
     private currentUser: User | null = null;
+    private readonly API_URL = `${environment.apiUrl}/auth`;
+
+    constructor(private http: HttpClient) {
+        super();
+    }
 
     override login(credentials: LoginCredentials): Observable<User> {
-        const user = this.mockUsers.find(u => u.email === credentials.username && u.role === credentials.role);
-
-        // Simulate API delay
-        if (user) {
-            this.currentUser = user;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            return of(user).pipe(delay(800));
-        } else {
-            return throwError(() => new Error('Credenciales inválidas'));
-        }
+        return this.http.post<AuthResponse>(`${this.API_URL}/login`, {
+            email: credentials.username,
+            password: credentials.password
+        }).pipe(
+            map(response => {
+                if (!response || !response.userInfo) {
+                    throw new Error('Respuesta del servidor inválida: no se recibió información del usuario');
+                }
+                
+                const user: User = {
+                    id: response.userInfo.id,
+                    email: response.userInfo.email,
+                    fullName: `${response.userInfo.nombre} ${response.userInfo.apellido}`,
+                    role: response.userInfo.rolPrincipal.toUpperCase() as 'STUDENT' | 'TEACHER' | 'ADMIN',
+                    token: response.token
+                };
+                return user;
+            }),
+            tap(user => {
+                this.currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+            })
+        );
     }
 
     override logout(): void {
