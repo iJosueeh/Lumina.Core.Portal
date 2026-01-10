@@ -1,8 +1,12 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5004/api',
-    estudiantesApiUrl: 'http://localhost:5003/api',
-    cursosApiUrl: 'http://localhost:5001/api',
-    evaluacionesApiUrl: 'http://localhost:5258/api',
-    noticiasEventosApiUrl: 'http://localhost:5179/api'
+    // Microservicios Backend
+    apiUrl: 'http://localhost:7777/api',              // Usuarios
+    estudiantesApiUrl: 'http://localhost:6666/api',   // Estudiantes
+    cursosApiUrl: 'http://localhost:9999/api',        // Cursos (HTTP)
+    evaluacionesApiUrl: 'http://localhost:5555/api',  // Evaluaciones
+    noticiasEventosApiUrl: 'http://localhost:4444/api', // NoticiasEventos
+    docentesApiUrl: 'http://localhost:8888/api',      // Docentes
+    carrerasApiUrl: 'http://localhost:5000/api',      // Carreras
+    pedidosApiUrl: 'http://localhost:3333/api'        // Pedidos
 };
