@@ -11,106 +11,151 @@ import { TeacherLayoutComponent } from '@features/teacher/presentation/layouts/t
 import { TeacherDashboardComponent } from '@features/teacher/presentation/pages/teacher-dashboard/teacher-dashboard.component';
 
 export const routes: Routes = [
-    {
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'login',
+    component: LoginPageComponent,
+    title: 'Iniciar Sesión - Lumina Core',
+  },
+  {
+    path: 'student',
+    component: StudentLayoutComponent,
+    children: [
+      {
         path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
-    },
-    {
-        path: 'login',
-        component: LoginPageComponent,
-        title: 'Iniciar Sesión - Lumina Core'
-    },
-    {
-        path: 'student',
-        component: StudentLayoutComponent,
-        children: [
-            {
-                path: '',
-                redirectTo: 'dashboard',
-                pathMatch: 'full'
-            },
-            {
-                path: 'dashboard',
-                component: DashboardComponent,
-                title: 'Dashboard - Portal Estudiante'
-            },
-            {
-                path: 'courses',
-                component: MyCoursesComponent,
-                title: 'Mis Cursos - Portal Estudiante'
-            },
-            {
-                path: 'course/:id',
-                component: CourseDetailComponent,
-                title: 'Detalle del Curso - Portal Estudiante'
-            },
-            {
-                path: 'grades',
-                component: GradesComponent,
-                title: 'Mis Calificaciones - Portal Estudiante'
-            },
-            {
-                path: 'schedule',
-                component: ScheduleComponent,
-                title: 'Mi Horario - Portal Estudiante'
-            },
-            {
-                path: 'resources',
-                component: ResourcesComponent,
-                title: 'Recursos - Portal Estudiante'
-            }
-        ]
-    },
-    {
-        path: 'teacher',
-        component: TeacherLayoutComponent,
-        children: [
-            {
-                path: '',
-                redirectTo: 'dashboard',
-                pathMatch: 'full'
-            },
-            {
-                path: 'dashboard',
-                component: TeacherDashboardComponent,
-                title: 'Dashboard - Portal Docente'
-            },
-            {
-                path: 'courses',
-                loadComponent: () => import('@features/teacher/presentation/pages/teacher-courses/teacher-courses.component').then(m => m.TeacherCoursesComponent),
-                title: 'Mis Cursos - Portal Docente'
-            },
-            {
-                path: 'course/:id',
-                loadComponent: () => import('@features/teacher/presentation/pages/course-management/course-management.component').then(m => m.CourseManagementComponent),
-                title: 'Gestión de Curso - Portal Docente'
-            },
-            {
-                path: 'students',
-                loadComponent: () => import('@features/teacher/presentation/pages/students-list/students-list.component').then(m => m.StudentsListComponent),
-                title: 'Alumnos - Portal Docente'
-            },
-            {
-                path: 'grades',
-                loadComponent: () => import('@features/teacher/presentation/pages/grades-management/grades-management.component').then(m => m.GradesManagementComponent),
-                title: 'Gestión de Calificaciones - Portal Docente'
-            },
-            {
-                path: 'attendance',
-                loadComponent: () => import('@features/teacher/presentation/pages/attendance-management/attendance-management.component').then(m => m.AttendanceManagementComponent),
-                title: 'Gestión de Asistencia - Portal Docente'
-            },
-            {
-                path: 'schedule',
-                loadComponent: () => import('@features/teacher/presentation/pages/teacher-schedule/teacher-schedule.component').then(m => m.TeacherScheduleComponent),
-                title: 'Mi Horario - Portal Docente'
-            },
-            {
-                path: 'materials',
-                loadComponent: () => import('@features/teacher/presentation/pages/materials-management/materials-management.component').then(m => m.MaterialsManagementComponent),
-                title: 'Gestión de Materiales - Portal Docente'
-            }
-        ]
-    }
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        title: 'Dashboard - Portal Estudiante',
+      },
+      {
+        path: 'courses',
+        component: MyCoursesComponent,
+        title: 'Mis Cursos - Portal Estudiante',
+      },
+      {
+        path: 'course/:id',
+        component: CourseDetailComponent,
+        title: 'Detalle del Curso - Portal Estudiante',
+      },
+      {
+        path: 'grades',
+        component: GradesComponent,
+        title: 'Mis Calificaciones - Portal Estudiante',
+      },
+      {
+        path: 'schedule',
+        component: ScheduleComponent,
+        title: 'Mi Horario - Portal Estudiante',
+      },
+      {
+        path: 'resources',
+        component: ResourcesComponent,
+        title: 'Recursos - Portal Estudiante',
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/student/presentation/pages/profile-view/profile-view.component').then(
+            (m) => m.ProfileViewComponent,
+          ),
+        title: 'Mi Perfil - Portal Estudiante',
+      },
+      {
+        path: 'profile/edit',
+        loadComponent: () =>
+          import('./features/student/presentation/pages/profile-edit/profile-edit.component').then(
+            (m) => m.ProfileEditComponent,
+          ),
+        title: 'Editar Perfil - Portal Estudiante',
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/student/presentation/pages/account-settings/account-settings.component').then(
+            (m) => m.AccountSettingsComponent,
+          ),
+        title: 'Configuración - Portal Estudiante',
+      },
+    ],
+  },
+  {
+    path: 'teacher',
+    component: TeacherLayoutComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        component: TeacherDashboardComponent,
+        title: 'Dashboard - Portal Docente',
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/teacher-courses/teacher-courses.component').then(
+            (m) => m.TeacherCoursesComponent,
+          ),
+        title: 'Mis Cursos - Portal Docente',
+      },
+      {
+        path: 'course/:id',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/course-management/course-management.component').then(
+            (m) => m.CourseManagementComponent,
+          ),
+        title: 'Gestión de Curso - Portal Docente',
+      },
+      {
+        path: 'students',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/students-list/students-list.component').then(
+            (m) => m.StudentsListComponent,
+          ),
+        title: 'Alumnos - Portal Docente',
+      },
+      {
+        path: 'grades',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/grades-management/grades-management.component').then(
+            (m) => m.GradesManagementComponent,
+          ),
+        title: 'Gestión de Calificaciones - Portal Docente',
+      },
+      {
+        path: 'attendance',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/attendance-management/attendance-management.component').then(
+            (m) => m.AttendanceManagementComponent,
+          ),
+        title: 'Gestión de Asistencia - Portal Docente',
+      },
+      {
+        path: 'schedule',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/teacher-schedule/teacher-schedule.component').then(
+            (m) => m.TeacherScheduleComponent,
+          ),
+        title: 'Mi Horario - Portal Docente',
+      },
+      {
+        path: 'materials',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/materials-management/materials-management.component').then(
+            (m) => m.MaterialsManagementComponent,
+          ),
+        title: 'Gestión de Materiales - Portal Docente',
+      },
+    ],
+  },
 ];

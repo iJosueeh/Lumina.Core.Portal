@@ -5,6 +5,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { AuthRepositoryImpl } from '@features/auth/infrastructure/repositories/auth.repository.impl';
+import { AuthMockRepositoryImpl } from '@features/auth/infrastructure/repositories/auth-mock.repository.impl';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
 import { CoursesRepository } from '@features/student/domain/repositories/courses.repository';
 import { CoursesHttpRepositoryImpl } from '@features/student/infrastructure/repositories/courses-http.repository.impl';
@@ -16,8 +17,17 @@ import { ResourcesRepository } from '@features/student/domain/repositories/resou
 import { ResourcesHttpRepositoryImpl } from '@features/student/infrastructure/repositories/resources-http.repository.impl';
 import { GradesRepository } from '@features/student/domain/repositories/grades.repository';
 import { GradesHttpRepositoryImpl } from '@features/student/infrastructure/repositories/grades-http.repository.impl';
+import { GradesMockRepositoryImpl } from '@features/student/infrastructure/repositories/grades-mock.repository.impl';
 import { ScheduleRepository } from '@features/student/domain/repositories/schedule.repository';
 import { ScheduleHttpRepositoryImpl } from '@features/student/infrastructure/repositories/schedule-http.repository.impl';
+import { CoursesMockRepositoryImpl } from '@features/student/infrastructure/repositories/courses-mock.repository.impl';
+import { AnnouncementsMockRepositoryImpl } from '@features/student/infrastructure/repositories/announcements-mock.repository.impl';
+import { ResourcesMockRepositoryImpl } from '@features/student/infrastructure/repositories/resources-mock.repository.impl';
+import { environment } from '../environments/environment';
+import { ProfileRepository } from '@features/student/domain/repositories/profile.repository';
+import { ProfileMockRepositoryImpl } from '@features/student/infrastructure/repositories/profile-mock.repository.impl';
+import { AccountRepository } from '@features/student/domain/repositories/account.repository';
+import { AccountMockRepositoryImpl } from '@features/student/infrastructure/repositories/account-mock.repository.impl';
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { TeacherCourseHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-http.repository.impl';
 import { GradesManagementRepository } from '@features/teacher/domain/repositories/grades-management.repository';
@@ -28,17 +38,43 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    // Auth
-    { provide: AuthRepository, useClass: AuthRepositoryImpl },
-    // Student Repositories
-    { provide: CoursesRepository, useClass: CoursesHttpRepositoryImpl },
+    // Auth (condicional basado en useMockData)
+    {
+      provide: AuthRepository,
+      useClass: environment.useMockData ? AuthMockRepositoryImpl : AuthRepositoryImpl,
+    },
+    // Student Repositories (condicionales basados en useMockData)
+    {
+      provide: CoursesRepository,
+      useClass: environment.useMockData ? CoursesMockRepositoryImpl : CoursesHttpRepositoryImpl,
+    },
     { provide: AssignmentsRepository, useClass: AssignmentsHttpRepositoryImpl },
-    { provide: AnnouncementsRepository, useClass: AnnouncementsHttpRepositoryImpl },
-    { provide: ResourcesRepository, useClass: ResourcesHttpRepositoryImpl },
-    { provide: GradesRepository, useClass: GradesHttpRepositoryImpl },
+    {
+      provide: AnnouncementsRepository,
+      useClass: environment.useMockData
+        ? AnnouncementsMockRepositoryImpl
+        : AnnouncementsHttpRepositoryImpl,
+    },
+    {
+      provide: ResourcesRepository,
+      useClass: environment.useMockData ? ResourcesMockRepositoryImpl : ResourcesHttpRepositoryImpl,
+    },
+    {
+      provide: GradesRepository,
+      useClass: environment.useMockData ? GradesMockRepositoryImpl : GradesHttpRepositoryImpl,
+    },
     { provide: ScheduleRepository, useClass: ScheduleHttpRepositoryImpl },
+    // Profile and Account Repositories (condicionales basados en useMockData)
+    {
+      provide: ProfileRepository,
+      useClass: environment.useMockData ? ProfileMockRepositoryImpl : ProfileMockRepositoryImpl, // TODO: Crear ProfileHttpRepositoryImpl
+    },
+    {
+      provide: AccountRepository,
+      useClass: environment.useMockData ? AccountMockRepositoryImpl : AccountMockRepositoryImpl, // TODO: Crear AccountHttpRepositoryImpl
+    },
     // Teacher Repositories
     { provide: TeacherCourseRepository, useClass: TeacherCourseHttpRepositoryImpl },
-    { provide: GradesManagementRepository, useClass: GradesManagementHttpRepositoryImpl }
-  ]
+    { provide: GradesManagementRepository, useClass: GradesManagementHttpRepositoryImpl },
+  ],
 };
