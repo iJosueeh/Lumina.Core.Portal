@@ -1,0 +1,27 @@
+/* Estilos personalizados para profile-view */
+
+/* Animaciones suaves */
+:host {
+  display: block;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects para cards */
+.bg-white, .dark\:bg-gray-800 {
+  transition: transform 0.2s ease, shadow 0.2s ease;
+}
+
+.bg-white:hover, .dark\:bg-gray-800:hover {
+  transform: translateY(-2px);
+}

@@ -1,0 +1,32 @@
+/* Estilos para account-settings */
+
+:host {
+  display: block;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toggle switch personalizado */
+.peer:checked ~ div {
+  background-color: rgb(37, 99, 235);
+}
+
+/* Transiciones suaves */
+button, input {
+  transition: all 0.2s ease;
+}
+
+/* Modal backdrop */
+.fixed.inset-0 {
+  animation: fadeIn 0.2s ease-in;
+}
