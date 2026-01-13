@@ -1,0 +1,28 @@
+/* Animación de entrada del modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Smooth scrolling */
+:host {
+  display: block;
+}
+
+/* Transiciones suaves para inputs */
+input, textarea, button {
+  transition: all 0.2s ease;
+}
+
+/* Focus states mejorados */
+input:focus, textarea:focus {
+  outline: none;
+}

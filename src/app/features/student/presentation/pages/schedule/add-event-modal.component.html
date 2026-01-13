@@ -1,0 +1,286 @@
+<!-- Modal Backdrop -->
+<div
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn"
+>
+  <!-- Modal Container -->
+  <div
+    class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <!-- Header -->
+    <div
+      class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10"
+    >
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Añadir Evento</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          Crea un nuevo evento en tu horario
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="closeModal()"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
+      >
+        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    @if (error()) {
+      <div
+        class="mx-6 mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+      >
+        <p class="text-red-800 dark:text-red-200 text-sm">{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="eventForm" (ngSubmit)="saveEvent()" class="p-6 space-y-6">
+      <!-- Category Selection -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Categoría <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          @for (category of categories | keyvalue; track category.key) {
+            <button
+              type="button"
+              (click)="selectCategory($any(category.key))"
+              [class.ring-2]="eventForm.get('category')?.value === category.key"
+              [class.ring-blue-500]="eventForm.get('category')?.value === category.key"
+              [class]="category.value.bgColor"
+              class="p-4 rounded-lg border-2 border-transparent hover:border-blue-300 dark:hover:border-blue-600 transition flex flex-col items-center gap-2 group"
+            >
+              <svg
+                class="w-8 h-8 text-gray-700 dark:text-gray-300 group-hover:scale-110 transition"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  [attr.d]="category.value.icon"
+                ></path>
+              </svg>
+              <span class="text-sm font-semibold text-gray-900 dark:text-white">{{
+                category.value.label
+              }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Título del Evento <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          formControlName="title"
+          placeholder="Ej: Programación Avanzada"
+          [class.border-red-500]="isFieldInvalid('title')"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        />
+        @if (isFieldInvalid('title')) {
+          <p class="text-red-500 text-sm mt-1">{{ getErrorMessage('title') }}</p>
+        }
+      </div>
+
+      <!-- Date and Time -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Fecha <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="date"
+            formControlName="date"
+            [class.border-red-500]="isFieldInvalid('date')"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          @if (isFieldInvalid('date')) {
+            <p class="text-red-500 text-sm mt-1">{{ getErrorMessage('date') }}</p>
+          }
+        </div>
+
+        <!-- Start Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Hora Inicio <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="time"
+            formControlName="startTime"
+            [class.border-red-500]="isFieldInvalid('startTime')"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          @if (isFieldInvalid('startTime')) {
+            <p class="text-red-500 text-sm mt-1">{{ getErrorMessage('startTime') }}</p>
+          }
+        </div>
+
+        <!-- End Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Hora Fin <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="time"
+            formControlName="endTime"
+            [class.border-red-500]="isFieldInvalid('endTime')"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          @if (isFieldInvalid('endTime')) {
+            <p class="text-red-500 text-sm mt-1">{{ getErrorMessage('endTime') }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Location Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Modalidad <span class="text-red-500">*</span>
+        </label>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="eventForm.patchValue({ locationType: 'presencial' })"
+            [class.bg-blue-600]="eventForm.get('locationType')?.value === 'presencial'"
+            [class.text-white]="eventForm.get('locationType')?.value === 'presencial'"
+            [class.border-blue-600]="eventForm.get('locationType')?.value === 'presencial'"
+            class="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 transition flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
+            </svg>
+            <span class="font-medium">Presencial</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="eventForm.patchValue({ locationType: 'virtual' })"
+            [class.bg-blue-600]="eventForm.get('locationType')?.value === 'virtual'"
+            [class.text-white]="eventForm.get('locationType')?.value === 'virtual'"
+            [class.border-blue-600]="eventForm.get('locationType')?.value === 'virtual'"
+            class="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 transition flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              ></path>
+            </svg>
+            <span class="font-medium">Virtual</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Ubicación <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          formControlName="location"
+          [placeholder]="
+            eventForm.get('locationType')?.value === 'virtual'
+              ? 'Ej: Google Meet, Zoom'
+              : 'Ej: Aula 301, Lab 205'
+          "
+          [class.border-red-500]="isFieldInvalid('location')"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        />
+        @if (isFieldInvalid('location')) {
+          <p class="text-red-500 text-sm mt-1">{{ getErrorMessage('location') }}</p>
+        }
+      </div>
+
+      <!-- Description (Optional) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Descripción (Opcional)
+        </label>
+        <textarea
+          formControlName="description"
+          rows="3"
+          placeholder="Agrega notas o detalles adicionales..."
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div
+        class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+      >
+        <button
+          type="button"
+          (click)="closeModal()"
+          [disabled]="isSaving()"
+          class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="isSaving() || eventForm.invalid"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          @if (isSaving()) {
+            <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Guardando...
+          } @else {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              ></path>
+            </svg>
+            Guardar Evento
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
