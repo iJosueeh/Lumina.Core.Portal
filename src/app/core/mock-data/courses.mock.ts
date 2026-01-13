@@ -291,6 +291,7 @@ export const MOCK_COURSE_DETAILS: CourseDetail[] = [
     forums: [],
     forumPosts: [],
     forumComments: [],
+    announcements: [],
   },
   {
     id: '2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7q',
@@ -452,6 +453,7 @@ export const MOCK_COURSE_DETAILS: CourseDetail[] = [
     forums: [],
     forumPosts: [],
     forumComments: [],
+    announcements: [],
   },
 ];
 
