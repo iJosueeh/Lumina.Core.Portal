@@ -1,3 +1,5 @@
+import { CourseGrade, Evaluation } from './grade.model';
+
 export interface Module {
   id: string;
   title: string;
@@ -102,6 +104,33 @@ export interface ForumComment {
   replies: ForumComment[]; // Comentarios anidados
 }
 
+export interface AnnouncementAttachment {
+  id: string;
+  name: string;
+  type: 'pdf' | 'image' | 'document' | 'link';
+  url: string;
+  size?: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    role: 'instructor';
+  };
+  priority: 'high' | 'medium' | 'low';
+  createdAt: Date;
+  updatedAt?: Date;
+  likes: number;
+  isLiked: boolean;
+  attachments?: AnnouncementAttachment[];
+  isPinned: boolean;
+}
+
 export interface CourseDetail {
   id: string;
   title: string;
@@ -116,6 +145,8 @@ export interface CourseDetail {
   forums: Forum[]; // NUEVO
   forumPosts: ForumPost[]; // NUEVO
   forumComments: ForumComment[]; // NUEVO
+  announcements: Announcement[]; // NUEVO
+  grades?: CourseGrade; // NUEVO - Calificaciones del curso
 
   // Descripción
   description: string;
@@ -134,3 +165,6 @@ export interface CourseDetail {
   totalLessons: number;
   resources: string[];
 }
+
+// Re-export para facilitar imports
+export type { CourseGrade, Evaluation };

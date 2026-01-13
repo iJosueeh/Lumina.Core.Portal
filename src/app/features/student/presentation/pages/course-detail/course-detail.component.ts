@@ -10,6 +10,10 @@ import {
   Forum,
   ForumPost,
   ForumComment,
+  Announcement,
+  AnnouncementAttachment,
+  CourseGrade,
+  Evaluation,
 } from '@features/student/domain/models/course-detail.model';
 import { Assignment } from '@features/student/domain/models/assignment.model';
 
@@ -775,6 +779,230 @@ export class CourseDetailComponent implements OnInit {
         ],
       },
     ],
+
+    // Anuncios del curso
+    announcements: [
+      {
+        id: 'ann-1',
+        title: 'Cambio de fecha del examen final',
+        content:
+          'Estimados estudiantes, debido a un evento institucional programado, el examen final se ha reprogramado para el 15 de diciembre a las 10:00 AM. Por favor, revisen el nuevo calendario adjunto y ajusten sus horarios en consecuencia. Cualquier duda, no duden en contactarme.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'high',
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // hace 2 horas
+        likes: 24,
+        isLiked: false,
+        attachments: [
+          {
+            id: 'att-1',
+            name: 'nuevo_calendario_examenes.pdf',
+            type: 'pdf',
+            url: 'https://example.com/calendario.pdf',
+            size: '250 KB',
+          },
+        ],
+        isPinned: true,
+      },
+      {
+        id: 'ann-2',
+        title: 'Entrega del proyecto final - Fecha límite',
+        content:
+          'Recuerden que la fecha límite para la entrega del proyecto final es el 10 de diciembre a las 23:59. El proyecto debe incluir todos los requisitos especificados en la rúbrica de evaluación. No se aceptarán entregas tardías sin justificación previa.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'high',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // hace 1 día
+        likes: 18,
+        isLiked: true,
+        attachments: [
+          {
+            id: 'att-2',
+            name: 'rubrica_evaluacion_proyecto.pdf',
+            type: 'pdf',
+            url: 'https://example.com/rubrica.pdf',
+            size: '180 KB',
+          },
+        ],
+        isPinned: false,
+      },
+      {
+        id: 'ann-3',
+        title: 'Tarea 3 disponible en la plataforma',
+        content:
+          'Ya está disponible la Tarea 3 sobre JavaScript avanzado. Tienen hasta el viernes para completarla. La tarea cubre temas de async/await, promesas y manejo de errores. Recuerden revisar los ejemplos de clase.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'medium',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // hace 2 días
+        likes: 12,
+        isLiked: false,
+        isPinned: false,
+      },
+      {
+        id: 'ann-4',
+        title: 'Clase de repaso este viernes',
+        content:
+          'Tendremos una clase de repaso este viernes 8 de diciembre a las 4:00 PM en el aula 301. Repasaremos los temas más importantes del módulo 3 y resolveremos dudas para el examen final. La asistencia es opcional pero altamente recomendada.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'medium',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // hace 3 días
+        likes: 15,
+        isLiked: false,
+        isPinned: false,
+      },
+      {
+        id: 'ann-5',
+        title: 'Recursos adicionales de CSS Grid',
+        content:
+          'Les comparto algunos recursos adicionales sobre CSS Grid que pueden ser muy útiles para sus proyectos. Incluye una guía completa en PDF y ejemplos prácticos en un archivo ZIP. Espero que les sean de ayuda.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'low',
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // hace 5 días
+        likes: 8,
+        isLiked: false,
+        attachments: [
+          {
+            id: 'att-3',
+            name: 'guia_css_grid.pdf',
+            type: 'pdf',
+            url: 'https://example.com/css-grid.pdf',
+            size: '1.2 MB',
+          },
+          {
+            id: 'att-4',
+            name: 'ejemplos_css_grid.zip',
+            type: 'document',
+            url: 'https://example.com/ejemplos.zip',
+            size: '3.5 MB',
+          },
+        ],
+        isPinned: false,
+      },
+      {
+        id: 'ann-6',
+        title: 'Encuesta de satisfacción del curso',
+        content:
+          'Por favor, tómense unos minutos para completar la encuesta de satisfacción del curso. Sus comentarios son muy valiosos para mejorar la calidad de la enseñanza. La encuesta es anónima y toma aproximadamente 5 minutos.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'low',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // hace 1 semana
+        likes: 6,
+        isLiked: false,
+        attachments: [
+          {
+            id: 'att-5',
+            name: 'Encuesta de satisfacción',
+            type: 'link',
+            url: 'https://forms.google.com/encuesta-curso',
+          },
+        ],
+        isPinned: false,
+      },
+      {
+        id: 'ann-7',
+        title: 'Horario de asesorías actualizado',
+        content:
+          'Se ha actualizado el horario de asesorías para las próximas semanas. Las asesorías serán los martes y jueves de 2:00 PM a 4:00 PM en mi oficina (Edificio B, piso 3, oficina 305). Pueden agendar cita por correo o en persona.',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'medium',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // hace 1 semana
+        likes: 10,
+        isLiked: false,
+        isPinned: false,
+      },
+      {
+        id: 'ann-8',
+        title: 'Bienvenidos al curso de Desarrollo Web',
+        content:
+          'Bienvenidos al curso de Desarrollo Web Full Stack. Estoy muy emocionado de tenerlos en esta aventura de aprendizaje. Durante el semestre aprenderemos HTML, CSS, JavaScript y frameworks modernos. Espero que disfruten el curso y aprendan mucho. ¡Éxitos a todos!',
+        author: {
+          id: 'instructor-1',
+          name: 'Carlos Mendoza',
+          avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendoza&background=3b82f6&color=fff',
+          role: 'instructor',
+        },
+        priority: 'low',
+        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // hace 2 meses
+        likes: 32,
+        isLiked: true,
+        isPinned: false,
+      },
+    ],
+
+    // Calificaciones del curso
+    grades: {
+      id: '1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p',
+      nombre: 'Desarrollo Web Full Stack',
+      codigo: 'DW-2024-01',
+      profesor: 'Prof. Carlos Mendoza',
+      creditos: 4,
+      avance: 75,
+      promedio: 17.5,
+      estado: 'En Curso',
+      evaluaciones: [
+        {
+          actividad: 'Examen Parcial - HTML & CSS',
+          peso: 20,
+          nota: 18,
+          estado: 'Completado',
+        },
+        {
+          actividad: 'Proyecto: Landing Page Responsiva',
+          peso: 25,
+          nota: 19,
+          estado: 'Completado',
+        },
+        {
+          actividad: 'Laboratorio: JavaScript ES6+',
+          peso: 15,
+          nota: 16,
+          estado: 'Completado',
+        },
+        {
+          actividad: 'Proyecto Final: Aplicación CRUD',
+          peso: 40,
+          nota: 0,
+          estado: 'Pendiente',
+        },
+      ],
+      promedioClase: 15.8,
+      posicionamiento: 3,
+      totalEstudiantes: 45,
+      isExpanded: false,
+    },
   };
 
   upcomingAssignments: Assignment[] = [
@@ -862,6 +1090,38 @@ export class CourseDetailComponent implements OnInit {
     const post = this.selectedPost();
     if (!post) return [];
     return this.course.forumComments.filter((c) => c.postId === post.id && !c.parentCommentId);
+  });
+
+  // ========== ANUNCIOS ==========
+  // Signal para búsqueda de anuncios
+  announcementSearchQuery = signal('');
+
+  // Signal para filtro de prioridad
+  announcementPriorityFilter = signal<'all' | 'high' | 'medium' | 'low'>('all');
+
+  // Computed: anuncios filtrados y ordenados
+  filteredAnnouncements = computed(() => {
+    let announcements = this.course.announcements;
+
+    // Filtrar por prioridad
+    if (this.announcementPriorityFilter() !== 'all') {
+      announcements = announcements.filter((a) => a.priority === this.announcementPriorityFilter());
+    }
+
+    // Filtrar por búsqueda
+    const query = this.announcementSearchQuery().toLowerCase();
+    if (query) {
+      announcements = announcements.filter(
+        (a) => a.title.toLowerCase().includes(query) || a.content.toLowerCase().includes(query),
+      );
+    }
+
+    // Ordenar: pinned primero, luego por fecha descendente
+    return announcements.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
   });
 
   constructor(private route: ActivatedRoute) {}
@@ -997,5 +1257,75 @@ export class CourseDetailComponent implements OnInit {
     if (days < 7) return `hace ${days}d`;
     if (weeks < 4) return `hace ${weeks} semana${weeks > 1 ? 's' : ''}`;
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }
+
+  searchAnnouncements(query: string): void {
+    this.announcementSearchQuery.set(query);
+  }
+  // Filtrar por prioridad
+  filterAnnouncementsByPriority(priority: 'all' | 'high' | 'medium' | 'low'): void {
+    this.announcementPriorityFilter.set(priority);
+  }
+  // Like announcement (toggle)
+  likeAnnouncement(announcement: Announcement): void {
+    if (announcement.isLiked) {
+      announcement.likes--;
+      announcement.isLiked = false;
+    } else {
+      announcement.likes++;
+      announcement.isLiked = true;
+    }
+  }
+  // Obtener clase CSS del badge de prioridad
+  getPriorityBadgeClass(priority: string): string {
+    const classes: { [key: string]: string } = {
+      high: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+      medium: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+      low: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    };
+    return classes[priority] || '';
+  }
+  // Obtener label de prioridad
+  getPriorityLabel(priority: string): string {
+    const labels: { [key: string]: string } = {
+      high: 'Alta Prioridad',
+      medium: 'Media Prioridad',
+      low: 'Baja Prioridad',
+    };
+    return labels[priority] || '';
+  }
+  // Obtener icono de adjunto (path SVG)
+  getAttachmentIcon(type: string): string {
+    const icons: { [key: string]: string } = {
+      pdf: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z',
+      image:
+        'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+      document:
+        'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+      link: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
+    };
+    return icons[type] || icons['document'];
+  }
+  // Descargar adjunto
+  downloadAttachment(attachment: AnnouncementAttachment): void {
+    window.open(attachment.url, '_blank');
+  }
+  getPromedioColor(promedio: number): string {
+    if (promedio >= 17) return 'text-green-600 dark:text-green-400 font-bold';
+    if (promedio >= 14) return 'text-blue-600 dark:text-blue-400 font-bold';
+    if (promedio >= 11) return 'text-yellow-600 dark:text-yellow-400 font-bold';
+    return 'text-red-600 dark:text-red-400 font-bold';
+  }
+  // Obtener badge de estado
+  getEstadoBadge(estado: string): string {
+    const badges: { [key: string]: string } = {
+      Completado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      Pendiente: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    };
+    return badges[estado] || 'bg-gray-100 text-gray-700';
+  }
+  // Mostrar nota o "--" si está pendiente
+  getNotaDisplay(nota: number, estado: string): string {
+    return estado === 'Pendiente' ? '--' : nota.toFixed(1);
   }
 }
