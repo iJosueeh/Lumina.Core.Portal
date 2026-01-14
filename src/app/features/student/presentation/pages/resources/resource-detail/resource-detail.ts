@@ -50,18 +50,59 @@ export class ResourceDetailComponent implements OnInit {
 
   downloadResource(): void {
     const res = this.resource();
-    if (res) {
-      console.log('Descargando:', res.title);
-      alert(`Descargando: ${res.title}`);
+    if (!res) return;
+
+    // Si es un enlace externo, abrir en nueva pestaña
+    if (res.type === 'link') {
+      window.open(res.url, '_blank');
+      return;
+    }
+
+    // Para PDFs, videos, etc., simular descarga
+    // En producción, esto haría una petición al backend
+    console.log('Descargando:', res.title);
+
+    // Simular descarga (en producción sería una petición HTTP)
+    const link = document.createElement('a');
+    link.href = res.url;
+    link.download = `${res.title}.${res.format?.toLowerCase() || 'pdf'}`;
+    link.click();
+  }
+
+  async shareResource(): Promise<void> {
+    const res = this.resource();
+    if (!res) return;
+
+    const shareData = {
+      title: res.title,
+      text: res.description,
+      url: window.location.href,
+    };
+
+    // Intentar usar Web Share API (móvil/navegadores modernos)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Usuario canceló o error
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback: copiar URL al portapapeles
+      this.copyToClipboard(window.location.href);
     }
   }
 
-  shareResource(): void {
-    const res = this.resource();
-    if (res) {
-      console.log('Compartiendo:', res.title);
-      alert(`Compartiendo: ${res.title}`);
-    }
+  private copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        alert('¡Enlace copiado al portapapeles!');
+      },
+      (err) => {
+        console.error('Error al copiar:', err);
+        alert('No se pudo copiar el enlace');
+      },
+    );
   }
 
   goToRelated(resourceId: string): void {

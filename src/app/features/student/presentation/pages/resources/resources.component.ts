@@ -166,8 +166,8 @@ export class ResourcesComponent implements OnInit {
   }
 
   viewAllResources(): void {
-    console.log('View all resources');
-    // Podría navegar a una vista de todos los recursos o a la primera categoría
+    // Navegar a vista global de todos los recursos
+    this.router.navigate(['/student/resources/category', 'all']);
   }
 
   getResourceIcon(type: string): string {
