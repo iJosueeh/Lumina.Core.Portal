@@ -1,226 +1,396 @@
 <div class="min-h-screen bg-gray-50 dark:bg-dark-bg p-8">
-    <!-- Breadcrumb -->
-    <nav class="mb-4 text-sm text-gray-600 dark:text-dark-text-secondary">
-        <span>Portal</span>
-        <span class="mx-2">/</span>
-        <span class="font-semibold text-gray-900 dark:text-dark-text">Recursos</span>
-    </nav>
+  <!-- Breadcrumb -->
+  <nav class="mb-4 text-sm text-gray-600 dark:text-dark-text-secondary">
+    <span>Portal</span>
+    <span class="mx-2">/</span>
+    <span class="font-semibold text-gray-900 dark:text-dark-text">Recursos</span>
+  </nav>
 
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-dark-text mb-2">Centro de Recursos</h1>
-        <p class="text-gray-600 dark:text-dark-text-secondary">Accede a materiales de apoyo académico, herramientas de
-            software y guías administrativas.</p>
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-dark-text mb-2">Centro de Recursos</h1>
+    <p class="text-gray-600 dark:text-dark-text-secondary">
+      Accede a materiales de apoyo académico, herramientas de software y guías administrativas.
+    </p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="mb-8">
+    <div class="max-w-2xl">
+      <div class="relative">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Buscar libros, software, guías, tutoriales..."
+          class="w-full pl-12 pr-24 py-3 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-card dark:text-dark-text"
+        />
+        <button
+          (click)="search()"
+          class="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+        >
+          Buscar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Resources -->
+  <div class="mb-12">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text">Nuevos y Destacados</h2>
+      <button
+        (click)="viewAllResources()"
+        class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+      >
+        Ver todo
+      </button>
     </div>
 
-    <!-- Search Bar -->
-    <div class="mb-8">
-        <div class="max-w-2xl">
-            <div class="relative">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-                <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar libros, software, guías, tutoriales..."
-                    class="w-full pl-12 pr-24 py-3 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-card dark:text-dark-text">
-                <button (click)="search()"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                    Buscar
-                </button>
-            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        *ngFor="let resource of featuredResources"
+        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden hover:shadow-xl transition-all group"
+      >
+        <!-- Image -->
+        <div class="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-700">
+          <img
+            [src]="resource.imageUrl"
+            [alt]="resource.title"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div *ngIf="resource.badge" class="absolute top-3 left-3">
+            <span class="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">{{
+              resource.badge
+            }}</span>
+          </div>
         </div>
+
+        <!-- Content -->
+        <div class="p-6">
+          <div class="mb-2">
+            <span
+              class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide"
+              >{{ resource.category }}</span
+            >
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text mb-2 line-clamp-2">
+            {{ resource.title }}
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-dark-text-secondary mb-4 line-clamp-2">
+            {{ resource.description }}
+          </p>
+
+          <button
+            (click)="accessResource(resource)"
+            class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline font-medium text-sm"
+          >
+            Acceder
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text mb-6">
+      Explorar por Categoría
+    </h2>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <button
+        *ngFor="let category of categories"
+        (click)="navigateToCategory(category)"
+        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-400 transition-all group"
+      >
+        <div class="flex flex-col items-center text-center">
+          <!-- Icon -->
+          <div
+            class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:bg-blue-600 dark:group-hover:bg-blue-600 transition-colors"
+          >
+            <svg
+              *ngIf="category.icon === 'book'"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+              />
+            </svg>
+            <svg
+              *ngIf="category.icon === 'code'"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"
+              />
+            </svg>
+            <svg
+              *ngIf="category.icon === 'document'"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
+            </svg>
+            <svg
+              *ngIf="category.icon === 'academic'"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"
+              />
+            </svg>
+            <svg
+              *ngIf="category.icon === 'support'"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+              />
+            </svg>
+          </div>
+          <h3
+            class="font-bold text-gray-900 dark:text-dark-text mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+          >
+            {{ category.name }}
+          </h3>
+          <p class="text-xs text-gray-600 dark:text-dark-text-secondary">
+            {{ category.count }} recursos
+          </p>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Recent Resources -->
+  <div>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text">Recursos Recientes</h2>
+      <button class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+        Todos los tipos →
+      </button>
     </div>
 
-    <!-- Featured Resources -->
-    <div class="mb-12">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text">Nuevos y Destacados</h2>
-            <button (click)="viewAllResources()"
-                class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Ver todo</button>
-        </div>
+    <div
+      class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border divide-y divide-gray-200 dark:divide-dark-border"
+    >
+      <div
+        *ngFor="let resource of recentResources"
+        class="p-6 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+      >
+        <div class="flex items-start gap-4">
+          <!-- Icon -->
+          <div
+            [class]="getResourceColor(resource.type)"
+            class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+          >
+            <svg
+              *ngIf="resource.type === 'pdf'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              *ngIf="resource.type === 'video'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z"
+              />
+            </svg>
+            <svg
+              *ngIf="resource.type === 'code'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              *ngIf="resource.type === 'link'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"
+              />
+              <path
+                d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z"
+              />
+            </svg>
+          </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div *ngFor="let resource of featuredResources"
-                class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden hover:shadow-xl transition-all group">
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-gray-900 dark:text-dark-text mb-1">{{ resource.title }}</h3>
+            <p class="text-sm text-gray-600 dark:text-dark-text-secondary mb-2">
+              {{ resource.description }}
+            </p>
+            <span class="text-xs text-gray-500 dark:text-dark-text-secondary">{{
+              resource.category
+            }}</span>
+          </div>
 
-                <!-- Image -->
-                <div class="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-700">
-                    <img [src]="resource.imageUrl" [alt]="resource.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    <div *ngIf="resource.badge" class="absolute top-3 left-3">
-                        <span class="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">{{ resource.badge
-                            }}</span>
-                    </div>
-                </div>
-
-                <!-- Content -->
-                <div class="p-6">
-                    <div class="mb-2">
-                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">{{
-                            resource.category }}</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text mb-2 line-clamp-2">{{ resource.title
-                        }}</h3>
-                    <p class="text-sm text-gray-600 dark:text-dark-text-secondary mb-4 line-clamp-2">{{
-                        resource.description }}</p>
-
-                    <button (click)="accessResource(resource)"
-                        class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline font-medium text-sm">
-                        Acceder
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Categories -->
-    <div class="mb-12">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text mb-6">Explorar por Categoría</h2>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <button *ngFor="let category of categories"
-                class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-400 transition-all group">
-                <div class="flex flex-col items-center text-center">
-                    <!-- Icon -->
-                    <div
-                        class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:bg-blue-600 dark:group-hover:bg-blue-600 transition-colors">
-                        <svg *ngIf="category.icon === 'book'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <svg *ngIf="category.icon === 'code'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-                        </svg>
-                        <svg *ngIf="category.icon === 'document'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                        </svg>
-                        <svg *ngIf="category.icon === 'academic'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-                        </svg>
-                        <svg *ngIf="category.icon === 'support'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-8 h-8 text-blue-600 dark:text-blue-400 group-hover:text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-                        </svg>
-                    </div>
-                    <h3
-                        class="font-bold text-gray-900 dark:text-dark-text mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {{ category.name }}</h3>
-                    <p class="text-xs text-gray-600 dark:text-dark-text-secondary">{{ category.count }} recursos</p>
-                </div>
+          <!-- Action Button -->
+          <div class="flex-shrink-0">
+            <button
+              *ngIf="resource.type === 'pdf' || resource.type === 'code'"
+              (click)="downloadResource(resource)"
+              class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                />
+              </svg>
+              <span class="font-medium text-gray-700 dark:text-dark-text">Descargar</span>
             </button>
-        </div>
-    </div>
-
-    <!-- Recent Resources -->
-    <div>
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-dark-text">Recursos Recientes</h2>
-            <button class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Todos los tipos →</button>
-        </div>
-
-        <div
-            class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border divide-y divide-gray-200 dark:divide-dark-border">
-            <div *ngFor="let resource of recentResources"
-                class="p-6 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
-                <div class="flex items-start gap-4">
-                    <!-- Icon -->
-                    <div [class]="getResourceColor(resource.type)"
-                        class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg *ngIf="resource.type === 'pdf'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                            fill="currentColor" class="w-6 h-6">
-                            <path fill-rule="evenodd"
-                                d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <svg *ngIf="resource.type === 'video'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                            fill="currentColor" class="w-6 h-6">
-                            <path
-                                d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
-                        </svg>
-                        <svg *ngIf="resource.type === 'code'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                            fill="currentColor" class="w-6 h-6">
-                            <path fill-rule="evenodd"
-                                d="M6.28 5.22a.75.75 0 010 1.06L2.56 10l3.72 3.72a.75.75 0 01-1.06 1.06L.97 10.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0zm7.44 0a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 010-1.06zM11.377 2.011a.75.75 0 01.612.867l-2.5 14.5a.75.75 0 01-1.478-.255l2.5-14.5a.75.75 0 01.866-.612z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <svg *ngIf="resource.type === 'link'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                            fill="currentColor" class="w-6 h-6">
-                            <path
-                                d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z" />
-                            <path
-                                d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z" />
-                        </svg>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-bold text-gray-900 dark:text-dark-text mb-1">{{ resource.title }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-dark-text-secondary mb-2">{{ resource.description }}
-                        </p>
-                        <span class="text-xs text-gray-500 dark:text-dark-text-secondary">{{ resource.category }}</span>
-                    </div>
-
-                    <!-- Action Button -->
-                    <div class="flex-shrink-0">
-                        <button *ngIf="resource.type === 'pdf' || resource.type === 'code'"
-                            (click)="downloadResource(resource)"
-                            class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                            <span class="font-medium text-gray-700 dark:text-dark-text">Descargar</span>
-                        </button>
-                        <button *ngIf="resource.type === 'video'" (click)="accessResource(resource)"
-                            class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                            </svg>
-                            <span class="font-medium text-gray-700 dark:text-dark-text">Ver Video</span>
-                        </button>
-                        <button *ngIf="resource.type === 'link'" (click)="accessResource(resource)"
-                            class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-                            </svg>
-                            <span class="font-medium text-gray-700 dark:text-dark-text">Acceder</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- View More -->
-        <div class="mt-6 text-center">
-            <button class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                Ver más recursos →
+            <button
+              *ngIf="resource.type === 'video'"
+              (click)="accessResource(resource)"
+              class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"
+                />
+              </svg>
+              <span class="font-medium text-gray-700 dark:text-dark-text">Ver Video</span>
             </button>
+            <button
+              *ngIf="resource.type === 'link'"
+              (click)="accessResource(resource)"
+              class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+                />
+              </svg>
+              <span class="font-medium text-gray-700 dark:text-dark-text">Acceder</span>
+            </button>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- View More -->
+    <div class="mt-6 text-center">
+      <button class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+        Ver más recursos →
+      </button>
+    </div>
+  </div>
 </div>
