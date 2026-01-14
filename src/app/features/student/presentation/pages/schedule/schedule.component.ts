@@ -145,13 +145,57 @@ export class ScheduleComponent implements OnInit {
   }
 
   previousWeek(): void {
-    // TODO: Implementar navegación de semanas
-    console.log('Previous week');
+    // Retroceder una semana
+    const firstDay = this.weekDays[0];
+    const currentMonday = new Date();
+    currentMonday.setDate(firstDay.date);
+    currentMonday.setDate(currentMonday.getDate() - 7);
+
+    this.updateWeekDays(currentMonday);
   }
 
   nextWeek(): void {
-    // TODO: Implementar navegación de semanas
-    console.log('Next week');
+    // Avanzar una semana
+    const firstDay = this.weekDays[0];
+    const currentMonday = new Date();
+    currentMonday.setDate(firstDay.date);
+    currentMonday.setDate(currentMonday.getDate() + 7);
+
+    this.updateWeekDays(currentMonday);
+  }
+
+  private updateWeekDays(monday: Date): void {
+    const today = new Date();
+    const dayNames = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+
+    this.weekDays = dayNames.map((name, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return {
+        name,
+        date: date.getDate(),
+        isToday: date.toDateString() === today.toDateString(),
+      };
+    });
+
+    // Actualizar mes y semana
+    const monthNames = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    this.currentMonth = `${monthNames[monday.getMonth()]} ${monday.getFullYear()}`;
+    const weekNumber = this.getWeekNumber(monday);
+    this.currentWeek = `Semana ${weekNumber}: Visualizando horario regular`;
   }
 
   createEvent(): void {
