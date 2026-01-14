@@ -1124,6 +1124,18 @@ export class CourseDetailComponent implements OnInit {
     });
   });
 
+  // Computed: próxima lección no completada
+  nextLesson = computed(() => {
+    for (const module of this.course.modules) {
+      for (const lesson of module.lessons) {
+        if (!lesson.isCompleted && !lesson.isLocked) {
+          return lesson;
+        }
+      }
+    }
+    return null;
+  });
+
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -1150,9 +1162,38 @@ export class CourseDetailComponent implements OnInit {
   }
 
   startLesson(lesson: Lesson): void {
-    if (!lesson.isLocked) {
-      console.log('Starting lesson:', lesson.title);
-      // Navegar a la lección
+    if (lesson.isLocked) {
+      return;
+    }
+
+    // Simular inicio de lección
+    const lessonType =
+      lesson.type === 'video'
+        ? 'video'
+        : lesson.type === 'reading'
+          ? 'lectura'
+          : lesson.type === 'quiz'
+            ? 'quiz'
+            : 'tarea';
+
+    const message = lesson.isCompleted
+      ? `Revisando ${lessonType}: "${lesson.title}"\n\nDuración: ${lesson.duration}\n\nEn una implementación completa, esto abriría el contenido de la lección en un modal o nueva página.`
+      : `Iniciando ${lessonType}: "${lesson.title}"\n\nDuración: ${lesson.duration}\n\nEn una implementación completa, esto abriría el contenido de la lección en un modal o nueva página.`;
+
+    alert(message);
+
+    // Marcar como completada si no lo estaba
+    if (!lesson.isCompleted) {
+      lesson.isCompleted = true;
+    }
+  }
+
+  continueCurrentLesson(): void {
+    const next = this.nextLesson();
+    if (next) {
+      this.startLesson(next);
+    } else {
+      alert('¡Felicidades! Has completado todas las lecciones disponibles.');
     }
   }
 
