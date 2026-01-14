@@ -1,0 +1,211 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <button
+      (click)="goBack()"
+      class="text-blue-600 dark:text-blue-400 hover:underline mb-4 flex items-center gap-2"
+    >
+      <span>←</span> Volver a Recursos
+    </button>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ categoryName() }}</h1>
+    <p class="text-gray-600 dark:text-gray-400 mt-2">{{ stats().total }} recursos disponibles</p>
+  </div>
+
+  <!-- Barra de filtros -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
+    <div class="flex flex-col lg:flex-row gap-4">
+      <!-- Búsqueda -->
+      <div class="flex-1">
+        <input
+          type="text"
+          [ngModel]="filters().searchQuery"
+          (ngModelChange)="setSearchQuery($event)"
+          placeholder="Buscar recursos..."
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <!-- Filtro por tipo -->
+      <div class="flex gap-2 flex-wrap">
+        <button
+          (click)="setTypeFilter('all')"
+          [class.bg-blue-600]="filters().type === 'all'"
+          [class.text-white]="filters().type === 'all'"
+          [class.bg-gray-200]="filters().type !== 'all'"
+          [class.dark:bg-gray-700]="filters().type !== 'all'"
+          class="px-4 py-2 rounded-lg transition-colors"
+        >
+          Todos ({{ stats().total }})
+        </button>
+        <button
+          (click)="setTypeFilter('pdf')"
+          [class.bg-red-600]="filters().type === 'pdf'"
+          [class.text-white]="filters().type === 'pdf'"
+          [class.bg-gray-200]="filters().type !== 'pdf'"
+          [class.dark:bg-gray-700]="filters().type !== 'pdf'"
+          class="px-4 py-2 rounded-lg transition-colors"
+        >
+          PDF ({{ stats().pdf }})
+        </button>
+        <button
+          (click)="setTypeFilter('video')"
+          [class.bg-blue-600]="filters().type === 'video'"
+          [class.text-white]="filters().type === 'video'"
+          [class.bg-gray-200]="filters().type !== 'video'"
+          [class.dark:bg-gray-700]="filters().type !== 'video'"
+          class="px-4 py-2 rounded-lg transition-colors"
+        >
+          Video ({{ stats().video }})
+        </button>
+        <button
+          (click)="setTypeFilter('book')"
+          [class.bg-orange-600]="filters().type === 'book'"
+          [class.text-white]="filters().type === 'book'"
+          [class.bg-gray-200]="filters().type !== 'book'"
+          [class.dark:bg-gray-700]="filters().type !== 'book'"
+          class="px-4 py-2 rounded-lg transition-colors"
+        >
+          Libros ({{ stats().book }})
+        </button>
+      </div>
+
+      <!-- Ordenamiento -->
+      <select
+        [ngModel]="filters().sortBy"
+        (ngModelChange)="setSortBy($any($event))"
+        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+      >
+        <option value="recent">Más recientes</option>
+        <option value="popular">Más populares</option>
+        <option value="alphabetical">A-Z</option>
+      </select>
+
+      <!-- Toggle vista -->
+      <button
+        (click)="toggleViewMode()"
+        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+      >
+        @if (filters().viewMode === 'grid') {
+          <span>📋 Lista</span>
+        } @else {
+          <span>⊞ Grid</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista Grid -->
+  @if (filters().viewMode === 'grid') {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (resource of filteredResources(); track resource.id) {
+        <div
+          (click)="goToDetail(resource.id)"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+        >
+          @if (resource.imageUrl) {
+            <img
+              [src]="resource.imageUrl"
+              [alt]="resource.title"
+              class="w-full h-48 object-cover"
+            />
+          }
+          <div class="p-4">
+            <div class="flex items-start justify-between mb-2">
+              <span
+                [class]="getResourceColor(resource.type)"
+                class="px-2 py-1 rounded text-xs font-medium"
+              >
+                {{ getResourceIcon(resource.type) }} {{ resource.type.toUpperCase() }}
+              </span>
+              @if (resource.badge) {
+                <span
+                  class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded text-xs font-medium"
+                >
+                  {{ resource.badge }}
+                </span>
+              }
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+              {{ resource.title }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+              {{ resource.description }}
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>⬇️ {{ resource.downloads }}</span>
+              <span>👁️ {{ resource.views }}</span>
+              @if (resource.rating) {
+                <span>⭐ {{ resource.rating }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Vista Lista -->
+  @if (filters().viewMode === 'list') {
+    <div class="space-y-4">
+      @for (resource of filteredResources(); track resource.id) {
+        <div
+          (click)="goToDetail(resource.id)"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4 flex gap-4"
+        >
+          @if (resource.imageUrl) {
+            <img
+              [src]="resource.imageUrl"
+              [alt]="resource.title"
+              class="w-32 h-32 object-cover rounded"
+            />
+          }
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span
+                  [class]="getResourceColor(resource.type)"
+                  class="px-2 py-1 rounded text-xs font-medium"
+                >
+                  {{ getResourceIcon(resource.type) }} {{ resource.type.toUpperCase() }}
+                </span>
+                @if (resource.badge) {
+                  <span
+                    class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded text-xs font-medium"
+                  >
+                    {{ resource.badge }}
+                  </span>
+                }
+              </div>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{
+                formatDate(resource.uploadDate)
+              }}</span>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {{ resource.title }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-3">
+              {{ resource.description }}
+            </p>
+            <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <span>⬇️ {{ resource.downloads }} descargas</span>
+              <span>👁️ {{ resource.views }} vistas</span>
+              @if (resource.rating) {
+                <span>⭐ {{ resource.rating }}/5</span>
+              }
+              @if (resource.fileSize) {
+                <span>📦 {{ resource.fileSize }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Sin resultados -->
+  @if (filteredResources().length === 0) {
+    <div class="text-center py-12">
+      <p class="text-gray-500 dark:text-gray-400 text-lg">No se encontraron recursos</p>
+    </div>
+  }
+</div>
