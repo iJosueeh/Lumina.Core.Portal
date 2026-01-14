@@ -1,0 +1,266 @@
+@if (resource(); as res) {
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <button
+          (click)="goBack()"
+          class="text-blue-600 dark:text-blue-400 hover:underline mb-4 flex items-center gap-2"
+        >
+          <span>←</span> Volver a {{ res.category }}
+        </button>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Imagen -->
+          @if (res.imageUrl) {
+            <img
+              [src]="res.imageUrl"
+              [alt]="res.title"
+              class="w-full lg:w-96 h-64 object-cover rounded-lg shadow-md"
+            />
+          }
+
+          <!-- Info principal -->
+          <div class="flex-1">
+            <div class="flex items-start gap-3 mb-3">
+              <span
+                [class]="getResourceColor(res.type)"
+                class="px-3 py-1 rounded-lg text-sm font-medium"
+              >
+                {{ getResourceIcon(res.type) }} {{ res.type.toUpperCase() }}
+              </span>
+              @if (res.badge) {
+                <span
+                  class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-lg text-sm font-medium"
+                >
+                  {{ res.badge }}
+                </span>
+              }
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">{{ res.title }}</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">{{ res.description }}</p>
+
+            <!-- Metadata -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Descargas</p>
+                <p class="text-xl font-semibold text-gray-900 dark:text-white">
+                  {{ res.downloads }}
+                </p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Vistas</p>
+                <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ res.views }}</p>
+              </div>
+              @if (res.rating) {
+                <div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Calificación</p>
+                  <p class="text-xl font-semibold text-gray-900 dark:text-white">
+                    ⭐ {{ res.rating }}/5
+                  </p>
+                </div>
+              }
+              @if (res.fileSize) {
+                <div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Tamaño</p>
+                  <p class="text-xl font-semibold text-gray-900 dark:text-white">
+                    {{ res.fileSize }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex flex-wrap gap-3">
+              <button
+                (click)="downloadResource()"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                ⬇️ Descargar
+              </button>
+              <button
+                (click)="toggleFavorite()"
+                [class.bg-red-100]="isFavorite()"
+                [class.text-red-600]="isFavorite()"
+                [class.dark:bg-red-900/30]="isFavorite()"
+                [class.dark:text-red-400]="isFavorite()"
+                [class.bg-gray-200]="!isFavorite()"
+                [class.dark:bg-gray-700]="!isFavorite()"
+                class="px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                @if (isFavorite()) {
+                  ❤️ Favorito
+                } @else {
+                  🤍 Agregar a favoritos
+                }
+              </button>
+              <button
+                (click)="shareResource()"
+                class="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
+              >
+                🔗 Compartir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Columna principal -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Detalles -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Detalles</h2>
+
+            @if (res.content) {
+              <div class="prose dark:prose-invert max-w-none mb-6">
+                <p class="text-gray-600 dark:text-gray-400">{{ res.content }}</p>
+              </div>
+            }
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Fecha de publicación
+                </p>
+                <p class="text-gray-900 dark:text-white">{{ formatDate(res.publishDate) }}</p>
+              </div>
+              @if (res.lastUpdated) {
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Última actualización
+                  </p>
+                  <p class="text-gray-900 dark:text-white">{{ formatDate(res.lastUpdated) }}</p>
+                </div>
+              }
+              @if (res.format) {
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Formato</p>
+                  <p class="text-gray-900 dark:text-white">{{ res.format }}</p>
+                </div>
+              }
+              @if (res.language) {
+                <div>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Idioma</p>
+                  <p class="text-gray-900 dark:text-white">{{ res.language }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Tags -->
+          @if (res.tags && res.tags.length > 0) {
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Etiquetas</h3>
+              <div class="flex flex-wrap gap-2">
+                @for (tag of res.tags; track tag) {
+                  <span
+                    class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm"
+                  >
+                    #{{ tag }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Autor -->
+          @if (res.author) {
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Autor</h3>
+              <div class="flex items-center gap-3">
+                <img
+                  [src]="res.author.avatar"
+                  [alt]="res.author.name"
+                  class="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ res.author.name }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ res.author.title }}</p>
+                  @if (res.author.email) {
+                    <p class="text-sm text-blue-600 dark:text-blue-400">{{ res.author.email }}</p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Requisitos -->
+          @if (res.requirements && res.requirements.length > 0) {
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Requisitos</h3>
+              <ul class="space-y-2">
+                @for (req of res.requirements; track req) {
+                  <li class="flex items-start gap-2 text-gray-600 dark:text-gray-400">
+                    <span class="text-green-500">✓</span>
+                    <span>{{ req }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Recursos relacionados -->
+      @if (relatedResources().length > 0) {
+        <div class="mt-8">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Recursos relacionados
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @for (related of relatedResources(); track related.id) {
+              <div
+                (click)="goToRelated(related.id)"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+              >
+                @if (related.imageUrl) {
+                  <img
+                    [src]="related.imageUrl"
+                    [alt]="related.title"
+                    class="w-full h-40 object-cover"
+                  />
+                }
+                <div class="p-4">
+                  <span
+                    [class]="getResourceColor(related.type)"
+                    class="px-2 py-1 rounded text-xs font-medium"
+                  >
+                    {{ getResourceIcon(related.type) }} {{ related.type.toUpperCase() }}
+                  </span>
+                  <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white mt-2 mb-1 line-clamp-2"
+                  >
+                    {{ related.title }}
+                  </h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {{ related.description }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+    <div class="text-center">
+      <p class="text-2xl text-gray-500 dark:text-gray-400 mb-4">Recurso no encontrado</p>
+      <button
+        (click)="goBack()"
+        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+      >
+        Volver a recursos
+      </button>
+    </div>
+  </div>
+}
