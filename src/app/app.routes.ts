@@ -57,8 +57,29 @@ export const routes: Routes = [
       },
       {
         path: 'resources',
-        component: ResourcesComponent,
-        title: 'Recursos - Portal Estudiante',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/student/presentation/pages/resources/resources.component').then(
+                (m) => m.ResourcesComponent,
+              ),
+          },
+          {
+            path: 'category/:categoryId',
+            loadComponent: () =>
+              import('./features/student/presentation/pages/resources/resource-category/resource-category').then(
+                (m) => m.ResourceCategoryComponent,
+              ),
+          },
+          {
+            path: 'detail/:resourceId',
+            loadComponent: () =>
+              import('./features/student/presentation/pages/resources/resource-detail/resource-detail').then(
+                (m) => m.ResourceDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'profile',
