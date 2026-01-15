@@ -26,6 +26,18 @@ export const MOCK_STUDENT_USER: User = {
 };
 
 // ============================================
+// USUARIO DOCENTE
+// ============================================
+
+export const MOCK_TEACHER_USER: User = {
+  id: '660f9511-f3ac-52e5-b827-557766551111',
+  email: 'carlos.mendoza@lumina.edu.pe',
+  fullName: 'Carlos Alberto Mendoza Silva',
+  role: 'TEACHER',
+  token: 'mock-jwt-token-teacher-development-only',
+};
+
+// ============================================
 // CURSOS MATRICULADOS CON CALIFICACIONES
 // ============================================
 
@@ -359,6 +371,13 @@ export function getMockStudentUser(): User {
 }
 
 /**
+ * Obtiene el usuario docente mock
+ */
+export function getMockTeacherUser(): User {
+  return { ...MOCK_TEACHER_USER };
+}
+
+/**
  * Obtiene las calificaciones del estudiante mock
  */
 export function getMockStudentGrades(): CourseGrade[] {
@@ -388,11 +407,23 @@ export function getMockAccountSettings(): AccountSettings {
 
 /**
  * Simula un login exitoso y retorna el usuario mock
+ * Soporta login de estudiante y docente
  */
 export function mockLogin(email: string, password: string): User | null {
-  // Simular validación (acepta cualquier credencial para desarrollo)
-  if (email && password) {
-    return getMockStudentUser();
+  // Validar que se proporcionen credenciales
+  if (!email || !password) {
+    return null;
   }
-  return null;
+
+  // Login como docente
+  if (
+    email.toLowerCase().includes('carlos.mendoza') ||
+    email.toLowerCase().includes('profesor') ||
+    email.toLowerCase().includes('teacher')
+  ) {
+    return getMockTeacherUser();
+  }
+
+  // Login como estudiante (por defecto)
+  return getMockStudentUser();
 }
