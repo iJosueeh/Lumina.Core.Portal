@@ -1,7 +1,9 @@
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "maria.rodriguez@lumina.edu.pe",
-  "fullName": "María Fernanda Rodríguez García",
-  "role": "STUDENT",
-  "token": "mock-jwt-token-for-development-only"
-}
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "maria.rodriguez@lumina.edu.pe",
+    "fullName": "María Fernanda Rodríguez García",
+    "role": "STUDENT",
+    "token": "mock-jwt-token-for-development-only"
+  }
+]
