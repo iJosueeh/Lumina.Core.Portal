@@ -235,9 +235,131 @@
       </div>
     </div>
 
-    <!-- Courses Table -->
+    <!-- Mobile Cards View (< lg) -->
+    <div class="lg:hidden space-y-4">
+      <div
+        *ngFor="let course of courses; let i = index"
+        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden"
+      >
+        <!-- Card Header -->
+        <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+          <div class="flex items-start gap-3">
+            <div
+              class="w-1 h-16 rounded-full flex-shrink-0"
+              [class.bg-blue-500]="course.estado === 'En Curso'"
+              [class.bg-green-500]="course.estado === 'Aprobado'"
+              [class.bg-red-500]="course.estado === 'En Riesgo'"
+            ></div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-gray-900 dark:text-dark-text text-base mb-1">
+                {{ course.nombre }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-dark-text-secondary">
+                {{ course.codigo }} • {{ course.profesor }}
+              </p>
+            </div>
+            <button
+              (click)="toggleCourse(course)"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors flex-shrink-0"
+            >
+              <svg
+                [class.rotate-180]="course.isExpanded"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5 transition-transform"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="p-4 space-y-3">
+          <!-- Créditos -->
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Créditos</span>
+            <span class="font-semibold text-gray-900 dark:text-dark-text">{{
+              course.creditos
+            }}</span>
+          </div>
+
+          <!-- Avance -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Avance</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-dark-text"
+                >{{ course.avance }}%</span
+              >
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                class="bg-blue-600 h-2 rounded-full transition-all"
+                [style.width.%]="course.avance"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Promedio -->
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Promedio</span>
+            <span [class]="getPromedioColor(course.promedio)" class="text-xl font-bold">
+              {{ course.promedio }}
+            </span>
+          </div>
+
+          <!-- Estado -->
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Estado</span>
+            <span [class]="getEstadoColor(course.estado)" class="font-semibold">
+              {{ course.estado }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Expanded Details (Mobile) -->
+        <div
+          *ngIf="course.isExpanded"
+          class="px-4 pb-4 pt-2 bg-gray-50 dark:bg-dark-bg border-t border-gray-200 dark:border-dark-border"
+        >
+          <h4 class="font-bold text-gray-900 dark:text-dark-text mb-3 text-sm">Evaluaciones</h4>
+          <div class="space-y-2">
+            <div
+              *ngFor="let eval of course.evaluaciones"
+              class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-dark-border last:border-0"
+            >
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-dark-text">
+                  {{ eval.actividad }}
+                </p>
+                <p class="text-xs text-gray-600 dark:text-dark-text-secondary">
+                  Peso: {{ eval.peso }}%
+                </p>
+              </div>
+              <div class="text-right">
+                <p [class]="getPromedioColor(eval.nota)" class="font-bold">
+                  {{ eval.nota > 0 ? eval.nota : '--' }}
+                </p>
+                <span [class]="getEstadoBadge(eval.estado)" class="text-xs px-2 py-0.5 rounded">
+                  {{ eval.estado }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View (>= lg) -->
     <div
-      class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden"
+      class="hidden lg:block bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden"
     >
       <!-- Table Header -->
       <div
