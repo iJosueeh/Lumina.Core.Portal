@@ -1,11 +1,15 @@
 <div class="min-h-screen bg-gray-50 dark:bg-dark-bg">
   <!-- Header -->
   <header
-    class="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border px-8 py-6"
+    class="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6"
   >
-    <div class="flex items-center justify-between">
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
+    >
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-dark-text">Hola, {{ userName }}</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-dark-text">
+          Hola, {{ userName }}
+        </h1>
         <p class="text-gray-600 dark:text-dark-text-secondary mt-1">
           Tienes
           <span class="font-semibold text-blue-600 dark:text-blue-400"
@@ -32,15 +36,17 @@
             d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
           />
         </svg>
-        <span class="font-medium text-gray-700 dark:text-dark-text">Ver Calendario</span>
+        <span class="hidden sm:inline font-medium text-gray-700 dark:text-dark-text"
+          >Ver Calendario</span
+        >
       </button>
     </div>
   </header>
 
   <!-- Main Content -->
-  <div class="flex gap-6 p-8">
+  <div class="flex flex-col lg:flex-row gap-4 md:gap-6 p-4 md:p-6 lg:p-8">
     <!-- Left Column: Courses -->
-    <div class="flex-1">
+    <div class="flex-1 w-full">
       <!-- Courses Section -->
       <div class="mb-6">
         <div class="flex items-center justify-between mb-4">
@@ -67,9 +73,11 @@
             (click)="viewCourse(course.id)"
             class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
           >
-            <div class="flex gap-4 p-6">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 md:p-6">
               <!-- Course Image -->
-              <div class="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
+              <div
+                class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-lg overflow-hidden flex-shrink-0"
+              >
                 <img
                   [src]="course.imagenUrl"
                   [alt]="course.titulo"
@@ -163,7 +171,7 @@
     </div>
 
     <!-- Right Sidebar: Upcoming Assignments -->
-    <aside class="w-80 space-y-6">
+    <aside class="w-full lg:w-80 space-y-4 md:space-y-6">
       <!-- Upcoming Assignments -->
       <div
         class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6"
@@ -301,7 +309,7 @@
       </div>
 
       <!-- Tip of the Day -->
-      <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 md:p-6 text-white">
         <div class="flex items-start gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
