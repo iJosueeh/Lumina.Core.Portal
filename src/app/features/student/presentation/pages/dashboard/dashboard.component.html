@@ -15,7 +15,8 @@
         </p>
       </div>
       <button
-        class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+        [routerLink]="['/student/schedule']"
+        class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text dark:hover:bg-dark-border"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +24,7 @@
           viewBox="0 0 24 24"
           stroke-width="1.5"
           stroke="currentColor"
-          class="w-5 h-5 text-gray-600 dark:text-dark-text-secondary"
+          class="h-5 w-5 text-gray-400"
         >
           <path
             stroke-linecap="round"
@@ -159,85 +160,16 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Announcements Section -->
+    <!-- Right Sidebar: Upcoming Assignments -->
+    <aside class="w-80 space-y-6">
+      <!-- Upcoming Assignments -->
       <div
         class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6"
       >
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text">Anuncios Recientes</h3>
-        </div>
-
-        <div *ngIf="!isLoadingAnnouncements" class="space-y-4">
-          <div *ngFor="let announcement of announcements" class="flex gap-3">
-            <div
-              class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5 text-blue-600 dark:text-blue-400"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                />
-              </svg>
-            </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm">
-                {{ announcement.titulo }}
-              </h4>
-              <p class="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
-                {{ announcement.descripcion }}
-              </p>
-              <span class="text-xs text-gray-500 dark:text-dark-text-secondary mt-2 inline-block">
-                {{ announcement.tiempoRelativo }} • {{ announcement.autor }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tip of the Day -->
-      <div class="mt-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-        <div class="flex items-start gap-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6 flex-shrink-0"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-            />
-          </svg>
-          <div>
-            <h4 class="font-bold text-lg mb-2">TIP DEL DÍA</h4>
-            <p class="text-blue-50">
-              Recuerda revisar los foros de discusión antes de tu entrega final. ¡Tus compañeros
-              comparten buenas ideas!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Sidebar: Upcoming Assignments -->
-    <aside class="w-80">
-      <div
-        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6 sticky top-8"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text">Próximas Entregas</h3>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text">Próximas Tareas</h3>
           <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -258,10 +190,10 @@
 
         <div *ngIf="!isLoadingAssignments" class="space-y-4">
           <div
-            *ngFor="let assignment of assignments"
+            *ngFor="let assignment of assignments | slice: 0 : assignmentsLimit"
             [class.border-l-4]="assignment.esUrgente"
             [class.border-red-500]="assignment.esUrgente"
-            class="p-4 bg-gray-50 dark:bg-dark-bg rounded-lg"
+            class="p-4 bg-gray-50 dark:bg-dark-bg rounded-lg animate-fade-in"
           >
             <!-- Date Badge -->
             <div class="flex items-start gap-3 mb-2">
@@ -300,6 +232,97 @@
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        <button
+          *ngIf="assignments.length > 3"
+          (click)="toggleAssignmentsView()"
+          class="w-full mt-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+        >
+          {{ assignmentsLimit === 3 ? 'Ver más (' + (assignments.length - 3) + ')' : 'Ver menos' }}
+        </button>
+      </div>
+
+      <!-- Announcements Section -->
+      <div
+        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text">Anuncios Recientes</h3>
+        </div>
+
+        <div *ngIf="!isLoadingAnnouncements" class="space-y-4">
+          <div
+            *ngFor="let announcement of announcements | slice: 0 : announcementsLimit"
+            class="flex gap-3 animate-fade-in"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5 text-blue-600 dark:text-blue-400"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm">
+                {{ announcement.titulo }}
+              </h4>
+              <p class="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
+                {{ announcement.descripcion }}
+              </p>
+              <span class="text-xs text-gray-500 dark:text-dark-text-secondary mt-2 inline-block">
+                {{ announcement.tiempoRelativo }} • {{ announcement.autor }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          *ngIf="announcements.length > 3"
+          (click)="toggleAnnouncementsView()"
+          class="w-full mt-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+        >
+          {{
+            announcementsLimit === 3 ? 'Ver más (' + (announcements.length - 3) + ')' : 'Ver menos'
+          }}
+        </button>
+      </div>
+
+      <!-- Tip of the Day -->
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+        <div class="flex items-start gap-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 flex-shrink-0"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+            />
+          </svg>
+          <div>
+            <h4 class="font-bold text-lg mb-2">TIP DEL DÍA</h4>
+            <p class="text-blue-50">
+              Recuerda revisar los foros de discusión antes de tu entrega final. ¡Tus compañeros
+              comparten buenas ideas!
+            </p>
           </div>
         </div>
       </div>

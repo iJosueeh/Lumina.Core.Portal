@@ -11,7 +11,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { AccountRepository } from '../../../domain/repositories/account.repository';
 import { AccountSettings } from '../../../domain/models/student-profile.model';
-import { getMockAccountSettings } from '../../../../../core/mock-data/student.mock';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-account-settings',
@@ -46,6 +46,7 @@ export class AccountSettingsComponent implements OnInit {
     private fb: FormBuilder,
     private accountRepository: AccountRepository,
     private router: Router,
+    private http: HttpClient,
   ) {
     this.initializeForms();
   }
@@ -90,16 +91,23 @@ export class AccountSettingsComponent implements OnInit {
   private loadSettings(): void {
     this.isLoading.set(true);
 
-    // TODO: Obtener desde el repositorio cuando esté implementado
-    // Por ahora usamos datos mock
-    const settings = getMockAccountSettings();
-    this.settings.set(settings);
+    // Cargar settings desde JSON usando HttpClient directo
+    this.http.get<AccountSettings>('assets/mock-data/profiles/account-settings.json').subscribe({
+      next: (settings) => {
+        this.settings.set(settings);
 
-    // Poblar formularios
-    this.notificationsForm.patchValue(settings.notificaciones);
-    this.privacyForm.patchValue(settings.privacidad);
+        // Poblar formularios
+        this.notificationsForm.patchValue(settings.notificaciones);
+        this.privacyForm.patchValue(settings.privacidad);
 
-    this.isLoading.set(false);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading account settings:', err);
+        this.error.set('Error al cargar la configuración');
+        this.isLoading.set(false);
+      },
+    });
   }
 
   // Validadores personalizados

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "titulo": "Proyecto Final: E-commerce",
+    "cursoNombre": "Desarrollo Web Full Stack",
+    "fechaLimite": "2026-01-15T23:59:00",
+    "esUrgente": true,
+    "mes": "ENE",
+    "dia": 15
+  },
+  {
+    "id": "2",
+    "titulo": "Quiz Módulo 3",
+    "cursoNombre": "Introducción a Python",
+    "fechaLimite": "2026-01-16T23:59:00",
+    "esUrgente": false,
+    "mes": "ENE",
+    "dia": 16
+  },
+  {
+    "id": "3",
+    "titulo": "Laboratorio SQL",
+    "cursoNombre": "Bases de Datos SQL",
+    "fechaLimite": "2026-01-18T23:59:00",
+    "esUrgente": false,
+    "mes": "ENE",
+    "dia": 18
+  }
+]

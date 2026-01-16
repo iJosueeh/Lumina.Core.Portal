@@ -1,0 +1,74 @@
+[
+  {
+    "id": "res-1",
+    "title": "Guía Completa de JavaScript ES6+",
+    "description": "Documento PDF con todos los conceptos modernos de JavaScript, desde lo básico hasta avanzado.",
+    "category": "Programación",
+    "type": "pdf",
+    "url": "#",
+    "imageUrl": "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400",
+    "badge": "Nuevo",
+    "isFeatured": true,
+    "uploadDate": "2024-01-10T00:00:00",
+    "fileSize": "2.5 MB"
+  },
+  {
+    "id": "res-2",
+    "title": "Tutorial: React Hooks en Profundidad",
+    "description": "Serie de videos explicando useState, useEffect, useContext y custom hooks con ejemplos prácticos.",
+    "category": "Frontend",
+    "type": "video",
+    "url": "#",
+    "imageUrl": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400",
+    "badge": "Popular",
+    "isFeatured": true,
+    "uploadDate": "2024-01-08T00:00:00",
+    "fileSize": "450 MB"
+  },
+  {
+    "id": "res-3",
+    "title": "Repositorio: Proyectos de Ejemplo",
+    "description": "Colección de proyectos completos en GitHub para practicar y aprender buenas prácticas.",
+    "category": "Código",
+    "type": "code",
+    "url": "https://github.com/lumina-examples",
+    "imageUrl": "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400",
+    "isFeatured": false,
+    "uploadDate": "2024-01-05T00:00:00"
+  },
+  {
+    "id": "res-4",
+    "title": "SQL Cheat Sheet",
+    "description": "Hoja de referencia rápida con los comandos SQL más utilizados y ejemplos.",
+    "category": "Bases de Datos",
+    "type": "pdf",
+    "url": "#",
+    "imageUrl": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=400",
+    "isFeatured": false,
+    "uploadDate": "2024-01-03T00:00:00",
+    "fileSize": "1.2 MB"
+  },
+  {
+    "id": "res-5",
+    "title": "Documentación Oficial de Node.js",
+    "description": "Enlace directo a la documentación oficial de Node.js con guías y API reference.",
+    "category": "Backend",
+    "type": "link",
+    "url": "https://nodejs.org/docs",
+    "isFeatured": false,
+    "uploadDate": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "res-6",
+    "title": "Clean Code: Principios y Prácticas",
+    "description": "Libro digital sobre cómo escribir código limpio, mantenible y profesional.",
+    "category": "Arquitectura",
+    "type": "book",
+    "url": "#",
+    "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
+    "badge": "Recomendado",
+    "isFeatured": true,
+    "uploadDate": "2023-12-28T00:00:00",
+    "fileSize": "5.8 MB"
+  }
+]

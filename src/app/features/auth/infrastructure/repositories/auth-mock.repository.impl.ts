@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { User } from '../../domain/models/user.model';
 import { LoginCredentials } from '../../domain/models/login-credentials.model';
-import { mockLogin } from '../../../../core/mock-data/student.mock';
+import { HttpClient } from '@angular/common/http';
 
 /**
  * Implementación Mock del repositorio de autenticación
- * Permite login sin backend usando datos estáticos
+ * Carga usuarios desde JSON para desarrollo sin backend
  */
 @Injectable({
   providedIn: 'root',
@@ -16,23 +16,28 @@ import { mockLogin } from '../../../../core/mock-data/student.mock';
 export class AuthMockRepositoryImpl extends AuthRepository {
   private currentUser: User | null = null;
 
+  constructor(private http: HttpClient) {
+    super();
+  }
+
   override login(credentials: LoginCredentials): Observable<User> {
     console.log('🔐 [AUTH MOCK] Login attempt:', credentials.username);
 
-    // Simular validación (acepta cualquier credencial para desarrollo)
-    const user = mockLogin(credentials.username, credentials.password);
+    // Cargar usuario desde JSON
+    return this.http.get<any[]>('/assets/mock-data/users/students.json').pipe(
+      map((users) => {
+        const user = users[0]; // Tomar el primer usuario por defecto
+        console.log('✅ [AUTH MOCK] Login successful:', user.fullName);
+        this.currentUser = user;
 
-    if (user) {
-      console.log('✅ [AUTH MOCK] Login successful:', user.fullName);
-      this.currentUser = user;
-      // Guardar en localStorage para persistencia
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      localStorage.setItem('token', user.token);
-      return of(user).pipe(delay(500)); // Simular latencia de red
-    }
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem('token', user.token);
 
-    console.error('❌ [AUTH MOCK] Login failed');
-    throw new Error('Credenciales inválidas');
+        return user;
+      }),
+      delay(500), // Simular latencia de red
+    );
   }
 
   override logout(): void {

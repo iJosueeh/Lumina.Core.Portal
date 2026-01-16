@@ -1,0 +1,49 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "codigo": "EST-2021-001234",
+    "nombres": "María Fernanda",
+    "apellidoPaterno": "Rodríguez",
+    "apellidoMaterno": "García",
+    "email": "maria.rodriguez@lumina.edu.pe",
+    "telefono": "+51 987 654 321",
+    "fechaNacimiento": "2000-05-15",
+    "dni": "72345678",
+    "fotoUrl": "https://ui-avatars.com/api/?name=Maria+Rodriguez&background=3b82f6&color=fff&size=256",
+    "biografia": "Estudiante apasionada por el desarrollo de software y la tecnología. Me especializo en desarrollo web full stack y arquitectura de software. Siempre buscando aprender nuevas tecnologías y mejorar mis habilidades.",
+    "carrera": {
+      "id": "carr-001",
+      "nombre": "Ingeniería de Software",
+      "facultad": "Facultad de Ingeniería"
+    },
+    "ciclo": 7,
+    "modalidad": "Presencial",
+    "turno": "Mañana",
+    "sede": "Lima - Campus Principal",
+    "fechaIngreso": "2021-03-15",
+    "fechaEgresoPrevista": "2026-12-20",
+    "direccion": {
+      "departamento": "Lima",
+      "provincia": "Lima",
+      "distrito": "Miraflores",
+      "calle": "Av. Larco 1234, Piso 5, Dpto. 502",
+      "referencia": "Frente al parque Kennedy, edificio azul"
+    },
+    "contactoEmergencia": {
+      "nombre": "Juan Carlos Rodríguez Pérez",
+      "relacion": "Padre",
+      "telefono": "+51 987 123 456"
+    },
+    "redesSociales": {
+      "linkedin": "https://linkedin.com/in/maria-rodriguez-dev",
+      "github": "https://github.com/mariarodriguez",
+      "instagram": "https://instagram.com/maria.codes",
+      "twitter": "https://twitter.com/maria_dev",
+      "portfolio": "https://mariarodriguez.dev",
+      "medium": "https://medium.com/@maria.rodriguez"
+    },
+    "promedioGeneral": 16.4,
+    "creditosAprobados": 145,
+    "totalCreditos": 200
+  }
+]

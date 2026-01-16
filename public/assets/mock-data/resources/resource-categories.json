@@ -1,0 +1,44 @@
+[
+  {
+    "id": "cat-1",
+    "name": "Programación",
+    "icon": "code",
+    "description": "Recursos sobre lenguajes de programación y lógica",
+    "count": 12
+  },
+  {
+    "id": "cat-2",
+    "name": "Frontend",
+    "icon": "layout",
+    "description": "Frameworks y herramientas de desarrollo frontend",
+    "count": 8
+  },
+  {
+    "id": "cat-3",
+    "name": "Backend",
+    "icon": "server",
+    "description": "Desarrollo de APIs y servicios backend",
+    "count": 10
+  },
+  {
+    "id": "cat-4",
+    "name": "Bases de Datos",
+    "icon": "database",
+    "description": "SQL, NoSQL y diseño de bases de datos",
+    "count": 6
+  },
+  {
+    "id": "cat-5",
+    "name": "Arquitectura",
+    "icon": "layers",
+    "description": "Patrones de diseño y arquitectura de software",
+    "count": 7
+  },
+  {
+    "id": "cat-6",
+    "name": "DevOps",
+    "icon": "git-branch",
+    "description": "CI/CD, Docker, Kubernetes y automatización",
+    "count": 5
+  }
+]

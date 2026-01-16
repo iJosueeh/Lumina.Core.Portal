@@ -11,6 +11,7 @@ import { CoursesRepository } from '@features/student/domain/repositories/courses
 import { CoursesHttpRepositoryImpl } from '@features/student/infrastructure/repositories/courses-http.repository.impl';
 import { AssignmentsRepository } from '@features/student/domain/repositories/assignments.repository';
 import { AssignmentsHttpRepositoryImpl } from '@features/student/infrastructure/repositories/assignments-http.repository.impl';
+import { AssignmentsMockRepositoryImpl } from '@features/student/infrastructure/repositories/assignments-mock.repository.impl';
 import { AnnouncementsRepository } from '@features/student/domain/repositories/announcements.repository';
 import { AnnouncementsHttpRepositoryImpl } from '@features/student/infrastructure/repositories/announcements-http.repository.impl';
 import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
@@ -48,7 +49,12 @@ export const appConfig: ApplicationConfig = {
       provide: CoursesRepository,
       useClass: environment.useMockData ? CoursesMockRepositoryImpl : CoursesHttpRepositoryImpl,
     },
-    { provide: AssignmentsRepository, useClass: AssignmentsHttpRepositoryImpl },
+    {
+      provide: AssignmentsRepository,
+      useClass: environment.useMockData
+        ? AssignmentsMockRepositoryImpl
+        : AssignmentsHttpRepositoryImpl,
+    },
     {
       provide: AnnouncementsRepository,
       useClass: environment.useMockData

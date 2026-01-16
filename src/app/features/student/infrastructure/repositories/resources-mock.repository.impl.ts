@@ -1,49 +1,63 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
 import { ResourcesRepository } from '../../domain/repositories/resources.repository';
 import { Resource } from '../../domain/models/resource.model';
-import {
-  getMockResources,
-  getMockFeaturedResources,
-  getMockResourcesByCategory,
-} from '../../../../core/mock-data/announcements-resources.mock';
+import { HttpClient } from '@angular/common/http';
 
-/**
- * Implementación Mock del repositorio de recursos
- * Usa datos estáticos para desarrollo sin backend
- */
 @Injectable({
   providedIn: 'root',
 })
 export class ResourcesMockRepositoryImpl extends ResourcesRepository {
+  constructor(private http: HttpClient) {
+    super();
+  }
+
   override getResources(category?: string, type?: string, search?: string): Observable<Resource[]> {
-    let resources = getMockResources();
+    return this.http.get<Resource[]>('assets/mock-data/resources/resources.json').pipe(
+      map((resources) => {
+        let filtered = resources.map((r) => ({
+          ...r,
+          uploadDate: new Date(r.uploadDate),
+        }));
 
-    // Filtrar por categoría si se proporciona
-    if (category && category !== 'Todos') {
-      resources = getMockResourcesByCategory(category);
-    }
+        // Filtrar por categoría si se proporciona
+        if (category && category !== 'Todos') {
+          filtered = filtered.filter((r) => r.category === category);
+        }
 
-    // Filtrar por tipo si se proporciona
-    if (type) {
-      resources = resources.filter((r) => r.type === type);
-    }
+        // Filtrar por tipo si se proporciona
+        if (type) {
+          filtered = filtered.filter((r) => r.type === type);
+        }
 
-    // Filtrar por búsqueda si se proporciona
-    if (search) {
-      const searchLower = search.toLowerCase();
-      resources = resources.filter(
-        (r) =>
-          r.title.toLowerCase().includes(searchLower) ||
-          r.description.toLowerCase().includes(searchLower),
-      );
-    }
+        // Filtrar por búsqueda si se proporciona
+        if (search) {
+          const searchLower = search.toLowerCase();
+          filtered = filtered.filter(
+            (r) =>
+              r.title.toLowerCase().includes(searchLower) ||
+              r.description.toLowerCase().includes(searchLower),
+          );
+        }
 
-    return of(resources).pipe(delay(300));
+        return filtered;
+      }),
+      delay(300),
+    );
   }
 
   override getFeaturedResources(): Observable<Resource[]> {
-    return of(getMockFeaturedResources()).pipe(delay(300));
+    return this.http.get<Resource[]>('assets/mock-data/resources/resources.json').pipe(
+      map((resources) =>
+        resources
+          .filter((r) => r.isFeatured)
+          .map((r) => ({
+            ...r,
+            uploadDate: new Date(r.uploadDate),
+          })),
+      ),
+      delay(300),
+    );
   }
 }

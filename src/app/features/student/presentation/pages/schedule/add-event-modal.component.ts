@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CalendarEvent } from '../../../domain/models/calendar-event.model';
-import { addMockEvent } from '../../../../../core/mock-data/schedule.mock';
+import { CalendarEvent } from '@features/student/domain/models/calendar-event.model';
 
 type EventCategory = 'class' | 'exam' | 'workshop' | 'meeting' | 'personal';
 
@@ -113,9 +112,28 @@ export class AddEventModalComponent {
         isUrgent: formValue.category === 'exam',
       };
 
-      // Guardar en localStorage
-      const savedEvents = addMockEvent(newEvent as CalendarEvent);
-      const savedEvent = savedEvents[savedEvents.length - 1];
+      // Guardar en localStorage directamente (simulando addMockEvent)
+      const stored = localStorage.getItem('schedule_events');
+      let events: CalendarEvent[] = [];
+
+      if (stored) {
+        try {
+          events = JSON.parse(stored);
+        } catch (error) {
+          console.error('❌ Error parsing stored events:', error);
+        }
+      }
+
+      // Generar ID único
+      const eventToSave: CalendarEvent = {
+        ...newEvent,
+        id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      } as CalendarEvent;
+
+      events.push(eventToSave);
+      localStorage.setItem('schedule_events', JSON.stringify(events));
+
+      const savedEvent = eventToSave;
 
       // Emitir evento
       this.eventAdded.emit(savedEvent);

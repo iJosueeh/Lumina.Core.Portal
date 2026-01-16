@@ -1,0 +1,32 @@
+[
+  {
+    "id": "8",
+    "title": "Examen Parcial",
+    "course": "Base de Datos II",
+    "date": "2026-01-15T10:00:00",
+    "time": "10:00 AM",
+    "month": "ENE",
+    "day": 15,
+    "daysUntil": "En 2 días"
+  },
+  {
+    "id": "14",
+    "title": "Presentación Proyecto",
+    "course": "Ingeniería de Software",
+    "date": "2026-01-17T10:00:00",
+    "time": "10:00 AM",
+    "month": "ENE",
+    "day": 17,
+    "daysUntil": "En 4 días"
+  },
+  {
+    "id": "16",
+    "title": "Entrega de Trabajo",
+    "course": "Arquitectura de Software",
+    "date": "2026-01-20T23:59:00",
+    "time": "11:59 PM",
+    "month": "ENE",
+    "day": 20,
+    "daysUntil": "En 7 días"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "notificaciones": {
+    "email": true,
+    "push": true,
+    "sms": false
+  },
+  "privacidad": {
+    "perfilPublico": true,
+    "mostrarEmail": false,
+    "mostrarTelefono": false,
+    "mostrarRedesSociales": true
+  },
+  "preferencias": {
+    "idioma": "es",
+    "tema": "auto",
+    "zonaHoraria": "America/Lima"
+  }
+}

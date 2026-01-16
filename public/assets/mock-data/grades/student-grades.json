@@ -1,0 +1,219 @@
+[
+  {
+    "id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "nombre": "Desarrollo Web Full Stack",
+    "imagenUrl": "https://eiposgrados.com/wp-content/uploads/2023/06/web-herramientas-fullstack-desarrollo.jpg",
+    "codigo": "DW-2024-01",
+    "profesor": "Prof. Carlos Mendoza",
+    "creditos": 4,
+    "avance": 75,
+    "promedio": 17.5,
+    "estado": "En Curso",
+    "evaluaciones": [
+      {
+        "actividad": "Examen Parcial - HTML & CSS",
+        "peso": 20,
+        "nota": 18,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto: Landing Page Responsiva",
+        "peso": 25,
+        "nota": 19,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Laboratorio: JavaScript ES6+",
+        "peso": 15,
+        "nota": 16,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto Final: Aplicación CRUD",
+        "peso": 40,
+        "nota": 0,
+        "estado": "Pendiente"
+      }
+    ],
+    "promedioClase": 15.8,
+    "posicionamiento": 3,
+    "totalEstudiantes": 45,
+    "isExpanded": false
+  },
+  {
+    "id": "2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7q",
+    "nombre": "Base de Datos Relacionales",
+    "imagenUrl": "https://universidadeuropea.com/resources/media/images/bases-datos-big-data-1200x630.original.jpg",
+    "codigo": "BD-2024-01",
+    "profesor": "Prof. Ana Martínez",
+    "creditos": 4,
+    "avance": 90,
+    "promedio": 16.2,
+    "estado": "En Curso",
+    "evaluaciones": [
+      {
+        "actividad": "Examen: Modelo Entidad-Relación",
+        "peso": 20,
+        "nota": 17,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Práctica: Normalización de BD",
+        "peso": 15,
+        "nota": 15,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto: Diseño de Base de Datos",
+        "peso": 30,
+        "nota": 18,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Laboratorio: SQL Avanzado",
+        "peso": 20,
+        "nota": 14,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Examen Final",
+        "peso": 15,
+        "nota": 0,
+        "estado": "Pendiente"
+      }
+    ],
+    "promedioClase": 14.5,
+    "posicionamiento": 8,
+    "totalEstudiantes": 42,
+    "isExpanded": false
+  },
+  {
+    "id": "3c4d5e6f-7g8h-9i0j-1k2l-3m4n5o6p7q8r",
+    "nombre": "Programación Orientada a Objetos",
+    "imagenUrl": "https://universidadeuropea.com/resources/media/images/programacion-orientada-objetos-1200x630.original.jpg",
+    "codigo": "POO-2024-01",
+    "profesor": "Prof. Roberto Sánchez",
+    "creditos": 5,
+    "avance": 100,
+    "promedio": 18.0,
+    "estado": "Aprobado",
+    "evaluaciones": [
+      {
+        "actividad": "Examen: Conceptos de POO",
+        "peso": 20,
+        "nota": 19,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto: Sistema de Biblioteca",
+        "peso": 30,
+        "nota": 18,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Laboratorio: Herencia y Polimorfismo",
+        "peso": 15,
+        "nota": 17,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto Final: Aplicación Empresarial",
+        "peso": 35,
+        "nota": 18,
+        "estado": "Completado"
+      }
+    ],
+    "promedioClase": 16.2,
+    "posicionamiento": 2,
+    "totalEstudiantes": 38,
+    "isExpanded": false
+  },
+  {
+    "id": "4d5e6f7g-8h9i-0j1k-2l3m-4n5o6p7q8r9s",
+    "nombre": "Arquitectura de Software",
+    "imagenUrl": "https://www.emagister.com/blog/wp-content/uploads/2021/12/GettyImages-1258130591.jpg",
+    "codigo": "AS-2024-01",
+    "profesor": "Prof. Laura Vega",
+    "creditos": 4,
+    "avance": 60,
+    "promedio": 15.8,
+    "estado": "En Curso",
+    "evaluaciones": [
+      {
+        "actividad": "Examen: Patrones de Diseño",
+        "peso": 25,
+        "nota": 16,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto: Microservicios",
+        "peso": 35,
+        "nota": 17,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Presentación: Clean Architecture",
+        "peso": 20,
+        "nota": 14,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto Final: Sistema Distribuido",
+        "peso": 20,
+        "nota": 0,
+        "estado": "Pendiente"
+      }
+    ],
+    "promedioClase": 15.0,
+    "posicionamiento": 12,
+    "totalEstudiantes": 35,
+    "isExpanded": false
+  },
+  {
+    "id": "5e6f7g8h-9i0j-1k2l-3m4n-5o6p7q8r9s0t",
+    "nombre": "Algoritmos y Estructuras de Datos",
+    "imagenUrl": "https://media.licdn.com/dms/image/v2/D5612AQGwlH4nUL-zgw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1719200733354?e=2147483647&v=beta&t=4_QRyn1WFk-E0p4HCfQ-zYmadfB0TAYzhHZm5zPFs3E",
+    "codigo": "AED-2024-01",
+    "profesor": "Prof. Diego Torres",
+    "creditos": 5,
+    "avance": 45,
+    "promedio": 14.5,
+    "estado": "En Riesgo",
+    "evaluaciones": [
+      {
+        "actividad": "Examen: Complejidad Algorítmica",
+        "peso": 20,
+        "nota": 13,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Laboratorio: Árboles y Grafos",
+        "peso": 25,
+        "nota": 15,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Proyecto: Algoritmos de Ordenamiento",
+        "peso": 20,
+        "nota": 16,
+        "estado": "Completado"
+      },
+      {
+        "actividad": "Examen Parcial",
+        "peso": 15,
+        "nota": 0,
+        "estado": "Pendiente"
+      },
+      {
+        "actividad": "Proyecto Final: Optimización",
+        "peso": 20,
+        "nota": 0,
+        "estado": "Pendiente"
+      }
+    ],
+    "promedioClase": 14.8,
+    "posicionamiento": 25,
+    "totalEstudiantes": 40,
+    "isExpanded": false
+  }
+]

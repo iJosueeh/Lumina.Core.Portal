@@ -28,6 +28,18 @@ export class DashboardComponent implements OnInit {
   isLoadingAssignments = true;
   isLoadingAnnouncements = true;
 
+  // View Controls
+  assignmentsLimit = 3;
+  announcementsLimit = 3;
+
+  toggleAssignmentsView(): void {
+    this.assignmentsLimit = this.assignmentsLimit === 3 ? this.assignments.length : 3;
+  }
+
+  toggleAnnouncementsView(): void {
+    this.announcementsLimit = this.announcementsLimit === 3 ? this.announcements.length : 3;
+  }
+
   constructor(
     private getCoursesUseCase: GetStudentCoursesUseCase,
     private getAssignmentsUseCase: GetUpcomingAssignmentsUseCase,

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { AccountRepository } from '../../domain/repositories/account.repository';
 import { AccountSettings } from '../../domain/models/student-profile.model';
-import { getMockAccountSettings } from '../../../../core/mock-data/student.mock';
+import { HttpClient } from '@angular/common/http';
 
 /**
  * Implementación Mock del repositorio de cuenta
@@ -15,6 +15,10 @@ import { getMockAccountSettings } from '../../../../core/mock-data/student.mock'
 export class AccountMockRepositoryImpl extends AccountRepository {
   private readonly SETTINGS_KEY = 'account_settings';
   private readonly ACCOUNT_STATUS_KEY = 'account_status';
+
+  constructor(private http: HttpClient) {
+    super();
+  }
 
   override changePassword(oldPassword: string, newPassword: string): Observable<boolean> {
     console.log('🔐 [ACCOUNT MOCK] Changing password');
@@ -102,10 +106,35 @@ export class AccountMockRepositoryImpl extends AccountRepository {
     const settings = localStorage.getItem(this.SETTINGS_KEY);
     const user = localStorage.getItem('currentUser');
 
+    // Si no hay settings guardados, cargar desde JSON
+    if (!settings) {
+      return this.http
+        .get<AccountSettings>('/assets/mock-data/profiles/account-settings.json')
+        .pipe(
+          map((defaultSettings) => {
+            const exportData = {
+              exportDate: new Date().toISOString(),
+              profile: profile ? JSON.parse(profile) : null,
+              settings: defaultSettings,
+              user: user ? JSON.parse(user) : null,
+            };
+
+            // Convertir a JSON y crear Blob
+            const json = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+
+            console.log('✅ [ACCOUNT MOCK] Data exported successfully');
+            return blob;
+          }),
+          delay(500),
+        );
+    }
+
+    // Si hay settings guardados, usar esos
     const exportData = {
       exportDate: new Date().toISOString(),
       profile: profile ? JSON.parse(profile) : null,
-      settings: settings ? JSON.parse(settings) : getMockAccountSettings(),
+      settings: JSON.parse(settings),
       user: user ? JSON.parse(user) : null,
     };
 
