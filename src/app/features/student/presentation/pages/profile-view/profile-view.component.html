@@ -27,16 +27,16 @@
 
 <!-- Profile Content -->
 @if (profile() && !isLoading()) {
-  <div class="max-w-6xl mx-auto p-6 space-y-6">
+  <div class="max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
     <!-- Header Card -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
       <!-- Cover Image -->
-      <div class="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+      <div class="h-24 md:h-32 lg:h-40 bg-gradient-to-r from-blue-500 to-purple-600"></div>
 
       <!-- Profile Info -->
-      <div class="relative px-6 pb-6">
+      <div class="relative px-4 md:px-6 pb-4 md:pb-6">
         <!-- Profile Photo -->
-        <div class="absolute -top-16 left-6">
+        <div class="absolute -top-10 md:-top-16 left-4 md:left-6">
           <img
             [src]="
               profile()!.fotoUrl ||
@@ -45,15 +45,15 @@
                 '&background=3b82f6&color=fff&size=128'
             "
             [alt]="fullName()"
-            class="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+            class="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
           />
         </div>
 
         <!-- Actions -->
-        <div class="flex justify-end pt-4 space-x-3">
+        <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 sm:gap-3">
           <button
             (click)="copyProfileLink()"
-            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+            class="w-full sm:w-auto px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm md:text-base"
           >
             <span class="flex items-center gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,22 +69,24 @@
           </button>
           <a
             routerLink="/student/profile/edit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm md:text-base"
           >
             Editar Perfil
           </a>
           <a
             routerLink="/student/settings"
-            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm md:text-base"
           >
             Configuración
           </a>
         </div>
 
         <!-- Name and Info -->
-        <div class="mt-20">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ fullName() }}</h1>
-          <p class="text-lg text-gray-600 dark:text-gray-400 mt-1">
+        <div class="mt-12 md:mt-20">
+          <h1 class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+            {{ fullName() }}
+          </h1>
+          <p class="text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400 mt-1">
             {{ profile()!.carrera.nombre }}
           </p>
 
@@ -142,7 +144,7 @@
       <!-- Left Column -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Personal Information -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <svg
               class="w-6 h-6 text-blue-600"
@@ -196,7 +198,7 @@
         </div>
 
         <!-- Academic Information -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <svg
               class="w-6 h-6 text-green-600"
@@ -271,9 +273,9 @@
 
         <!-- Social Networks -->
         @if (socialLinksArray().length > 0) {
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
             <h2
-              class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+              class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
             >
               <svg
                 class="w-6 h-6 text-purple-600"
@@ -321,7 +323,7 @@
       <!-- Right Column -->
       <div class="space-y-6">
         <!-- Emergency Contact -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -358,7 +360,7 @@
 
         <!-- Quick Stats -->
         <div
-          class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 text-white"
+          class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg p-4 md:p-6 text-white"
         >
           <h3 class="text-lg font-bold mb-4">Estadísticas Rápidas</h3>
           <div class="space-y-3">
