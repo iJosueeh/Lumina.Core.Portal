@@ -5,7 +5,7 @@ import { GetStudentGradesUseCase } from '@features/student/application/use-cases
 import { GetGradeStatsUseCase } from '@features/student/application/use-cases/get-grade-stats.usecase';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
-type SemesterFilter = '2024-1' | '2023-II' | '2023-I' | 'all';
+type SemesterFilter = '2026' | '2025' | 'all';
 
 @Component({
   selector: 'app-grades',
@@ -15,14 +15,13 @@ type SemesterFilter = '2024-1' | '2023-II' | '2023-I' | 'all';
   styles: ``,
 })
 export class GradesComponent implements OnInit {
-  activeSemester: SemesterFilter = '2024-1';
+  activeSemester: SemesterFilter = '2026';
   isLoading = true;
   errorMessage = '';
 
   semesters = [
-    { id: '2024-1' as SemesterFilter, label: '2024-I' },
-    { id: '2023-II' as SemesterFilter, label: '2023-II' },
-    { id: '2023-I' as SemesterFilter, label: '2023-I' },
+    { id: '2026' as SemesterFilter, label: '2026' },
+    { id: '2025' as SemesterFilter, label: '2025' },
     { id: 'all' as SemesterFilter, label: 'Todos' },
   ];
 
@@ -97,9 +96,8 @@ export class GradesComponent implements OnInit {
         // Asumir que los cursos tienen una propiedad semester o usar lógica de fecha
         // Por ahora, filtrar por los primeros cursos para cada semestre
         const index = this.allCourses.indexOf(course);
-        if (semester === '2024-1') return index < 3;
-        if (semester === '2023-II') return index >= 3 && index < 5;
-        if (semester === '2023-I') return index >= 5;
+        if (semester === '2026') return index < 3;
+        if (semester === '2025') return index >= 3 && index < 5;
         return true;
       });
     }

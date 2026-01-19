@@ -46,9 +46,9 @@ export const routes: Routes = [
         title: 'Detalle del Curso - Portal Estudiante',
       },
       {
-        path: 'grades',
+        path: 'evaluations',
         component: GradesComponent,
-        title: 'Mis Calificaciones - Portal Estudiante',
+        title: 'Mis Evaluaciones - Portal Estudiante',
       },
       {
         path: 'schedule',

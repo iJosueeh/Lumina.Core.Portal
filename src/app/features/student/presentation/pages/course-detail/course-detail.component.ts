@@ -11,9 +11,7 @@ import {
   ForumPost,
   ForumComment,
   Announcement,
-  AnnouncementAttachment,
-  CourseGrade,
-  Evaluation,
+  AnnouncementAttachment
 } from '@features/student/domain/models/course-detail.model';
 import { Assignment } from '@features/student/domain/models/assignment.model';
 
@@ -34,8 +32,8 @@ export class CourseDetailComponent implements OnInit {
     { id: 'description' as TabType, label: 'Descripción', icon: 'document' },
     { id: 'content' as TabType, label: 'Contenido', icon: 'book' },
     { id: 'materials' as TabType, label: 'Materiales', icon: 'folder' },
-    { id: 'forum' as TabType, label: 'Foro', icon: 'chat' },
-    { id: 'announcements' as TabType, label: 'Anuncios', icon: 'megaphone' },
+    // { id: 'forum' as TabType, label: 'Foro', icon: 'chat' }, // Temporalmente deshabilitado
+    // { id: 'announcements' as TabType, label: 'Anuncios', icon: 'megaphone' }, // Temporalmente deshabilitado
     { id: 'grades' as TabType, label: 'Calificaciones', icon: 'chart' },
   ];
 

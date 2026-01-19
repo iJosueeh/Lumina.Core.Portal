@@ -1,39 +1,44 @@
-<div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-dark-bg">
+<div
+  class="flex h-screen overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942]"
+>
   <!-- Mobile Overlay -->
   <div
     *ngIf="isSidebarOpen"
     (click)="closeSidebar()"
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+    class="fixed inset-0 bg-black bg-opacity-70 z-40 lg:hidden backdrop-blur-sm"
   ></div>
 
   <!-- Sidebar -->
   <aside
     [class.translate-x-0]="isSidebarOpen"
-    class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
+    class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-navy-800/95 backdrop-blur-xl border-r border-teal-500/10 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl"
+    role="navigation"
+    aria-label="Navegación principal"
   >
     <!-- User Profile -->
-    <div class="p-6 border-b border-gray-200 dark:border-dark-border">
+    <div class="p-6 border-b border-teal-500/10">
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg"
+          class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/30"
         >
           {{ userName.charAt(0) }}
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="font-semibold text-gray-900 dark:text-dark-text truncate">{{ userName }}</h3>
-          <p class="text-sm text-gray-500 dark:text-dark-text-secondary truncate">{{ userRole }}</p>
+          <h3 class="font-semibold text-white truncate">{{ userName }}</h3>
+          <p class="text-sm text-gray-400 truncate">{{ userRole }}</p>
         </div>
       </div>
     </div>
 
     <!-- Navigation Menu -->
-    <nav class="flex-1 p-4 overflow-y-auto">
-      <ul class="space-y-1">
+    <nav class="flex-1 p-4 overflow-y-auto" aria-label="Menú principal">
+      <ul class="space-y-1" role="list">
         <li *ngFor="let item of menuItems">
           <a
             [routerLink]="item.route"
-            routerLinkActive="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors relative group"
+            routerLinkActive="bg-teal-500/20 text-teal-300 border-l-4 border-teal-400"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-all relative group"
+            [attr.aria-label]="item.label"
           >
             <!-- Icon Placeholder -->
             <span class="w-5 h-5 flex items-center justify-center">

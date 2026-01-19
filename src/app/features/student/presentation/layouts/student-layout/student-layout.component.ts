@@ -25,7 +25,7 @@ export class StudentLayoutComponent implements OnInit {
   menuItems: MenuItem[] = [
     { icon: 'dashboard', label: 'Dashboard', route: '/student/dashboard' },
     { icon: 'book', label: 'Mis Cursos', route: '/student/courses' },
-    { icon: 'chart', label: 'Calificaciones', route: '/student/grades' },
+    { icon: 'chart', label: 'Evaluaciones', route: '/student/evaluations' },
     { icon: 'calendar', label: 'Horario', route: '/student/schedule' },
     // { icon: 'folder', label: 'Recursos', route: '/student/resources' } // Temporalmente deshabilitado
     // { icon: 'bell', label: 'Notificaciones', route: '/student/notifications', badge: 3 }
