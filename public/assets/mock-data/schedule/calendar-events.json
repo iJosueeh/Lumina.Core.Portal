@@ -10,7 +10,9 @@
     "color": "bg-blue-600",
     "dayOfWeek": 0,
     "date": "2026-01-13T08:00:00",
-    "isUrgent": false
+    "isUrgent": false,
+    "professor": "Prof. Carlos Mendoza",
+    "description": "Clase teórica sobre patrones de diseño avanzados. Revisaremos Singleton, Factory y Observer con ejemplos prácticos en Java."
   },
   {
     "id": "2",
@@ -36,7 +38,10 @@
     "color": "bg-purple-600",
     "dayOfWeek": 0,
     "date": "2026-01-13T14:00:00",
-    "isUrgent": false
+    "isUrgent": false,
+    "professor": "Prof. Ana Martínez",
+    "description": "Sesión virtual sobre arquitecturas de microservicios. Analizaremos casos de uso reales y mejores prácticas.",
+    "meetingLink": "https://meet.google.com/abc-defg-hij"
   },
   {
     "id": "4",
@@ -101,7 +106,9 @@
     "color": "bg-red-600",
     "dayOfWeek": 2,
     "date": "2026-01-15T10:00:00",
-    "isUrgent": true
+    "isUrgent": true,
+    "professor": "Prof. Roberto Sánchez",
+    "description": "Examen parcial que cubre los temas: normalización, transacciones, índices y optimización de consultas. Duración: 2 horas. Traer calculadora y lápiz."
   },
   {
     "id": "9",
@@ -179,7 +186,9 @@
     "color": "bg-red-600",
     "dayOfWeek": 4,
     "date": "2026-01-17T10:00:00",
-    "isUrgent": true
+    "isUrgent": true,
+    "professor": "Prof. Laura Vega",
+    "description": "Presentación final del proyecto de Ingeniería de Software. Cada equipo tendrá 15 minutos para exponer + 5 minutos de preguntas. Traer laptop y proyector."
   },
   {
     "id": "15",

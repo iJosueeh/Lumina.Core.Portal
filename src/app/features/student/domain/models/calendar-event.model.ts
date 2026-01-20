@@ -10,6 +10,9 @@ export interface CalendarEvent {
   dayOfWeek: number; // 0 = Lun, 1 = Mar, etc.
   date: Date;
   isUrgent?: boolean;
+  professor?: string;
+  description?: string;
+  meetingLink?: string;
 }
 
 export interface UpcomingEvent {
@@ -21,4 +24,13 @@ export interface UpcomingEvent {
   month: string;
   day: number;
   daysUntil: string;
+}
+
+export interface MonthDay {
+  date: Date;
+  number: number;
+  isToday: boolean;
+  isCurrentMonth: boolean;
+  events: CalendarEvent[];
+  eventCount: number;
 }

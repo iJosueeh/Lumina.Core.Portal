@@ -33,148 +33,181 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex items-center justify-center py-12">
-    <div class="text-center">
-      <div
-        class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
-      ></div>
-      <p class="mt-4 text-gray-600 dark:text-dark-text-secondary">Cargando calificaciones...</p>
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+        ></div>
+        <p class="mt-4 text-gray-600 dark:text-dark-text-secondary">Cargando calificaciones...</p>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Error State -->
-  <div
-    *ngIf="errorMessage && !isLoading"
-    class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-8"
-  >
-    <div class="flex items-center gap-3">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6 text-red-600 dark:text-red-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-      <p class="text-red-800 dark:text-red-200">{{ errorMessage }}</p>
+  @if (errorMessage && !isLoading) {
+    <div
+      class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-8"
+    >
+      <div class="flex items-center gap-3">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-red-600 dark:text-red-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p class="text-red-800 dark:text-red-200">{{ errorMessage }}</p>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Content -->
-  <div *ngIf="!isLoading && !errorMessage">
+  @if (!isLoading && !errorMessage) {
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
       <!-- Promedio Ponderado -->
-      <div
-        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-4 md:p-6"
-      >
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-gray-600 dark:text-dark-text-secondary"
-            >PROMEDIO PONDERADO</span
-          >
+      <article class="gradient-border-card card-3d">
+        <div class="p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-bold text-gray-400 uppercase tracking-wide"
+              >PROMEDIO PONDERADO</span
+            >
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-3xl md:text-4xl font-bold text-white">
+                {{ stats.promedioGeneral }}
+              </p>
+              <div class="flex items-center gap-1 text-sm text-teal-400 mt-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                +0.5 vs. Ciclo anterior
+              </div>
+            </div>
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg shadow-teal-500/30"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="w-6 h-6 text-white"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-dark-text mb-1">
-          {{ stats.promedioGeneral }}
-        </div>
-        <div class="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          +0.5 vs. Ciclo anterior
-        </div>
-      </div>
+      </article>
 
       <!-- Créditos Aprobados -->
-      <div
-        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-4 md:p-6"
-      >
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-gray-600 dark:text-dark-text-secondary"
-            >CRÉDITOS APROBADOS</span
-          >
+      <article class="gradient-border-card card-3d">
+        <div class="p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-bold text-gray-400 uppercase tracking-wide"
+              >CRÉDITOS APROBADOS</span
+            >
+          </div>
+          <div class="text-4xl font-bold text-white mb-1">
+            {{ stats.creditosAprobados }}
+          </div>
+          <div class="text-sm text-gray-400">/ {{ stats.totalCreditos }}</div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-dark-text mb-1">
-          {{ stats.creditosAprobados }}
-        </div>
-        <div class="text-sm text-gray-600 dark:text-dark-text-secondary">
-          / {{ stats.totalCreditos }}
-        </div>
-      </div>
+      </article>
 
       <!-- Cursos Completados -->
-      <div
-        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-4 md:p-6"
-      >
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-gray-600 dark:text-dark-text-secondary"
-            >CURSOS COMPLETADOS</span
-          >
+      <article class="gradient-border-card card-3d">
+        <div class="p-4 md:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-bold text-gray-400 uppercase tracking-wide"
+              >CURSOS COMPLETADOS</span
+            >
+          </div>
+          <div class="text-4xl font-bold text-white mb-1">
+            {{ stats.cursosCompletados }}
+          </div>
+          <div class="text-sm text-gray-400">En carrera actualmente</div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-dark-text mb-1">
-          {{ stats.cursosCompletados }}
-        </div>
-        <div class="text-sm text-gray-600 dark:text-dark-text-secondary">
-          En carrera actualmente
-        </div>
-      </div>
+      </article>
     </div>
 
     <!-- Filters and Actions -->
     <div
-      class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-4 md:p-6 mb-6"
+      class="bg-[#1a2942]/50 backdrop-blur-sm rounded-xl border border-teal-500/20 p-4 md:p-6 mb-6"
     >
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <!-- Semester Filters -->
         <div class="flex flex-wrap gap-2">
-          <button
-            *ngFor="let semester of semesters"
-            (click)="setSemester(semester.id)"
-            [class.bg-blue-600]="activeSemester === semester.id"
-            [class.text-white]="activeSemester === semester.id"
-            [class.bg-gray-100]="activeSemester !== semester.id"
-            [class.text-gray-700]="activeSemester !== semester.id"
-            class="px-4 py-2 rounded-lg font-medium transition-colors dark:bg-dark-bg dark:text-dark-text"
-          >
-            <svg
-              *ngIf="semester.id !== 'all'"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              class="w-4 h-4 inline mr-1"
+          @if (semesters.length === 0) {
+            <p class="text-gray-600 dark:text-gray-400">No hay semestres disponibles</p>
+          }
+
+          @for (semester of semesters; track semester.id) {
+            <button
+              (click)="setSemester(semester.id)"
+              [class.bg-gradient-to-r]="activeSemester === semester.id"
+              [class.from-teal-500]="activeSemester === semester.id"
+              [class.to-cyan-600]="activeSemester === semester.id"
+              [class.text-white]="activeSemester === semester.id"
+              [class.shadow-lg]="activeSemester === semester.id"
+              [class.shadow-teal-500/30]="activeSemester === semester.id"
+              [class.bg-navy-700]="activeSemester !== semester.id"
+              [class.text-gray-300]="activeSemester !== semester.id"
+              [class.border]="activeSemester !== semester.id"
+              [class.border-teal-500/20]="activeSemester !== semester.id"
+              class="px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+              [attr.aria-pressed]="activeSemester === semester.id"
             >
-              <path
-                d="M5.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H6a.75.75 0 01-.75-.75V12zM6 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H6zM7.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H8a.75.75 0 01-.75-.75V12zM8 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H8zM9.25 10a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H10a.75.75 0 01-.75-.75V10zM10 11.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V12a.75.75 0 00-.75-.75H10zM9.25 14a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H10a.75.75 0 01-.75-.75V14zM12 9.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V10a.75.75 0 00-.75-.75H12zM11.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75V12zM12 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H12zM13.25 10a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H14a.75.75 0 01-.75-.75V10zM14 11.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V12a.75.75 0 00-.75-.75H14z"
-              />
-              <path
-                fill-rule="evenodd"
-                d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            {{ semester.label }}
-          </button>
+              <svg
+                *ngIf="semester.id !== 'all'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="w-4 h-4 inline mr-1"
+              >
+                <path
+                  d="M5.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H6a.75.75 0 01-.75-.75V12zM6 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H6zM7.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H8a.75.75 0 01-.75-.75V12zM8 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H8zM9.25 10a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H10a.75.75 0 01-.75-.75V10zM10 11.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V12a.75.75 0 00-.75-.75H10zM9.25 14a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H10a.75.75 0 01-.75-.75V14zM12 9.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V10a.75.75 0 00-.75-.75H12zM11.25 12a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75V12zM12 13.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V14a.75.75 0 00-.75-.75H12zM13.25 10a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H14a.75.75 0 01-.75-.75V10zM14 11.25a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75h.01a.75.75 0 00.75-.75V12a.75.75 0 00-.75-.75H14z"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              {{ semester.label }}
+            </button>
+          }
         </div>
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap gap-2">
           <button
             (click)="exportGrades()"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+            class="flex items-center gap-2 px-4 py-2 bg-[#1a2942] border border-teal-500/30 rounded-lg hover:bg-teal-500/10 hover:border-teal-500/50 transition-all text-gray-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -190,13 +223,11 @@
                 d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
               />
             </svg>
-            <span class="hidden sm:inline font-medium text-gray-700 dark:text-dark-text"
-              >Exportar</span
-            >
+            <span class="hidden sm:inline font-medium text-gray-200">Exportar</span>
           </button>
           <button
             (click)="printGrades()"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+            class="flex items-center gap-2 px-4 py-2 bg-[#1a2942] border border-teal-500/30 rounded-lg hover:bg-teal-500/10 hover:border-teal-500/50 transition-all text-gray-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -212,9 +243,7 @@
                 d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"
               />
             </svg>
-            <span class="hidden sm:inline font-medium text-gray-700 dark:text-dark-text"
-              >Imprimir</span
-            >
+            <span class="hidden sm:inline font-medium text-gray-200">Imprimir</span>
           </button>
         </div>
       </div>
@@ -222,133 +251,134 @@
 
     <!-- Mobile Cards View (< lg) -->
     <div class="lg:hidden space-y-4">
-      <div
-        *ngFor="let course of courses; let i = index"
-        class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden"
-      >
-        <!-- Card Header -->
-        <div class="p-4 border-b border-gray-200 dark:border-dark-border">
-          <div class="flex items-start gap-3">
-            <div
-              class="w-1 h-16 rounded-full flex-shrink-0"
-              [class.bg-blue-500]="course.estado === 'En Curso'"
-              [class.bg-green-500]="course.estado === 'Aprobado'"
-              [class.bg-red-500]="course.estado === 'En Riesgo'"
-            ></div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-bold text-gray-900 dark:text-dark-text text-base mb-1">
-                {{ course.nombre }}
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-dark-text-secondary">
-                {{ course.codigo }} • {{ course.profesor }}
-              </p>
-            </div>
-            <button
-              (click)="toggleCourse(course)"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors flex-shrink-0"
-            >
-              <svg
-                [class.rotate-180]="course.isExpanded"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5 transition-transform"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Card Body -->
-        <div class="p-4 space-y-3">
-          <!-- Créditos -->
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Créditos</span>
-            <span class="font-semibold text-gray-900 dark:text-dark-text">{{
-              course.creditos
-            }}</span>
-          </div>
-
-          <!-- Avance -->
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Avance</span>
-              <span class="text-sm font-medium text-gray-700 dark:text-dark-text"
-                >{{ course.avance }}%</span
-              >
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                class="bg-blue-600 h-2 rounded-full transition-all"
-                [style.width.%]="course.avance"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Promedio -->
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Promedio</span>
-            <span [class]="getPromedioColor(course.promedio)" class="text-xl font-bold">
-              {{ course.promedio }}
-            </span>
-          </div>
-
-          <!-- Estado -->
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600 dark:text-dark-text-secondary">Estado</span>
-            <span [class]="getEstadoColor(course.estado)" class="font-semibold">
-              {{ course.estado }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Expanded Details (Mobile) -->
+      @if (courses.length === 0) {
+        <p class="text-gray-600 dark:text-gray-400">No hay cursos disponibles</p>
+      }
+      @for (course of courses; track course.id) {
         <div
-          *ngIf="course.isExpanded"
-          class="px-4 pb-4 pt-2 bg-gray-50 dark:bg-dark-bg border-t border-gray-200 dark:border-dark-border"
+          class="bg-[#1a2942]/50 backdrop-blur-sm rounded-xl border border-teal-500/20 overflow-hidden"
         >
-          <h4 class="font-bold text-gray-900 dark:text-dark-text mb-3 text-sm">Evaluaciones</h4>
-          <div class="space-y-2">
-            <div
-              *ngFor="let eval of course.evaluaciones"
-              class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-dark-border last:border-0"
-            >
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-900 dark:text-dark-text">
-                  {{ eval.actividad }}
-                </p>
-                <p class="text-xs text-gray-600 dark:text-dark-text-secondary">
-                  Peso: {{ eval.peso }}%
-                </p>
+          <!-- Card Header -->
+          <div class="p-4 border-b border-teal-500/20">
+            <div class="flex items-start gap-3">
+              <div
+                class="w-1 h-16 rounded-full flex-shrink-0"
+                [class.bg-blue-500]="course.estado === 'En Curso'"
+                [class.bg-green-500]="course.estado === 'Aprobado'"
+                [class.bg-red-500]="course.estado === 'En Riesgo'"
+              ></div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-bold text-white text-base mb-1">
+                  {{ course.nombre }}
+                </h3>
+                <p class="text-sm text-gray-400">{{ course.codigo }} • {{ course.profesor }}</p>
               </div>
-              <div class="text-right">
-                <p [class]="getPromedioColor(eval.nota)" class="font-bold">
-                  {{ eval.nota > 0 ? eval.nota : '--' }}
-                </p>
-                <span [class]="getEstadoBadge(eval.estado)" class="text-xs px-2 py-0.5 rounded">
-                  {{ eval.estado }}
-                </span>
-              </div>
+              <button
+                (click)="toggleCourse(course)"
+                class="p-2 hover:bg-teal-500/10 rounded-lg transition-colors flex-shrink-0 text-gray-300"
+              >
+                <svg
+                  [class.rotate-180]="course.isExpanded"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-5 h-5 transition-transform"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
+
+          <!-- Card Body -->
+          <div class="p-4 space-y-3">
+            <!-- Créditos -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-400">Créditos</span>
+              <span class="font-semibold text-white">{{ course.creditos }}</span>
+            </div>
+
+            <!-- Avance -->
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">Avance</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-dark-text"
+                  >{{ course.avance }}%</span
+                >
+              </div>
+              <div class="w-full bg-[#0a1628] rounded-full h-2">
+                <div
+                  class="bg-blue-600 h-2 rounded-full transition-all"
+                  [style.width.%]="course.avance"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Promedio -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-400">Promedio</span>
+              <span [class]="getPromedioColor(course.promedio)" class="text-xl font-bold">
+                {{ course.promedio }}
+              </span>
+            </div>
+
+            <!-- Estado -->
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-gray-400">Estado</span>
+              <span [class]="getEstadoColor(course.estado)" class="font-semibold">
+                {{ course.estado }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Expanded Details (Mobile) -->
+          @if (course.isExpanded) {
+            <div class="px-4 pb-4 pt-2 bg-[#0a1628]/50 border-t border-teal-500/20">
+              <h4 class="font-bold text-white mb-3 text-sm">Evaluaciones</h4>
+              <div class="space-y-2">
+                @for (eval of course.evaluaciones; track $index) {
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-teal-500/10 last:border-0"
+                  >
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-white">
+                        {{ eval.actividad }}
+                      </p>
+                      <p class="text-xs text-gray-400">Peso: {{ eval.peso }}%</p>
+                    </div>
+                    <div class="text-right">
+                      <p [class]="getPromedioColor(eval.nota)" class="font-bold">
+                        {{ eval.nota > 0 ? eval.nota : '--' }}
+                      </p>
+                      <span
+                        [class]="getEstadoBadge(eval.estado)"
+                        class="text-xs px-2 py-0.5 rounded"
+                      >
+                        {{ eval.estado }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
-      </div>
+      }
     </div>
 
     <!-- Desktop Table View (>= lg) -->
     <div
-      class="hidden lg:block bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden"
+      class="hidden lg:block bg-[#1a2942]/50 backdrop-blur-sm rounded-xl border border-teal-500/20 overflow-hidden"
     >
       <!-- Table Header -->
       <div
-        class="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 dark:bg-dark-bg border-b border-gray-200 dark:border-dark-border text-sm font-semibold text-gray-600 dark:text-dark-text-secondary uppercase tracking-wide"
+        class="grid grid-cols-12 gap-4 px-6 py-4 bg-[#0a1628]/50 border-b border-teal-500/20 text-sm font-semibold text-gray-400 uppercase tracking-wide"
       >
         <div class="col-span-4">Curso</div>
         <div class="col-span-1 text-center">Créditos</div>
@@ -359,246 +389,247 @@
       </div>
 
       <!-- Table Body -->
-      <div
-        *ngFor="let course of courses; let i = index"
-        [class.border-b]="i < courses.length - 1"
-        class="border-gray-200 dark:border-dark-border"
-      >
-        <!-- Course Row -->
-        <div
-          class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors items-center"
-        >
-          <div class="col-span-4">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-1 h-12 rounded-full"
-                [class.bg-blue-500]="course.estado === 'En Curso'"
-                [class.bg-green-500]="course.estado === 'Aprobado'"
-                [class.bg-red-500]="course.estado === 'En Riesgo'"
-              ></div>
-              <div>
-                <h3 class="font-semibold text-gray-900 dark:text-dark-text">{{ course.nombre }}</h3>
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary">
-                  {{ course.codigo }} • {{ course.profesor }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-span-1 text-center">
-            <span class="font-semibold text-gray-900 dark:text-dark-text">{{
-              course.creditos
-            }}</span>
-          </div>
-          <div class="col-span-2">
-            <div class="flex items-center gap-2">
-              <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      @if (courses.length === 0) {
+        <p class="text-gray-600 dark:text-gray-400">No hay cursos disponibles</p>
+      }
+      @for (course of courses; track course.id; let idx = $index) {
+        <div [class.border-b]="idx < courses.length - 1" class="border-teal-500/10">
+          <!-- Course Row -->
+          <div
+            class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-teal-500/5 transition-colors items-center"
+          >
+            <div class="col-span-4">
+              <div class="flex items-center gap-3">
                 <div
-                  class="bg-blue-600 h-2 rounded-full transition-all"
-                  [style.width.%]="course.avance"
+                  class="w-1 h-12 rounded-full"
+                  [class.bg-blue-500]="course.estado === 'En Curso'"
+                  [class.bg-green-500]="course.estado === 'Aprobado'"
+                  [class.bg-red-500]="course.estado === 'En Riesgo'"
                 ></div>
+                <div>
+                  <h3 class="font-semibold text-white">
+                    {{ course.nombre }}
+                  </h3>
+                  <p class="text-sm text-gray-400">{{ course.codigo }} • {{ course.profesor }}</p>
+                </div>
               </div>
-              <span class="text-sm font-medium text-gray-700 dark:text-dark-text"
-                >{{ course.avance }}%</span
-              >
             </div>
-          </div>
-          <div class="col-span-2 text-center">
-            <span [class]="getPromedioColor(course.promedio)" class="text-lg">{{
-              course.promedio
-            }}</span>
-          </div>
-          <div class="col-span-2 text-center">
-            <span [class]="getEstadoColor(course.estado)" class="font-semibold"
-              >+ {{ course.estado }}</span
-            >
-          </div>
-          <div class="col-span-1 text-center">
-            <button
-              (click)="toggleCourse(course)"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors"
-            >
-              <svg
-                [class.rotate-180]="course.isExpanded"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5 transition-transform"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Expanded Details -->
-        <div
-          *ngIf="course.isExpanded"
-          class="px-6 py-6 bg-gray-50 dark:bg-dark-bg border-t border-gray-200 dark:border-dark-border"
-        >
-          <div class="grid grid-cols-2 gap-6">
-            <!-- Evaluations Table -->
-            <div>
-              <h4 class="font-bold text-gray-900 dark:text-dark-text mb-4 flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-5 h-5 text-blue-600"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Detalle de Evaluaciones
-              </h4>
-              <div class="space-y-2">
-                <div
-                  *ngFor="let eval of course.evaluaciones"
-                  class="grid grid-cols-12 gap-2 text-sm py-2 border-b border-gray-200 dark:border-dark-border last:border-0"
-                >
-                  <div class="col-span-6 text-gray-700 dark:text-dark-text">
-                    {{ eval.actividad }}
-                  </div>
-                  <div class="col-span-2 text-center text-gray-600 dark:text-dark-text-secondary">
-                    {{ eval.peso }}%
-                  </div>
+            <div class="col-span-1 text-center">
+              <span class="font-semibold text-white">{{ course.creditos }}</span>
+            </div>
+            <div class="col-span-2">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
-                    class="col-span-2 text-center font-semibold"
-                    [class]="getPromedioColor(eval.nota)"
-                  >
-                    {{ eval.nota > 0 ? eval.nota : '--' }}
-                  </div>
-                  <div class="col-span-2 text-center">
-                    <span
-                      [class]="getEstadoBadge(eval.estado)"
-                      class="px-2 py-1 rounded text-xs font-semibold"
-                    >
-                      {{ eval.estado }}
-                    </span>
-                  </div>
+                    class="bg-blue-600 h-2 rounded-full transition-all"
+                    [style.width.%]="course.avance"
+                  ></div>
                 </div>
+                <span class="text-sm font-medium text-gray-700 dark:text-dark-text"
+                  >{{ course.avance }}%</span
+                >
               </div>
             </div>
-
-            <!-- Academic Progress Chart -->
-            <div>
-              <h4 class="font-bold text-gray-900 dark:text-dark-text mb-4 flex items-center gap-2">
+            <div class="col-span-2 text-center">
+              <span [class]="getPromedioColor(course.promedio)" class="text-lg">{{
+                course.promedio
+              }}</span>
+            </div>
+            <div class="col-span-2 text-center">
+              <span [class]="getEstadoColor(course.estado)" class="font-semibold"
+                >+ {{ course.estado }}</span
+              >
+            </div>
+            <div class="col-span-1 text-center">
+              <button
+                (click)="toggleCourse(course)"
+                class="p-2 hover:bg-teal-500/10 rounded-lg transition-colors text-gray-300"
+              >
                 <svg
+                  [class.rotate-180]="course.isExpanded"
                   xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-5 h-5 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-5 h-5 transition-transform"
                 >
                   <path
-                    d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
                   />
                 </svg>
-                Progreso Académico
-              </h4>
-              <div class="space-y-4">
-                <!-- Simple Bar Chart -->
-                <div class="space-y-3">
-                  <div>
-                    <div class="flex justify-between text-sm mb-1">
-                      <span class="text-gray-600 dark:text-dark-text-secondary">Lab 1</span>
-                      <span class="font-semibold">{{ course.evaluaciones[0]?.nota || 0 }}</span>
-                    </div>
-                    <div
-                      class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
+              </button>
+            </div>
+          </div>
+
+          <!-- Expanded Details -->
+          @if (course.isExpanded) {
+            <div class="px-6 py-6 bg-[#0a1628]/50 border-t border-teal-500/20">
+              <div class="grid grid-cols-2 gap-6">
+                <!-- Evaluations Table -->
+                <div>
+                  <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="w-5 h-5 text-blue-600"
                     >
+                      <path
+                        fill-rule="evenodd"
+                        d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Detalle de Evaluaciones
+                  </h4>
+                  <div class="space-y-2">
+                    @for (eval of course.evaluaciones; track $index) {
                       <div
-                        class="absolute left-0 top-0 h-full bg-blue-200 dark:bg-blue-900/30 transition-all"
-                        [style.width.%]="(course.evaluaciones[0]?.nota || 0) * 5"
-                      ></div>
-                      <span class="relative z-10 text-sm font-semibold">{{
-                        course.evaluaciones[0]?.nota || 0
-                      }}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-sm mb-1">
-                      <span class="text-gray-600 dark:text-dark-text-secondary">Parcial</span>
-                      <span class="font-semibold">{{ course.evaluaciones[1]?.nota || 0 }}</span>
-                    </div>
-                    <div
-                      class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
-                    >
-                      <div
-                        class="absolute left-0 top-0 h-full bg-blue-400 dark:bg-blue-700 transition-all"
-                        [style.width.%]="(course.evaluaciones[1]?.nota || 0) * 5"
-                      ></div>
-                      <span class="relative z-10 text-sm font-semibold">{{
-                        course.evaluaciones[1]?.nota || 0
-                      }}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-sm mb-1">
-                      <span class="text-gray-600 dark:text-dark-text-secondary">Lab 2</span>
-                      <span class="font-semibold">{{ course.evaluaciones[2]?.nota || 0 }}</span>
-                    </div>
-                    <div
-                      class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
-                    >
-                      <div
-                        class="absolute left-0 top-0 h-full bg-blue-600 dark:bg-blue-500 transition-all"
-                        [style.width.%]="(course.evaluaciones[2]?.nota || 0) * 5"
-                      ></div>
-                      <span class="relative z-10 text-sm font-semibold text-white">{{
-                        course.evaluaciones[2]?.nota || 0
-                      }}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-sm mb-1">
-                      <span class="text-gray-600 dark:text-dark-text-secondary">Final</span>
-                      <span class="font-semibold">--</span>
-                    </div>
-                    <div
-                      class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center"
-                    >
-                      <span class="text-sm text-gray-500">Pendiente</span>
-                    </div>
+                        class="grid grid-cols-12 gap-2 text-sm py-2 border-b border-teal-500/10 last:border-0"
+                      >
+                        <div class="col-span-6 text-white">
+                          {{ eval.actividad }}
+                        </div>
+                        <div class="col-span-2 text-center text-gray-400">{{ eval.peso }}%</div>
+                        <div
+                          class="col-span-2 text-center font-semibold"
+                          [class]="getPromedioColor(eval.nota)"
+                        >
+                          {{ eval.nota > 0 ? eval.nota : '--' }}
+                        </div>
+                        <div class="col-span-2 text-center">
+                          <span
+                            [class]="getEstadoBadge(eval.estado)"
+                            class="px-2 py-1 rounded text-xs font-semibold"
+                          >
+                            {{ eval.estado }}
+                          </span>
+                        </div>
+                      </div>
+                    }
                   </div>
                 </div>
-                <div class="pt-4 border-t border-gray-200 dark:border-dark-border">
-                  <div class="flex justify-between text-sm">
-                    <span class="text-gray-600 dark:text-dark-text-secondary"
-                      >Posicionamiento:</span
+
+                <!-- Academic Progress Chart -->
+                <div>
+                  <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="w-5 h-5 text-blue-600"
                     >
-                    <span class="font-bold"
-                      >{{ course.posicionamiento }} / {{ course.totalEstudiantes }}</span
-                    >
-                  </div>
-                  <div class="flex justify-between text-sm mt-2">
-                    <span class="text-gray-600 dark:text-dark-text-secondary">Promedio Clase:</span>
-                    <span class="font-bold">{{ course.promedioClase }}</span>
+                      <path
+                        d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"
+                      />
+                    </svg>
+                    Progreso Académico
+                  </h4>
+                  <div class="space-y-4">
+                    <!-- Simple Bar Chart -->
+                    <div class="space-y-3">
+                      <div>
+                        <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-400">Lab 1</span>
+                          <span class="font-semibold text-white">{{
+                            course.evaluaciones[0]?.nota || 0
+                          }}</span>
+                        </div>
+                        <div
+                          class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
+                        >
+                          <div
+                            class="absolute left-0 top-0 h-full bg-blue-500 transition-all"
+                            [style.width.%]="(course.evaluaciones[0]?.nota || 0) * 5"
+                          ></div>
+                          <span class="relative z-10 text-sm font-semibold text-white">{{
+                            course.evaluaciones[0]?.nota || 0
+                          }}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-400">Parcial</span>
+                          <span class="font-semibold text-white">{{
+                            course.evaluaciones[1]?.nota || 0
+                          }}</span>
+                        </div>
+                        <div
+                          class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
+                        >
+                          <div
+                            class="absolute left-0 top-0 h-full bg-blue-600 transition-all"
+                            [style.width.%]="(course.evaluaciones[1]?.nota || 0) * 5"
+                          ></div>
+                          <span class="relative z-10 text-sm font-semibold text-white">{{
+                            course.evaluaciones[1]?.nota || 0
+                          }}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-400">Lab 2</span>
+                          <span class="font-semibold text-white">{{
+                            course.evaluaciones[2]?.nota || 0
+                          }}</span>
+                        </div>
+                        <div
+                          class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center relative overflow-hidden"
+                        >
+                          <div
+                            class="absolute left-0 top-0 h-full bg-blue-600 dark:bg-blue-500 transition-all"
+                            [style.width.%]="(course.evaluaciones[2]?.nota || 0) * 5"
+                          ></div>
+                          <span class="relative z-10 text-sm font-semibold text-white">{{
+                            course.evaluaciones[2]?.nota || 0
+                          }}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-sm mb-1">
+                          <span class="text-gray-400">Final</span>
+                          <span class="font-semibold text-white">--</span>
+                        </div>
+                        <div
+                          class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 flex items-center justify-center"
+                        >
+                          <span class="text-sm text-gray-500">Pendiente</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="pt-4 border-t border-teal-500/20">
+                      <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Posicionamiento:</span>
+                        <span class="font-bold text-white"
+                          >{{ course.posicionamiento }} / {{ course.totalEstudiantes }}</span
+                        >
+                      </div>
+                      <div class="flex justify-between text-sm mt-2">
+                        <span class="text-gray-400">Promedio Clase:</span>
+                        <span class="font-bold text-white">{{ course.promedioClase }}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          }
         </div>
-      </div>
+      }
     </div>
 
     <!-- Pagination -->
     <div class="mt-6 flex items-center justify-between">
-      <p class="text-sm text-gray-600 dark:text-dark-text-secondary">
+      <p class="text-sm text-gray-400">
         Mostrando <span class="font-semibold">1-{{ courses.length }}</span> de
         <span class="font-semibold">{{ courses.length }}</span> cursos
       </p>
       <div class="flex gap-2">
         <button
-          class="px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors disabled:opacity-50"
+          class="px-3 py-2 bg-[#1a2942] border border-teal-500/30 rounded-lg hover:bg-teal-500/10 transition-colors disabled:opacity-30 text-gray-300"
           disabled
         >
           <svg
@@ -614,14 +645,18 @@
             />
           </svg>
         </button>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">1</button>
         <button
-          class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+          class="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-lg font-semibold shadow-lg shadow-teal-500/30"
+        >
+          1
+        </button>
+        <button
+          class="px-4 py-2 bg-[#1a2942] border border-teal-500/30 rounded-lg hover:bg-teal-500/10 hover:border-teal-500/50 transition-all text-gray-300"
         >
           2
         </button>
         <button
-          class="px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
+          class="px-3 py-2 bg-[#1a2942] border border-teal-500/30 rounded-lg hover:bg-teal-500/10 hover:border-teal-500/50 transition-all text-gray-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -638,5 +673,5 @@
         </button>
       </div>
     </div>
-  </div>
+  }
 </div>
