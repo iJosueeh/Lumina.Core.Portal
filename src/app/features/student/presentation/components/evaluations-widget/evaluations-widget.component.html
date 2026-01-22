@@ -1,0 +1,146 @@
+<div class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-dark-text flex items-center gap-2">
+      <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+        />
+      </svg>
+      Evaluaciones Pendientes
+    </h3>
+    @if (stats().urgentCount > 0) {
+      <span
+        class="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse"
+        title="Evaluaciones urgentes"
+      >
+        {{ stats().urgentCount }}
+      </span>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="space-y-3">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="animate-pulse">
+          <div class="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Evaluations List -->
+  @if (!isLoading()) {
+    @if (upcomingEvaluations().length === 0) {
+      <div class="text-center py-8">
+        <svg
+          class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <p class="text-gray-500 dark:text-gray-400 font-medium">
+          ¡Todo al día!
+        </p>
+        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
+          No tienes evaluaciones pendientes
+        </p>
+      </div>
+    } @else {
+      <div class="space-y-3">
+        @for (evaluation of getDisplayedEvaluations(); track evaluation.id) {
+          <div
+            (click)="navigateToCourse(evaluation.courseId)"
+            class="p-4 bg-gray-50 dark:bg-dark-bg rounded-lg border-l-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            [class.border-red-500]="evaluation.status === 'urgent'"
+            [class.border-yellow-500]="evaluation.status === 'upcoming'"
+            [class.border-green-500]="evaluation.status === 'available'"
+          >
+            <!-- Status Badge -->
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">{{ getStatusIcon(evaluation.status) }}</span>
+              <span
+                class="text-xs font-bold px-2 py-1 rounded-full"
+                [ngClass]="getStatusColor(evaluation.status)"
+              >
+                {{ getStatusText(evaluation.status, evaluation.timeRemaining) }}
+              </span>
+              <span
+                class="text-xs font-semibold px-2 py-1 rounded-full ml-auto"
+                [ngClass]="getDifficultyBadge(evaluation.difficulty)"
+              >
+                {{ evaluation.difficulty === 'easy' ? 'Fácil' : evaluation.difficulty === 'medium' ? 'Medio' : 'Difícil' }}
+              </span>
+            </div>
+
+            <!-- Title -->
+            <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm mb-1">
+              {{ evaluation.title }}
+            </h4>
+
+            <!-- Course Name -->
+            <p class="text-xs text-gray-600 dark:text-dark-text-secondary mb-2">
+              {{ evaluation.courseName }}
+            </p>
+
+            <!-- Attempts Info -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500 dark:text-gray-400">
+                Intentos: {{ evaluation.attemptsUsed }}/{{ evaluation.attemptsAllowed }}
+              </span>
+              @if (evaluation.bestScore !== undefined) {
+                <span class="font-bold text-teal-500">
+                  Mejor: {{ evaluation.bestScore.toFixed(1) }}%
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Toggle View Button -->
+      @if (upcomingEvaluations().length > 3) {
+        <button
+          (click)="toggleView()"
+          class="w-full mt-4 py-2 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+        >
+          {{ showAll() ? 'Ver menos' : 'Ver más (' + (upcomingEvaluations().length - 3) + ')' }}
+        </button>
+      }
+    }
+
+    <!-- Stats Summary -->
+    @if (stats().totalPending > 0 || stats().totalCompleted > 0) {
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          Estadísticas Globales
+        </h4>
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div>
+            <div class="text-2xl font-bold text-yellow-500">{{ stats().totalPending }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Pendientes</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-green-500">{{ stats().totalCompleted }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Completadas</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-teal-500">{{ stats().averageScore.toFixed(1) }}%</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Promedio</div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

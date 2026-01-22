@@ -47,7 +47,10 @@ export const routes: Routes = [
       },
       {
         path: 'evaluations',
-        component: GradesComponent,
+        loadComponent: () =>
+          import('./features/student/presentation/pages/evaluations/evaluations.component').then(
+            (m) => m.EvaluationsComponent,
+          ),
         title: 'Mis Evaluaciones - Portal Estudiante',
       },
       {
