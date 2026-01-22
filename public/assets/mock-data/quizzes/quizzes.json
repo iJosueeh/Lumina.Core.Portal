@@ -1,0 +1,358 @@
+[
+  {
+    "id": "quiz-1",
+    "title": "Quiz: HTML Semántico",
+    "description": "Evaluación sobre los conceptos fundamentales de HTML5 semántico y estructura de documentos web.",
+    "moduleId": "m1",
+    "moduleName": "Módulo 1: Fundamentos de la Web",
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "difficulty": "easy",
+    "totalPoints": 100,
+    "totalQuestions": 10,
+    "config": {
+      "timeLimit": 20,
+      "attemptsAllowed": 2,
+      "shuffleQuestions": true,
+      "shuffleOptions": true,
+      "showCorrectAnswers": true,
+      "passingScore": 70
+    },
+    "availableFrom": "2026-01-01T00:00:00",
+    "availableUntil": "2026-12-31T23:59:59",
+    "weight": 0.1,
+    "createdAt": "2024-03-15T00:00:00",
+    "questions": [
+      {
+        "id": "q1-1",
+        "type": "multiple-choice",
+        "text": "¿Cuál de las siguientes etiquetas es semántica en HTML5?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "<div>", "isCorrect": false },
+          { "id": "opt2", "text": "<article>", "isCorrect": true },
+          { "id": "opt3", "text": "<span>", "isCorrect": false },
+          { "id": "opt4", "text": "<b>", "isCorrect": false }
+        ],
+        "explanation": "La etiqueta <article> es semántica porque describe el contenido que contiene, mientras que <div> y <span> son genéricas."
+      },
+      {
+        "id": "q1-2",
+        "type": "true-false",
+        "text": "La etiqueta <header> solo puede usarse una vez por página.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": false },
+          { "id": "opt2", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Puedes usar múltiples <header> en una página, por ejemplo, uno para la página y otros para secciones o artículos."
+      },
+      {
+        "id": "q1-3",
+        "type": "multiple-choice",
+        "text": "¿Qué etiqueta se usa para definir una sección independiente de contenido?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "<section>", "isCorrect": false },
+          { "id": "opt2", "text": "<article>", "isCorrect": true },
+          { "id": "opt3", "text": "<aside>", "isCorrect": false },
+          { "id": "opt4", "text": "<nav>", "isCorrect": false }
+        ],
+        "explanation": "<article> representa contenido independiente que podría distribuirse por separado."
+      },
+      {
+        "id": "q1-4",
+        "type": "multiple-choice",
+        "text": "¿Cuál es el propósito de la etiqueta <nav>?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Definir navegación principal", "isCorrect": true },
+          { "id": "opt2", "text": "Crear un menú desplegable", "isCorrect": false },
+          { "id": "opt3", "text": "Estilizar enlaces", "isCorrect": false },
+          { "id": "opt4", "text": "Agrupar botones", "isCorrect": false }
+        ],
+        "explanation": "<nav> se usa para definir secciones de navegación principal del sitio."
+      },
+      {
+        "id": "q1-5",
+        "type": "true-false",
+        "text": "La etiqueta <main> puede aparecer múltiples veces en un documento HTML.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": false },
+          { "id": "opt2", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Solo debe haber una etiqueta <main> por documento, representando el contenido principal."
+      },
+      {
+        "id": "q1-6",
+        "type": "multiple-choice",
+        "text": "¿Qué etiqueta se usa para contenido relacionado pero no esencial?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "<aside>", "isCorrect": true },
+          { "id": "opt2", "text": "<section>", "isCorrect": false },
+          { "id": "opt3", "text": "<footer>", "isCorrect": false },
+          { "id": "opt4", "text": "<header>", "isCorrect": false }
+        ],
+        "explanation": "<aside> se usa para contenido tangencialmente relacionado, como barras laterales."
+      },
+      {
+        "id": "q1-7",
+        "type": "true-false",
+        "text": "HTML5 introdujo nuevas etiquetas semánticas para mejorar la accesibilidad.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": true },
+          { "id": "opt2", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Las etiquetas semánticas ayudan a los lectores de pantalla y mejoran la accesibilidad."
+      },
+      {
+        "id": "q1-8",
+        "type": "multiple-choice",
+        "text": "¿Cuál es la diferencia principal entre <section> y <article>?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "<section> es genérica, <article> es independiente", "isCorrect": true },
+          { "id": "opt2", "text": "No hay diferencia", "isCorrect": false },
+          { "id": "opt3", "text": "<article> es más grande que <section>", "isCorrect": false },
+          { "id": "opt4", "text": "<section> es obsoleta", "isCorrect": false }
+        ],
+        "explanation": "<article> representa contenido independiente, mientras <section> agrupa contenido relacionado."
+      },
+      {
+        "id": "q1-9",
+        "type": "multiple-choice",
+        "text": "¿Qué etiqueta se usa para el pie de página?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "<bottom>", "isCorrect": false },
+          { "id": "opt2", "text": "<footer>", "isCorrect": true },
+          { "id": "opt3", "text": "<end>", "isCorrect": false },
+          { "id": "opt4", "text": "<foot>", "isCorrect": false }
+        ],
+        "explanation": "<footer> representa el pie de página de un documento o sección."
+      },
+      {
+        "id": "q1-10",
+        "type": "true-false",
+        "text": "Las etiquetas semánticas afectan la apariencia visual del contenido.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": false },
+          { "id": "opt2", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. Las etiquetas semánticas solo dan significado al contenido, no afectan el estilo visual."
+      }
+    ]
+  },
+  {
+    "id": "quiz-2",
+    "title": "Quiz: Modelo de Caja CSS",
+    "description": "Evaluación sobre el modelo de caja, márgenes, padding y bordes en CSS.",
+    "moduleId": "m2",
+    "moduleName": "Módulo 2: CSS Moderno y Flexbox",
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "difficulty": "medium",
+    "totalPoints": 100,
+    "totalQuestions": 8,
+    "config": {
+      "timeLimit": 25,
+      "attemptsAllowed": 3,
+      "shuffleQuestions": true,
+      "shuffleOptions": true,
+      "showCorrectAnswers": true,
+      "passingScore": 70
+    },
+    "availableFrom": "2026-01-01T00:00:00",
+    "availableUntil": "2026-12-31T23:59:59",
+    "weight": 0.15,
+    "createdAt": "2024-03-24T00:00:00",
+    "questions": [
+      {
+        "id": "q2-1",
+        "type": "multiple-choice",
+        "text": "¿Cuáles son las partes del modelo de caja CSS en orden desde el interior?",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "Content, Padding, Border, Margin", "isCorrect": true },
+          { "id": "opt2", "text": "Content, Border, Padding, Margin", "isCorrect": false },
+          { "id": "opt3", "text": "Margin, Border, Padding, Content", "isCorrect": false },
+          { "id": "opt4", "text": "Content, Margin, Padding, Border", "isCorrect": false }
+        ],
+        "explanation": "El orden correcto es: Content (contenido), Padding (relleno), Border (borde), Margin (margen)."
+      },
+      {
+        "id": "q2-2",
+        "type": "true-false",
+        "text": "La propiedad 'box-sizing: border-box' incluye padding y border en el ancho total.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": true },
+          { "id": "opt2", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Con border-box, el width incluye content, padding y border."
+      },
+      {
+        "id": "q2-3",
+        "type": "multiple-choice",
+        "text": "¿Qué propiedad controla el espacio entre el contenido y el borde?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "margin", "isCorrect": false },
+          { "id": "opt2", "text": "padding", "isCorrect": true },
+          { "id": "opt3", "text": "border-spacing", "isCorrect": false },
+          { "id": "opt4", "text": "gap", "isCorrect": false }
+        ],
+        "explanation": "padding controla el espacio entre el contenido y el borde del elemento."
+      },
+      {
+        "id": "q2-4",
+        "type": "multiple-choice",
+        "text": "¿Qué sucede cuando dos márgenes verticales se encuentran?",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "Se suman", "isCorrect": false },
+          { "id": "opt2", "text": "Se colapsan (margin collapsing)", "isCorrect": true },
+          { "id": "opt3", "text": "Se multiplican", "isCorrect": false },
+          { "id": "opt4", "text": "Se ignoran", "isCorrect": false }
+        ],
+        "explanation": "Los márgenes verticales adyacentes se colapsan, tomando el valor del mayor."
+      },
+      {
+        "id": "q2-5",
+        "type": "true-false",
+        "text": "Los márgenes negativos son válidos en CSS.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": true },
+          { "id": "opt2", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Los márgenes negativos son válidos y útiles para ciertos diseños."
+      },
+      {
+        "id": "q2-6",
+        "type": "multiple-choice",
+        "text": "¿Cuál es el valor por defecto de box-sizing?",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "border-box", "isCorrect": false },
+          { "id": "opt2", "text": "content-box", "isCorrect": true },
+          { "id": "opt3", "text": "padding-box", "isCorrect": false },
+          { "id": "opt4", "text": "margin-box", "isCorrect": false }
+        ],
+        "explanation": "El valor por defecto es content-box, donde width solo incluye el contenido."
+      },
+      {
+        "id": "q2-7",
+        "type": "multiple-choice",
+        "text": "¿Qué propiedad shorthand establece padding en todos los lados?",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "padding", "isCorrect": true },
+          { "id": "opt2", "text": "padding-all", "isCorrect": false },
+          { "id": "opt3", "text": "pad", "isCorrect": false },
+          { "id": "opt4", "text": "padding-sides", "isCorrect": false }
+        ],
+        "explanation": "La propiedad 'padding' es el shorthand para establecer padding en todos los lados."
+      },
+      {
+        "id": "q2-8",
+        "type": "true-false",
+        "text": "El margin puede tener valores en porcentaje.",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": true },
+          { "id": "opt2", "text": "Falso", "isCorrect": false }
+        ],
+        "explanation": "Verdadero. Los márgenes pueden especificarse en porcentaje del ancho del contenedor."
+      }
+    ]
+  },
+  {
+    "id": "quiz-3",
+    "title": "Examen: Fundamentos Web",
+    "description": "Examen comprensivo sobre HTML5 y CSS3 básico. Cubre todos los temas vistos en los primeros dos módulos.",
+    "moduleId": "m2",
+    "moduleName": "Módulo 2: CSS Moderno y Flexbox",
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "difficulty": "hard",
+    "totalPoints": 150,
+    "totalQuestions": 12,
+    "config": {
+      "timeLimit": 45,
+      "attemptsAllowed": 1,
+      "shuffleQuestions": true,
+      "shuffleOptions": true,
+      "showCorrectAnswers": false,
+      "passingScore": 75
+    },
+    "availableFrom": "2026-01-01T00:00:00",
+    "availableUntil": "2026-12-31T23:59:59",
+    "weight": 0.25,
+    "createdAt": "2024-03-30T00:00:00",
+    "questions": [
+      {
+        "id": "q3-1",
+        "type": "multiple-choice",
+        "text": "¿Cuál es la estructura correcta de un documento HTML5?",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "<!DOCTYPE html>, <html>, <head>, <body>", "isCorrect": true },
+          { "id": "opt2", "text": "<html>, <head>, <body>", "isCorrect": false },
+          { "id": "opt3", "text": "<!DOCTYPE>, <html>, <body>", "isCorrect": false },
+          { "id": "opt4", "text": "<head>, <body>, <html>", "isCorrect": false }
+        ],
+        "explanation": "Un documento HTML5 debe comenzar con <!DOCTYPE html>, seguido de <html>, <head> y <body>."
+      },
+      {
+        "id": "q3-2",
+        "type": "true-false",
+        "text": "CSS Grid y Flexbox son incompatibles y no pueden usarse juntos.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": false },
+          { "id": "opt2", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. CSS Grid y Flexbox son complementarios y pueden usarse juntos en el mismo proyecto."
+      },
+      {
+        "id": "q3-3",
+        "type": "multiple-choice",
+        "text": "¿Qué propiedad CSS se usa para crear un diseño de columnas?",
+        "points": 15,
+        "options": [
+          { "id": "opt1", "text": "display: grid", "isCorrect": false },
+          { "id": "opt2", "text": "display: flex", "isCorrect": false },
+          { "id": "opt3", "text": "column-count", "isCorrect": true },
+          { "id": "opt4", "text": "float", "isCorrect": false }
+        ],
+        "explanation": "La propiedad column-count se usa específicamente para crear diseños de múltiples columnas."
+      },
+      {
+        "id": "q3-4",
+        "type": "multiple-choice",
+        "text": "¿Cuál es la diferencia entre margin y padding?",
+        "points": 20,
+        "options": [
+          { "id": "opt1", "text": "Margin es espacio externo, padding es espacio interno", "isCorrect": true },
+          { "id": "opt2", "text": "No hay diferencia", "isCorrect": false },
+          { "id": "opt3", "text": "Padding es espacio externo, margin es espacio interno", "isCorrect": false },
+          { "id": "opt4", "text": "Margin solo funciona en vertical", "isCorrect": false }
+        ],
+        "explanation": "Margin crea espacio fuera del borde del elemento, mientras padding crea espacio dentro del borde."
+      },
+      {
+        "id": "q3-5",
+        "type": "true-false",
+        "text": "La etiqueta <div> es semántica en HTML5.",
+        "points": 10,
+        "options": [
+          { "id": "opt1", "text": "Verdadero", "isCorrect": false },
+          { "id": "opt2", "text": "Falso", "isCorrect": true }
+        ],
+        "explanation": "Falso. <div> es un contenedor genérico sin significado semántico. HTML5 introdujo etiquetas semánticas como <article>, <section>, etc."
+      }
+    ]
+  }
+]

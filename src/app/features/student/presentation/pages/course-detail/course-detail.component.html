@@ -450,120 +450,303 @@
             </div>
           }
 
-          @case ('grades') {
-            <!-- Grades Tab -->
+          @case ('evaluations') {
+            <!-- Evaluations Tab -->
             <div class="space-y-6 fade-in">
               <!-- Summary Cards -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Promedio General -->
+                <!-- Total Evaluaciones -->
                 <div
                   class="bg-navy-800/50 p-6 rounded-xl border border-navy-700 relative overflow-hidden"
                 >
                   <div class="absolute top-0 right-0 p-4 opacity-10">
                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
                       <path
-                        d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 002.261 8.736.75.75 0 012.029 7.4a60.65 60.65 0 018.96-6.727zM12 20.25c4.35 0 8.096-2.72 9-6.953-3.691 1.066-8.868 1.393-12.91.458 1.134 4.07 4.17 6.495 8.1 6.495z"
+                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
                       />
                     </svg>
                   </div>
                   <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">
-                    Promedio Actual
+                    Total Evaluaciones
                   </h3>
                   <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-bold text-white">{{ course.grades?.promedio }}</span>
-                    <span class="text-gray-500">/ 20</span>
+                    <span class="text-4xl font-bold text-white">{{ quizSummaries().length }}</span>
                   </div>
-                  <div class="mt-4 flex items-center gap-2">
-                    <div class="flex-1 h-2 bg-navy-900 rounded-full overflow-hidden">
-                      <div
-                        class="h-full bg-gradient-to-r from-teal-500 to-blue-500 rounded-full"
-                        [style.width.%]="(course.grades?.promedio || 0) * 5"
-                      ></div>
-                    </div>
-                  </div>
+                  <p class="text-sm text-gray-400 mt-2">Disponibles en el curso</p>
                 </div>
 
-                <!-- Avance -->
+                <!-- Completadas -->
                 <div
                   class="bg-navy-800/50 p-6 rounded-xl border border-navy-700 relative overflow-hidden"
                 >
                   <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">
-                    Avance del Curso
+                    Completadas
                   </h3>
                   <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-bold text-white">{{ course.grades?.avance }}%</span>
+                    <span class="text-4xl font-bold text-green-500">{{ completedQuizzesCount() }}</span>
+                    <span class="text-gray-500">/ {{ quizSummaries().length }}</span>
                   </div>
                   <p class="text-sm text-gray-400 mt-2">
-                    Has completado {{ course.completedModules }} de
-                    {{ course.totalModules }} módulos
+                    {{ completionPercentage().toFixed(0) }}% de progreso
                   </p>
                 </div>
 
-                <!-- Posicionamiento -->
+                <!-- Promedio -->
                 <div
                   class="bg-navy-800/50 p-6 rounded-xl border border-navy-700 relative overflow-hidden"
                 >
                   <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">
-                    Ranking
+                    Promedio
                   </h3>
                   <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-bold text-yellow-500"
-                      >#{{ course.grades?.posicionamiento }}</span
-                    >
-                    <span class="text-gray-500">de {{ course.grades?.totalEstudiantes }}</span>
+                    @if (averageQuizScore() > 0) {
+                      <span class="text-4xl font-bold" [ngClass]="getScoreColor(averageQuizScore())">
+                        {{ averageQuizScore().toFixed(1) }}%
+                      </span>
+                    } @else {
+                      <span class="text-4xl font-bold text-gray-500">--</span>
+                    }
                   </div>
-                  <p class="text-sm text-gray-400 mt-2">Top 10% de la clase</p>
+                  <p class="text-sm text-gray-400 mt-2">En evaluaciones completadas</p>
                 </div>
               </div>
 
-              <!-- Grades Table -->
-              <div class="bg-navy-800/50 rounded-xl border border-navy-700 overflow-hidden">
-                <div class="p-6 border-b border-navy-700">
-                  <h3 class="text-lg font-semibold text-white">Detalle de Evaluaciones</h3>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left">
-                    <thead>
-                      <tr class="bg-navy-900/50 text-gray-400 text-sm">
-                        <th class="px-6 py-4 font-medium">Actividad</th>
-                        <th class="px-6 py-4 font-medium text-center">Peso</th>
-                        <th class="px-6 py-4 font-medium text-center">Estado</th>
-                        <th class="px-6 py-4 font-medium text-right">Calificación</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-navy-700/50">
-                      @for (evaluacion of course.grades?.evaluaciones; track evaluacion.actividad) {
-                        <tr class="hover:bg-white/5 transition-colors">
-                          <td class="px-6 py-4">
-                            <span class="text-gray-200 font-medium block">{{
-                              evaluacion.actividad
-                            }}</span>
-                          </td>
-                          <td class="px-6 py-4 text-center text-gray-400">
-                            {{ evaluacion.peso }}%
-                          </td>
-                          <td class="px-6 py-4 text-center">
+              <!-- Filtros -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <button
+                  (click)="filterQuizzes('all')"
+                  [class.bg-teal-500]="quizFilter() === 'all'"
+                  [class.text-white]="quizFilter() === 'all'"
+                  [class.bg-navy-700]="quizFilter() !== 'all'"
+                  [class.text-gray-300]="quizFilter() !== 'all'"
+                  class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-teal-600"
+                >
+                  Todas ({{ quizSummaries().length }})
+                </button>
+                <button
+                  (click)="filterQuizzes('pending')"
+                  [class.bg-teal-500]="quizFilter() === 'pending'"
+                  [class.text-white]="quizFilter() === 'pending'"
+                  [class.bg-navy-700]="quizFilter() !== 'pending'"
+                  [class.text-gray-300]="quizFilter() !== 'pending'"
+                  class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-teal-600"
+                >
+                  Pendientes ({{ pendingQuizzesCount() }})
+                </button>
+                <button
+                  (click)="filterQuizzes('completed')"
+                  [class.bg-teal-500]="quizFilter() === 'completed'"
+                  [class.text-white]="quizFilter() === 'completed'"
+                  [class.bg-navy-700]="quizFilter() !== 'completed'"
+                  [class.text-gray-300]="quizFilter() !== 'completed'"
+                  class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-teal-600"
+                >
+                  Completadas ({{ completedQuizzesCount() }})
+                </button>
+              </div>
+
+              <!-- Lista de Evaluaciones -->
+              <div class="space-y-4">
+                @if (filteredQuizzes().length === 0) {
+                  <div class="bg-navy-800/50 p-12 rounded-xl border border-navy-700 text-center">
+                    <svg
+                      class="w-16 h-16 mx-auto text-gray-600 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
+                      />
+                    </svg>
+                    <p class="text-gray-400 text-lg">No hay evaluaciones en esta categoría</p>
+                  </div>
+                } @else {
+                  @for (quiz of filteredQuizzes(); track quiz.id) {
+                    <div
+                      class="bg-navy-800/50 p-6 rounded-xl border border-navy-700 hover:border-teal-500/30 transition-all group"
+                    >
+                      <div class="flex items-start justify-between gap-4">
+                        <!-- Información Principal -->
+                        <div class="flex-1">
+                          <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-lg font-semibold text-white group-hover:text-teal-400 transition-colors">
+                              {{ quiz.title }}
+                            </h3>
                             <span
                               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                              [ngClass]="getEstadoBadge(evaluacion.estado)"
+                              [ngClass]="getQuizStatusBadge(quiz.status)"
                             >
                               <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                              {{ evaluacion.estado }}
+                              {{ getQuizStatusLabel(quiz.status) }}
                             </span>
-                          </td>
-                          <td class="px-6 py-4 text-right">
                             <span
-                              class="font-bold text-lg"
-                              [ngClass]="getPromedioColor(evaluacion.nota || 0)"
+                              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                              [ngClass]="getDifficultyBadge(quiz.difficulty)"
                             >
-                              {{ getNotaDisplay(evaluacion.nota || 0, evaluacion.estado) }}
+                              {{ getDifficultyLabel(quiz.difficulty) }}
                             </span>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
+                          </div>
+
+                          <p class="text-sm text-gray-400 mb-3">{{ quiz.moduleName }}</p>
+
+                          <!-- Detalles -->
+                          <div class="flex items-center gap-4 text-sm text-gray-400">
+                            <span class="flex items-center gap-1.5">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                                />
+                              </svg>
+                              {{ quiz.totalQuestions }} preguntas
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                                />
+                              </svg>
+                              {{ quiz.totalPoints }} puntos
+                            </span>
+                            @if (quiz.timeLimit) {
+                              <span class="flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                {{ quiz.timeLimit }} min
+                              </span>
+                            }
+                            <span class="flex items-center gap-1.5">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                                />
+                              </svg>
+                              {{ quiz.attemptsUsed }}/{{ quiz.attemptsAllowed }} intentos
+                            </span>
+                          </div>
+
+                          <!-- Calificación (si existe) -->
+                          @if (quiz.bestPercentage !== undefined) {
+                            <div class="mt-3 flex items-center gap-3">
+                              <div class="flex-1">
+                                <div class="flex items-center justify-between text-sm mb-1">
+                                  <span class="text-gray-400">Mejor calificación</span>
+                                  <span class="font-bold" [ngClass]="getScoreColor(quiz.bestPercentage)">
+                                    {{ quiz.bestPercentage.toFixed(1) }}%
+                                  </span>
+                                </div>
+                                <div class="h-2 bg-navy-900 rounded-full overflow-hidden">
+                                  <div
+                                    class="h-full rounded-full transition-all duration-500"
+                                    [class.bg-green-500]="quiz.bestPercentage >= 90"
+                                    [class.bg-blue-500]="
+                                      quiz.bestPercentage >= 75 && quiz.bestPercentage < 90
+                                    "
+                                    [class.bg-yellow-500]="
+                                      quiz.bestPercentage >= 60 && quiz.bestPercentage < 75
+                                    "
+                                    [class.bg-red-500]="quiz.bestPercentage < 60"
+                                    [style.width.%]="quiz.bestPercentage"
+                                  ></div>
+                                </div>
+                              </div>
+                              @if (quiz.passed) {
+                                <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                  <path
+                                    fill-rule="evenodd"
+                                    d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                                    clip-rule="evenodd"
+                                  />
+                                </svg>
+                              }
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Acciones -->
+                        <div class="flex flex-col gap-2">
+                          @if (quiz.status === 'completed') {
+                            <button
+                              (click)="viewQuizResults(quiz)"
+                              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                                />
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                              Ver Resultados
+                            </button>
+                            @if (quiz.attemptsUsed < quiz.attemptsAllowed) {
+                              <button
+                                (click)="startQuiz(quiz)"
+                                class="px-4 py-2 bg-navy-700 hover:bg-navy-600 text-gray-300 hover:text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                              >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                                  />
+                                </svg>
+                                Reintentar
+                              </button>
+                            }
+                          } @else if (quiz.status === 'expired') {
+                            <button
+                              disabled
+                              class="px-4 py-2 bg-gray-700 text-gray-500 font-semibold rounded-lg cursor-not-allowed"
+                            >
+                              Vencido
+                            </button>
+                          } @else {
+                            <button
+                              (click)="startQuiz(quiz)"
+                              class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                            >
+                              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                              Iniciar Evaluación
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
               </div>
             </div>
           }
@@ -736,5 +919,24 @@
         </div>
       </div>
     </div>
+  }
+
+  <!-- Quiz Take Modal -->
+  @if (isQuizActive() && activeQuiz()) {
+    <app-quiz-take
+      [quiz]="activeQuiz()!"
+      (onSubmit)="onQuizSubmit($event)"
+      (onCancel)="onQuizCancel()"
+    />
+  }
+
+  <!-- Quiz Results Modal -->
+  @if (isResultsActive() && activeResults()) {
+    <app-quiz-results
+      [quiz]="activeResults()!.quiz"
+      [attempt]="activeResults()!.attempt"
+      (onClose)="onResultsClose()"
+      (onRetry)="onResultsRetry()"
+    />
   }
 </div>

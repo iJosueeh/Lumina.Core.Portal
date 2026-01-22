@@ -1,0 +1,283 @@
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-[#0f172a] rounded-2xl shadow-2xl max-w-3xl w-full max-h-[85vh] my-8 overflow-hidden flex flex-col border border-slate-700">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-slate-800 to-slate-700 p-4 border-b border-slate-600">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-white">{{ quiz.title }}</h2>
+          <p class="text-gray-400 text-sm mt-1">{{ quiz.moduleName }}</p>
+        </div>
+        <button
+          (click)="cancel()"
+          class="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+          aria-label="Cerrar"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-300">
+            Pregunta {{ currentQuestionIndex() + 1 }} de {{ quiz.questions.length }}
+          </span>
+          <span class="text-gray-300">{{ answeredCount() }} respondidas</span>
+        </div>
+        <div class="h-2 bg-navy-600 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all duration-300"
+            [style.width.%]="progress()"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Timer (si aplica) -->
+      @if (quiz.config.timeLimit) {
+        <div class="mt-4 flex items-center gap-2 text-sm">
+          <svg class="w-5 h-5" [ngClass]="getTimerColor()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span [ngClass]="getTimerColor()" class="font-mono font-bold">
+            {{ getTimerDisplay() }}
+          </span>
+          <span class="text-gray-400">restantes</span>
+        </div>
+      }
+    </div>
+
+    <!-- Question Content -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <div class="max-w-2xl mx-auto">
+        <!-- Question -->
+        <div class="mb-6">
+          <div class="flex items-start gap-3 mb-4">
+            <span
+              class="flex-shrink-0 w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-sm"
+            >
+              {{ currentQuestionIndex() + 1 }}
+            </span>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-white mb-2">{{ currentQuestion().text }}</h3>
+              <p class="text-sm text-gray-400">{{ currentQuestion().points }} puntos</p>
+            </div>
+          </div>
+
+          <!-- Question Image (si existe) -->
+          @if (currentQuestion().imageUrl) {
+            <img
+              [src]="currentQuestion().imageUrl"
+              [alt]="currentQuestion().text"
+              class="w-full max-w-md rounded-lg mb-4"
+            />
+          }
+        </div>
+
+        <!-- Answer Options -->
+        <div class="space-y-3">
+          @switch (currentQuestion().type) {
+            @case ('multiple-choice') {
+              @for (option of currentQuestion().options; track option.id) {
+                <label
+                  class="flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
+                  [class.border-teal-500]="getCurrentAnswer() === option.id"
+                  [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
+                  [class.border-navy-600]="getCurrentAnswer() !== option.id"
+                >
+                  <input
+                    type="radio"
+                    [name]="'question-' + currentQuestion().id"
+                    [value]="option.id"
+                    [checked]="getCurrentAnswer() === option.id"
+                    (change)="onAnswerChange(currentQuestion().id, option.id)"
+                    class="mt-1 w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
+                  />
+                  <span class="flex-1 text-gray-200">{{ option.text }}</span>
+                </label>
+              }
+            }
+
+            @case ('true-false') {
+              @for (option of currentQuestion().options; track option.id) {
+                <label
+                  class="flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
+                  [class.border-teal-500]="getCurrentAnswer() === option.id"
+                  [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
+                  [class.border-navy-600]="getCurrentAnswer() !== option.id"
+                >
+                  <input
+                    type="radio"
+                    [name]="'question-' + currentQuestion().id"
+                    [value]="option.id"
+                    [checked]="getCurrentAnswer() === option.id"
+                    (change)="onAnswerChange(currentQuestion().id, option.id)"
+                    class="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
+                  />
+                  <span class="flex-1 text-gray-200 font-medium">{{ option.text }}</span>
+                </label>
+              }
+            }
+
+            @case ('short-answer') {
+              <textarea
+                [value]="getCurrentAnswer() || ''"
+                (input)="onAnswerChange(currentQuestion().id, $any($event.target).value)"
+                rows="4"
+                placeholder="Escribe tu respuesta aquí..."
+                class="w-full px-4 py-3 bg-navy-800 border-2 border-navy-600 rounded-lg text-white placeholder-gray-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none transition-colors"
+              ></textarea>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="bg-slate-900 p-4 border-t border-slate-600">
+      <div class="flex items-center justify-between">
+        <!-- Previous Button -->
+        <button
+          (click)="previousQuestion()"
+          [disabled]="!canGoPrevious()"
+          class="px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2"
+          [class.bg-navy-700]="canGoPrevious()"
+          [class.hover:bg-navy-600]="canGoPrevious()"
+          [class.text-white]="canGoPrevious()"
+          [class.bg-navy-900]="!canGoPrevious()"
+          [class.text-gray-600]="!canGoPrevious()"
+          [class.cursor-not-allowed]="!canGoPrevious()"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Anterior
+        </button>
+
+        <!-- Question Navigator -->
+        <div class="flex items-center gap-2 overflow-x-auto max-w-md">
+          @for (question of quiz.questions; track question.id; let i = $index) {
+            <button
+              (click)="goToQuestion(i)"
+              class="w-10 h-10 rounded-lg font-semibold transition-all flex-shrink-0"
+              [class.bg-teal-500]="i === currentQuestionIndex()"
+              [class.text-white]="i === currentQuestionIndex()"
+              [class.bg-green-500/20]="i !== currentQuestionIndex() && isQuestionAnswered(question.id)"
+              [class.text-green-400]="i !== currentQuestionIndex() && isQuestionAnswered(question.id)"
+              [class.bg-navy-700]="i !== currentQuestionIndex() && !isQuestionAnswered(question.id)"
+              [class.text-gray-400]="i !== currentQuestionIndex() && !isQuestionAnswered(question.id)"
+              [class.hover:bg-teal-600]="i === currentQuestionIndex()"
+              [class.hover:bg-green-500/30]="i !== currentQuestionIndex() && isQuestionAnswered(question.id)"
+              [class.hover:bg-navy-600]="i !== currentQuestionIndex() && !isQuestionAnswered(question.id)"
+            >
+              {{ i + 1 }}
+            </button>
+          }
+        </div>
+
+        <!-- Next/Submit Button -->
+        @if (!isLastQuestion()) {
+          <button
+            (click)="nextQuestion()"
+            class="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+          >
+            Siguiente
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        } @else {
+          <button
+            (click)="confirmSubmit()"
+            class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Enviar Evaluación
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  @if (showConfirmDialog()) {
+    <div class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
+      <div class="bg-[#0f172a] rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-600 animate-in fade-in zoom-in duration-200">
+        <!-- Icon Header -->
+        <div class="flex items-center justify-center mb-4">
+          <div class="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+            <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="text-center mb-6">
+          <h3 class="text-xl font-bold text-white mb-3">¿Enviar evaluación?</h3>
+          <div class="space-y-2 text-sm">
+            <p class="text-gray-300">
+              Has respondido <span class="font-bold text-teal-400">{{ answeredCount() }}</span> de 
+              <span class="font-bold text-white">{{ quiz.questions.length }}</span> preguntas.
+            </p>
+            @if (answeredCount() < quiz.questions.length) {
+              <p class="text-yellow-400 font-semibold bg-yellow-500/10 px-3 py-2 rounded-lg">
+                ⚠️ Las preguntas sin responder se contarán como incorrectas.
+              </p>
+            }
+            <p class="text-gray-400 mt-3">
+              Una vez enviada, no podrás modificar tus respuestas.
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button
+            (click)="cancelSubmit()"
+            class="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            (click)="submitQuiz()"
+            class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Confirmar Envío
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

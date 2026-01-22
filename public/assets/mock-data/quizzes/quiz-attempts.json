@@ -1,0 +1,50 @@
+[
+  {
+    "id": "attempt-1",
+    "quizId": "quiz-1",
+    "studentId": "student-1",
+    "attemptNumber": 1,
+    "status": "completed",
+    "startedAt": "2024-03-18T10:30:00",
+    "completedAt": "2024-03-18T10:45:00",
+    "timeSpent": 15,
+    "score": 85,
+    "percentage": 85,
+    "passed": true,
+    "answers": [
+      { "questionId": "q1-1", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 45 },
+      { "questionId": "q1-2", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 30 },
+      { "questionId": "q1-3", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 50 },
+      { "questionId": "q1-4", "answer": "opt1", "isCorrect": true, "pointsEarned": 10, "timeSpent": 40 },
+      { "questionId": "q1-5", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 35 },
+      { "questionId": "q1-6", "answer": "opt1", "isCorrect": true, "pointsEarned": 10, "timeSpent": 55 },
+      { "questionId": "q1-7", "answer": "opt1", "isCorrect": true, "pointsEarned": 10, "timeSpent": 25 },
+      { "questionId": "q1-8", "answer": "opt2", "isCorrect": false, "pointsEarned": 0, "timeSpent": 60 },
+      { "questionId": "q1-9", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 20 },
+      { "questionId": "q1-10", "answer": "opt1", "isCorrect": false, "pointsEarned": 0, "timeSpent": 40 }
+    ]
+  },
+  {
+    "id": "attempt-2",
+    "quizId": "quiz-2",
+    "studentId": "student-1",
+    "attemptNumber": 1,
+    "status": "completed",
+    "startedAt": "2024-03-27T14:00:00",
+    "completedAt": "2024-03-27T14:20:00",
+    "timeSpent": 20,
+    "score": 70,
+    "percentage": 70,
+    "passed": true,
+    "answers": [
+      { "questionId": "q2-1", "answer": "opt1", "isCorrect": true, "pointsEarned": 15, "timeSpent": 90 },
+      { "questionId": "q2-2", "answer": "opt1", "isCorrect": true, "pointsEarned": 10, "timeSpent": 45 },
+      { "questionId": "q2-3", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 50 },
+      { "questionId": "q2-4", "answer": "opt1", "isCorrect": false, "pointsEarned": 0, "timeSpent": 120 },
+      { "questionId": "q2-5", "answer": "opt1", "isCorrect": true, "pointsEarned": 10, "timeSpent": 40 },
+      { "questionId": "q2-6", "answer": "opt2", "isCorrect": true, "pointsEarned": 10, "timeSpent": 55 },
+      { "questionId": "q2-7", "answer": "opt2", "isCorrect": false, "pointsEarned": 0, "timeSpent": 70 },
+      { "questionId": "q2-8", "answer": "opt1", "isCorrect": true, "pointsEarned": 15, "timeSpent": 60 }
+    ]
+  }
+]

@@ -14,15 +14,20 @@ import {
   ForumComment,
   Announcement,
   AnnouncementAttachment,
+  Quiz,
+  QuizAttempt,
+  QuizSummary,
 } from '@features/student/domain/models/course-detail.model';
 import { Assignment } from '@features/student/domain/models/assignment.model';
+import { QuizTakeComponent } from '../../components/quiz-take/quiz-take.component';
+import { QuizResultsComponent } from '../../components/quiz-results/quiz-results.component';
 
-type TabType = 'description' | 'content' | 'materials' | 'forum' | 'announcements' | 'grades';
+type TabType = 'description' | 'content' | 'materials' | 'forum' | 'announcements' | 'evaluations';
 
 @Component({
   selector: 'app-course-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, QuizTakeComponent, QuizResultsComponent],
   templateUrl: './course-detail.component.html',
   styles: ``,
 })
@@ -33,7 +38,7 @@ export class CourseDetailComponent implements OnInit {
   tabs = [
     { id: 'description' as TabType, label: 'Descripción', icon: 'document' },
     { id: 'content' as TabType, label: 'Contenido', icon: 'book' },
-    { id: 'grades' as TabType, label: 'Calificaciones', icon: 'chart' },
+    { id: 'evaluations' as TabType, label: 'Evaluaciones', icon: 'clipboard-document-check' },
   ];
 
   course: CourseDetail = {} as CourseDetail;
@@ -67,9 +72,42 @@ export class CourseDetailComponent implements OnInit {
         next: (data) => {
           this.course = data;
           console.log('Course data loaded:', this.course);
+          // Cargar evaluaciones
+          this.loadQuizzes();
+          this.loadQuizAttempts();
         },
         error: (err) => {
           console.error('Error loading course data:', err);
+        },
+      });
+  }
+
+  loadQuizzes(): void {
+    this.http
+      .get<Quiz[]>('/assets/mock-data/quizzes/quizzes.json')
+      .subscribe({
+        next: (quizzes) => {
+          // Filtrar quizzes del curso actual (convertir ambos a string para comparar)
+          const courseQuizzes = quizzes.filter(q => String(q.courseId) === String(this.courseId));
+          this.quizzes.set(courseQuizzes);
+          console.log('Quizzes loaded for course:', courseQuizzes.length);
+        },
+        error: (err) => {
+          console.error('Error loading quizzes:', err);
+        },
+      });
+  }
+
+  loadQuizAttempts(): void {
+    this.http
+      .get<QuizAttempt[]>('/assets/mock-data/quizzes/quiz-attempts.json')
+      .subscribe({
+        next: (attempts) => {
+          this.quizAttempts.set(attempts);
+          console.log('Quiz attempts loaded:', attempts);
+        },
+        error: (err) => {
+          console.error('Error loading quiz attempts:', err);
         },
       });
   }
@@ -192,6 +230,109 @@ export class CourseDetailComponent implements OnInit {
       return b.createdAt.getTime() - a.createdAt.getTime();
     });
   });
+
+  // ========== EVALUACIONES ==========
+  // Signals para evaluaciones
+  quizzes = signal<Quiz[]>([]);
+  quizAttempts = signal<QuizAttempt[]>([]);
+  quizFilter = signal<'all' | 'pending' | 'completed'>('all');
+
+  // Computed: quizzes con estado calculado
+  quizSummaries = computed(() => {
+    const quizzesList = this.quizzes();
+    const attempts = this.quizAttempts();
+    
+    return quizzesList.map(quiz => {
+      const quizAttempts = attempts.filter(a => a.quizId === quiz.id);
+      const completedAttempts = quizAttempts.filter(a => a.status === 'completed');
+      const bestAttempt = completedAttempts.reduce((best, current) => 
+        !best || (current.percentage || 0) > (best.percentage || 0) ? current : best
+      , null as QuizAttempt | null);
+
+      // Determinar estado
+      let status: 'not-started' | 'in-progress' | 'completed' | 'expired' = 'not-started';
+      const now = new Date();
+      const availableFrom = new Date(quiz.availableFrom);
+      const availableUntil = quiz.availableUntil ? new Date(quiz.availableUntil) : null;
+
+      if (availableUntil && now > availableUntil) {
+        status = 'expired';
+      } else if (now < availableFrom) {
+        status = 'not-started';
+      } else if (completedAttempts.length > 0) {
+        status = 'completed';
+      } else if (quizAttempts.some(a => a.status === 'in-progress')) {
+        status = 'in-progress';
+      }
+
+      const summary: QuizSummary = {
+        id: quiz.id,
+        title: quiz.title,
+        moduleId: quiz.moduleId,
+        moduleName: quiz.moduleName,
+        difficulty: quiz.difficulty,
+        totalQuestions: quiz.totalQuestions,
+        totalPoints: quiz.totalPoints,
+        timeLimit: quiz.config.timeLimit,
+        availableFrom: new Date(quiz.availableFrom),
+        availableUntil: quiz.availableUntil ? new Date(quiz.availableUntil) : undefined,
+        status,
+        attemptsUsed: completedAttempts.length,
+        attemptsAllowed: quiz.config.attemptsAllowed,
+        bestScore: bestAttempt?.score,
+        bestPercentage: bestAttempt?.percentage,
+        passed: bestAttempt?.passed,
+      };
+
+      return summary;
+    });
+  });
+
+  // Computed: evaluaciones filtradas
+  filteredQuizzes = computed(() => {
+    const summaries = this.quizSummaries();
+    const filter = this.quizFilter();
+
+    if (filter === 'all') return summaries;
+    if (filter === 'pending') {
+      return summaries.filter(q => q.status === 'not-started' || q.status === 'in-progress');
+    }
+    if (filter === 'completed') {
+      return summaries.filter(q => q.status === 'completed');
+    }
+
+    return summaries;
+  });
+
+  // Computed: estadísticas de evaluaciones
+  completedQuizzesCount = computed(() => 
+    this.quizSummaries().filter(q => q.status === 'completed').length
+  );
+
+  pendingQuizzesCount = computed(() => 
+    this.quizSummaries().filter(q => q.status === 'not-started' || q.status === 'in-progress').length
+  );
+
+  averageQuizScore = computed(() => {
+    const quizzesWithScores = this.quizSummaries().filter(q => q.bestPercentage !== undefined);
+    if (quizzesWithScores.length === 0) return 0;
+    const total = quizzesWithScores.reduce((sum, q) => sum + (q.bestPercentage || 0), 0);
+    return total / quizzesWithScores.length;
+  });
+
+  completionPercentage = computed(() => {
+    const total = this.quizSummaries().length;
+    if (total === 0) return 0;
+    return (this.completedQuizzesCount() / total) * 100;
+  });
+
+  // Signal para quiz activo
+  activeQuiz = signal<Quiz | null>(null);
+  isQuizActive = computed(() => this.activeQuiz() !== null);
+
+  // Signal para resultados activos
+  activeResults = signal<{ quiz: Quiz; attempt: QuizAttempt } | null>(null);
+  isResultsActive = computed(() => this.activeResults() !== null);
 
   // Computed: próxima lección no completada
   nextLesson = computed(() => {
@@ -463,5 +604,158 @@ export class CourseDetailComponent implements OnInit {
     return (
       this.course.modules?.reduce((total, module) => total + (module.lessons?.length || 0), 0) || 0
     );
+  }
+
+  // ========== MÉTODOS PARA EVALUACIONES ==========
+  
+  // Filtrar evaluaciones
+  filterQuizzes(filter: 'all' | 'pending' | 'completed'): void {
+    this.quizFilter.set(filter);
+  }
+
+  // Obtener badge de estado de quiz
+  getQuizStatusBadge(status: 'not-started' | 'in-progress' | 'completed' | 'expired'): string {
+    const badges: { [key: string]: string } = {
+      'not-started': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      'in-progress': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      'completed': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      'expired': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return badges[status] || 'bg-gray-100 text-gray-700';
+  }
+
+  // Obtener label de estado
+  getQuizStatusLabel(status: 'not-started' | 'in-progress' | 'completed' | 'expired'): string {
+    const labels: { [key: string]: string } = {
+      'not-started': 'No Iniciado',
+      'in-progress': 'En Progreso',
+      'completed': 'Completado',
+      'expired': 'Vencido',
+    };
+    return labels[status] || 'Desconocido';
+  }
+
+  // Obtener badge de dificultad
+  getDifficultyBadge(difficulty: 'easy' | 'medium' | 'hard'): string {
+    const badges: { [key: string]: string } = {
+      'easy': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      'medium': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      'hard': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return badges[difficulty] || 'bg-gray-100 text-gray-700';
+  }
+
+  // Obtener label de dificultad
+  getDifficultyLabel(difficulty: 'easy' | 'medium' | 'hard'): string {
+    const labels: { [key: string]: string } = {
+      'easy': 'Fácil',
+      'medium': 'Medio',
+      'hard': 'Difícil',
+    };
+    return labels[difficulty] || 'Desconocido';
+  }
+
+  // Iniciar evaluación
+  startQuiz(quizSummary: QuizSummary): void {
+    // Buscar el quiz completo
+    const quiz = this.quizzes().find(q => q.id === quizSummary.id);
+    if (!quiz) {
+      console.error('Quiz not found:', quizSummary.id);
+      return;
+    }
+
+    // Verificar si puede tomar el quiz
+    if (quizSummary.attemptsUsed >= quizSummary.attemptsAllowed) {
+      alert('Has agotado todos los intentos permitidos para esta evaluación.');
+      return;
+    }
+
+    // Verificar si está vencido
+    if (quizSummary.status === 'expired') {
+      alert('Esta evaluación ha vencido.');
+      return;
+    }
+
+    // Abrir quiz
+    this.activeQuiz.set(quiz);
+  }
+
+  // Manejar envío de quiz
+  onQuizSubmit(attempt: QuizAttempt): void {
+    console.log('Quiz submitted:', attempt);
+    
+    // Agregar attempt a la lista
+    const currentAttempts = this.quizAttempts();
+    this.quizAttempts.set([...currentAttempts, attempt]);
+
+    // Obtener el quiz actual antes de cerrar
+    const currentQuiz = this.activeQuiz();
+
+    // Cerrar quiz
+    this.activeQuiz.set(null);
+
+    // Mostrar resultados
+    if (currentQuiz) {
+      this.activeResults.set({ quiz: currentQuiz, attempt });
+    }
+
+    // TODO: Guardar en backend
+  }
+
+  // Cancelar quiz
+  onQuizCancel(): void {
+    this.activeQuiz.set(null);
+  }
+
+  // Ver resultados
+  viewQuizResults(quizSummary: QuizSummary): void {
+    // Buscar el quiz completo
+    const quiz = this.quizzes().find(q => q.id === quizSummary.id);
+    if (!quiz) {
+      console.error('Quiz not found:', quizSummary.id);
+      return;
+    }
+
+    // Buscar el mejor intento
+    const attempts = this.quizAttempts().filter(a => a.quizId === quizSummary.id && a.status === 'completed');
+    const bestAttempt = attempts.reduce((best, current) => 
+      !best || (current.percentage || 0) > (best.percentage || 0) ? current : best
+    , null as QuizAttempt | null);
+
+    if (!bestAttempt) {
+      alert('No se encontraron intentos completados para esta evaluación.');
+      return;
+    }
+
+    // Mostrar resultados
+    this.activeResults.set({ quiz, attempt: bestAttempt });
+  }
+
+  // Cerrar resultados
+  onResultsClose(): void {
+    this.activeResults.set(null);
+  }
+
+  // Reintentar desde resultados
+  onResultsRetry(): void {
+    const results = this.activeResults();
+    if (!results) return;
+
+    // Cerrar resultados
+    this.activeResults.set(null);
+
+    // Buscar el quiz summary
+    const quizSummary = this.quizSummaries().find(q => q.id === results.quiz.id);
+    if (quizSummary) {
+      this.startQuiz(quizSummary);
+    }
+  }
+
+  // Obtener color de calificación
+  getScoreColor(percentage: number): string {
+    if (percentage >= 90) return 'text-green-600 dark:text-green-400';
+    if (percentage >= 75) return 'text-blue-600 dark:text-blue-400';
+    if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   }
 }

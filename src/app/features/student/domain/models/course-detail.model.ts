@@ -1,4 +1,5 @@
 import { CourseGrade, Evaluation } from './grade.model';
+import { Quiz, QuizAttempt, QuizSummary, QuestionAnswer, Question } from './quiz.model';
 
 export interface Module {
   id: string;
@@ -147,6 +148,9 @@ export interface CourseDetail {
   forumComments: ForumComment[]; // NUEVO
   announcements: Announcement[]; // NUEVO
   grades?: CourseGrade; // NUEVO - Calificaciones del curso
+  quizzes?: Quiz[]; // NUEVO - Evaluaciones del curso
+  quizAttempts?: QuizAttempt[]; // NUEVO - Intentos del estudiante
+  quizSummaries?: QuizSummary[]; // NUEVO - Resúmenes de evaluaciones
 
   // Descripción
   description: string;
@@ -168,3 +172,4 @@ export interface CourseDetail {
 
 // Re-export para facilitar imports
 export type { CourseGrade, Evaluation };
+export type { Quiz, QuizAttempt, QuizSummary, Question, QuestionAnswer };
