@@ -1,0 +1,233 @@
+[
+  {
+    "id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "codigo": "WEB101",
+    "titulo": "Desarrollo Web Full Stack",
+    "descripcion": "Curso completo de desarrollo web moderno con React, Node.js y bases de datos",
+    "creditos": 4,
+    "ciclo": "2024-1",
+    "totalAlumnos": 45,
+    "alumnosActivos": 43,
+    "alumnosInactivos": 2,
+    "promedioGeneral": 15.8,
+    "asistenciaPromedio": 94.5,
+    "estadoCurso": "Activo",
+    "coverImage": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200",
+    "horario": [
+      {
+        "diaSemana": "Lunes",
+        "horaInicio": "18:00",
+        "horaFin": "21:00",
+        "aula": "Lab 301",
+        "modalidad": "Híbrido",
+        "enlaceReunion": "https://meet.google.com/abc-defg-hij"
+      },
+      {
+        "diaSemana": "Miércoles",
+        "horaInicio": "18:00",
+        "horaFin": "21:00",
+        "aula": "Lab 301",
+        "modalidad": "Híbrido",
+        "enlaceReunion": "https://meet.google.com/abc-defg-hij"
+      }
+    ],
+    "stats": {
+      "aprobados": 38,
+      "reprobados": 5,
+      "enRiesgo": 2,
+      "tareasEntregadas": 892,
+      "tareasPendientes": 45,
+      "promedioMasAlto": 18.5,
+      "promedioMasBajo": 10.2
+    },
+    "evaluaciones": [
+      {
+        "id": "eval-1",
+        "nombre": "Control de Lectura 1",
+        "tipo": "Quiz",
+        "peso": 15,
+        "fechaLimite": "2024-04-15T23:59:00",
+        "estado": "Completado",
+        "calificadas": 45,
+        "pendientes": 0,
+        "promedio": 16.8
+      },
+      {
+        "id": "eval-2",
+        "nombre": "Taller HTML/CSS",
+        "tipo": "Tarea",
+        "peso": 25,
+        "fechaLimite": "2024-05-01T23:59:00",
+        "estado": "Completado",
+        "calificadas": 45,
+        "pendientes": 0,
+        "promedio": 15.5
+      },
+      {
+        "id": "eval-3",
+        "nombre": "Examen Parcial",
+        "tipo": "Examen",
+        "peso": 30,
+        "fechaLimite": "2024-05-20T23:59:00",
+        "estado": "En Calificación",
+        "calificadas": 30,
+        "pendientes": 15,
+        "promedio": 14.2
+      },
+      {
+        "id": "eval-4",
+        "nombre": "Proyecto Final",
+        "tipo": "Proyecto",
+        "peso": 30,
+        "fechaLimite": "2024-07-25T23:59:00",
+        "estado": "Pendiente",
+        "calificadas": 0,
+        "pendientes": 45,
+        "promedio": 0
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "codigo": "CLOUD101",
+    "titulo": "Arquitectura Cloud 101",
+    "descripcion": "Fundamentos de arquitectura en la nube con AWS, Azure y Google Cloud",
+    "creditos": 4,
+    "ciclo": "2024-1",
+    "totalAlumnos": 52,
+    "alumnosActivos": 50,
+    "alumnosInactivos": 2,
+    "promedioGeneral": 16.2,
+    "asistenciaPromedio": 96.8,
+    "estadoCurso": "Activo",
+    "coverImage": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200",
+    "horario": [
+      {
+        "diaSemana": "Martes",
+        "horaInicio": "14:00",
+        "horaFin": "17:00",
+        "aula": "Aula 205",
+        "modalidad": "Presencial"
+      },
+      {
+        "diaSemana": "Jueves",
+        "horaInicio": "14:00",
+        "horaFin": "17:00",
+        "aula": "Aula 205",
+        "modalidad": "Presencial"
+      }
+    ],
+    "stats": {
+      "aprobados": 45,
+      "reprobados": 3,
+      "enRiesgo": 4,
+      "tareasEntregadas": 1024,
+      "tareasPendientes": 30,
+      "promedioMasAlto": 19.2,
+      "promedioMasBajo": 11.5
+    },
+    "evaluaciones": [
+      {
+        "id": "eval-cloud-1",
+        "nombre": "Quiz: Fundamentos Cloud",
+        "tipo": "Quiz",
+        "peso": 20,
+        "fechaLimite": "2024-04-10T23:59:00",
+        "estado": "Completado",
+        "calificadas": 52,
+        "pendientes": 0,
+        "promedio": 17.2
+      },
+      {
+        "id": "eval-cloud-2",
+        "nombre": "Proyecto: Deploy en AWS",
+        "tipo": "Proyecto",
+        "peso": 40,
+        "fechaLimite": "2024-06-15T23:59:00",
+        "estado": "Completado",
+        "calificadas": 52,
+        "pendientes": 0,
+        "promedio": 16.5
+      },
+      {
+        "id": "eval-cloud-3",
+        "nombre": "Examen Final",
+        "tipo": "Examen",
+        "peso": 40,
+        "fechaLimite": "2024-07-20T23:59:00",
+        "estado": "Pendiente",
+        "calificadas": 0,
+        "pendientes": 52,
+        "promedio": 0
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "codigo": "DB201",
+    "titulo": "Base de Datos Avanzadas",
+    "descripcion": "Diseño, optimización y administración de bases de datos relacionales y NoSQL",
+    "creditos": 3,
+    "ciclo": "2024-1",
+    "totalAlumnos": 45,
+    "alumnosActivos": 45,
+    "alumnosInactivos": 0,
+    "promedioGeneral": 15.2,
+    "asistenciaPromedio": 92.3,
+    "estadoCurso": "Activo",
+    "coverImage": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200",
+    "horario": [
+      {
+        "diaSemana": "Viernes",
+        "horaInicio": "09:00",
+        "horaFin": "12:00",
+        "aula": "Lab 102",
+        "modalidad": "Presencial"
+      }
+    ],
+    "stats": {
+      "aprobados": 40,
+      "reprobados": 2,
+      "enRiesgo": 3,
+      "tareasEntregadas": 756,
+      "tareasPendientes": 0,
+      "promedioMasAlto": 18.8,
+      "promedioMasBajo": 9.5
+    },
+    "evaluaciones": [
+      {
+        "id": "eval-db-1",
+        "nombre": "Taller: Normalización",
+        "tipo": "Tarea",
+        "peso": 25,
+        "fechaLimite": "2024-04-20T23:59:00",
+        "estado": "Completado",
+        "calificadas": 45,
+        "pendientes": 0,
+        "promedio": 15.8
+      },
+      {
+        "id": "eval-db-2",
+        "nombre": "Proyecto: Sistema de BD",
+        "tipo": "Proyecto",
+        "peso": 40,
+        "fechaLimite": "2024-06-10T23:59:00",
+        "estado": "Completado",
+        "calificadas": 45,
+        "pendientes": 0,
+        "promedio": 14.9
+      },
+      {
+        "id": "eval-db-3",
+        "nombre": "Examen Final",
+        "tipo": "Examen",
+        "peso": 35,
+        "fechaLimite": "2024-07-15T23:59:00",
+        "estado": "Pendiente",
+        "calificadas": 0,
+        "pendientes": 45,
+        "promedio": 0
+      }
+    ]
+  }
+]

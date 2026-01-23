@@ -1,0 +1,163 @@
+[
+  {
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "courseName": "Desarrollo Web Full Stack",
+    "courseCode": "WEB101",
+    "students": [
+      {
+        "id": "std-001",
+        "codigo": "2020100001",
+        "nombre": "Ana María",
+        "apellidos": "García López",
+        "email": "ana.garcia@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Ana+Garcia&background=3b82f6&color=fff",
+        "promedio": 17.5,
+        "asistencia": 98.5,
+        "tareasEntregadas": 18,
+        "tareasPendientes": 1,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T15:30:00"
+      },
+      {
+        "id": "std-002",
+        "codigo": "2020100002",
+        "nombre": "Carlos Eduardo",
+        "apellidos": "Rodríguez Pérez",
+        "email": "carlos.rodriguez@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Carlos+Rodriguez&background=10b981&color=fff",
+        "promedio": 16.2,
+        "asistencia": 95.0,
+        "tareasEntregadas": 17,
+        "tareasPendientes": 2,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T14:20:00"
+      },
+      {
+        "id": "std-003",
+        "codigo": "2020100003",
+        "nombre": "María José",
+        "apellidos": "Fernández Silva",
+        "email": "maria.fernandez@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Maria+Fernandez&background=f59e0b&color=fff",
+        "promedio": 18.5,
+        "asistencia": 100.0,
+        "tareasEntregadas": 19,
+        "tareasPendientes": 0,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T16:45:00"
+      },
+      {
+        "id": "std-004",
+        "codigo": "2020100004",
+        "nombre": "Luis Alberto",
+        "apellidos": "Martínez Gómez",
+        "email": "luis.martinez@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Luis+Martinez&background=8b5cf6&color=fff",
+        "promedio": 14.8,
+        "asistencia": 88.0,
+        "tareasEntregadas": 15,
+        "tareasPendientes": 4,
+        "estado": "En Riesgo",
+        "ultimoAcceso": "2026-01-21T10:30:00"
+      },
+      {
+        "id": "std-005",
+        "codigo": "2020100005",
+        "nombre": "Sofía Valentina",
+        "apellidos": "Torres Ramírez",
+        "email": "sofia.torres@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Sofia+Torres&background=ec4899&color=fff",
+        "promedio": 15.9,
+        "asistencia": 92.5,
+        "tareasEntregadas": 16,
+        "tareasPendientes": 3,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T13:15:00"
+      }
+    ]
+  },
+  {
+    "courseId": "2",
+    "courseName": "Arquitectura Cloud 101",
+    "courseCode": "CLOUD101",
+    "students": [
+      {
+        "id": "std-006",
+        "codigo": "2020100006",
+        "nombre": "Diego Alejandro",
+        "apellidos": "Vargas Castro",
+        "email": "diego.vargas@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Diego+Vargas&background=14b8a6&color=fff",
+        "promedio": 16.8,
+        "asistencia": 96.0,
+        "tareasEntregadas": 14,
+        "tareasPendientes": 1,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T12:00:00"
+      },
+      {
+        "id": "std-007",
+        "codigo": "2020100007",
+        "nombre": "Isabella Camila",
+        "apellidos": "Morales Díaz",
+        "email": "isabella.morales@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Isabella+Morales&background=f97316&color=fff",
+        "promedio": 18.2,
+        "asistencia": 98.5,
+        "tareasEntregadas": 15,
+        "tareasPendientes": 0,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T17:30:00"
+      },
+      {
+        "id": "std-008",
+        "codigo": "2020100008",
+        "nombre": "Sebastián Mateo",
+        "apellidos": "Herrera Ruiz",
+        "email": "sebastian.herrera@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Sebastian+Herrera&background=6366f1&color=fff",
+        "promedio": 15.5,
+        "asistencia": 94.0,
+        "tareasEntregadas": 13,
+        "tareasPendientes": 2,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T11:45:00"
+      }
+    ]
+  },
+  {
+    "courseId": "3",
+    "courseName": "Base de Datos Avanzadas",
+    "courseCode": "DB201",
+    "students": [
+      {
+        "id": "std-009",
+        "codigo": "2020100009",
+        "nombre": "Valentina Andrea",
+        "apellidos": "Sánchez Ortiz",
+        "email": "valentina.sanchez@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Valentina+Sanchez&background=ef4444&color=fff",
+        "promedio": 17.2,
+        "asistencia": 97.0,
+        "tareasEntregadas": 16,
+        "tareasPendientes": 0,
+        "estado": "Activo",
+        "ultimoAcceso": "2026-01-22T09:30:00"
+      },
+      {
+        "id": "std-010",
+        "codigo": "2020100010",
+        "nombre": "Mateo Nicolás",
+        "apellidos": "Jiménez Flores",
+        "email": "mateo.jimenez@estudiante.edu.pe",
+        "avatar": "https://ui-avatars.com/api/?name=Mateo+Jimenez&background=06b6d4&color=fff",
+        "promedio": 14.5,
+        "asistencia": 89.0,
+        "tareasEntregadas": 14,
+        "tareasPendientes": 2,
+        "estado": "En Riesgo",
+        "ultimoAcceso": "2026-01-21T16:00:00"
+      }
+    ]
+  }
+]

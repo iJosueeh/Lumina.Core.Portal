@@ -1,0 +1,197 @@
+[
+  {
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "courseName": "Desarrollo Web Full Stack",
+    "courseCode": "WEB101",
+    "sesiones": [
+      {
+        "id": "ses-1",
+        "fecha": "2026-01-13T18:00:00",
+        "tema": "Introducción a React",
+        "tipo": "Teórica",
+        "duracion": "3 horas",
+        "asistencias": [
+          {
+            "estudianteId": "std-001",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-002",
+            "estado": "Presente",
+            "horaLlegada": "18:05"
+          },
+          {
+            "estudianteId": "std-003",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-004",
+            "estado": "Tardanza",
+            "horaLlegada": "18:25",
+            "observacion": "Tráfico"
+          },
+          {
+            "estudianteId": "std-005",
+            "estado": "Presente",
+            "horaLlegada": "18:02"
+          }
+        ],
+        "porcentajeAsistencia": 100
+      },
+      {
+        "id": "ses-2",
+        "fecha": "2026-01-15T18:00:00",
+        "tema": "Componentes y Props",
+        "tipo": "Práctica",
+        "duracion": "3 horas",
+        "asistencias": [
+          {
+            "estudianteId": "std-001",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-002",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-003",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-004",
+            "estado": "Ausente",
+            "observacion": "Enfermedad - Justificado"
+          },
+          {
+            "estudianteId": "std-005",
+            "estado": "Presente",
+            "horaLlegada": "18:10"
+          }
+        ],
+        "porcentajeAsistencia": 80
+      },
+      {
+        "id": "ses-3",
+        "fecha": "2026-01-20T18:00:00",
+        "tema": "Hooks: useState y useEffect",
+        "tipo": "Teórica",
+        "duracion": "3 horas",
+        "asistencias": [
+          {
+            "estudianteId": "std-001",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-002",
+            "estado": "Presente",
+            "horaLlegada": "18:03"
+          },
+          {
+            "estudianteId": "std-003",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-004",
+            "estado": "Presente",
+            "horaLlegada": "18:15"
+          },
+          {
+            "estudianteId": "std-005",
+            "estado": "Ausente",
+            "observacion": "Sin justificar"
+          }
+        ],
+        "porcentajeAsistencia": 80
+      },
+      {
+        "id": "ses-4",
+        "fecha": "2026-01-22T18:00:00",
+        "tema": "React Hooks Avanzados",
+        "tipo": "Práctica",
+        "duracion": "3 horas",
+        "asistencias": [
+          {
+            "estudianteId": "std-001",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-002",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-003",
+            "estado": "Presente",
+            "horaLlegada": "18:00"
+          },
+          {
+            "estudianteId": "std-004",
+            "estado": "Tardanza",
+            "horaLlegada": "18:20"
+          },
+          {
+            "estudianteId": "std-005",
+            "estado": "Presente",
+            "horaLlegada": "18:05"
+          }
+        ],
+        "porcentajeAsistencia": 100
+      }
+    ],
+    "resumenEstudiantes": [
+      {
+        "estudianteId": "std-001",
+        "estudianteNombre": "Ana María García López",
+        "totalSesiones": 4,
+        "presentes": 4,
+        "ausentes": 0,
+        "tardanzas": 0,
+        "porcentajeAsistencia": 100
+      },
+      {
+        "estudianteId": "std-002",
+        "estudianteNombre": "Carlos Eduardo Rodríguez Pérez",
+        "totalSesiones": 4,
+        "presentes": 4,
+        "ausentes": 0,
+        "tardanzas": 0,
+        "porcentajeAsistencia": 100
+      },
+      {
+        "estudianteId": "std-003",
+        "estudianteNombre": "María José Fernández Silva",
+        "totalSesiones": 4,
+        "presentes": 4,
+        "ausentes": 0,
+        "tardanzas": 0,
+        "porcentajeAsistencia": 100
+      },
+      {
+        "estudianteId": "std-004",
+        "estudianteNombre": "Luis Alberto Martínez Gómez",
+        "totalSesiones": 4,
+        "presentes": 2,
+        "ausentes": 1,
+        "tardanzas": 2,
+        "porcentajeAsistencia": 75
+      },
+      {
+        "estudianteId": "std-005",
+        "estudianteNombre": "Sofía Valentina Torres Ramírez",
+        "totalSesiones": 4,
+        "presentes": 3,
+        "ausentes": 1,
+        "tardanzas": 0,
+        "porcentajeAsistencia": 75
+      }
+    ]
+  }
+]

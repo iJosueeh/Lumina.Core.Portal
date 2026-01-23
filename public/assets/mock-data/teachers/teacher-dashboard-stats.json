@@ -1,0 +1,114 @@
+{
+  "teacherId": "660f9511-f3ac-52e5-b827-557766551111",
+  "teacherName": "Carlos Alberto Mendoza Silva",
+  "stats": {
+    "totalCourses": 3,
+    "activeCourses": 3,
+    "totalStudents": 142,
+    "activeStudents": 138,
+    "pendingGrades": 45,
+    "upcomingClasses": 5,
+    "averageAttendance": 94.5,
+    "averageGrade": 15.8
+  },
+  "performanceIndex": [
+    {
+      "week": "Semana 1",
+      "average": 14.2
+    },
+    {
+      "week": "Semana 2",
+      "average": 14.8
+    },
+    {
+      "week": "Semana 3",
+      "average": 15.1
+    },
+    {
+      "week": "Semana 4",
+      "average": 15.5
+    },
+    {
+      "week": "Semana 5",
+      "average": 15.8
+    },
+    {
+      "week": "Semana 6",
+      "average": 16.2
+    }
+  ],
+  "recentActivities": [
+    {
+      "id": "act-1",
+      "type": "grade",
+      "title": "Calificaciones actualizadas",
+      "description": "Examen Parcial - Desarrollo Web Full Stack",
+      "course": "Desarrollo Web Full Stack",
+      "timestamp": "2026-01-22T14:30:00",
+      "icon": "clipboard-check"
+    },
+    {
+      "id": "act-2",
+      "type": "assignment",
+      "title": "Nueva tarea asignada",
+      "description": "Proyecto Final - Arquitectura Cloud",
+      "course": "Arquitectura Cloud 101",
+      "timestamp": "2026-01-22T10:15:00",
+      "icon": "document-plus"
+    },
+    {
+      "id": "act-3",
+      "type": "announcement",
+      "title": "Anuncio publicado",
+      "description": "Recordatorio: Entrega de proyecto el viernes",
+      "course": "Desarrollo Web Full Stack",
+      "timestamp": "2026-01-21T16:45:00",
+      "icon": "megaphone"
+    },
+    {
+      "id": "act-4",
+      "type": "attendance",
+      "title": "Asistencia registrada",
+      "description": "Sesión del 22/01/2026 - Base de Datos Avanzadas",
+      "course": "Base de Datos Avanzadas",
+      "timestamp": "2026-01-22T09:00:00",
+      "icon": "user-check"
+    }
+  ],
+  "upcomingClasses": [
+    {
+      "id": "class-1",
+      "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+      "courseName": "Desarrollo Web Full Stack",
+      "courseCode": "WEB101",
+      "date": "2026-01-22T18:00:00",
+      "endTime": "2026-01-22T21:00:00",
+      "room": "Lab 301",
+      "modality": "Híbrido",
+      "topic": "React Hooks Avanzados",
+      "meetingLink": "https://meet.google.com/abc-defg-hij"
+    },
+    {
+      "id": "class-2",
+      "courseId": "2",
+      "courseName": "Arquitectura Cloud 101",
+      "courseCode": "CLOUD101",
+      "date": "2026-01-23T14:00:00",
+      "endTime": "2026-01-23T17:00:00",
+      "room": "Aula 205",
+      "modality": "Presencial",
+      "topic": "Microservicios con Docker"
+    },
+    {
+      "id": "class-3",
+      "courseId": "3",
+      "courseName": "Base de Datos Avanzadas",
+      "courseCode": "DB201",
+      "date": "2026-01-24T09:00:00",
+      "endTime": "2026-01-24T12:00:00",
+      "room": "Lab 102",
+      "modality": "Presencial",
+      "topic": "Optimización de Queries"
+    }
+  ]
+}

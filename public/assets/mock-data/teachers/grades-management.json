@@ -1,0 +1,181 @@
+[
+  {
+    "courseId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "courseName": "Desarrollo Web Full Stack",
+    "courseCode": "WEB101",
+    "evaluaciones": [
+      {
+        "id": "eval-1",
+        "nombre": "Control de Lectura 1",
+        "peso": 15,
+        "tipo": "Quiz"
+      },
+      {
+        "id": "eval-2",
+        "nombre": "Taller HTML/CSS",
+        "peso": 25,
+        "tipo": "Tarea"
+      },
+      {
+        "id": "eval-3",
+        "nombre": "Examen Parcial",
+        "peso": 30,
+        "tipo": "Examen"
+      },
+      {
+        "id": "eval-4",
+        "nombre": "Proyecto Final",
+        "peso": 30,
+        "tipo": "Proyecto"
+      }
+    ],
+    "calificaciones": [
+      {
+        "estudianteId": "std-001",
+        "estudianteNombre": "Ana María García López",
+        "estudianteCodigo": "2020100001",
+        "notas": {
+          "eval-1": 18,
+          "eval-2": 17,
+          "eval-3": 18,
+          "eval-4": null
+        },
+        "promedio": 17.5,
+        "estado": "Aprobado"
+      },
+      {
+        "estudianteId": "std-002",
+        "estudianteNombre": "Carlos Eduardo Rodríguez Pérez",
+        "estudianteCodigo": "2020100002",
+        "notas": {
+          "eval-1": 16,
+          "eval-2": 15,
+          "eval-3": 17,
+          "eval-4": null
+        },
+        "promedio": 16.2,
+        "estado": "Aprobado"
+      },
+      {
+        "estudianteId": "std-003",
+        "estudianteNombre": "María José Fernández Silva",
+        "estudianteCodigo": "2020100003",
+        "notas": {
+          "eval-1": 19,
+          "eval-2": 18,
+          "eval-3": 19,
+          "eval-4": null
+        },
+        "promedio": 18.5,
+        "estado": "Aprobado"
+      },
+      {
+        "estudianteId": "std-004",
+        "estudianteNombre": "Luis Alberto Martínez Gómez",
+        "estudianteCodigo": "2020100004",
+        "notas": {
+          "eval-1": 14,
+          "eval-2": 13,
+          "eval-3": 16,
+          "eval-4": null
+        },
+        "promedio": 14.8,
+        "estado": "En Riesgo"
+      },
+      {
+        "estudianteId": "std-005",
+        "estudianteNombre": "Sofía Valentina Torres Ramírez",
+        "estudianteCodigo": "2020100005",
+        "notas": {
+          "eval-1": 16,
+          "eval-2": 15,
+          "eval-3": 16,
+          "eval-4": null
+        },
+        "promedio": 15.9,
+        "estado": "Aprobado"
+      }
+    ],
+    "estadisticas": {
+      "promedioGeneral": 16.58,
+      "notaMasAlta": 18.5,
+      "notaMasBaja": 14.8,
+      "aprobados": 4,
+      "reprobados": 0,
+      "enRiesgo": 1,
+      "totalEstudiantes": 5
+    }
+  },
+  {
+    "courseId": "2",
+    "courseName": "Arquitectura Cloud 101",
+    "courseCode": "CLOUD101",
+    "evaluaciones": [
+      {
+        "id": "eval-cloud-1",
+        "nombre": "Quiz: Fundamentos Cloud",
+        "peso": 20,
+        "tipo": "Quiz"
+      },
+      {
+        "id": "eval-cloud-2",
+        "nombre": "Proyecto: Deploy en AWS",
+        "peso": 40,
+        "tipo": "Proyecto"
+      },
+      {
+        "id": "eval-cloud-3",
+        "nombre": "Examen Final",
+        "peso": 40,
+        "tipo": "Examen"
+      }
+    ],
+    "calificaciones": [
+      {
+        "estudianteId": "std-006",
+        "estudianteNombre": "Diego Alejandro Vargas Castro",
+        "estudianteCodigo": "2020100006",
+        "notas": {
+          "eval-cloud-1": 17,
+          "eval-cloud-2": 16,
+          "eval-cloud-3": null
+        },
+        "promedio": 16.8,
+        "estado": "Aprobado"
+      },
+      {
+        "estudianteId": "std-007",
+        "estudianteNombre": "Isabella Camila Morales Díaz",
+        "estudianteCodigo": "2020100007",
+        "notas": {
+          "eval-cloud-1": 19,
+          "eval-cloud-2": 18,
+          "eval-cloud-3": null
+        },
+        "promedio": 18.2,
+        "estado": "Aprobado"
+      },
+      {
+        "estudianteId": "std-008",
+        "estudianteNombre": "Sebastián Mateo Herrera Ruiz",
+        "estudianteCodigo": "2020100008",
+        "notas": {
+          "eval-cloud-1": 15,
+          "eval-cloud-2": 16,
+          "eval-cloud-3": null
+        },
+        "promedio": 15.5,
+        "estado": "Aprobado"
+      }
+    ],
+    "estadisticas": {
+      "promedioGeneral": 16.83,
+      "notaMasAlta": 18.2,
+      "notaMasBaja": 15.5,
+      "aprobados": 3,
+      "reprobados": 0,
+      "enRiesgo": 0,
+      "totalEstudiantes": 3
+    }
+  }
+]
