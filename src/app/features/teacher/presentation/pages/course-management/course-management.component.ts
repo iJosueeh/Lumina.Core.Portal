@@ -1,217 +1,191 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GetTeacherCoursesUseCase } from '@features/teacher/application/use-cases/get-teacher-courses.usecase';
-import { GetCourseStatsUseCase } from '@features/teacher/application/use-cases/get-course-stats.usecase';
-import { GetCourseGradesUseCase } from '@features/teacher/application/use-cases/get-course-grades.usecase';
-import { TeacherCourse, CourseStats } from '@features/teacher/domain/models/teacher-course.model';
-import { StudentGrade } from '@features/teacher/domain/models/student-grade.model';
+import { HttpClient } from '@angular/common/http';
 
-type TabType = 'evaluaciones' | 'estudiantes' | 'materiales' | 'asistencia';
-
-interface EvaluationActivity {
-    id: string;
-    titulo: string;
-    tipo: string;
-    fechaLimite: Date;
-    ponderacion: number;
-    estado: 'Pendiente Calificar' | 'Publicado' | 'Borrador' | 'Calificado';
-    estudiantesCompletados: number;
-    totalEstudiantes: number;
+interface TeacherCourseDetail {
+  id: string;
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  creditos: number;
+  ciclo: string;
+  totalAlumnos: number;
+  alumnosActivos: number;
+  alumnosInactivos: number;
+  promedioGeneral: number;
+  asistenciaPromedio: number;
+  estadoCurso: 'Activo' | 'Finalizado' | 'Programado';
+  coverImage: string;
+  horario: any[];
+  stats: {
+    aprobados: number;
+    reprobados: number;
+    enRiesgo: number;
+    tareasEntregadas: number;
+    tareasPendientes: number;
+    promedioMasAlto: number;
+    promedioMasBajo: number;
+  };
+  evaluaciones: Evaluacion[];
 }
+
+interface Evaluacion {
+  id: string;
+  nombre: string;
+  tipo: string;
+  peso: number;
+  fechaLimite: string;
+  estado: string;
+  calificadas: number;
+  pendientes: number;
+  promedio: number;
+}
+
+interface CourseStudent {
+  id: string;
+  codigo: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  avatar: string;
+  promedio: number;
+  asistencia: number;
+  tareasEntregadas: number;
+  tareasPendientes: number;
+  estado: string;
+  ultimoAcceso: string;
+}
+
+type TabType = 'overview' | 'estudiantes' | 'evaluaciones' | 'materiales';
 
 @Component({
-    selector: 'app-course-management',
-    standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
-    templateUrl: './course-management.component.html',
-    styles: ``
+  selector: 'app-course-management',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
+  templateUrl: './course-management.component.html',
+  styles: ``,
 })
-
 export class CourseManagementComponent implements OnInit {
-    courseId: string = '';
-    course: TeacherCourse | null = null;
-    stats: CourseStats | null = null;
-    students: StudentGrade[] = [];
-    
-    isLoading = true;
-    activeTab: TabType = 'evaluaciones';
-    searchTerm = '';
-    selectedTypeFilter = 'Todos los tipos';
-    selectedStateFilter = 'Todos los estados';
+  courseId = signal<string>('');
+  course = signal<TeacherCourseDetail | null>(null);
+  students = signal<CourseStudent[]>([]);
+  isLoading = signal(true);
+  activeTab = signal<TabType>('overview');
 
-    // Mock data para evaluaciones
-    evaluations: EvaluationActivity[] = [
-        {
-            id: '1',
-            titulo: 'Proyecto Final: E-commerce',
-            tipo: 'Proyecto',
-            fechaLimite: new Date('2024-10-10'),
-            ponderacion: 30,
-            estado: 'Pendiente Calificar',
-            estudiantesCompletados: 24,
-            totalEstudiantes: 45
+  // Computed values
+  totalStudents = computed(() => this.course()?.totalAlumnos || 0);
+  averageGrade = computed(() => this.course()?.promedioGeneral || 0);
+  pendingEvaluations = computed(
+    () => this.course()?.evaluaciones.filter((e) => e.estado === 'En Calificación').length || 0,
+  );
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private http: HttpClient,
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe((params) => {
+      this.courseId.set(params['id']);
+      this.loadCourseData();
+    });
+  }
+
+  loadCourseData(): void {
+    this.isLoading.set(true);
+
+    // Cargar detalles del curso
+    this.http
+      .get<TeacherCourseDetail[]>('/assets/mock-data/teachers/teacher-courses-detail.json')
+      .subscribe({
+        next: (courses) => {
+          const course = courses.find((c) => c.id === this.courseId());
+          if (course) {
+            this.course.set(course);
+            console.log('✅ [COURSE-MANAGEMENT] Course loaded:', course.titulo);
+          }
+          this.isLoading.set(false);
         },
-        {
-            id: '2',
-            titulo: 'Examen Parcial Teórico',
-            tipo: 'Examen',
-            fechaLimite: new Date('2024-10-15'),
-            ponderacion: 20,
-            estado: 'Publicado',
-            estudiantesCompletados: 0,
-            totalEstudiantes: 45
+        error: (error) => {
+          console.error('❌ [COURSE-MANAGEMENT] Error loading course:', error);
+          this.isLoading.set(false);
         },
-        {
-            id: '3',
-            titulo: 'Tarea 3: API REST',
-            tipo: 'Tarea',
-            fechaLimite: new Date('2024-10-01'),
-            ponderacion: 10,
-            estado: 'Calificado',
-            estudiantesCompletados: 42,
-            totalEstudiantes: 45
-        },
-        {
-            id: '4',
-            titulo: 'Quiz Rápido: React Hooks',
-            tipo: 'Quiz',
-            fechaLimite: new Date('2024-09-28'),
-            ponderacion: 5,
-            estado: 'Borrador',
-            estudiantesCompletados: 0,
-            totalEstudiantes: 45
+      });
+
+    // Cargar estudiantes del curso
+    this.http.get<any[]>('/assets/mock-data/teachers/course-students.json').subscribe({
+      next: (data) => {
+        const courseData = data.find((c) => c.courseId === this.courseId());
+        if (courseData) {
+          this.students.set(courseData.students);
+          console.log('✅ [COURSE-MANAGEMENT] Students loaded:', courseData.students.length);
         }
-    ];
+      },
+      error: (error) => {
+        console.error('❌ [COURSE-MANAGEMENT] Error loading students:', error);
+      },
+    });
+  }
 
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private getCoursesUseCase: GetTeacherCoursesUseCase,
-        private getStatsUseCase: GetCourseStatsUseCase,
-        private getGradesUseCase: GetCourseGradesUseCase
-    ) { }
+  setActiveTab(tab: TabType): void {
+    this.activeTab.set(tab);
+  }
 
-    ngOnInit(): void {
-        this.route.params.subscribe(params => {
-            this.courseId = params['id'];
-            this.loadCourseData();
-        });
-    }
+  getStatusColor(estado: string): string {
+    const colors: Record<string, string> = {
+      'En Calificación': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      Completado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      Pendiente: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+    };
+    return colors[estado] || 'bg-gray-100 text-gray-700';
+  }
 
-    loadCourseData(): void {
-        // TODO: Implementar obtención de curso por ID
-        // Por ahora usamos mock data
-        this.isLoading = false;
-        
-        // Mock course data
-        this.course = {
-            id: this.courseId,
-            codigo: 'CS-101',
-            titulo: 'Desarrollo Web Full Stack',
-            descripcion: 'Curso completo de desarrollo web',
-            creditos: 4,
-            ciclo: 'Semestre 2024-1',
-            totalAlumnos: 45,
-            alumnosActivos: 42,
-            promedioGeneral: 16.4,
-            asistenciaPromedio: 95,
-            estadoCurso: 'Activo',
-            horario: []
-        };
+  getStudentStatusColor(estado: string): string {
+    const colors: Record<string, string> = {
+      Activo: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      'En Riesgo': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      Inactivo: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+    };
+    return colors[estado] || 'bg-gray-100 text-gray-700';
+  }
 
-        this.stats = {
-            totalAlumnos: 45,
-            alumnosActivos: 42,
-            alumnosInactivos: 3,
-            promedioGeneral: 16.4,
-            aprobados: 38,
-            reprobados: 4,
-            asistenciaPromedio: 95,
-            tareasEntregadas: 120,
-            tareasPendientes: 45
-        };
-    }
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    };
+    return date.toLocaleDateString('es-ES', options);
+  }
 
-    setActiveTab(tab: TabType): void {
-        this.activeTab = tab;
-    }
+  getTimeAgo(timestamp: string): string {
+    const now = new Date();
+    const date = new Date(timestamp);
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
 
-    getNextDelivery(): string {
-        const nextEval = this.evaluations
-            .filter(e => e.fechaLimite > new Date())
-            .sort((a, b) => a.fechaLimite.getTime() - b.fechaLimite.getTime())[0];
-        
-        if (!nextEval) return 'N/A';
-        
-        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-        return nextEval.fechaLimite.toLocaleDateString('es-ES', options);
-    }
+    if (hours < 1) return 'Hace menos de 1h';
+    if (hours < 24) return `Hace ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `Hace ${days} día${days > 1 ? 's' : ''}`;
+  }
 
-    getPendingGradesCount(): number {
-        return this.evaluations
-            .filter(e => e.estado === 'Pendiente Calificar')
-            .reduce((sum, e) => sum + e.estudiantesCompletados, 0);
-    }
+  viewEvaluation(evaluationId: string): void {
+    console.log('Ver evaluación:', evaluationId);
+    // TODO: Implementar navegación a detalles de evaluación
+  }
 
-    getStatusColor(estado: string): string {
-        const colors: Record<string, string> = {
-            'Pendiente Calificar': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-            'Publicado': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-            'Calificado': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-            'Borrador': 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
-        };
-        return colors[estado] || 'bg-gray-100 text-gray-700';
-    }
+  viewStudentDetails(studentId: string): void {
+    console.log('Ver detalles del estudiante:', studentId);
+    // TODO: Implementar navegación a detalles del estudiante
+  }
 
-    getTypeIcon(tipo: string): string {
-        const icons: Record<string, string> = {
-            'Proyecto': 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
-            'Examen': 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-            'Tarea': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
-            'Quiz': 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-        };
-        return icons[tipo] || icons['Tarea'];
-    }
-
-    formatDate(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
-        return date.toLocaleDateString('es-ES', options);
-    }
-
-    formatTime(date: Date): string {
-        return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    viewDetails(evaluationId: string): void {
-        console.log('Ver detalles de:', evaluationId);
-        // TODO: Navegar a detalles de evaluación
-    }
-
-    editEvaluation(evaluationId: string): void {
-        console.log('Editar evaluación:', evaluationId);
-        // TODO: Implementar edición
-    }
-
-    deleteEvaluation(evaluationId: string): void {
-        if (confirm('¿Estás seguro de eliminar esta evaluación?')) {
-            console.log('Eliminar evaluación:', evaluationId);
-            // TODO: Implementar eliminación
-        }
-    }
-
-    gradeEvaluation(evaluationId: string): void {
-        console.log('Calificar evaluación:', evaluationId);
-        // TODO: Navegar a página de calificación
-    }
-
-    createNewActivity(): void {
-        console.log('Crear nueva actividad');
-        // TODO: Implementar creación de actividad
-    }
-
-    goBack(): void {
-        this.router.navigate(['/teacher/courses']);
-    }
+  goBack(): void {
+    this.router.navigate(['/teacher/dashboard']);
+  }
 }
+
