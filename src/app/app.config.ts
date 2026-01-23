@@ -31,6 +31,7 @@ import { AccountRepository } from '@features/student/domain/repositories/account
 import { AccountMockRepositoryImpl } from '@features/student/infrastructure/repositories/account-mock.repository.impl';
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { TeacherCourseHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-http.repository.impl';
+import { TeacherCourseMockRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-mock.repository.impl';
 import { GradesManagementRepository } from '@features/teacher/domain/repositories/grades-management.repository';
 import { GradesManagementHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/grades-management-http.repository.impl';
 
@@ -79,8 +80,13 @@ export const appConfig: ApplicationConfig = {
       provide: AccountRepository,
       useClass: environment.useMockData ? AccountMockRepositoryImpl : AccountMockRepositoryImpl, // TODO: Crear AccountHttpRepositoryImpl
     },
-    // Teacher Repositories
-    { provide: TeacherCourseRepository, useClass: TeacherCourseHttpRepositoryImpl },
+    // Teacher Repositories (condicionales basados en useMockData)
+    {
+      provide: TeacherCourseRepository,
+      useClass: environment.useMockData
+        ? TeacherCourseMockRepositoryImpl
+        : TeacherCourseHttpRepositoryImpl,
+    },
     { provide: GradesManagementRepository, useClass: GradesManagementHttpRepositoryImpl },
   ],
 };

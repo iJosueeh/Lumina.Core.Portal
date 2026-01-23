@@ -21,13 +21,36 @@ export class AuthMockRepositoryImpl extends AuthRepository {
   }
 
   override login(credentials: LoginCredentials): Observable<User> {
-    console.log('🔐 [AUTH MOCK] Login attempt:', credentials.username);
+    console.log('🔐 [AUTH MOCK] Login attempt:', credentials.username, 'Role:', credentials.role);
+
+    // Determinar el archivo JSON según el rol
+    let jsonPath = '';
+    switch (credentials.role) {
+      case 'STUDENT':
+        jsonPath = '/assets/mock-data/users/students.json';
+        break;
+      case 'TEACHER':
+        jsonPath = '/assets/mock-data/users/teachers.json';
+        break;
+      case 'ADMIN':
+        jsonPath = '/assets/mock-data/users/admin.json'; // Por si existe en el futuro
+        break;
+      default:
+        jsonPath = '/assets/mock-data/users/students.json';
+    }
+
+    console.log('📂 [AUTH MOCK] Loading user from:', jsonPath);
 
     // Cargar usuario desde JSON
-    return this.http.get<any[]>('/assets/mock-data/users/students.json').pipe(
-      map((users) => {
-        const user = users[0]; // Tomar el primer usuario por defecto
+    return this.http.get<any>(jsonPath).pipe(
+      map((data) => {
+        // Si es un array, tomar el primer elemento; si es un objeto, usarlo directamente
+        const user = Array.isArray(data) ? data[0] : data;
+        
+        console.log('✅ [AUTH MOCK] User loaded:', user);
+        console.log('✅ [AUTH MOCK] User role:', user.role);
         console.log('✅ [AUTH MOCK] Login successful:', user.fullName);
+        
         this.currentUser = user;
 
         // Guardar en localStorage para persistencia
