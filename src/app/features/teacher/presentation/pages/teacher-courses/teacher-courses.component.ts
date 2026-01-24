@@ -97,9 +97,4 @@ export class TeacherCoursesComponent implements OnInit {
         const count = Math.min(totalAlumnos, 4);
         return Array(count).fill('').map((_, i) => `https://i.pravatar.cc/150?img=${i + 1}`);
     }
-
-    createNewCourse(): void {
-        // TODO: Implementar creación de curso
-        alert('Funcionalidad de crear curso próximamente');
-    }
 }

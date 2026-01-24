@@ -16,10 +16,10 @@
 
     <div class="relative z-10">
       <h1 class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
-        Gestión de Calificaciones
+        Gestión de Evaluaciones
       </h1>
       <p class="text-white/90 mt-2 drop-shadow">
-        Administra las calificaciones de tus estudiantes
+        Administra las evaluaciones de tus estudiantes
       </p>
     </div>
   </header>
@@ -72,6 +72,20 @@
 
         <!-- Acciones -->
         <div class="md:col-span-1 flex items-end gap-2">
+          <button
+            (click)="openCreateModal()"
+            class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Crear Evaluación
+          </button>
           <button
             (click)="saveChanges()"
             [disabled]="!hasUnsavedChanges()"
@@ -262,7 +276,7 @@
 
     <!-- Leyenda -->
     <div class="mt-6 gradient-border-card p-4">
-      <h3 class="text-sm font-semibold text-white mb-3">Leyenda de Calificaciones</h3>
+      <h3 class="text-sm font-semibold text-white mb-3">Leyenda de Evaluaciones</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full bg-green-500"></div>
@@ -279,4 +293,355 @@
       </div>
     </div>
   </main>
+
+  <!-- Modal de Crear Evaluación -->
+  @if (showCreateModal()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      (click)="closeCreateModal()"
+    >
+      <div
+        class="w-full md:w-1/2 max-w-2xl bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-700/50 max-h-[90vh] overflow-y-auto"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Header del Modal -->
+        <div class="sticky top-0 bg-gradient-to-r from-teal-600 via-cyan-500 to-teal-600 px-6 py-4 rounded-t-xl border-b border-gray-700/50">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-white">Crear Nueva Evaluación</h2>
+            <button
+              (click)="closeCreateModal()"
+              class="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="evaluationForm" (ngSubmit)="onSubmitEvaluation()" class="p-6 space-y-6">
+          <!-- Curso -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Curso <span class="text-red-400">*</span>
+            </label>
+            <select
+              formControlName="cursoId"
+              class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+            >
+              <option value="">Selecciona un curso</option>
+              @for (course of courses(); track course.id) {
+                <option [value]="course.id">{{ course.codigo }} - {{ course.titulo }}</option>
+              }
+            </select>
+            @if (evaluationForm.get('cursoId')?.invalid && evaluationForm.get('cursoId')?.touched) {
+              <p class="mt-1 text-sm text-red-400">El curso es requerido</p>
+            }
+          </div>
+
+          <!-- Título -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Título <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="titulo"
+              placeholder="Ej: Examen Parcial 1"
+              class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+            />
+            @if (evaluationForm.get('titulo')?.invalid && evaluationForm.get('titulo')?.touched) {
+              <p class="mt-1 text-sm text-red-400">El título es requerido</p>
+            }
+          </div>
+
+          <!-- Descripción -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Descripción
+            </label>
+            <textarea
+              formControlName="descripcion"
+              rows="3"
+              placeholder="Descripción de la evaluación..."
+              class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all resize-none"
+            ></textarea>
+          </div>
+
+          <!-- Tipo y Peso -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Tipo <span class="text-red-400">*</span>
+              </label>
+              <select
+                formControlName="tipo"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              >
+                <option value="">Selecciona un tipo</option>
+                <option value="Examen">Examen</option>
+                <option value="Practica">Práctica</option>
+                <option value="Quiz">Quiz</option>
+                <option value="Parcial">Parcial</option>
+                <option value="Final">Final</option>
+              </select>
+              @if (evaluationForm.get('tipo')?.invalid && evaluationForm.get('tipo')?.touched) {
+                <p class="mt-1 text-sm text-red-400">El tipo es requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Peso (%) <span class="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                formControlName="peso"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="0-100"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              />
+              @if (evaluationForm.get('peso')?.invalid && evaluationForm.get('peso')?.touched) {
+                <p class="mt-1 text-sm text-red-400">El peso debe estar entre 0 y 100</p>
+              }
+            </div>
+          </div>
+
+          <!-- Fechas -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Fecha de Inicio <span class="text-red-400">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                formControlName="fechaInicio"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              />
+              @if (evaluationForm.get('fechaInicio')?.invalid && evaluationForm.get('fechaInicio')?.touched) {
+                <p class="mt-1 text-sm text-red-400">La fecha de inicio es requerida</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Fecha de Fin <span class="text-red-400">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                formControlName="fechaFin"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              />
+              @if (evaluationForm.get('fechaFin')?.invalid && evaluationForm.get('fechaFin')?.touched) {
+                <p class="mt-1 text-sm text-red-400">La fecha de fin es requerida</p>
+              }
+            </div>
+          </div>
+
+          <!-- Duración y Puntaje -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Duración (minutos) <span class="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                formControlName="duracionMinutos"
+                min="1"
+                placeholder="60"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              />
+              @if (evaluationForm.get('duracionMinutos')?.invalid && evaluationForm.get('duracionMinutos')?.touched) {
+                <p class="mt-1 text-sm text-red-400">La duración debe ser mayor a 0</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Puntaje Máximo <span class="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                formControlName="puntajeMaximo"
+                min="1"
+                placeholder="20"
+                class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+              />
+              @if (evaluationForm.get('puntajeMaximo')?.invalid && evaluationForm.get('puntajeMaximo')?.touched) {
+                <p class="mt-1 text-sm text-red-400">El puntaje máximo debe ser mayor a 0</p>
+              }
+            </div>
+          </div>
+
+          <!-- Intentos Máximos -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Intentos Máximos <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="number"
+              formControlName="intentosMaximos"
+              min="1"
+              placeholder="1"
+              class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
+            />
+            @if (evaluationForm.get('intentosMaximos')?.invalid && evaluationForm.get('intentosMaximos')?.touched) {
+              <p class="mt-1 text-sm text-red-400">Los intentos máximos deben ser mayor a 0</p>
+            }
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-700/50">
+            <button
+              type="submit"
+              [disabled]="evaluationForm.invalid"
+              [class.opacity-50]="evaluationForm.invalid"
+              [class.cursor-not-allowed]="evaluationForm.invalid"
+              class="flex-1 px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:hover:bg-teal-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Crear Evaluación
+            </button>
+            <button
+              type="button"
+              (click)="closeCreateModal()"
+              class="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Notificación -->
+  @if (showNotificationModal()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      (click)="closeNotificationModal()"
+    >
+      <div
+        class="w-full max-w-md bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-gray-700/50 animate-fade-in"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="p-6">
+          <!-- Icono y Mensaje -->
+          <div class="flex items-start gap-4">
+            @if (notificationType() === 'success') {
+              <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            }
+            @if (notificationType() === 'info') {
+              <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            }
+            @if (notificationType() === 'warning') {
+              <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+            }
+            @if (notificationType() === 'error') {
+              <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+            }
+            <div class="flex-1">
+              <h3
+                class="text-lg font-semibold text-white mb-1"
+                [ngClass]="{
+                  'text-green-400': notificationType() === 'success',
+                  'text-blue-400': notificationType() === 'info',
+                  'text-orange-400': notificationType() === 'warning',
+                  'text-red-400': notificationType() === 'error'
+                }"
+              >
+                @if (notificationType() === 'success') {
+                  ¡Éxito!
+                }
+                @if (notificationType() === 'info') {
+                  Información
+                }
+                @if (notificationType() === 'warning') {
+                  Advertencia
+                }
+                @if (notificationType() === 'error') {
+                  Error
+                }
+              </h3>
+              <p class="text-gray-300">{{ notificationMessage() }}</p>
+            </div>
+            <button
+              (click)="closeNotificationModal()"
+              class="flex-shrink-0 text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700/50"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Botón de Cerrar -->
+          <div class="mt-6 flex justify-end">
+            <button
+              (click)="closeNotificationModal()"
+              class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
+            >
+              Aceptar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>

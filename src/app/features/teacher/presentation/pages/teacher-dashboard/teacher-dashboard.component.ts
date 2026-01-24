@@ -129,7 +129,6 @@ export class TeacherDashboardComponent implements OnInit {
       grade: 'clipboard-check',
       assignment: 'document-plus',
       announcement: 'megaphone',
-      attendance: 'user-check',
     };
     return icons[type] || 'bell';
   }

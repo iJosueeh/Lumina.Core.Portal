@@ -58,7 +58,7 @@ interface CourseStudent {
   ultimoAcceso: string;
 }
 
-type TabType = 'overview' | 'estudiantes' | 'evaluaciones' | 'materiales';
+type TabType = 'overview' | 'estudiantes' | 'evaluaciones';
 
 @Component({
   selector: 'app-course-management',

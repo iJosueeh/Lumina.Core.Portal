@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
@@ -46,7 +46,7 @@ interface TeacherCourse {
 @Component({
   selector: 'app-grades-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './grades-management.component.html',
   styles: ``,
 })
@@ -59,6 +59,11 @@ export class GradesManagementComponent implements OnInit {
   isLoading = signal(true);
   searchTerm = signal('');
   hasUnsavedChanges = signal(false);
+  showCreateModal = signal(false);
+  evaluationForm!: FormGroup;
+  showNotificationModal = signal(false);
+  notificationMessage = signal('');
+  notificationType = signal<'success' | 'info' | 'warning' | 'error'>('success');
 
   // Computed values
   evaluaciones = computed(() => this.courseGradesData()?.evaluaciones || []);
@@ -81,7 +86,10 @@ export class GradesManagementComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private authRepository: AuthRepository,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    this.initEvaluationForm();
+  }
 
   ngOnInit(): void {
     this.loadCourses();
@@ -180,7 +188,7 @@ export class GradesManagementComponent implements OnInit {
     // TODO: Implementar guardado en backend
 
     this.hasUnsavedChanges.set(false);
-    alert('✅ Cambios guardados exitosamente');
+    this.showNotification('success', 'Cambios guardados exitosamente');
   }
 
   exportToCSV(): void {
@@ -210,6 +218,87 @@ export class GradesManagementComponent implements OnInit {
     if (grade >= 14) return 'border-green-500';
     if (grade >= 10.5) return 'border-orange-500';
     return 'border-red-500';
+  }
+
+  initEvaluationForm(): void {
+    this.evaluationForm = this.fb.group({
+      cursoId: ['', [Validators.required]],
+      titulo: ['', [Validators.required, Validators.minLength(3)]],
+      descripcion: [''],
+      tipo: ['', [Validators.required]],
+      fechaInicio: ['', [Validators.required]],
+      fechaFin: ['', [Validators.required]],
+      duracionMinutos: [60, [Validators.required, Validators.min(1)]],
+      peso: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      puntajeMaximo: [20, [Validators.required, Validators.min(1)]],
+      intentosMaximos: [1, [Validators.required, Validators.min(1)]],
+    });
+  }
+
+  openCreateModal(): void {
+    // Si hay un curso seleccionado, prellenar el campo
+    const selectedId = this.selectedCourseId();
+    if (selectedId) {
+      this.evaluationForm.patchValue({ cursoId: selectedId });
+    }
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal.set(false);
+    this.evaluationForm.reset({
+      duracionMinutos: 60,
+      peso: 0,
+      puntajeMaximo: 20,
+      intentosMaximos: 1,
+    });
+  }
+
+  onSubmitEvaluation(): void {
+    if (this.evaluationForm.invalid) {
+      // Marcar todos los campos como touched para mostrar errores
+      Object.keys(this.evaluationForm.controls).forEach((key) => {
+        this.evaluationForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    const formValue = this.evaluationForm.value;
+    const evaluationData = {
+      ...formValue,
+      fechaInicio: new Date(formValue.fechaInicio),
+      fechaFin: new Date(formValue.fechaFin),
+      preguntas: [],
+      configuracion: {
+        mostrarResultadoInmediato: false,
+        permitirRevision: false,
+        ordenAleatorio: false,
+        mostrarUnaVez: false,
+        requiereWebcam: false,
+      },
+    };
+
+    console.log('📝 [GRADES] Creating evaluation:', evaluationData);
+    // TODO: Implementar creación en backend
+    this.closeCreateModal();
+    this.showNotification('success', 'Evaluación creada exitosamente');
+    // Recargar datos si es necesario
+    this.loadGrades();
+  }
+
+  showNotification(type: 'success' | 'info' | 'warning' | 'error', message: string): void {
+    this.notificationType.set(type);
+    this.notificationMessage.set(message);
+    this.showNotificationModal.set(true);
+    
+    // Auto-cerrar después de 3 segundos
+    setTimeout(() => {
+      this.closeNotificationModal();
+    }, 3000);
+  }
+
+  closeNotificationModal(): void {
+    this.showNotificationModal.set(false);
   }
 }
 
