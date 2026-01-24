@@ -173,6 +173,14 @@ export const routes: Routes = [
         title: 'Mi Horario - Portal Docente',
       },
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/teacher-profile/teacher-profile.component').then(
+            (m) => m.TeacherProfileComponent,
+          ),
+        title: 'Mi Perfil - Portal Docente',
+      },
+      {
         path: 'materials',
         loadComponent: () =>
           import('@features/teacher/presentation/pages/materials-management/materials-management.component').then(

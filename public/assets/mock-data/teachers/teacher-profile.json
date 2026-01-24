@@ -1,0 +1,15 @@
+{
+  "id": "660f9511-f3ac-52e5-b827-557766551111",
+  "email": "carlos.mendoza@lumina.edu.pe",
+  "fullName": "Carlos Alberto Mendoza Silva",
+  "role": "TEACHER",
+  "bio": "Profesor dedicado con más de 10 años de experiencia en educación superior. Especializado en metodologías de enseñanza innovadoras y comprometido con el éxito académico de los estudiantes.",
+  "phone": "+51 987 654 321",
+  "department": "Ingeniería de Sistemas",
+  "stats": {
+    "cursosAsignados": 5,
+    "alumnosTotales": 142,
+    "promedioGeneral": 15.8,
+    "evaluacionesPendientes": 12
+  }
+}
