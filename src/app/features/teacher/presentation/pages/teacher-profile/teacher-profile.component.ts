@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError } from 'rxjs';
+import { Observable, of, catchError, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherProfile } from '@features/teacher/domain/models/teacher-profile.model';
@@ -9,17 +10,25 @@ import { TeacherProfile } from '@features/teacher/domain/models/teacher-profile.
 @Component({
   selector: 'app-teacher-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './teacher-profile.component.html',
   styles: ``,
 })
 export class TeacherProfileComponent implements OnInit {
   profile$: Observable<TeacherProfile | null> = of(null);
+  private profileSubject = new BehaviorSubject<TeacherProfile | null>(null);
+  
+  // Modal state
+  isEditModalOpen = false;
+  editForm!: FormGroup;
 
   constructor(
     private http: HttpClient,
     private authRepository: AuthRepository,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    this.initEditForm();
+  }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -32,7 +41,7 @@ export class TeacherProfileComponent implements OnInit {
     }
 
     // Intentar cargar desde el archivo JSON, si no existe usar datos mock
-    this.profile$ = this.http
+    this.http
       .get<TeacherProfile>('/assets/mock-data/teachers/teacher-profile.json')
       .pipe(
         catchError(() => {
@@ -49,7 +58,12 @@ export class TeacherProfileComponent implements OnInit {
             role: currentUser.role,
           };
         }),
-      );
+      )
+      .subscribe((profile) => {
+        this.profileSubject.next(profile);
+      });
+
+    this.profile$ = this.profileSubject.asObservable();
   }
 
   private generateMockProfile(user: any): TeacherProfile {
@@ -78,8 +92,57 @@ export class TeacherProfileComponent implements OnInit {
     return fullName.substring(0, 2).toUpperCase();
   }
 
+  private initEditForm(): void {
+    this.editForm = this.fb.group({
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      bio: ['', [Validators.maxLength(500)]],
+      phone: ['', [Validators.pattern(/^\+?\d{1,3}?\s?\d{3}\s?\d{3}\s?\d{3}$/)]],
+      department: [''],
+    });
+  }
+
   editProfile(): void {
-    console.log('Editar perfil');
-    // TODO: Implementar funcionalidad de edición
+    const currentProfile = this.profileSubject.value;
+    if (currentProfile) {
+      this.editForm.patchValue({
+        fullName: currentProfile.fullName,
+        bio: currentProfile.bio || '',
+        phone: currentProfile.phone || '',
+        department: currentProfile.department || '',
+      });
+    }
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen = false;
+    this.editForm.reset();
+  }
+
+  saveProfile(): void {
+    if (this.editForm.valid) {
+      const currentProfile = this.profileSubject.value;
+      if (currentProfile) {
+        const updatedProfile: TeacherProfile = {
+          ...currentProfile,
+          fullName: this.editForm.value.fullName,
+          bio: this.editForm.value.bio,
+          phone: this.editForm.value.phone,
+          department: this.editForm.value.department,
+        };
+        
+        // Actualizar el perfil
+        this.profileSubject.next(updatedProfile);
+        
+        // En un escenario real, aquí se haría una petición HTTP al backend
+        // this.http.put(`/api/teachers/${currentProfile.id}`, updatedProfile).subscribe(...)
+        
+        this.closeEditModal();
+      }
+    }
+  }
+
+  get bioCharCount(): number {
+    return this.editForm.get('bio')?.value?.length || 0;
   }
 }

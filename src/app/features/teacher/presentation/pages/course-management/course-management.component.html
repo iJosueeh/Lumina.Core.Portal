@@ -47,14 +47,14 @@
 
     <!-- Tabs de navegación -->
     <div class="sticky top-0 z-10 bg-[#0a1628]/95 backdrop-blur-sm border-b border-gray-700/50">
-      <div class="px-6 flex gap-6">
+      <div class="px-4 md:px-6 flex gap-6 overflow-x-auto scrollbar-hide">
         <button
           (click)="setActiveTab('overview')"
           [class.border-teal-500]="activeTab() === 'overview'"
           [class.text-teal-400]="activeTab() === 'overview'"
           [class.border-transparent]="activeTab() !== 'overview'"
           [class.text-gray-400]="activeTab() !== 'overview'"
-          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300"
+          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300 whitespace-nowrap"
         >
           Resumen
         </button>
@@ -64,7 +64,7 @@
           [class.text-teal-400]="activeTab() === 'estudiantes'"
           [class.border-transparent]="activeTab() !== 'estudiantes'"
           [class.text-gray-400]="activeTab() !== 'estudiantes'"
-          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300"
+          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300 whitespace-nowrap"
         >
           Estudiantes ({{ students().length }})
         </button>
@@ -74,7 +74,7 @@
           [class.text-teal-400]="activeTab() === 'evaluaciones'"
           [class.border-transparent]="activeTab() !== 'evaluaciones'"
           [class.text-gray-400]="activeTab() !== 'evaluaciones'"
-          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300"
+          class="px-4 py-4 border-b-2 font-medium transition-colors hover:text-teal-300 whitespace-nowrap"
         >
           Evaluaciones ({{ courseData.evaluaciones.length }})
         </button>
@@ -82,7 +82,7 @@
     </div>
 
     <!-- Contenido de los tabs -->
-    <div class="p-6 max-w-7xl mx-auto">
+    <div class="p-4 md:p-6 max-w-7xl mx-auto">
       <!-- Tab: Resumen -->
       @if (activeTab() === 'overview') {
         <div class="space-y-6">

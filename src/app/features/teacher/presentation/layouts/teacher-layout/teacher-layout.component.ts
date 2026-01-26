@@ -20,6 +20,7 @@ interface MenuItem {
 export class TeacherLayoutComponent implements OnInit {
     userName = 'Docente';
     userRole = 'Profesor';
+    isSidebarOpen = false;
 
     menuItems: MenuItem[] = [
         { icon: 'dashboard', label: 'Dashboard', route: '/teacher/dashboard' },
@@ -45,5 +46,13 @@ export class TeacherLayoutComponent implements OnInit {
     logout(): void {
         this.authRepository.logout();
         this.router.navigate(['/login']);
+    }
+
+    toggleSidebar(): void {
+        this.isSidebarOpen = !this.isSidebarOpen;
+    }
+
+    closeSidebar(): void {
+        this.isSidebarOpen = false;
     }
 }

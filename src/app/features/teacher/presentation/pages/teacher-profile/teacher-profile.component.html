@@ -248,4 +248,202 @@
       </div>
     }
   </main>
+
+  <!-- Edit Profile Modal -->
+  @if (isEditModalOpen) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      (click)="closeEditModal()"
+    >
+      <!-- Backdrop with blur -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      <!-- Modal Container -->
+      <div
+        class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-up"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Gradient Border Card -->
+        <div class="gradient-border-card bg-slate-800/95">
+          <div class="p-6 md:p-8">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                <div class="p-2 bg-teal-500/20 rounded-lg">
+                  <svg class="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </div>
+                Editar Perfil
+              </h2>
+              <button
+                (click)="closeEditModal()"
+                class="p-2 text-gray-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+                type="button"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Form -->
+            <form [formGroup]="editForm" (ngSubmit)="saveProfile()" class="space-y-6">
+              <!-- Nombre Completo -->
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                  Nombre Completo
+                  <span class="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  placeholder="Ingrese su nombre completo"
+                />
+                @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
+                  <p class="mt-2 text-sm text-red-400 flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    @if (editForm.get('fullName')?.errors?.['required']) {
+                      El nombre es requerido
+                    }
+                    @if (editForm.get('fullName')?.errors?.['minlength']) {
+                      El nombre debe tener al menos 3 caracteres
+                    }
+                  </p>
+                }
+              </div>
+
+              <!-- Biografía -->
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                  Biografía
+                </label>
+                <textarea
+                  formControlName="bio"
+                  rows="4"
+                  class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Cuéntanos sobre tu experiencia y especialización..."
+                ></textarea>
+                <div class="mt-2 flex items-center justify-between">
+                  <p class="text-sm text-gray-400">
+                    {{ bioCharCount }} / 500 caracteres
+                  </p>
+                  @if (editForm.get('bio')?.invalid && editForm.get('bio')?.touched) {
+                    <p class="text-sm text-red-400 flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fill-rule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      Máximo 500 caracteres
+                    </p>
+                  }
+                </div>
+              </div>
+
+              <!-- Grid de 2 columnas para Teléfono y Departamento -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Teléfono -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    formControlName="phone"
+                    class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                    placeholder="+51 987 654 321"
+                  />
+                  @if (editForm.get('phone')?.invalid && editForm.get('phone')?.touched) {
+                    <p class="mt-2 text-sm text-red-400 flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fill-rule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      Formato inválido (ej: +51 987 654 321)
+                    </p>
+                  }
+                </div>
+
+                <!-- Departamento -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">
+                    Departamento
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="department"
+                    class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="Ej: Ingeniería de Sistemas"
+                  />
+                </div>
+              </div>
+
+              <!-- Información no editable -->
+              <div class="p-4 bg-slate-700/30 border border-slate-600/50 rounded-lg">
+                <p class="text-sm text-gray-400 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Los campos Email, ID y Rol no pueden ser modificados por razones de seguridad.
+                </p>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+                <button
+                  type="button"
+                  (click)="closeEditModal()"
+                  class="flex-1 px-6 py-3 border-2 border-slate-600 text-gray-300 hover:bg-slate-700/50 hover:border-slate-500 rounded-lg font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="editForm.invalid"
+                  class="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg font-medium transition-all hover:from-teal-600 hover:to-cyan-600 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>

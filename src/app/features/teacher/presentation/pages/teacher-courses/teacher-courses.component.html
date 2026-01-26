@@ -1,9 +1,9 @@
-<div class="p-6 space-y-6">
+<div class="p-4 md:p-6 space-y-4 md:space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mis Cursos Asignados</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Mis Cursos Asignados</h1>
+            <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 md:line-clamp-none">
                 Gestiona tus asignaturas, sube contenido académico y evalúa el progreso de tus estudiantes desde un solo lugar.
             </p>
         </div>
@@ -11,9 +11,9 @@
 
     <!-- Search and Filters -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-        <div class="flex flex-col md:flex-row gap-4 items-center">
+        <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <!-- Search -->
-            <div class="flex-1 relative">
+            <div class="flex-1 relative w-full">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -26,50 +26,44 @@
                     placeholder="Buscar por nombre o código..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg 
                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:outline-none focus:ring-2 focus:ring-teal-500">
+                           focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm md:text-base">
             </div>
 
-            <!-- Filter Buttons -->
-            <div class="flex gap-2">
-                <button 
-                    (click)="setFilter('Todos')"
-                    [class.bg-gray-900]="selectedFilter === 'Todos'"
-                    [class.text-white]="selectedFilter === 'Todos'"
-                    [class.bg-white]="selectedFilter !== 'Todos'"
-                    [class.text-gray-700]="selectedFilter !== 'Todos'"
-                    class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                           hover:bg-gray-50 dark:hover:bg-gray-700">
-                    Todos
-                </button>
-                <button 
-                    (click)="setFilter('Activos')"
-                    [class.bg-gray-900]="selectedFilter === 'Activos'"
-                    [class.text-white]="selectedFilter === 'Activos'"
-                    [class.bg-white]="selectedFilter !== 'Activos'"
-                    [class.text-gray-700]="selectedFilter !== 'Activos'"
-                    class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                           hover:bg-gray-50 dark:hover:bg-gray-700">
-                    Activos
-                </button>
-                <button 
-                    (click)="setFilter('Archivados')"
-                    [class.bg-gray-900]="selectedFilter === 'Archivados'"
-                    [class.text-white]="selectedFilter === 'Archivados'"
-                    [class.bg-white]="selectedFilter !== 'Archivados'"
-                    [class.text-gray-700]="selectedFilter !== 'Archivados'"
-                    class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                           hover:bg-gray-50 dark:hover:bg-gray-700">
-                    Archivados
-                </button>
+            <!-- Filter Buttons Container -->
+            <div class="flex gap-2 items-center overflow-x-auto pb-1 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                <div class="flex gap-2 flex-nowrap">
+                    <button 
+                        (click)="setFilter('Todos')"
+                        [class.bg-gray-900]="selectedFilter === 'Todos'"
+                        [class.text-white]="selectedFilter === 'Todos'"
+                        [class.bg-white]="selectedFilter !== 'Todos'"
+                        [class.text-gray-700]="selectedFilter !== 'Todos'"
+                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
+                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
+                        Todos
+                    </button>
+                    <button 
+                        (click)="setFilter('Activos')"
+                        [class.bg-gray-900]="selectedFilter === 'Activos'"
+                        [class.text-white]="selectedFilter === 'Activos'"
+                        [class.bg-white]="selectedFilter !== 'Activos'"
+                        [class.text-gray-700]="selectedFilter !== 'Activos'"
+                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
+                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
+                        Activos
+                    </button>
+                    <button 
+                        (click)="setFilter('Archivados')"
+                        [class.bg-gray-900]="selectedFilter === 'Archivados'"
+                        [class.text-white]="selectedFilter === 'Archivados'"
+                        [class.bg-white]="selectedFilter !== 'Archivados'"
+                        [class.text-gray-700]="selectedFilter !== 'Archivados'"
+                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
+                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
+                        Archivados
+                    </button>
+                </div>
             </div>
-
-            <!-- Filter Icon -->
-            <button class="p-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                </svg>
-            </button>
         </div>
     </div>
 
@@ -79,9 +73,9 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!isLoading && filteredCourses.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12">
+    <div *ngIf="!isLoading && filteredCourses.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 md:p-12">
         <div class="text-center">
-            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="mx-auto h-12 w-12 md:h-16 md:w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
             </svg>
@@ -93,26 +87,26 @@
     </div>
 
     <!-- Courses Grid -->
-    <div *ngIf="!isLoading && filteredCourses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngIf="!isLoading && filteredCourses.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <div 
             *ngFor="let course of filteredCourses"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 
                    overflow-hidden hover:shadow-lg transition-all group">
             
             <!-- Course Header with Status Badge -->
-            <div class="relative p-6 pb-4 bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-900/20 dark:to-blue-900/20">
+            <div class="relative p-5 md:p-6 pb-4 bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-900/20 dark:to-blue-900/20">
                 <div class="flex items-start justify-between mb-3">
                     <span 
-                        class="px-3 py-1 rounded-full text-xs font-medium"
+                        class="px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-medium"
                         [ngClass]="getStatusColor(course.estadoCurso)">
                         {{ course.estadoCurso }}
                     </span>
-                    <span class="px-3 py-1 bg-white dark:bg-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300">
+                    <span class="px-2.5 py-1 bg-white dark:bg-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300">
                         {{ course.codigo }}
                     </span>
                 </div>
                 
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                <h3 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                     {{ course.titulo }}
                 </h3>
                 
@@ -122,7 +116,7 @@
             </div>
 
             <!-- Course Stats -->
-            <div class="p-6 space-y-4">
+            <div class="p-5 md:p-6 space-y-4">
                 <div class="flex items-center justify-between text-sm">
                     <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

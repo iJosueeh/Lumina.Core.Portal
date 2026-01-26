@@ -30,7 +30,7 @@
     <div class="gradient-border-card p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Selector de Curso -->
-        <div class="md:col-span-1">
+        <div class="md:col-span-1 lg:col-span-1">
           <label class="block text-sm font-medium text-gray-400 mb-2">Seleccionar Curso</label>
           <select
             [ngModel]="selectedCourseId()"
@@ -44,7 +44,7 @@
         </div>
 
         <!-- Búsqueda -->
-        <div class="md:col-span-1">
+        <div class="md:col-span-1 lg:col-span-1">
           <label class="block text-sm font-medium text-gray-400 mb-2">Buscar Estudiante</label>
           <div class="relative">
             <input
@@ -71,10 +71,10 @@
         </div>
 
         <!-- Acciones -->
-        <div class="md:col-span-1 flex items-end gap-2">
+        <div class="md:col-span-1 flex flex-wrap items-end gap-2">
           <button
             (click)="openCreateModal()"
-            class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            class="flex-1 md:flex-none px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -84,14 +84,14 @@
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            Crear Evaluación
+            Crear
           </button>
           <button
             (click)="saveChanges()"
             [disabled]="!hasUnsavedChanges()"
             [class.opacity-50]="!hasUnsavedChanges()"
             [class.cursor-not-allowed]="!hasUnsavedChanges()"
-            class="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 disabled:hover:bg-teal-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            class="flex-1 md:flex-none px-4 py-2 bg-teal-500 hover:bg-teal-600 disabled:hover:bg-teal-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -105,7 +105,7 @@
           </button>
           <button
             (click)="exportToCSV()"
-            class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+            class="flex-1 md:flex-none px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
