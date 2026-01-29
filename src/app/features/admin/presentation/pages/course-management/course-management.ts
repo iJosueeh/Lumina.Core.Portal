@@ -156,13 +156,159 @@ export class CourseManagement implements OnInit {
   // Module Management
   addModule() {
       if(!this.newModuleTitle.trim()) return;
-      const newMod = { id: `MOD-${Date.now()}`, title: this.newModuleTitle };
+      
+      const newMod = { 
+          id: `MOD-${Date.now()}`, 
+          title: this.newModuleTitle,
+          description: '',
+          duration: '',
+          topics: [],
+          isExpanded: true // Default to expanded when adding
+      };
+      
       this.currentCourse.modules.push(newMod);
       this.newModuleTitle = '';
   }
 
+  toggleModuleExpand(module: any) {
+      module.isExpanded = !module.isExpanded;
+  }
+
+  addTopic(module: any, topicInput: HTMLInputElement) {
+      const topicName = topicInput.value.trim();
+      if (!topicName) return;
+      if (!module.topics) module.topics = [];
+      
+      // Simple string topics as requested, materials are separate now
+      module.topics.push(topicName);
+      topicInput.value = '';
+  }
+
+  // Material Modal
+  isMaterialModalOpen = false;
+  newMaterialName = '';
+  selectedFile: File | null = null;
+  currentModuleForMaterial: any = null;
+
+  openAddMaterialModal(module: any) {
+      this.currentModuleForMaterial = module;
+      this.newMaterialName = '';
+      this.selectedFile = null;
+      this.isMaterialModalOpen = true;
+  }
+
+  onFileSelected(event: any) {
+      const file = event.target.files[0];
+      if (file) {
+          this.selectedFile = file;
+          // Auto-fill name if empty
+          if (!this.newMaterialName) {
+              this.newMaterialName = file.name;
+          }
+      }
+  }
+
+  confirmAddMaterial() {
+      if (!this.newMaterialName || !this.currentModuleForMaterial) return;
+      
+      let type = 'LINK';
+      let url = '#';
+
+      if (this.selectedFile) {
+          // Determine type based on extension mock
+          const ext = this.selectedFile.name.split('.').pop()?.toLowerCase();
+          if (ext === 'pdf') type = 'PDF';
+          else if (['mp4', 'mov', 'avi'].includes(ext || '')) type = 'VIDEO';
+          else type = 'FILE'; // Generic
+
+          // Create object URL for demo purposes
+          url = URL.createObjectURL(this.selectedFile);
+      } 
+
+      const newMaterial = {
+          id: `MAT-${Date.now()}`,
+          title: this.newMaterialName,
+          type: type,
+          url: url,
+          topicRef: null
+      };
+
+      if (!this.currentModuleForMaterial.materials) this.currentModuleForMaterial.materials = [];
+      this.currentModuleForMaterial.materials.push(newMaterial);
+      
+      this.isMaterialModalOpen = false;
+      this.newMaterialName = '';
+      this.selectedFile = null;
+      this.currentModuleForMaterial = null;
+  }
+
+  // Confirmation Modal (Generic)
+  isConfirmModalOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
+
+  openConfirmModal(title: string, message: string, action: () => void) {
+      this.confirmTitle = title;
+      this.confirmMessage = message;
+      this.confirmAction = action;
+      this.isConfirmModalOpen = true;
+  }
+
+  closeConfirmModal() {
+      this.isConfirmModalOpen = false;
+      this.confirmAction = null;
+  }
+
+  executeConfirmAction() {
+      if (this.confirmAction) this.confirmAction();
+      this.closeConfirmModal();
+  }
+
+  // Updated Methods with Confirmation
   removeModule(index: number) {
-      this.currentCourse.modules.splice(index, 1);
+      this.openConfirmModal(
+          'Eliminar Módulo',
+          '¿Estás seguro de eliminar este módulo? Se perderán todos los temas y materiales asociados.',
+          () => {
+             this.currentCourse.modules.splice(index, 1);
+          }
+      );
+  }
+
+  removeTopic(module: any, index: number) {
+      // Optional: Confirm topic deletion too, or keep it snappy if preferred. 
+      // Given "Replace alerts with modals", explicit action is safer.
+      this.openConfirmModal(
+          'Eliminar Tema',
+          '¿Eliminar este tema?',
+          () => {
+              module.topics.splice(index, 1);
+          }
+      );
+  }
+
+  addMaterial(module: any) {
+      this.openAddMaterialModal(module);
+  }
+
+  removeMaterial(module: any, index: number) {
+       this.openConfirmModal(
+          'Eliminar Material',
+          '¿Eliminar este material?',
+          () => {
+              module.materials.splice(index, 1);
+          }
+      );
+  }
+
+  getMaterialIcon(type: string): string {
+      switch(type) {
+          case 'PDF': return 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z'; // Doc icon
+          case 'VIDEO': return 'M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z'; // Play icon
+          case 'LINK': return 'M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244'; // Link icon
+          default: return 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0v5.25m0 0l3-3m-3 3l-3-3';
+      }
   }
 
   // Evaluation Management

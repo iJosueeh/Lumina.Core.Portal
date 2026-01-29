@@ -146,6 +146,87 @@ export class UserManagement implements OnInit {
       }
   }
 
+  // Selection
+  selectedUsers: Set<string> = new Set();
+
+  toggleSelection(userId: string) {
+      if (this.selectedUsers.has(userId)) {
+          this.selectedUsers.delete(userId);
+      } else {
+          this.selectedUsers.add(userId);
+      }
+  }
+
+  toggleSelectAll(event: any) {
+      if (event.target.checked) {
+          this.paginatedUsers.forEach(u => this.selectedUsers.add(u.id));
+      } else {
+          this.selectedUsers.clear();
+      }
+  }
+
+  isAllSelected(): boolean {
+      return this.paginatedUsers.length > 0 && this.paginatedUsers.every(u => this.selectedUsers.has(u.id));
+  }
+
+  isSelected(userId: string): boolean {
+      return this.selectedUsers.has(userId);
+  }
+
+  // Confirmation Modal
+  isConfirmModalOpen = false;
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
+  confirmTitle = 'Confirmar Acción';
+
+  openConfirmModal(title: string, message: string, action: () => void) {
+      this.confirmTitle = title;
+      this.confirmMessage = message;
+      this.confirmAction = action;
+      this.isConfirmModalOpen = true;
+  }
+
+  closeConfirmModal() {
+      this.isConfirmModalOpen = false;
+      this.confirmAction = null;
+  }
+
+  executeConfirmAction() {
+      if (this.confirmAction) {
+          this.confirmAction();
+      }
+      this.closeConfirmModal();
+  }
+
+  // Bulk Actions
+  bulkSuspend() {
+      if (this.selectedUsers.size === 0) return;
+      this.openConfirmModal(
+          'Suspender Usuarios',
+          `¿Estás seguro de que deseas suspender a los ${this.selectedUsers.size} usuarios seleccionados?`,
+          () => {
+              this.allUsers.forEach(u => {
+                  if (this.selectedUsers.has(u.id)) u.status = 'SUSPENDED';
+              });
+              this.selectedUsers.clear();
+              this.applyFilters();
+          }
+      );
+  }
+
+  bulkResetPassword() {
+      if (this.selectedUsers.size === 0) return;
+      this.openConfirmModal(
+          'Restablecer Contraseñas',
+          `¿Deseas enviar instrucciones de restablecimiento de contraseña a los ${this.selectedUsers.size} usuarios seleccionados?`,
+          () => {
+             // Mock API call
+             this.selectedUsers.clear();
+             // Show success toast or small notification instead of alert if possible, otherwise rely on the modal closing as feedback
+          }
+      );
+  }
+
   getPagesArray(): number[] {
       return Array(this.totalPages).fill(0).map((x, i) => i + 1);
   }
