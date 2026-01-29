@@ -33,7 +33,7 @@ export class AuthMockRepositoryImpl extends AuthRepository {
         jsonPath = '/assets/mock-data/users/teachers.json';
         break;
       case 'ADMIN':
-        jsonPath = '/assets/mock-data/users/admin.json'; // Por si existe en el futuro
+        jsonPath = '/assets/mock-data/users/admins.json';
         break;
       default:
         jsonPath = '/assets/mock-data/users/students.json';

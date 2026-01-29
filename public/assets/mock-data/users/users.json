@@ -1,0 +1,110 @@
+[
+  {
+    "id": "USR-2024-001",
+    "fullName": "Maria Rodriguez",
+    "email": "m.rodriguez@lumina.edu",
+    "role": "STUDENT",
+    "department": "Frontend Development",
+    "status": "ACTIVE",
+    "avatar": "M"
+  },
+  {
+    "id": "USR-2024-002",
+    "fullName": "Carlos Mendoza",
+    "email": "c.mendoza@lumina.edu",
+    "role": "TEACHER",
+    "department": "Full Stack Engineering",
+    "status": "ACTIVE",
+    "avatar": "C"
+  },
+  {
+    "id": "USR-2024-003",
+    "fullName": "Ana Paez",
+    "email": "a.paez@lumina.edu",
+    "role": "STUDENT",
+    "department": "UX/UI Design",
+    "status": "SUSPENDED",
+    "avatar": "A"
+  },
+  {
+    "id": "USR-2024-004",
+    "fullName": "Roberto Sosa",
+    "email": "roberto.sosa@lumina.edu.pe",
+    "role": "ADMIN",
+    "department": "IT Operations",
+    "status": "ACTIVE",
+    "avatar": "R"
+  },
+  {
+    "id": "USR-2024-005",
+    "fullName": "Lucia Fernandez",
+    "email": "l.fernandez@lumina.edu",
+    "role": "STUDENT",
+    "department": "Data Science",
+    "status": "ACTIVE",
+    "avatar": "L"
+  },
+  {
+    "id": "USR-2024-006",
+    "fullName": "Jorge Ramirez",
+    "email": "j.ramirez@lumina.edu",
+    "role": "TEACHER",
+    "department": "Algorithms & AI",
+    "status": "ACTIVE",
+    "avatar": "J"
+  },
+  {
+    "id": "USR-2024-007",
+    "fullName": "Elena Torres",
+    "email": "e.torres@lumina.edu",
+    "role": "STUDENT",
+    "department": "Cybersecurity",
+    "status": "ACTIVE",
+    "avatar": "E"
+  },
+  {
+    "id": "USR-2024-008",
+    "fullName": "Miguel Angel",
+    "email": "m.angel@lumina.edu",
+    "role": "STUDENT",
+    "department": "DevOps",
+    "status": "SUSPENDED",
+    "avatar": "M"
+  },
+  {
+    "id": "USR-2024-009",
+    "fullName": "Sofia Vergara",
+    "email": "s.vergara@lumina.edu",
+    "role": "TEACHER",
+    "department": "Mobile Development",
+    "status": "ACTIVE",
+    "avatar": "S"
+  },
+  {
+    "id": "USR-2024-010",
+    "fullName": "Diego Maradona",
+    "email": "d.maradona@lumina.edu",
+    "role": "STUDENT",
+    "department": "Game Development",
+    "status": "ACTIVE",
+    "avatar": "D"
+  },
+  {
+    "id": "USR-2024-011",
+    "fullName": "Laura Bozzo",
+    "email": "l.bozzo@lumina.edu",
+    "role": "TEACHER",
+    "department": "Tech Law & Ethics",
+    "status": "ACTIVE",
+    "avatar": "L"
+  },
+  {
+    "id": "USR-2024-012",
+    "fullName": "Pedro Castillo",
+    "email": "p.castillo@lumina.edu",
+    "role": "STUDENT",
+    "department": "Cloud Computing",
+    "status": "SUSPENDED",
+    "avatar": "P"
+  }
+]

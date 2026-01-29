@@ -116,7 +116,7 @@ export class LoginPageComponent implements OnInit {
                 this.router.navigate(['/teacher/dashboard']);
                 break;
             case 'ADMIN':
-                alert('Dashboard de Admin próximamente');
+                this.router.navigate(['/admin/dashboard']);
                 break;
         }
     }

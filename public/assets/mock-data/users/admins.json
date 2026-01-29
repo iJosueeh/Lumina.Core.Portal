@@ -1,0 +1,9 @@
+[
+  {
+    "id": "770a1234-a1b2-c3d4-e5f6-778899001122",
+    "email": "roberto.sosa@lumina.edu.pe",
+    "fullName": "Dr. Roberto Sosa",
+    "role": "ADMIN",
+    "token": "mock-jwt-token-admin-development-only"
+  }
+]
