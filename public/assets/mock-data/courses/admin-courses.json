@@ -1,0 +1,134 @@
+[
+  {
+    "id": "CRS-101",
+    "code": "REACT-202",
+    "name": "Advanced React Patterns",
+    "description": "Domina los patrones de diseño más avanzados en React. Aprende a construir componentes reutilizables, gestionar estados complejos y optimizar el rendimiento de tus aplicaciones modernas.",
+    "teacherName": "Carlos Mendoza",
+    "teacherAvatar": "C",
+    "enrolled": 120,
+    "capacity": 150,
+    "status": "PUBLISHED",
+    "coverImage": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop",
+    "ciclo": "2024-1",
+    "creditos": 4,
+    "modules": [
+        { "id": "MOD-1", "title": "Hooks Avanzados y Custom Hooks" },
+        { "id": "MOD-2", "title": "Patrones de Composición (HOCs, Render Props)" },
+        { "id": "MOD-3", "title": "Gestión de Estado Global con Context y Redux" },
+        { "id": "MOD-4", "title": "Optimización de Rendimiento (Memo, UseCallback)" }
+    ],
+    "evaluaciones": [
+        { "id": "EV-1", "nombre": "Parcial Teórico", "tipo": "Examen", "peso": 30, "estado": "Completado", "fechaLimite": "2024-03-15" },
+        { "id": "EV-2", "nombre": "Proyecto Final", "tipo": "Proyecto", "peso": 40, "estado": "Pendiente", "fechaLimite": "2024-05-20" },
+        { "id": "EV-3", "nombre": "Laboratorios Semanales", "tipo": "Práctica", "peso": 30, "estado": "En Progreso", "fechaLimite": "2024-06-01" }
+    ]
+  },
+  {
+    "id": "CRS-102",
+    "code": "ALG-301",
+    "name": "Estructura de Datos y Algoritmos en Python",
+    "description": "Un curso fundamental para todo ingeniero de software. Profundiza en árboles, grafos, algoritmos de búsqueda y ordenamiento, todo implementado en Python.",
+    "teacherName": "Jorge Ramirez",
+    "teacherAvatar": "J",
+    "enrolled": 145,
+    "capacity": 150,
+    "status": "PUBLISHED",
+    "coverImage": "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?q=80&w=2074&auto=format&fit=crop",
+    "ciclo": "2024-1",
+    "creditos": 5,
+    "modules": [
+        { "id": "MOD-1", "title": "Complejidad Algorítmica (Big O)" },
+        { "id": "MOD-2", "title": "Listas Enlazadas, Pilas y Colas" },
+        { "id": "MOD-3", "title": "Árboles Binarios y Grafos" },
+        { "id": "MOD-4", "title": "Algoritmos Greedy y Programación Dinámica" }
+    ],
+    "evaluaciones": [
+        { "id": "EV-1", "nombre": "Quiz de Complejidad", "tipo": "Quiz", "peso": 15, "estado": "Completado", "fechaLimite": "2024-02-10" },
+        { "id": "EV-2", "nombre": "Examen Final", "tipo": "Examen", "peso": 50, "estado": "Pendiente", "fechaLimite": "2024-06-15" }
+    ]
+  },
+  {
+    "id": "CRS-103",
+    "code": "MOB-105",
+    "name": "Desarrollo iOS con SwiftUI",
+    "description": "Crea aplicaciones nativas para iPhone y iPad utilizando el framework declarativo de Apple. Desde los fundamentos hasta la publicación en el App Store.",
+    "teacherName": "Sofia Vergara",
+    "teacherAvatar": "S",
+    "enrolled": 45,
+    "capacity": 60,
+    "status": "DRAFT",
+    "coverImage": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=2070&auto=format&fit=crop",
+    "ciclo": "2024-2",
+    "creditos": 4,
+    "modules": [
+        { "id": "MOD-1", "title": "Introducción a Swift y SwiftUI" },
+        { "id": "MOD-2", "title": "Diseño de Interfaces Adaptativas" },
+        { "id": "MOD-3", "title": "Navegación y Gestión de Datos" },
+        { "id": "MOD-4", "title": "Integración con APIs y Persistencia" }
+    ],
+    "evaluaciones": []
+  },
+  {
+    "id": "CRS-104",
+    "code": "ETH-300",
+    "name": "Ética en Inteligencia Artificial",
+    "description": "Explora los desafíos éticos, legales y sociales de la IA. Analiza sesgos algorítmicos, privacidad de datos y el impacto de la automatización en la sociedad.",
+    "teacherName": "Laura Bozzo",
+    "teacherAvatar": "L",
+    "enrolled": 80,
+    "capacity": 100,
+    "status": "PUBLISHED",
+    "coverImage": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1965&auto=format&fit=crop",
+    "ciclo": "2024-1",
+    "creditos": 3,
+    "modules": [
+        { "id": "MOD-1", "title": "Fundamentos de Ética Tecnológica" },
+        { "id": "MOD-2", "title": "Sesgo y Equidad en Algoritmos" },
+        { "id": "MOD-3", "title": "Privacidad y Gobernanza de Datos" }
+    ],
+    "evaluaciones": [
+         { "id": "EV-1", "nombre": "Ensayo Crítico", "tipo": "Ensayo", "peso": 40, "estado": "Pendiente", "fechaLimite": "2024-05-01" }
+    ]
+  },
+  {
+    "id": "CRS-105",
+    "code": "AWS-101",
+    "name": "Fundamentos de AWS Cloud",
+    "description": "Inicia tu camino en la nube. Aprende los servicios core de AWS: EC2, S3, RDS y VPC, y prepárate para la certificación Cloud Practitioner.",
+    "teacherName": null,
+    "teacherAvatar": null,
+    "enrolled": 0,
+    "capacity": 50,
+    "status": "DRAFT",
+    "coverImage": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop",
+    "ciclo": "2024-2",
+    "creditos": 4,
+    "modules": [
+        { "id": "MOD-1", "title": "Conceptos Básicos de Cloud Computing" },
+        { "id": "MOD-2", "title": "Infraestructura Global de AWS" },
+        { "id": "MOD-3", "title": "Servicios de Cómputo y Almacenamiento" }
+    ],
+    "evaluaciones": []
+  },
+  {
+    "id": "CRS-106",
+    "code": "SEC-500",
+    "name": "Ethical Hacking Avanzado",
+    "description": "Técnicas avanzadas de penetración y defensa. Domina Kali Linux, Metasploit y análisis de vulnerabilidades en red.",
+    "teacherName": "Jorge Ramirez",
+    "teacherAvatar": "J",
+    "enrolled": 20,
+    "capacity": 30,
+    "status": "ARCHIVED",
+    "coverImage": "https://images.unsplash.com/photo-1563206767-5b1d972d9323?q=80&w=2070&auto=format&fit=crop",
+    "ciclo": "2023-2",
+    "creditos": 5,
+    "modules": [
+        { "id": "MOD-1", "title": "Reconocimiento y Escaneo" },
+        { "id": "MOD-2", "title": "Explotación de Vulnerabilidades" },
+        { "id": "MOD-3", "title": "Post-Explotación y Reporte" }
+    ],
+    "evaluaciones": []
+  }
+]
