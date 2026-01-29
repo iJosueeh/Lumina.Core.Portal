@@ -1,0 +1,90 @@
+{
+  "stats": [
+    {
+      "label": "ESTUDIANTES",
+      "value": "12,450",
+      "trend": "+5.2%",
+      "trendType": "positive",
+      "description": "Matrícula activa en 2026",
+      "icon": "users"
+    },
+    {
+      "label": "DOCENTES",
+      "value": "842",
+      "trend": "+1.8%",
+      "trendType": "positive",
+      "description": "Plantel docente validado",
+      "icon": "graduation-cap"
+    },
+    {
+      "label": "CURSOS",
+      "value": "156",
+      "trend": "+3.4%",
+      "trendType": "positive",
+      "description": "Programas tecnológicos activos",
+      "icon": "book-open"
+    },
+    {
+      "label": "ADMISIONES",
+      "value": "48",
+      "trend": "! 12%",
+      "trendType": "warning",
+      "description": "Solicitudes por revisar",
+      "icon": "clipboard-list"
+    }
+  ],
+  "growth": {
+    "labels": ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO"],
+    "currentYear": [30, 45, 40, 60, 80, 75, 95, 100],
+    "previousYear": [25, 30, 35, 40, 50, 60, 70, 80]
+  },
+  "systemStatus": [
+    {
+      "title": "Pasarela de Pagos",
+      "message": "Intermitencia detectada en API.",
+      "type": "error",
+      "action": "Ver detalles",
+      "time": "HACE 10 MIN"
+    },
+    {
+      "title": "Servidor de Medios",
+      "message": "Mantenimiento hoy 23:00.",
+      "type": "info",
+      "action": "Programar",
+      "time": "HOY"
+    },
+    {
+      "title": "Backup Semanal",
+      "message": "Iniciando copia de seguridad.",
+      "type": "warning",
+      "action": "Monitorizar",
+      "time": "AHORA"
+    }
+  ],
+  "recentActivity": [
+    {
+      "title": "Nuevo Curso Publicado",
+      "description": "\"Machine Learning Avanzado\" - Ing. Carlos Ruiz",
+      "time": "HACE 15 MIN",
+      "type": "course"
+    },
+    {
+      "title": "Reporte Trimestral",
+      "description": "Generación automática de indicadores de Q1",
+      "time": "HOY 09:12 AM",
+      "type": "report"
+    },
+    {
+      "title": "Alta de Docente",
+      "description": "Dra. Marta Jiménez - Departamento de IA",
+      "time": "HACE 2 HORAS",
+      "type": "user"
+    },
+    {
+      "title": "Actualización de Perfil",
+      "description": "Administrador cambió políticas de privacidad",
+      "time": "AYER 18:45",
+      "type": "settings"
+    }
+  ]
+}
