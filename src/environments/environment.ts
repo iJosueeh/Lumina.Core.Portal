@@ -1,13 +1,13 @@
 export const environment = {
   production: false,
-  useMockData: true, // ← Activar para usar datos mock sin backend
+  useMockData: false, // ← Conectado con Back-End real
   // Microservicios Backend
   apiUrl: 'http://localhost:7777/api', // Usuarios
-  estudiantesApiUrl: 'http://localhost:6666/api', // Estudiantes
+  estudiantesApiUrl: 'http://localhost:6600/api', // Estudiantes
   cursosApiUrl: 'http://localhost:9999/api', // Cursos (HTTP)
-  evaluacionesApiUrl: 'http://localhost:5555/api', // Evaluaciones
-  noticiasEventosApiUrl: 'http://localhost:4444/api', // NoticiasEventos
+  evaluacionesApiUrl: 'http://localhost:5555/api', // Evaluaciones (puerto correcto según docker)
+  noticiasEventosApiUrl: 'http://localhost:5009/api', // NoticiasEventos
   docentesApiUrl: 'http://localhost:8888/api', // Docentes
   carrerasApiUrl: 'http://localhost:5000/api', // Carreras
-  pedidosApiUrl: 'http://localhost:3333/api', // Pedidos
+  pedidosApiUrl: 'http://localhost:5010/api', // Pedidos
 };

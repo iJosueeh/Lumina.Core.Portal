@@ -79,7 +79,7 @@ export class AuthHttpRepositoryImpl extends AuthRepository {
                     throw new Error('Respuesta sin información de usuario');
                 }
 
-                // Validar campos del userInfo (flexible con mayúsculas)
+                // El backend retorna AuthUserDto con estos campos
                 const userId = userInfo.id || userInfo.Id;
                 const userEmail = userInfo.email || userInfo.Email;
                 const userNombre = userInfo.nombre || userInfo.Nombre;
