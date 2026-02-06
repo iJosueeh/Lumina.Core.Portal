@@ -265,54 +265,81 @@
         </div>
 
         @if (!isLoadingAssignments) {
-          <div class="space-y-4">
-            @for (assignment of assignments | slice: 0 : assignmentsLimit; track assignment.id) {
-              <div
-                [class.border-l-4]="assignment.esUrgente"
-                [class.border-red-500]="assignment.esUrgente"
-                class="p-4 bg-gray-50 dark:bg-dark-bg rounded-lg animate-fade-in"
+          @if (assignments.length === 0) {
+            <div class="text-center py-8">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
               >
-                <!-- Date Badge -->
-                <div class="flex items-start gap-3 mb-2">
-                  <div class="text-center">
-                    <div class="text-xs font-semibold text-gray-500 dark:text-dark-text-secondary">
-                      {{ assignment.mes }}
-                    </div>
-                    <div class="text-2xl font-bold text-gray-900 dark:text-dark-text">
-                      {{ assignment.dia }}
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    @if (assignment.esUrgente) {
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
+                />
+              </svg>
+              <p class="text-gray-600 dark:text-dark-text-secondary text-sm font-medium">
+                No hay tareas pendientes actualmente
+              </p>
+              <p class="text-gray-500 dark:text-gray-600 text-xs mt-1">
+                ¡Estás al día con tus entregas!
+              </p>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              @for (assignment of assignments | slice: 0 : assignmentsLimit; track assignment.id) {
+                <div
+                  [class.border-l-4]="assignment.esUrgente"
+                  [class.border-red-500]="assignment.esUrgente"
+                  class="p-4 bg-gray-50 dark:bg-dark-bg rounded-lg animate-fade-in"
+                >
+                  <!-- Date Badge -->
+                  <div class="flex items-start gap-3 mb-2">
+                    <div class="text-center">
                       <div
-                        class="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs font-semibold mb-1"
+                        class="text-xs font-semibold text-gray-500 dark:text-dark-text-secondary"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 16 16"
-                          fill="currentColor"
-                          class="w-4 h-4"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        Vence: Hoy, 23:59
+                        {{ assignment.mes }}
                       </div>
-                    }
-                    <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm mb-1">
-                      {{ assignment.titulo }}
-                    </h4>
-                    <p class="text-xs text-gray-600 dark:text-dark-text-secondary">
-                      {{ assignment.cursoNombre }}
-                    </p>
+                      <div class="text-2xl font-bold text-gray-900 dark:text-dark-text">
+                        {{ assignment.dia }}
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      @if (assignment.esUrgente) {
+                        <div
+                          class="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs font-semibold mb-1"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                            class="w-4 h-4"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14ZM8 4a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                          Vence: Hoy, 23:59
+                        </div>
+                      }
+                      <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm mb-1">
+                        {{ assignment.titulo }}
+                      </h4>
+                      <p class="text-xs text-gray-600 dark:text-dark-text-secondary">
+                        {{ assignment.cursoNombre }}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         }
 
         @if (assignments.length > 3) {
@@ -336,59 +363,84 @@
         </div>
 
         @if (!isLoadingAnnouncements) {
-          <div class="space-y-4">
-            @for (
-              announcement of announcements | slice: 0 : announcementsLimit;
-              track announcement.id
-            ) {
-              <div class="flex gap-3 animate-fade-in">
-                <div
-                  class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="w-5 h-5 text-blue-600 dark:text-blue-400"
+          @if (announcements.length === 0) {
+            <div class="text-center py-8">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018 2.347c.644.296 1.363.065 1.606-.503.353-.827.636-1.686.849-2.574a1.048 1.048 0 00-.123-.893 20.026 20.026 0 01-3.266-10.325A3.001 3.001 0 0013.89 0H9.11a3 3 0 00-2.966 2.576c-.223 1.645-.601 3.246-1.127 4.782"
+                />
+              </svg>
+              <p class="text-gray-600 dark:text-dark-text-secondary text-sm font-medium">
+                No hay anuncios disponibles
+              </p>
+              <p class="text-gray-500 dark:text-gray-600 text-xs mt-1">
+                Mantente atento a futuras noticias
+              </p>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              @for (
+                announcement of announcements | slice: 0 : announcementsLimit;
+                track announcement.id
+              ) {
+                <div class="flex gap-3 animate-fade-in">
+                  <div
+                    class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                    />
-                  </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm">
+                      {{ announcement.titulo }}
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
+                      {{ announcement.descripcion }}
+                    </p>
+                    <span
+                      class="text-xs text-gray-500 dark:text-dark-text-secondary mt-2 inline-block"
+                    >
+                      {{ announcement.tiempoRelativo }} • {{ announcement.autor }}
+                    </span>
+                  </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <h4 class="font-semibold text-gray-900 dark:text-dark-text text-sm">
-                    {{ announcement.titulo }}
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-dark-text-secondary mt-1">
-                    {{ announcement.descripcion }}
-                  </p>
-                  <span
-                    class="text-xs text-gray-500 dark:text-dark-text-secondary mt-2 inline-block"
-                  >
-                    {{ announcement.tiempoRelativo }} • {{ announcement.autor }}
-                  </span>
-                </div>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
 
-        @if (announcements.length > 3) {
-          <button
-            (click)="toggleAnnouncementsView()"
-            class="w-full mt-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-          >
-            {{
-              announcementsLimit === 3
-                ? 'Ver más (' + (announcements.length - 3) + ')'
-                : 'Ver menos'
-            }}
-          </button>
+          @if (announcements.length > 3) {
+            <button
+              (click)="toggleAnnouncementsView()"
+              class="w-full mt-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            >
+              {{
+                announcementsLimit === 3
+                  ? 'Ver más (' + (announcements.length - 3) + ')'
+                  : 'Ver menos'
+              }}
+            </button>
+          }
         }
       </div>
 

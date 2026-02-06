@@ -18,7 +18,7 @@ import { AuthRepository } from '@features/auth/domain/repositories/auth.reposito
 })
 export class DashboardComponent implements OnInit {
   userName = 'Estudiante';
-  pendingCount = 2;
+  pendingCount = 0;
 
   courses: CourseProgress[] = [];
   assignments: Assignment[] = [];
@@ -70,10 +70,13 @@ export class DashboardComponent implements OnInit {
     this.getAssignmentsUseCase.execute(studentId).subscribe({
       next: (assignments) => {
         this.assignments = assignments;
-        this.pendingCount = assignments.length;
+        this.pendingCount = assignments.length || 0;
         this.isLoadingAssignments = false;
       },
-      error: () => (this.isLoadingAssignments = false),
+      error: () => {
+        this.isLoadingAssignments = false;
+        this.pendingCount = 0;
+      },
     });
 
     // Cargar anuncios
