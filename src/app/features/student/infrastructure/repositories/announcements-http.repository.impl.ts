@@ -1,19 +1,34 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { AnnouncementsRepository } from '../../domain/repositories/announcements.repository';
 import { Announcement } from '../../domain/models/announcement.model';
 import { environment } from '../../../../../environments/environment';
+import { CacheService } from '@core/services/cache.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AnnouncementsHttpRepositoryImpl implements AnnouncementsRepository {
     private readonly noticiasEventosApiUrl = environment.noticiasEventosApiUrl;
+    private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos (noticias cambian menos)
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private cacheService: CacheService
+    ) { }
 
     getRecentAnnouncements(studentId: string): Observable<Announcement[]> {
+        const cacheKey = `student-announcements-${studentId}`;
+        
+        // Verificar caché
+        const cachedData = this.cacheService.get<Announcement[]>(cacheKey);
+        if (cachedData) {
+            console.log(`📦 Announcements obtenidos del caché para estudiante ${studentId}`);
+            return of(cachedData);
+        }
+
+        console.log(`🌐 Obteniendo announcements desde API para estudiante ${studentId}`);
         // Por ahora, las noticias no están filtradas por estudiante
         // Obtenemos las 5 más recientes del sistema
         const limit = 5;
@@ -46,7 +61,12 @@ export class AnnouncementsHttpRepositoryImpl implements AnnouncementsRepository 
                         icono: this.getIconForTipo(this.mapTipo(announcement.categoria)),
                         tiempoRelativo
                     };
-                }))
+                })),
+                tap(announcements => {
+                    // Guardar en caché
+                    this.cacheService.set(cacheKey, announcements, this.CACHE_TTL);
+                    console.log(`💾 Announcements guardados en caché (TTL: ${this.CACHE_TTL / 1000}s)`);
+                })
             );
     }
 

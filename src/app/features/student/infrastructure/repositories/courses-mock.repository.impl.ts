@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { CoursesRepository } from '@features/student/domain/repositories/courses.repository';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
+import { CourseDetail } from '@features/student/domain/models/course-detail.model';
 import { CourseGrade } from '@features/student/domain/models/grade.model';
 import { HttpClient } from '@angular/common/http';
 
@@ -35,5 +36,11 @@ export class CoursesMockRepositoryImpl extends CoursesRepository {
         })),
       ),
     );
+  }
+
+  override getCourseDetail(courseId: string): Observable<CourseDetail> {
+    // Este método ya no se usa porque usamos CoursesHttpRepositoryImpl
+    // Implementación mínima para cumplir el contrato
+    return of({} as CourseDetail).pipe(delay(500));
   }
 }

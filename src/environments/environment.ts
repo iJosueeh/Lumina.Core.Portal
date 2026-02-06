@@ -9,5 +9,5 @@ export const environment = {
   noticiasEventosApiUrl: 'http://localhost:4444/api', // NoticiasEventos
   docentesApiUrl: 'http://localhost:8888/api', // Docentes
   carrerasApiUrl: 'http://localhost:5000/api', // Carreras
-  pedidosApiUrl: 'http://localhost:3333/api', // Pedidos
+  pedidosApiUrl: 'http://localhost:5008/api', // Pedidos
 };

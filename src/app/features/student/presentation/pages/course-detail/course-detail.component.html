@@ -867,40 +867,6 @@
             }
           </div>
         </div>
-
-        <!-- Upcoming Assignments -->
-        <div class="bg-navy-800/50 p-6 rounded-xl border border-navy-700">
-          <h3 class="text-lg font-semibold text-white mb-4 flex items-center justify-between">
-            Próximas Tareas
-            <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full"
-              >2 pendientes</span
-            >
-          </h3>
-          <div class="space-y-3">
-            @for (assignment of upcomingAssignments; track assignment.id) {
-              <div
-                class="flex items-center gap-3 p-3 bg-navy-900/50 rounded-lg border border-navy-700/50 hover:border-teal-500/30 transition-colors group cursor-pointer"
-              >
-                <div
-                  class="flex-shrink-0 w-12 h-12 bg-navy-800 rounded-lg flex flex-col items-center justify-center border border-navy-700"
-                >
-                  <span class="text-xs font-bold text-gray-400 uppercase">{{
-                    assignment.mes
-                  }}</span>
-                  <span class="text-lg font-bold text-white">{{ assignment.dia }}</span>
-                </div>
-                <div>
-                  <h4
-                    class="text-sm font-semibold text-gray-200 group-hover:text-teal-400 transition-colors"
-                  >
-                    {{ assignment.titulo }}
-                  </h4>
-                  <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">Vence en 2 días</p>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
       </aside>
     </main>
   } @else {

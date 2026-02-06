@@ -154,20 +154,25 @@ export interface CourseDetail {
 
   // Descripción
   description: string;
-  learningObjectives: string[];
-  whatYouWillLearn: string[];
-  requirements: string[];
-  level: 'Principiante' | 'Intermedio' | 'Avanzado';
+  learningObjectives?: string[];
+  whatYouWillLearn?: string[];
+  requirements?: string[];
+  level?: 'Principiante' | 'Intermedio' | 'Avanzado';
+  requisitos?: string[]; // Del backend
+  nivel?: string; // Del backend
+  categoria?: string; // Del backend
+  precio?: number; // Del backend
+  duracion?: string; // Del backend
 
   // Información del curso
-  modality: 'Presencial' | 'Virtual' | 'Híbrido';
-  schedule: string;
-  credits: number;
-  startDate: Date;
-  endDate: Date;
-  totalDuration: string;
-  totalLessons: number;
-  resources: string[];
+  modality?: 'Presencial' | 'Virtual' | 'Híbrido';
+  schedule?: string;
+  credits?: number;
+  startDate?: Date;
+  endDate?: Date;
+  totalDuration?: string;
+  totalLessons?: number;
+  resources?: string[];
 }
 
 // Re-export para facilitar imports
