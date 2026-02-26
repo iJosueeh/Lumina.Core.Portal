@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap, forkJoin, of, catchError } from 'rxjs';
 import { TeacherCourseRepository } from '../../domain/repositories/teacher-course.repository';
 import { TeacherCourse, CourseStats } from '../../domain/models/teacher-course.model';
 import { environment } from '../../../../../environments/environment';
@@ -9,30 +9,48 @@ import { environment } from '../../../../../environments/environment';
     providedIn: 'root'
 })
 export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
+    private readonly docentesApiUrl = environment.docentesApiUrl;
     private readonly cursosApiUrl = environment.cursosApiUrl;
 
     constructor(private http: HttpClient) {
         super();
     }
 
-    override getCoursesByTeacher(teacherId: string): Observable<TeacherCourse[]> {
-        return this.http.get<any>(`${this.cursosApiUrl}/Cursos?docenteId=${teacherId}`).pipe(
-            map(response => {
-                console.log('🔍 [TEACHER-COURSES] RAW Response:', response);
+    override getCoursesByTeacher(usuarioId: string): Observable<TeacherCourse[]> {
+        console.log('🔍 [TEACHER-COURSES-HTTP] Fetching courses for usuarioId:', usuarioId);
+        
+        // KISS: Obtener docente por usuarioId, luego sus cursos asignados
+        return this.http.get<any>(`${this.docentesApiUrl}/docente/by-usuario/${usuarioId}`).pipe(
+            switchMap(docenteResponse => {
+                const docenteId = docenteResponse.id?.value || docenteResponse.id;
+                console.log('✅ [TEACHER-COURSES-HTTP] DocenteId obtenido:', docenteId);
                 
-                let cursos: any[];
-                if (Array.isArray(response)) {
-                    cursos = response;
-                } else if (response && Array.isArray(response.data)) {
-                    cursos = response.data;
-                } else if (response && Array.isArray(response.cursos)) {
-                    cursos = response.cursos;
-                } else {
-                    console.error('❌ [TEACHER-COURSES] Formato inesperado:', response);
-                    cursos = [];
-                }
-
-                return cursos.map(curso => this.mapToTeacherCourse(curso));
+                // Obtener cursos impartidos del docente
+                return this.http.get<any[]>(`${this.docentesApiUrl}/cursosImpartidos/${docenteId}`).pipe(
+                    switchMap(cursosImpartidos => {
+                        console.log('📚 [TEACHER-COURSES-HTTP] Cursos impartidos:', cursosImpartidos.length);
+                        
+                        if (cursosImpartidos.length === 0) {
+                            return of([]);
+                        }
+                        
+                        // Por cada curso impartido, obtener detalles del curso
+                        // Si un curso no existe, omitirlo en lugar de fallar toda la request
+                        const cursoRequests = cursosImpartidos.map(ci => 
+                            this.http.get<any>(`${this.cursosApiUrl}/Cursos/${ci.cursoId}`).pipe(
+                                map(curso => this.mapToTeacherCourse(curso)),
+                                catchError(error => {
+                                    console.warn(`⚠️ [TEACHER-COURSES-HTTP] Curso no encontrado: ${ci.cursoId}`, error);
+                                    return of(null);
+                                })
+                            )
+                        );
+                        
+                        return forkJoin(cursoRequests).pipe(
+                            map(results => results.filter(curso => curso !== null) as TeacherCourse[])
+                        );
+                    })
+                );
             })
         );
     }
@@ -77,9 +95,18 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
             alumnosActivos: data.alumnosActivos || 0,
             promedioGeneral: data.promedioGeneral || 0,
             asistenciaPromedio: data.asistenciaPromedio || 0,
-            estadoCurso: data.estado || 'Activo',
-            horario: data.horario || [],
-            silabo: data.silabo
+            estadoCurso: data.estadoCurso || data.estado || 'Activo',
+            horario: data.horarios || data.horario || [],
+            modulos: data.modulos || [],
+            silabo: data.silabo,
+            imagen: data.imagen,
+            nivel: data.nivel,
+            modalidad: data.modalidad,
+            duracion: data.duracion,
+            categoria: data.categoria,
+            instructor: data.instructor
+                ? { nombre: data.instructor.nombre, cargo: data.instructor.cargo, avatar: data.instructor.avatar }
+                : undefined,
         };
     }
 }

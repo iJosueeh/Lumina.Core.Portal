@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -11,6 +11,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { ProfileRepository } from '../../../domain/repositories/profile.repository';
 import { StudentProfile, SocialLinks } from '../../../domain/models/student-profile.model';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -37,6 +38,8 @@ export class ProfileEditComponent implements OnInit {
   hasChanges = computed(() => {
     return this.profileForm?.dirty || this.socialLinksForm?.dirty || this.selectedFile() !== null;
   });
+
+  private authService = inject(AuthService);
 
   constructor(
     private fb: FormBuilder,
@@ -89,7 +92,7 @@ export class ProfileEditComponent implements OnInit {
 
   private loadProfile(): void {
     this.isLoading.set(true);
-    const userId = '550e8400-e29b-41d4-a716-446655440000'; // TODO: Get from auth service
+    const userId = this.authService.getUserId() ?? '';
 
     this.profileRepository.getStudentProfile(userId).subscribe({
       next: (profile) => {

@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 
 interface HorarioSesion {
   id: string;
@@ -74,89 +75,95 @@ export class TeacherScheduleComponent implements OnInit {
     return cursosSet.size;
   });
 
-  constructor(private http: HttpClient) {}
+  private authRepo = inject(AuthRepository);
+  private teacherQuery = inject(TeacherQueryService);
 
-  ngOnInit(): void {
-    this.loadSchedule();
+  constructor() {}
+
+  async ngOnInit(): Promise<void> {
+    await this.loadSchedule();
   }
 
-  loadSchedule(): void {
+  async loadSchedule(): Promise<void> {
     this.isLoading.set(true);
+    try {
+      const user = this.authRepo.getCurrentUser();
+      const userId = user?.id || (user as any)?.sub || '';
 
-    // Por ahora creamos datos mock directamente
-    // En producción, esto vendría de un JSON o API
-    const mockData: TeacherScheduleData = {
-      docenteId: '660f9511-f3ac-52e5-b827-557766551111',
-      docenteNombre: 'Carlos Alberto Mendoza Silva',
-      sesiones: [
-        {
-          id: 'ses-1',
-          cursoId: '1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p',
-          cursoNombre: 'Desarrollo Web Full Stack',
-          cursoCodigo: 'WEB101',
-          dia: 'Lunes',
-          horaInicio: '18:00',
-          horaFin: '21:00',
-          aula: 'Lab 301',
-          tipo: 'Teórica',
-          modalidad: 'Presencial'
-        },
-        {
-          id: 'ses-2',
-          cursoId: '1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p',
-          cursoNombre: 'Desarrollo Web Full Stack',
-          cursoCodigo: 'WEB101',
-          dia: 'Miércoles',
-          horaInicio: '18:00',
-          horaFin: '21:00',
-          aula: 'Lab 301',
-          tipo: 'Práctica',
-          modalidad: 'Presencial'
-        },
-        {
-          id: 'ses-3',
-          cursoId: '2',
-          cursoNombre: 'Arquitectura Cloud 101',
-          cursoCodigo: 'CLOUD101',
-          dia: 'Martes',
-          horaInicio: '19:00',
-          horaFin: '22:00',
-          aula: 'Aula Virtual',
-          tipo: 'Teórica',
-          modalidad: 'Virtual'
-        },
-        {
-          id: 'ses-4',
-          cursoId: '2',
-          cursoNombre: 'Arquitectura Cloud 101',
-          cursoCodigo: 'CLOUD101',
-          dia: 'Jueves',
-          horaInicio: '19:00',
-          horaFin: '22:00',
-          aula: 'Lab 205',
-          tipo: 'Práctica',
-          modalidad: 'Híbrido'
-        },
-        {
-          id: 'ses-5',
-          cursoId: '3',
-          cursoNombre: 'Base de Datos Avanzadas',
-          cursoCodigo: 'DB201',
-          dia: 'Viernes',
-          horaInicio: '16:00',
-          horaFin: '19:00',
-          aula: 'Lab 102',
-          tipo: 'Teórica',
-          modalidad: 'Presencial'
-        }
-      ]
-    };
+      const [teacherInfo, courses] = await Promise.all([
+        this.teacherQuery.getTeacherInfo(userId),
+        this.teacherQuery.getTeacherCourses(userId),
+      ]);
 
-    setTimeout(() => {
-      this.scheduleData.set(mockData);
-      console.log('✅ [SCHEDULE] Schedule loaded');
+      // Assign each course a deterministic pair of weekly slots
+      const slotMap: Array<[
+        { dia: string; horaInicio: string; horaFin: string; tipo: string },
+        { dia: string; horaInicio: string; horaFin: string; tipo: string }
+      ]> = [
+        [
+          { dia: 'Lunes',    horaInicio: '18:00', horaFin: '21:00', tipo: 'Teórica'  },
+          { dia: 'Miércoles', horaInicio: '18:00', horaFin: '21:00', tipo: 'Práctica' },
+        ],
+        [
+          { dia: 'Martes',   horaInicio: '19:00', horaFin: '22:00', tipo: 'Teórica'  },
+          { dia: 'Jueves',   horaInicio: '19:00', horaFin: '22:00', tipo: 'Práctica' },
+        ],
+        [
+          { dia: 'Viernes',  horaInicio: '16:00', horaFin: '19:00', tipo: 'Teórica'  },
+          { dia: 'Sábado',   horaInicio: '09:00', horaFin: '12:00', tipo: 'Práctica' },
+        ],
+        [
+          { dia: 'Lunes',    horaInicio: '14:00', horaFin: '17:00', tipo: 'Teórica'  },
+          { dia: 'Jueves',   horaInicio: '14:00', horaFin: '17:00', tipo: 'Práctica' },
+        ],
+      ];
+
+      const aulasByModalidad: Record<string, string[]> = {
+        Virtual:    ['Aula Virtual'],
+        Presencial: ['Lab 301', 'Lab 205', 'Lab 102', 'Aula A201'],
+        Híbrido:    ['Lab 301', 'Lab 205', 'Lab 102', 'Aula A201'],
+        Hibrido:    ['Lab 301', 'Lab 205', 'Lab 102', 'Aula A201'],
+      };
+
+      const sesiones: HorarioSesion[] = [];
+      courses.forEach((course, idx) => {
+        const slots = slotMap[idx % slotMap.length];
+        const modalidad = (course as any).modalidad || 'Presencial';
+        const aulaList = aulasByModalidad[modalidad] ?? aulasByModalidad['Presencial'];
+
+        slots.forEach((slot, slotIdx) => {
+          const aula = modalidad === 'Virtual'
+            ? 'Aula Virtual'
+            : aulaList[(idx + slotIdx) % aulaList.length];
+
+          sesiones.push({
+            id: `ses-${course.id.slice(0, 8)}-${slotIdx}`,
+            cursoId: course.id,
+            cursoNombre: course.titulo,
+            cursoCodigo: course.codigo,
+            dia: slot.dia,
+            horaInicio: slot.horaInicio,
+            horaFin: slot.horaFin,
+            aula,
+            tipo: slot.tipo,
+            modalidad,
+          });
+        });
+      });
+
+      const scheduleData: TeacherScheduleData = {
+        docenteId: teacherInfo.id,
+        docenteNombre: teacherInfo.nombre ?? '',
+        sesiones,
+      };
+
+      this.scheduleData.set(scheduleData);
+      console.log(`✅ [SCHEDULE] Loaded ${sesiones.length} sesiones from ${courses.length} cursos`);
+    } catch (err) {
+      console.error('❌ [SCHEDULE] Error loading schedule:', err);
+    } finally {
       this.isLoading.set(false);
-    }, 500);
+    }
   }
 
   parseTime(time: string): number {

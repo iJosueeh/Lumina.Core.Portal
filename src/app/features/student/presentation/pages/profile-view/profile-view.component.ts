@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProfileRepository } from '../../../domain/repositories/profile.repository';
 import { StudentProfile } from '../../../domain/models/student-profile.model';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-profile-view',
@@ -12,10 +13,13 @@ import { StudentProfile } from '../../../domain/models/student-profile.model';
   styleUrl: './profile-view.component.css',
 })
 export class ProfileViewComponent implements OnInit {
+  private authService = inject(AuthService);
+
   // Signals
   profile = signal<StudentProfile | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
+  linkCopied = signal(false);
 
   // Computed signals
   fullName = computed(() => {
@@ -109,7 +113,8 @@ export class ProfileViewComponent implements OnInit {
   copyProfileLink(): void {
     const profileUrl = `${window.location.origin}/student/profile/${this.profile()?.id}`;
     navigator.clipboard.writeText(profileUrl).then(() => {
-      alert('¡Link del perfil copiado al portapapeles!');
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2500);
     });
   }
 }

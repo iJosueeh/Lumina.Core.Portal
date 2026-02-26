@@ -1,84 +1,76 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { GetTeacherCoursesUseCase } from '@features/teacher/application/use-cases/get-teacher-courses.usecase';
-import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.model';
-import { TeacherDashboardStats } from '@features/teacher/domain/models/teacher-dashboard-stats.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { 
+  useTeacherInfo, 
+  useDashboardStats, 
+  useTeacherCourses,
+  useTeacherStudents,
+  useInvalidateTeacherCache 
+} from '@features/teacher/infrastructure/queries/teacher-query-hooks';
 
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './teacher-dashboard.component.html',
-  styles: ``,
 })
-export class TeacherDashboardComponent implements OnInit {
-  teacherName = signal('Docente');
-  courses = signal<TeacherCourse[]>([]);
-  dashboardStats = signal<TeacherDashboardStats | null>(null);
-  isLoadingCourses = signal(true);
-  isLoadingStats = signal(true);
+export class TeacherDashboardComponent {
+  private authRepository = inject(AuthRepository);
+  private router = inject(Router);
+  
+  // ID del usuario actual
+  private currentUserId = computed(() => this.authRepository.getCurrentUser()?.id ?? '');
+  
+  // TanStack Query hooks (caché automático)
+  teacherInfoQuery = useTeacherInfo(this.currentUserId());
+  dashboardStatsQuery = useDashboardStats(this.currentUserId());
+  coursesQuery = useTeacherCourses(this.currentUserId());
+  // OPTIMIZACIÓN: No cargar estudiantes en dashboard (enabled: false) - solo en students-list
+  studentsQuery = useTeacherStudents(this.currentUserId(), { enabled: false });
+  cacheManager = useInvalidateTeacherCache();
 
-  // Estadísticas generales
-  totalCourses = signal(0);
-  totalStudents = signal(0);
-  pendingGrades = signal(0);
-  upcomingClasses = signal(0);
+  // Computed signals para acceso fácil a los datos
+  teacherName = computed(() => {
+    const data = this.teacherInfoQuery.data();
+    return data?.nombre?.split(' ')[0] || 'Docente';
+  });
 
-  constructor(
-    private getCoursesUseCase: GetTeacherCoursesUseCase,
-    private authRepository: AuthRepository,
-    private router: Router,
-    private http: HttpClient,
-  ) {}
+  stats = computed(() => this.dashboardStatsQuery.data());
+  courses = computed(() => this.coursesQuery.data() || []);
+  students = computed(() => this.studentsQuery.data() || []);
+  // OPTIMIZACIÓN: Usar totalStudents del stats (viene del backend) en lugar de contar el array
+  totalStudents = computed(() => this.stats()?.stats?.totalStudents || 0);
 
-  ngOnInit(): void {
-    const currentUser = this.authRepository.getCurrentUser();
-    if (currentUser) {
-      this.teacherName.set(currentUser.fullName.split(' ')[0]);
-      this.loadDashboardData(currentUser.id);
-    }
+  // Alias para compatibilidad con el template
+  dashboardStats = this.stats;
+  
+  // Estados de loading individuales (para el template)
+  isLoadingStats = computed(() => this.dashboardStatsQuery.isPending());
+  isLoadingCourses = computed(() => this.coursesQuery.isPending());
+
+  // Estados de loading (combinados para simplicidad)
+  isLoading = computed(() => 
+    this.teacherInfoQuery.isPending() || 
+    this.dashboardStatsQuery.isPending() || 
+    this.coursesQuery.isPending()
+  );
+
+  hasError = computed(() => 
+    this.teacherInfoQuery.isError() || 
+    this.dashboardStatsQuery.isError() ||
+    this.coursesQuery.isError()
+  );
+
+  // Refrescar estadísticas manualmente
+  refreshStats(): void {
+    this.dashboardStatsQuery.refetch();
   }
 
-  loadDashboardData(teacherId: string): void {
-    // Cargar cursos
-    this.getCoursesUseCase.execute(teacherId).subscribe({
-      next: (courses) => {
-        console.log('✅ [TEACHER-DASHBOARD] Cursos cargados:', courses);
-        this.courses.set(courses);
-        this.calculateStats(courses);
-        this.isLoadingCourses.set(false);
-      },
-      error: (error) => {
-        console.error('❌ [TEACHER-DASHBOARD] Error cargando cursos:', error);
-        this.isLoadingCourses.set(false);
-      },
-    });
-
-    // Cargar estadísticas del dashboard
-    this.http
-      .get<TeacherDashboardStats>('/assets/mock-data/teachers/teacher-dashboard-stats.json')
-      .subscribe({
-        next: (stats) => {
-          console.log('✅ [TEACHER-DASHBOARD] Estadísticas cargadas:', stats);
-          this.dashboardStats.set(stats);
-          this.isLoadingStats.set(false);
-        },
-        error: (error) => {
-          console.error('❌ [TEACHER-DASHBOARD] Error cargando estadísticas:', error);
-          this.isLoadingStats.set(false);
-        },
-      });
-  }
-
-  calculateStats(courses: TeacherCourse[]): void {
-    this.totalCourses.set(courses.length);
-    this.totalStudents.set(courses.reduce((sum, course) => sum + course.totalAlumnos, 0));
-    // TODO: Implementar lógica para pendingGrades y upcomingClasses cuando estén los endpoints
-    this.pendingGrades.set(0);
-    this.upcomingClasses.set(0);
+  // Invalidar todo el caché del docente
+  invalidateCache(): void {
+    this.cacheManager.invalidateAll(this.currentUserId());
   }
 
   navigateToCourse(courseId: string): void {
@@ -100,6 +92,7 @@ export class TeacherDashboardComponent implements OnInit {
     return 'bg-red-500';
   }
 
+  // Métodos de utilidad para el template
   getTimeAgo(timestamp: string): string {
     const now = new Date();
     const date = new Date(timestamp);
@@ -122,15 +115,6 @@ export class TeacherDashboardComponent implements OnInit {
       minute: '2-digit',
     };
     return date.toLocaleDateString('es-ES', options);
-  }
-
-  getActivityIcon(type: string): string {
-    const icons: Record<string, string> = {
-      grade: 'clipboard-check',
-      assignment: 'document-plus',
-      announcement: 'megaphone',
-    };
-    return icons[type] || 'bell';
   }
 }
 

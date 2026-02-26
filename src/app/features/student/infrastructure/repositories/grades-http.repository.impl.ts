@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, map, of } from 'rxjs';
+import { Observable, forkJoin, map, of, tap, catchError, throwError } from 'rxjs';
 import { GradesRepository } from '../../domain/repositories/grades.repository';
 import { CourseGrade, GradeStats, Evaluation } from '../../domain/models/grade.model';
 import { environment } from '../../../../../environments/environment';
+import { CacheService } from '@core/services/cache.service';
 
 interface EvaluacionResponse {
     id: string;
@@ -46,12 +47,26 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
     private readonly evaluacionesApiUrl = environment.evaluacionesApiUrl;
     private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
     private readonly cursosApiUrl = environment.cursosApiUrl;
+    private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private cacheService: CacheService
+    ) {
         super();
     }
 
     override getGradesByStudent(studentId: string): Observable<CourseGrade[]> {
+        const cacheKey = `grades-${studentId}`;
+        
+        // Verificar si existe en caché
+        const cachedData = this.cacheService.get<CourseGrade[]>(cacheKey);
+        if (cachedData) {
+            console.log('✅ Calificaciones obtenidas del caché:', cacheKey);
+            return of(cachedData);
+        }
+
+        console.log('📡 Realizando petición HTTP para calificaciones:', cacheKey);
         // 1. Obtener evaluaciones del estudiante
         return this.http.get<any>(
             `${this.evaluacionesApiUrl}/Evaluaciones?estudianteId=${studentId}`
@@ -141,6 +156,17 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                 });
 
                 return courseGrades;
+            }),
+            tap(grades => {
+                this.cacheService.set(cacheKey, grades, this.CACHE_TTL);
+                console.log('💾 Calificaciones almacenadas en caché:', cacheKey, grades.length, 'cursos');
+            }),
+            catchError(error => {
+                console.error('❌ Error al cargar calificaciones del backend:', error);
+                if (error.status === 401) {
+                    console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
+                }
+                return throwError(() => error);
             })
         );
     }

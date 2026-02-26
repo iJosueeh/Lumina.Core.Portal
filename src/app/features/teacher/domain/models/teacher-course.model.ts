@@ -11,7 +11,15 @@ export interface TeacherCourse {
     asistenciaPromedio: number;
     estadoCurso: 'Activo' | 'Finalizado' | 'Programado';
     horario: CourseSchedule[];
+    modulos?: CourseModulo[];
     silabo?: string;
+    // Campos adicionales del API
+    imagen?: string;
+    nivel?: string;
+    modalidad?: string;
+    duracion?: string;
+    categoria?: string;
+    instructor?: { nombre: string; cargo: string; avatar?: string };
 }
 
 export interface CourseSchedule {
@@ -21,6 +29,13 @@ export interface CourseSchedule {
     aula: string;
     modalidad: 'Presencial' | 'Virtual' | 'Hibrido';
     enlaceReunion?: string;
+}
+
+export interface CourseModulo {
+    id: string;
+    titulo: string;
+    descripcion?: string;
+    lecciones: string[];
 }
 
 export interface CourseStats {

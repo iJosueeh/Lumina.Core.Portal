@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of, tap, catchError, throwError } from 'rxjs';
 import { ScheduleRepository } from '../../domain/repositories/schedule.repository';
 import { CalendarEvent, UpcomingEvent } from '../../domain/models/calendar-event.model';
 import { environment } from '../../../../../environments/environment';
+import { CacheService } from '@core/services/cache.service';
 
 interface ProgramacionCalendarioResponse {
     id: string;
@@ -27,12 +28,26 @@ interface ProgramacionCalendarioResponse {
 export class ScheduleHttpRepositoryImpl extends ScheduleRepository {
     private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
     private readonly evaluacionesApiUrl = environment.evaluacionesApiUrl;
+    private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private cacheService: CacheService
+    ) {
         super();
     }
 
     override getScheduleByStudent(studentId: string): Observable<CalendarEvent[]> {
+        const cacheKey = `schedule-${studentId}`;
+        
+        // Verificar si existe en caché
+        const cachedData = this.cacheService.get<CalendarEvent[]>(cacheKey);
+        if (cachedData) {
+            console.log('✅ Horario obtenido del caché:', cacheKey);
+            return of(cachedData);
+        }
+
+        console.log('📡 Realizando petición HTTP para horario:', cacheKey);
         return this.http.get<ProgramacionCalendarioResponse[]>(
             `${this.estudiantesApiUrl}/programaciones?estudianteId=${studentId}`
         ).pipe(
@@ -55,11 +70,32 @@ export class ScheduleHttpRepositoryImpl extends ScheduleRepository {
                         isUrgent: prog.tipo === 'EXAMEN'
                     } as CalendarEvent;
                 });
+            }),
+            tap(events => {
+                this.cacheService.set(cacheKey, events, this.CACHE_TTL);
+                console.log('💾 Horario almacenado en caché:', cacheKey, events.length, 'eventos');
+            }),
+            catchError(error => {
+                console.error('❌ Error al cargar horario del backend:', error);
+                if (error.status === 401) {
+                    console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
+                }
+                return throwError(() => error);
             })
         );
     }
 
     override getUpcomingEvents(studentId: string): Observable<UpcomingEvent[]> {
+        const cacheKey = `upcoming-events-${studentId}`;
+        
+        // Verificar si existe en caché
+        const cachedData = this.cacheService.get<UpcomingEvent[]>(cacheKey);
+        if (cachedData) {
+            console.log('✅ Eventos próximos obtenidos del caché:', cacheKey);
+            return of(cachedData);
+        }
+
+        console.log('📡 Realizando petición HTTP para eventos próximos:', cacheKey);
         // Obtener evaluaciones próximas
         return this.http.get<any>(
             `${this.evaluacionesApiUrl}/Evaluaciones?estudianteId=${studentId}`
@@ -109,6 +145,17 @@ export class ScheduleHttpRepositoryImpl extends ScheduleRepository {
                         daysUntil: daysUntil
                     } as UpcomingEvent;
                 });
+            }),
+            tap(events => {
+                this.cacheService.set(cacheKey, events, this.CACHE_TTL);
+                console.log('💾 Eventos próximos almacenados en caché:', cacheKey, events.length, 'eventos');
+            }),
+            catchError(error => {
+                console.error('❌ Error al cargar eventos próximos del backend:', error);
+                if (error.status === 401) {
+                    console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
+                }
+                return throwError(() => error);
             })
         );
     }

@@ -60,10 +60,13 @@ export class CourseManagement implements OnInit {
 
   startLoading() {
       this.isLoading = true;
-      this.adminService.getCourses().subscribe(courses => {
-          this.allCourses = courses;
-          this.applyFilters();
-          this.isLoading = false;
+      this.adminService.getCourses().subscribe({
+          next: (courses) => {
+              this.allCourses = courses;
+              this.applyFilters();
+              this.isLoading = false;
+          },
+          error: () => { this.isLoading = false; }
       });
   }
 
@@ -134,21 +137,31 @@ export class CourseManagement implements OnInit {
 
   saveCourse() {
       if (this.isEditing) {
-          this.adminService.updateCourse(this.currentCourse).subscribe(() => {
-              const index = this.allCourses.findIndex(c => c.id === this.currentCourse.id);
-              if (index !== -1) {
-                  this.allCourses[index] = this.currentCourse;
-                  this.applyFilters();
+          this.adminService.updateCourse(this.currentCourse).subscribe({
+              next: () => {
+                  const index = this.allCourses.findIndex(c => c.id === this.currentCourse.id);
+                  if (index !== -1) {
+                      this.allCourses[index] = this.currentCourse;
+                      this.applyFilters();
+                  }
+                  this.closeModal();
               }
-              this.closeModal();
           });
       } else {
-          this.currentCourse.id = `CRS-${Math.floor(Math.random() * 1000)}`;
           this.currentCourse.enrolled = 0;
-          this.adminService.createCourse(this.currentCourse).subscribe(() => {
-              this.allCourses.unshift(this.currentCourse);
-              this.applyFilters();
-              this.closeModal();
+          this.adminService.createCourse(this.currentCourse).subscribe({
+              next: (result: any) => {
+                  this.currentCourse.id = (typeof result === 'string' ? result : (result?.value ?? result?.id ?? `CRS-${Date.now()}`));
+                  this.allCourses.unshift({ ...this.currentCourse });
+                  this.applyFilters();
+                  this.closeModal();
+              },
+              error: () => {
+                  this.currentCourse.id = `CRS-${Date.now()}`;
+                  this.allCourses.unshift({ ...this.currentCourse });
+                  this.applyFilters();
+                  this.closeModal();
+              }
           });
       }
   }
@@ -334,11 +347,13 @@ export class CourseManagement implements OnInit {
 
   confirmDelete() {
       if (this.courseToDelete) {
-          this.adminService.deleteCourse(this.courseToDelete.id).subscribe(() => {
-              this.allCourses = this.allCourses.filter(c => c.id !== this.courseToDelete.id);
-              this.applyFilters();
-              this.isDeleteModalOpen = false;
-              this.courseToDelete = null;
+          this.adminService.deleteCourse(this.courseToDelete.id).subscribe({
+              next: () => {
+                  this.allCourses = this.allCourses.filter(c => c.id !== this.courseToDelete.id);
+                  this.applyFilters();
+                  this.isDeleteModalOpen = false;
+                  this.courseToDelete = null;
+              }
           });
       }
   }

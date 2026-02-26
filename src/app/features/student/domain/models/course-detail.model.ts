@@ -34,6 +34,17 @@ export interface Instructor {
   };
 }
 
+export interface CourseSchedule {
+  id: string;
+  diaSemana: string; // "Lunes", "Martes", etc.
+  horaInicio: string; // "10:00"
+  horaFin: string; // "12:00"
+  aula: string; // "Aula 301", "Lab 101", "Virtual"
+  modalidad: 'Presencial' | 'Virtual' | 'Híbrido';
+  tipo?: string; // "Teórica", "Práctica", "Laboratorio"
+  enlaceReunion?: string; // Para clases virtuales
+}
+
 export type MaterialType = 'video' | 'pdf' | 'code' | 'link' | 'document';
 
 export interface CourseMaterial {
@@ -166,7 +177,8 @@ export interface CourseDetail {
 
   // Información del curso
   modality?: 'Presencial' | 'Virtual' | 'Híbrido';
-  schedule?: string;
+  schedule?: CourseSchedule[]; // Horarios del curso
+  scheduleText?: string; // Texto legible del horario (legacy)
   credits?: number;
   startDate?: Date;
   endDate?: Date;

@@ -7,6 +7,10 @@ export interface TeacherProfile {
   bio?: string;
   phone?: string;
   department?: string;
+  // Campos desde el API de Docentes
+  cargo?: string;
+  avatar?: string;
+  linkedIn?: string;
   stats?: {
     cursosAsignados: number;
     alumnosTotales: number;

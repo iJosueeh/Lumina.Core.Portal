@@ -188,6 +188,14 @@ export const routes: Routes = [
           ),
         title: 'Gestión de Materiales - Portal Docente',
       },
+      {
+        path: 'student/:id',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/student-detail/student-detail.component').then(
+            (m) => m.StudentDetailComponent,
+          ),
+        title: 'Detalle de Estudiante - Portal Docente',
+      },
     ],
   },
   {

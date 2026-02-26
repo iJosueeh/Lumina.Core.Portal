@@ -242,8 +242,8 @@ export class AccountSettingsComponent implements OnInit {
 
     try {
       await this.accountRepository.deactivateAccount('Usuario solicitó desactivación').toPromise();
-      alert('Tu cuenta ha sido desactivada. Serás redirigido al login.');
-      this.router.navigate(['/login']);
+      this.successMessage.set('Cuenta desactivada. Redirigiendo...');
+      setTimeout(() => this.router.navigate(['/login']), 1500);
     } catch (err) {
       this.error.set('Error al desactivar la cuenta');
     } finally {
@@ -281,8 +281,8 @@ export class AccountSettingsComponent implements OnInit {
 
     try {
       await this.accountRepository.deleteAccount(password).toPromise();
-      alert('Tu cuenta ha sido eliminada permanentemente. Serás redirigido al login.');
-      this.router.navigate(['/login']);
+      this.successMessage.set('Cuenta eliminada. Redirigiendo...');
+      setTimeout(() => this.router.navigate(['/login']), 1500);
     } catch (err: any) {
       this.error.set(err.message || 'Error al eliminar la cuenta');
     } finally {

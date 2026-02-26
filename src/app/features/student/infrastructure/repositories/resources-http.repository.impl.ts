@@ -40,7 +40,7 @@ export class ResourcesHttpRepositoryImpl implements ResourcesRepository {
             category: dto.categoria,
             type: dto.tipo.toLowerCase() as any, // 'pdf' | 'video' | 'link', etc.
             url: dto.url,
-            imageUrl: dto.imagenUrl || 'assets/images/resources/default.jpg',
+            imageUrl: dto.imagen || dto.imagenUrl || 'https://via.placeholder.com/400x250?text=Recurso',
             badge: dto.categoria.toUpperCase(),
             isFeatured: dto.esDestacado,
             uploadDate: new Date(dto.fechaPublicacion),

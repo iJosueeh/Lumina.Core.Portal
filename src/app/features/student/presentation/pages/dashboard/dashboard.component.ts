@@ -8,6 +8,7 @@ import { CourseProgress } from '@features/student/domain/models/course-progress.
 import { Assignment } from '@features/student/domain/models/assignment.model';
 import { Announcement } from '@features/student/domain/models/announcement.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { CacheService } from '@core/services/cache.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -46,6 +47,7 @@ export class DashboardComponent implements OnInit {
     private getAnnouncementsUseCase: GetRecentAnnouncementsUseCase,
     private authRepository: AuthRepository,
     private router: Router,
+    private cacheService: CacheService
   ) {}
 
   ngOnInit(): void {
@@ -117,5 +119,17 @@ export class DashboardComponent implements OnInit {
 
   viewCourse(courseId: string): void {
     this.router.navigate(['/student/course', courseId]);
+  }
+
+  clearCacheAndReload(): void {
+    console.log('🧹 Limpiando caché...');
+    this.cacheService.clear();
+    const currentUser = this.authRepository.getCurrentUser();
+    if (currentUser) {
+      this.isLoadingCourses = true;
+      this.isLoadingAssignments = true;
+      this.isLoadingAnnouncements = true;
+      this.loadDashboardData(currentUser.id);
+    }
   }
 }

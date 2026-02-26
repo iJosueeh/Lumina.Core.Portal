@@ -1,8 +1,14 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { useTeacherStudents } from '@features/teacher/infrastructure/queries/teacher-query-hooks';
+import { TeacherStudent } from '@features/teacher/domain/models/teacher-student.model';
+import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
+import { EstudianteMetricasService } from '@features/teacher/infrastructure/services/estudiante-metricas.service';
+import { EstudianteMetricasCompletas } from '@features/teacher/domain/models/estudiante-metricas.model';
+import { firstValueFrom } from 'rxjs';
 
 interface CourseStudent {
   id: string;
@@ -33,19 +39,56 @@ interface CourseFilter {
   templateUrl: './students-list.component.html',
   styles: ``,
 })
-export class StudentsListComponent implements OnInit {
-  allStudents = signal<CourseStudent[]>([]);
+export class StudentsListComponent {
+  private router = inject(Router);
+  private authRepository = inject(AuthRepository);
+  private courseRepository = inject(TeacherCourseRepository);
+  private metricasService = inject(EstudianteMetricasService);
+  
+  // Obtener usuario actual del AuthRepository
+  private currentUserId = computed(() => this.authRepository.getCurrentUser()?.id ?? '');
+  
+  // TanStack Query hook
+  studentsQuery = useTeacherStudents(this.currentUserId());
+  
+  // Signals para filtros
   searchTerm = signal('');
   selectedCourse = signal<string>('all');
   selectedStatus = signal<string>('all');
-  isLoading = signal(true);
+
+  // Caché de nombres de cursos para evitar múltiples peticiones
+  private courseNamesCache = signal<Map<string, string>>(new Map());
+  
+  // Caché de métricas de estudiantes
+  private metricasCache = signal<Map<string, EstudianteMetricasCompletas>>(new Map());
+
+  // Transformar estudiantes del backend al formato de la UI
+  allStudents = computed(() => {
+    const students = this.studentsQuery.data() || [];
+    return students.map((s: TeacherStudent) => this.transformToUIStudent(s));
+  });
+
+  isLoading = computed(() => this.studentsQuery.isLoading());
+  isError = computed(() => this.studentsQuery.isError());
+  error = computed(() => this.studentsQuery.error());
+
+  constructor() {
+    // Cargar nombres de cursos y métricas cuando haya estudiantes
+    effect(() => {
+      const students = this.allStudents();
+      if (students.length > 0) {
+        this.loadCourseNames(students);
+        this.loadStudentMetrics(students);
+      }
+    });
+  }
 
   // Computed values
   courses = computed(() => {
     const students = this.allStudents();
     const uniqueCourses = new Map<string, string>();
     
-    students.forEach((student) => {
+    students.forEach((student: CourseStudent) => {
       if (student.courseId && student.courseName) {
         uniqueCourses.set(student.courseId, student.courseName);
       }
@@ -59,19 +102,19 @@ export class StudentsListComponent implements OnInit {
 
     // Filtrar por curso
     if (this.selectedCourse() !== 'all') {
-      students = students.filter((s) => s.courseId === this.selectedCourse());
+      students = students.filter((s: CourseStudent) => s.courseId === this.selectedCourse());
     }
 
     // Filtrar por estado
     if (this.selectedStatus() !== 'all') {
-      students = students.filter((s) => s.estado === this.selectedStatus());
+      students = students.filter((s: CourseStudent) => s.estado === this.selectedStatus());
     }
 
     // Filtrar por búsqueda
     const term = this.searchTerm().toLowerCase();
     if (term) {
       students = students.filter(
-        (s) =>
+        (s: CourseStudent) =>
           s.nombre.toLowerCase().includes(term) ||
           s.apellidos.toLowerCase().includes(term) ||
           s.codigo.toLowerCase().includes(term) ||
@@ -83,44 +126,177 @@ export class StudentsListComponent implements OnInit {
   });
 
   totalStudents = computed(() => this.allStudents().length);
-  activeStudents = computed(() => this.allStudents().filter((s) => s.estado === 'Activo').length);
-  atRiskStudents = computed(() => this.allStudents().filter((s) => s.estado === 'En Riesgo').length);
+  activeStudents = computed(() => this.allStudents().filter((s: CourseStudent) => s.estado === 'Activo').length);
+  atRiskStudents = computed(() => this.allStudents().filter((s: CourseStudent) => s.estado === 'En Riesgo').length);
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-  ) {}
-
-  ngOnInit(): void {
-    this.loadStudents();
+  /**
+   * Transforma un estudiante del backend al formato de la UI
+   * Integra métricas reales desde el API de Evaluaciones
+   * NOTA: Asistencia y Tareas aún son mock (pendientes de implementación de sus APIs)
+   */
+  private transformToUIStudent(student: TeacherStudent): CourseStudent {
+    const [nombre, ...apellidosArr] = student.nombreCompleto.split(' ');
+    const apellidos = apellidosArr.join(' ');
+    
+    // Extraer el primer curso como curso principal (temporal)
+    const courseId = student.cursos[0] || '';
+    
+    // Obtener métricas reales desde la caché
+    const metricas = this.metricasCache().get(student.id);
+    
+    return {
+      id: student.id,
+      codigo: student.usuarioId.substring(0, 8).toUpperCase(),
+      nombre: nombre,
+      apellidos: apellidos,
+      email: student.email,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(student.nombreCompleto)}&background=0D8ABC&color=fff`,
+      // MÉTRICAS REALES desde API de Evaluaciones
+      promedio: metricas?.promedioGeneral ?? 0,
+      // MOCK DATA temporal: Asistencia y Tareas (APIs pendientes de implementación)
+      asistencia: metricas?.asistencia ?? this.generateMockAttendance(student.id),
+      tareasEntregadas: metricas?.tareasEntregadas ?? this.deterministicInt(student.id + 'te', 5, 20),
+      tareasPendientes: metricas?.tareasPendientes ?? this.deterministicInt(student.id + 'tp', 0, 4),
+      estado: this.calculateEstudianteStatus(metricas),
+      ultimoAcceso: this.generateMockLastAccess(student.id),
+      courseId: courseId,
+      courseName: this.getCourseName(courseId),
+    };
   }
 
-  loadStudents(): void {
-    this.isLoading.set(true);
+  /**
+   * Calcula el estado del estudiante basado en sus métricas reales
+   */
+  private calculateEstudianteStatus(metricas: EstudianteMetricasCompletas | undefined): string {
+    if (!metricas) return 'Activo';
+    
+    const promedio = metricas.promedioGeneral;
+    const asistencia = metricas.asistencia ?? 100;
+    
+    // En riesgo si: promedio < 14 o asistencia < 75%
+    if (promedio < 14 || asistencia < 75) {
+      return 'En Riesgo';
+    }
+    
+    // Inactivo si: promedio = 0 (sin evaluaciones completadas)
+    if (promedio === 0 && metricas.evaluacionesCompletadas === 0) {
+      return 'Inactivo';
+    }
+    
+    return 'Activo';
+  }
 
-    this.http.get<any[]>('/assets/mock-data/teachers/course-students.json').subscribe({
-      next: (data) => {
-        // Aplanar todos los estudiantes de todos los cursos
-        const allStudents: CourseStudent[] = [];
-        data.forEach((courseData) => {
-          courseData.students.forEach((student: any) => {
-            allStudents.push({
-              ...student,
-              courseId: courseData.courseId,
-              courseName: courseData.courseName,
-            });
-          });
-        });
+  // Métodos auxiliares deterministas basados en hash del ID
+  private hashCode(str: string): number {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h);
+  }
 
-        this.allStudents.set(allStudents);
-        console.log('✅ [STUDENTS-LIST] Students loaded:', allStudents.length);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('❌ [STUDENTS-LIST] Error loading students:', error);
-        this.isLoading.set(false);
-      },
+  private deterministicInt(seed: string, min: number, max: number): number {
+    return min + (this.hashCode(seed) % (max - min + 1));
+  }
+
+  private generateMockAttendance(id: string): number {
+    return 70 + (this.hashCode(id + 'att') % 31); // 70-100%, fijo por estudiante
+  }
+
+  private generateMockLastAccess(id: string): string {
+    const now = new Date();
+    const hoursAgo = this.hashCode(id + 'acc') % 48; // 0-47h, fijo por estudiante
+    now.setHours(now.getHours() - hoursAgo);
+    return now.toISOString();
+  }
+
+  /**
+   * Carga las métricas reales de estudiantes desde el API de Evaluaciones
+   */
+  private async loadStudentMetrics(students: CourseStudent[]): Promise<void> {
+    const estudianteIds = students.map(s => s.id);
+    const cache = this.metricasCache();
+    
+    // Filtrar estudiantes sin métricas en caché
+    const idsToLoad = estudianteIds.filter(id => !cache.has(id));
+    
+    if (idsToLoad.length === 0) {
+      return;
+    }
+
+    console.log(`📊 [STUDENTS-LIST] Cargando métricas de ${idsToLoad.length} estudiantes...`);
+
+    try {
+      const metricasMap = await firstValueFrom(
+        this.metricasService.getMetricasMultiplesEstudiantes(idsToLoad)
+      );
+      
+      // Actualizar caché inmutablemente
+      const newCache = new Map(cache);
+      metricasMap.forEach((metricas, id) => newCache.set(id, metricas));
+      this.metricasCache.set(newCache);
+
+      console.log('✅ [STUDENTS-LIST] Métricas de estudiantes cargadas');
+    } catch (error) {
+      console.error('❌ [STUDENTS-LIST] Error cargando métricas:', error);
+    }
+  }
+
+  private getCourseName(cursoId: string): string {
+    // Buscar en la caché primero
+    const cached = this.courseNamesCache().get(cursoId);
+    if (cached) {
+      return cached;
+    }
+    
+    // Si no está en caché, retornar un placeholder
+    return 'Cargando...';
+  }
+
+  /**
+   * Carga los nombres de cursos desde el API
+   */
+  private async loadCourseNames(students: CourseStudent[]): Promise<void> {
+    // Obtener todos los IDs de cursos únicos
+    const courseIds = new Set<string>();
+    students.forEach(student => {
+      if (student.courseId) {
+        courseIds.add(student.courseId);
+      }
     });
+
+    // Cargar solo los cursos que no están en caché
+    const cache = this.courseNamesCache();
+    const coursesToLoad = Array.from(courseIds).filter(id => !cache.has(id));
+
+    if (coursesToLoad.length === 0) {
+      return;
+    }
+
+    console.log(`📚 [STUDENTS-LIST] Cargando nombres de ${coursesToLoad.length} cursos...`);
+
+    // Cargar todos los cursos en paralelo
+    try {
+      const coursePromises = coursesToLoad.map(courseId =>
+        firstValueFrom(this.courseRepository.getCourseById(courseId))
+          .then(course => ({ id: courseId, name: course.titulo }))
+          .catch(error => {
+            console.warn(`⚠️ [STUDENTS-LIST] Error cargando curso ${courseId}:`, error);
+            return { id: courseId, name: 'Curso sin nombre' };
+          })
+      );
+
+      const courses = await Promise.all(coursePromises);
+      
+      // Actualizar la caché
+      const newCache = new Map(cache);
+      courses.forEach(({ id, name }) => newCache.set(id, name));
+      this.courseNamesCache.set(newCache);
+
+      console.log('✅ [STUDENTS-LIST] Nombres de cursos cargados');
+    } catch (error) {
+      console.error('❌ [STUDENTS-LIST] Error cargando nombres de cursos:', error);
+    }
   }
 
   getStatusColor(estado: string): string {
@@ -145,14 +321,33 @@ export class StudentsListComponent implements OnInit {
   }
 
   viewStudentDetails(studentId: string): void {
-    console.log('Ver detalles del estudiante:', studentId);
-    // TODO: Implementar navegación a detalles del estudiante
+    this.router.navigate(['/teacher/student', studentId]);
   }
 
   exportToCSV(): void {
-    console.log('Exportar a CSV');
-    // TODO: Implementar exportación
-    alert('Funcionalidad de exportación próximamente');
+    const students = this.filteredStudents();
+    if (students.length === 0) return;
+
+    const headers = ['Nombre', 'Apellidos', 'Código', 'Email', 'Curso', 'Promedio', 'Asistencia %', 'Estado'];
+    const rows = students.map((s: CourseStudent) => [
+      `"${s.nombre}"`,
+      `"${s.apellidos}"`,
+      s.codigo,
+      s.email,
+      `"${s.courseName ?? ''}"`,
+      s.promedio.toFixed(2),
+      s.asistencia.toFixed(1) + '%',
+      s.estado,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r: string[]) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `estudiantes_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }
 

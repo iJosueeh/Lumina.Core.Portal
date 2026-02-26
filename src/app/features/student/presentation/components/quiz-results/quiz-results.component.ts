@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Quiz, QuizAttempt } from '@features/student/domain/models/quiz.model';
 
@@ -9,11 +9,33 @@ import { Quiz, QuizAttempt } from '@features/student/domain/models/quiz.model';
   templateUrl: './quiz-results.component.html',
   styles: ``,
 })
-export class QuizResultsComponent {
+export class QuizResultsComponent implements OnInit {
   @Input() quiz!: Quiz;
   @Input() attempt!: QuizAttempt;
   @Output() onClose = new EventEmitter<void>();
   @Output() onRetry = new EventEmitter<void>();
+
+  ngOnInit(): void {
+    console.log('🎯 QuizResultsComponent inicializado');
+    console.log('📝 Quiz recibido:', this.quiz);
+    console.log('📊 Attempt recibido:', this.attempt);
+    console.log('📋 Answers en attempt:', this.attempt?.answers);
+    console.log('🔢 Número de respuestas:', this.attempt?.answers?.length || 0);
+    
+    if (this.attempt?.answers && this.attempt.answers.length > 0) {
+      console.log('✅ Primera respuesta como ejemplo:', this.attempt.answers[0]);
+      this.attempt.answers.forEach((ans, idx) => {
+        console.log(`  Respuesta ${idx + 1}:`, {
+          questionId: ans.questionId,
+          answer: ans.answer,
+          isCorrect: ans.isCorrect,
+          pointsEarned: ans.pointsEarned
+        });
+      });
+    } else {
+      console.error('❌ NO HAY RESPUESTAS EN EL ATTEMPT');
+    }
+  }
 
   // Computed properties
   scorePercentage = computed(() => {
@@ -25,11 +47,17 @@ export class QuizResultsComponent {
   });
 
   correctAnswersCount = computed(() => {
-    return this.attempt.answers.filter(a => a.isCorrect).length;
+    const answers = this.attempt?.answers || [];
+    const count = answers.filter(a => a.isCorrect === true).length;
+    console.log('📊 Respuestas correctas:', count, 'de', answers.length);
+    return count;
   });
 
   incorrectAnswersCount = computed(() => {
-    return this.attempt.answers.filter(a => !a.isCorrect).length;
+    const answers = this.attempt?.answers || [];
+    const count = answers.filter(a => a.isCorrect === false).length;
+    console.log('📊 Respuestas incorrectas:', count, 'de', answers.length);
+    return count;
   });
 
   timeSpentDisplay = computed(() => {

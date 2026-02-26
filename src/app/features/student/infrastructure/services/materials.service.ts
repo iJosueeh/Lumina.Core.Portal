@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of, tap, catchError, throwError } from 'rxjs';
 import { CourseMaterial, MaterialType } from '../../domain/models/course-detail.model';
 import { environment } from '../../../../../environments/environment';
+import { CacheService } from '@core/services/cache.service';
 
 interface RecursoResponse {
   id: string;
@@ -27,19 +28,45 @@ interface RecursoResponse {
 })
 export class MaterialsService {
   private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cacheService: CacheService
+  ) {}
 
   getMaterialsByCourse(courseId: string): Observable<CourseMaterial[]> {
+    const cacheKey = `course-materials-${courseId}`;
+    
+    // Verificar si existe en caché
+    const cachedData = this.cacheService.get<CourseMaterial[]>(cacheKey);
+    if (cachedData) {
+      console.log('✅ Materiales obtenidos del caché:', cacheKey);
+      return of(cachedData);
+    }
+
+    console.log('📡 Realizando petición HTTP para materiales:', cacheKey);
     // El endpoint /api/estudiantes/recursos requiere autenticación
     // y devuelve todos los recursos del estudiante
-    // Por ahora retornamos un array vacío hasta implementar filtrado por curso
-    return this.http.get<RecursoResponse[]>(`${this.estudiantesApiUrl}/estudiantes/recursos`)
+    return this.http.get<{success: boolean, data: RecursoResponse[]}>(`${this.estudiantesApiUrl}/estudiantes/recursos`)
       .pipe(
-        map(recursos => {
+        map(response => {
+          // El backend devuelve { success: true, data: [...] }
+          const recursos = response.data || [];
           // Filtrar solo los recursos del curso actual
           const recursosCurso = recursos.filter(r => r.cursoId === courseId);
           return recursosCurso.map(r => this.mapToCourseMaterial(r));
+        }),
+        tap(materials => {
+          this.cacheService.set(cacheKey, materials, this.CACHE_TTL);
+          console.log('💾 Materiales almacenados en caché:', cacheKey, materials.length, 'items');
+        }),
+        catchError(error => {
+          console.error('❌ Error al cargar materiales del backend:', error);
+          if (error.status === 401) {
+            console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
+          }
+          return throwError(() => error);
         })
       );
   }

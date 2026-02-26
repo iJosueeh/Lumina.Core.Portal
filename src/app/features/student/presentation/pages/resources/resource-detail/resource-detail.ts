@@ -21,6 +21,7 @@ export class ResourceDetailComponent implements OnInit {
   resource = signal<ResourceDetail | null>(null);
   allResources = signal<ResourceDetail[]>([]);
   isLoading = signal(true);
+  linkCopied = signal(false);
 
   // Computed
   relatedResources = computed(() => {
@@ -124,8 +125,10 @@ export class ResourceDetailComponent implements OnInit {
         })
         .catch(console.error);
     } else {
-      // Fallback or alert
-      alert('Link copiado al portapapeles!');
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        this.linkCopied.set(true);
+        setTimeout(() => this.linkCopied.set(false), 2500);
+      });
     }
   }
 

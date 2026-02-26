@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
+import { injectQueryClient } from '@tanstack/angular-query-experimental';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherProfile } from '@features/teacher/domain/models/teacher-profile.model';
+import { useTeacherInfo, useDashboardStats } from '@features/teacher/infrastructure/queries/teacher-query-hooks';
+import { teacherQueryKeys } from '@features/teacher/infrastructure/queries/teacher-query-keys';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-teacher-profile',
@@ -14,75 +17,64 @@ import { TeacherProfile } from '@features/teacher/domain/models/teacher-profile.
   templateUrl: './teacher-profile.component.html',
   styles: ``,
 })
-export class TeacherProfileComponent implements OnInit {
-  profile$: Observable<TeacherProfile | null> = of(null);
-  private profileSubject = new BehaviorSubject<TeacherProfile | null>(null);
-  
+export class TeacherProfileComponent {
+  private authRepository = inject(AuthRepository);
+  private fb = inject(FormBuilder);
+  private http = inject(HttpClient);
+  private queryClient = injectQueryClient();
+
+  private currentUser = this.authRepository.getCurrentUser();
+  private userId = this.currentUser?.id ?? '';
+
+  // TanStack Query hooks
+  private teacherInfoQuery = useTeacherInfo(this.userId);
+  private statsQuery = useDashboardStats(this.userId);
+
+private profileOverrides = signal<Partial<TeacherProfile>>({});
+  isSaving = signal(false);
+  saveNotification = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  // Loading / error
+  isLoading = computed(() => this.teacherInfoQuery.isLoading() || this.statsQuery.isLoading());
+  isError   = computed(() => this.teacherInfoQuery.isError());
+
+  // Perfil computado unificando info + stats + overrides
+  profile = computed<TeacherProfile | null>(() => {
+    const info  = this.teacherInfoQuery.data();
+    const stats = this.statsQuery.data();
+    const ov    = this.profileOverrides();
+
+    if (!info) return null;
+
+    return {
+      id:         this.currentUser?.id    ?? '',
+      email:      this.currentUser?.email ?? '',
+      fullName:   ov.fullName   ?? info.nombre   ?? '',
+      role:       (this.currentUser?.role  ?? 'TEACHER') as string,
+      bio:        ov.bio        ?? info.bio,
+      phone:      ov.phone      ?? undefined,
+      department: ov.department ?? undefined,
+      cargo:   info.cargo,
+      avatar:  info.avatar,
+      linkedIn: info.linkedIn,
+      stats: stats?.stats ? {
+        cursosAsignados:        stats.stats.totalCourses,
+        alumnosTotales:         stats.stats.totalStudents,
+        promedioGeneral:        stats.stats.averageGrade,
+        evaluacionesPendientes: stats.stats.pendingGrades,
+      } : undefined,
+    };
+  });
+
   // Modal state
   isEditModalOpen = false;
-  editForm!: FormGroup;
-
-  constructor(
-    private http: HttpClient,
-    private authRepository: AuthRepository,
-    private fb: FormBuilder,
-  ) {
-    this.initEditForm();
-  }
-
-  ngOnInit(): void {
-    this.loadProfile();
-  }
-
-  loadProfile(): void {
-    const currentUser = this.authRepository.getCurrentUser();
-    if (!currentUser) {
-      return;
-    }
-
-    // Intentar cargar desde el archivo JSON, si no existe usar datos mock
-    this.http
-      .get<TeacherProfile>('/assets/mock-data/teachers/teacher-profile.json')
-      .pipe(
-        catchError(() => {
-          // Si no existe el archivo, generar datos mock basados en el usuario actual
-          return of(this.generateMockProfile(currentUser));
-        }),
-        map((profile) => {
-          // Asegurar que fullName y email estén mapeados correctamente
-          return {
-            ...profile,
-            id: currentUser.id,
-            email: currentUser.email,
-            fullName: currentUser.fullName,
-            role: currentUser.role,
-          };
-        }),
-      )
-      .subscribe((profile) => {
-        this.profileSubject.next(profile);
-      });
-
-    this.profile$ = this.profileSubject.asObservable();
-  }
-
-  private generateMockProfile(user: any): TeacherProfile {
-    return {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-      bio: 'Profesor dedicado con más de 10 años de experiencia en educación superior. Especializado en metodologías de enseñanza innovadoras y comprometido con el éxito académico de los estudiantes.',
-      phone: '+51 987 654 321',
-      department: 'Ingeniería de Sistemas',
-      stats: {
-        cursosAsignados: 5,
-        alumnosTotales: 142,
-        promedioGeneral: 15.8,
-        evaluacionesPendientes: 12,
-      },
-    };
-  }
+  editForm: FormGroup = this.fb.group({
+    fullName:   ['', [Validators.required, Validators.minLength(3)]],
+    bio:        ['', [Validators.maxLength(500)]],
+    linkedIn:   [''],
+    phone:      ['', [Validators.pattern(/^\+?\d{1,3}?\s?\d{3}\s?\d{3}\s?\d{3}$/)]],
+    department: [''],
+  });
 
   getInitials(fullName: string): string {
     const names = fullName.trim().split(' ');
@@ -92,23 +84,15 @@ export class TeacherProfileComponent implements OnInit {
     return fullName.substring(0, 2).toUpperCase();
   }
 
-  private initEditForm(): void {
-    this.editForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(3)]],
-      bio: ['', [Validators.maxLength(500)]],
-      phone: ['', [Validators.pattern(/^\+?\d{1,3}?\s?\d{3}\s?\d{3}\s?\d{3}$/)]],
-      department: [''],
-    });
-  }
-
   editProfile(): void {
-    const currentProfile = this.profileSubject.value;
-    if (currentProfile) {
+    const p = this.profile();
+    if (p) {
       this.editForm.patchValue({
-        fullName: currentProfile.fullName,
-        bio: currentProfile.bio || '',
-        phone: currentProfile.phone || '',
-        department: currentProfile.department || '',
+        fullName:   p.fullName,
+        bio:        p.bio        ?? '',
+        linkedIn:   p.linkedIn   ?? '',
+        phone:      p.phone      ?? '',
+        department: p.department ?? '',
       });
     }
     this.isEditModalOpen = true;
@@ -119,26 +103,47 @@ export class TeacherProfileComponent implements OnInit {
     this.editForm.reset();
   }
 
-  saveProfile(): void {
-    if (this.editForm.valid) {
-      const currentProfile = this.profileSubject.value;
-      if (currentProfile) {
-        const updatedProfile: TeacherProfile = {
-          ...currentProfile,
-          fullName: this.editForm.value.fullName,
-          bio: this.editForm.value.bio,
-          phone: this.editForm.value.phone,
-          department: this.editForm.value.department,
-        };
-        
-        // Actualizar el perfil
-        this.profileSubject.next(updatedProfile);
-        
-        // En un escenario real, aquí se haría una petición HTTP al backend
-        // this.http.put(`/api/teachers/${currentProfile.id}`, updatedProfile).subscribe(...)
-        
-        this.closeEditModal();
-      }
+  async saveProfile(): Promise<void> {
+    if (this.editForm.invalid || this.isSaving()) return;
+
+    const info = this.teacherInfoQuery.data();
+    if (!info) return;
+
+    const v = this.editForm.value;
+    const body = {
+      especialidadId: info.especialidadId,
+      nombre:         v.fullName || info.nombre,
+      cargo:          info.cargo,
+      bio:            v.bio    || info.bio || '',
+      avatar:         info.avatar || '',
+      linkedIn:       v.linkedIn || info.linkedIn || null,
+    };
+
+    this.isSaving.set(true);
+    this.saveNotification.set(null);
+    try {
+      await firstValueFrom(
+        this.http.put(`${environment.docentesApiUrl}/docente/${info.id}`, body)
+      );
+      // Update local overrides immediately
+      this.profileOverrides.set({
+        fullName:   v.fullName   || undefined,
+        bio:        v.bio        || undefined,
+        linkedIn:   v.linkedIn   || undefined,
+        phone:      v.phone      || undefined,
+        department: v.department || undefined,
+      });
+      // Invalidate TanStack Query cache so header/other components refresh
+      await this.queryClient.invalidateQueries({ queryKey: teacherQueryKeys.info(this.userId) });
+      this.closeEditModal();
+      this.saveNotification.set({ type: 'success', msg: 'Perfil actualizado correctamente' });
+      setTimeout(() => this.saveNotification.set(null), 3500);
+    } catch (err) {
+      console.error('❌ [PROFILE] Error saving profile:', err);
+      this.saveNotification.set({ type: 'error', msg: 'Error al guardar. Intente nuevamente.' });
+      setTimeout(() => this.saveNotification.set(null), 4000);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 

@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { LoginUseCase } from '@features/auth/application/use-cases/login.usecase';
 import { LoginCredentials } from '@features/auth/domain/models/login-credentials.model';
 
 @Component({
     selector: 'app-login-page',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './login-page.component.html',
     styles: ``
 })

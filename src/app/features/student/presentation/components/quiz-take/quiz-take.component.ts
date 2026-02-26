@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, signal, comp
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Quiz, QuizAttempt, Question, QuestionAnswer } from '@features/student/domain/models/quiz.model';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-quiz-take',
@@ -16,6 +17,8 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   @Output() onSubmit = new EventEmitter<QuizAttempt>();
   @Output() onCancel = new EventEmitter<void>();
 
+  constructor(private authService: AuthService) {}
+
   // Signals para gestión de estado
   currentQuestionIndex = signal(0);
   answers = signal<Map<string, string | string[]>>(new Map());
@@ -29,11 +32,17 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
 
   // Computed
   currentQuestion = computed(() => {
+    if (!this.quiz?.questions || this.quiz.questions.length === 0) {
+      return null;
+    }
     const index = this.currentQuestionIndex();
     return this.quiz.questions[index];
   });
 
   progress = computed(() => {
+    if (!this.quiz?.questions || this.quiz.questions.length === 0) {
+      return 0;
+    }
     const total = this.quiz.questions.length;
     const answered = Array.from(this.answers().keys()).length;
     return (answered / total) * 100;
@@ -44,6 +53,7 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   });
 
   canGoNext = computed(() => {
+    if (!this.quiz?.questions) return false;
     return this.currentQuestionIndex() < this.quiz.questions.length - 1;
   });
 
@@ -52,6 +62,7 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   });
 
   isLastQuestion = computed(() => {
+    if (!this.quiz?.questions) return true;
     return this.currentQuestionIndex() === this.quiz.questions.length - 1;
   });
 
@@ -142,7 +153,9 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   }
 
   getCurrentAnswer(): string | string[] | undefined {
-    return this.answers().get(this.currentQuestion().id);
+    const currentQ = this.currentQuestion();
+    if (!currentQ) return undefined;
+    return this.answers().get(currentQ.id);
   }
 
   confirmSubmit(): void {
@@ -160,11 +173,23 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     const endTime = new Date();
     const timeSpent = Math.floor((endTime.getTime() - this.startTime.getTime()) / 1000 / 60); // en minutos
 
+    console.log('📝 Enviando evaluación...');
+    console.log('📊 Respuestas del estudiante:', Array.from(this.answers().entries()));
+
     // Crear QuizAttempt
     const questionAnswers: QuestionAnswer[] = this.quiz.questions.map(question => {
       const answer = this.answers().get(question.id);
       const isCorrect = this.checkAnswer(question, answer);
       const pointsEarned = isCorrect ? question.points : 0;
+
+      console.log(`❓ Pregunta ${question.id}:`, {
+        texto: question.text,
+        tipo: question.type,
+        respuestaEstudiante: answer,
+        esCorrecta: isCorrect,
+        puntosObtenidos: pointsEarned,
+        opciones: question.options?.map(o => ({ id: o.id, texto: o.text, esCorrecta: o.isCorrect }))
+      });
 
       return {
         questionId: question.id,
@@ -178,10 +203,22 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     const percentage = Math.round((totalPoints / this.quiz.totalPoints) * 1000) / 10; // Redondear a 1 decimal
     const passed = percentage >= this.quiz.config.passingScore;
 
+    const correctCount = questionAnswers.filter(a => a.isCorrect === true).length;
+    const incorrectCount = questionAnswers.filter(a => a.isCorrect === false).length;
+    console.log(`📊 Resumen: ${correctCount} correctas, ${incorrectCount} incorrectas de ${this.quiz.questions.length} preguntas`);
+    console.log(`🎯 Puntaje: ${totalPoints}/${this.quiz.totalPoints} (${percentage}%) - ${passed ? '✅ APROBADO' : '❌ NO APROBADO'}`);
+
+    const studentId = this.authService.getUserId();
+    if (!studentId) {
+      console.error('❌ No se pudo obtener el ID del estudiante. No se puede enviar la evaluación.');
+      this.isSubmitting.set(false);
+      return;
+    }
+
     const attempt: QuizAttempt = {
       id: `attempt-${Date.now()}`,
       quizId: this.quiz.id,
-      studentId: 'student-1', // TODO: Get from auth service
+      studentId: studentId,
       attemptNumber: (this.attempt?.attemptNumber || 0) + 1,
       status: 'completed',
       answers: questionAnswers,
@@ -193,29 +230,57 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
       passed,
     };
 
+    console.log('📦 Attempt creado para enviar:', attempt);
+    console.log('📋 Número de respuestas en attempt:', attempt.answers.length);
+    console.log('🔍 Verificando estructura del attempt:', {
+      hasId: !!attempt.id,
+      hasAnswers: !!attempt.answers,
+      answersLength: attempt.answers?.length,
+      firstAnswer: attempt.answers[0]
+    });
+
     this.onSubmit.emit(attempt);
   }
 
   private checkAnswer(question: Question, answer: string | string[] | undefined): boolean {
-    if (!answer) return false;
+    if (!answer) {
+      console.log(`❌ Sin respuesta para pregunta ${question.id}`);
+      return false;
+    }
 
     switch (question.type) {
       case 'multiple-choice':
       case 'true-false':
-        const correctOption = question.options?.find(opt => opt.isCorrect);
-        return correctOption?.id === answer;
+        const correctOption = question.options?.find(opt => opt.isCorrect === true);
+        const isCorrect = correctOption?.id === answer;
+        console.log(`🔍 Verificando ${question.type}:`, {
+          respuestaEstudiante: answer,
+          opcionCorrecta: correctOption?.id,
+          textoOpcionCorrecta: correctOption?.text,
+          resultado: isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA'
+        });
+        return isCorrect;
 
       case 'short-answer':
         if (typeof answer === 'string' && question.correctAnswer) {
-          return answer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
+          const isCorrect = answer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim();
+          console.log(`🔍 Verificando short-answer:`, {
+            respuestaEstudiante: answer,
+            respuestaCorrecta: question.correctAnswer,
+            resultado: isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA'
+          });
+          return isCorrect;
         }
+        console.log(`❌ Respuesta short-answer inválida o sin respuesta correcta definida`);
         return false;
 
       case 'matching':
         // TODO: Implementar lógica de matching
+        console.log(`⚠️ Tipo matching no implementado aún`);
         return false;
 
       default:
+        console.log(`⚠️ Tipo de pregunta desconocido: ${question.type}`);
         return false;
     }
   }

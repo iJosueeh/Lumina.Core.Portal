@@ -43,10 +43,13 @@ export class UserManagement implements OnInit {
 
   startLoading() {
       this.isLoading = true;
-      this.adminService.getUsers().subscribe(users => {
-          this.allUsers = users;
-          this.applyFilters();
-          this.isLoading = false;
+      this.adminService.getUsers().subscribe({
+          next: (users) => {
+              this.allUsers = users;
+              this.applyFilters();
+              this.isLoading = false;
+          },
+          error: () => { this.isLoading = false; }
       });
   }
 
@@ -110,22 +113,30 @@ export class UserManagement implements OnInit {
 
   saveUser() {
       if (this.isEditing) {
-          this.adminService.updateUser(this.currentUser).subscribe(() => {
-              // Update local state mock
-              const index = this.allUsers.findIndex(u => u.id === this.currentUser.id);
-              if (index !== -1) {
-                  this.allUsers[index] = this.currentUser;
-                  this.applyFilters();
+          this.adminService.updateUser(this.currentUser).subscribe({
+              next: () => {
+                  const index = this.allUsers.findIndex(u => u.id === this.currentUser.id);
+                  if (index !== -1) {
+                      this.allUsers[index] = this.currentUser;
+                      this.applyFilters();
+                  }
+                  this.closeModal();
               }
-              this.closeModal();
           });
       } else {
-          // Add ID
-          this.currentUser.id = `USR-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`;
-          this.adminService.createUser(this.currentUser).subscribe(() => {
-             this.allUsers.unshift(this.currentUser);
-             this.applyFilters();
-             this.closeModal();
+          this.adminService.createUser(this.currentUser).subscribe({
+             next: (result: any) => {
+                this.currentUser.id = (typeof result === 'string' ? result : (result?.value ?? result?.id ?? `USR-${Date.now()}`));
+                this.allUsers.unshift({ ...this.currentUser });
+                this.applyFilters();
+                this.closeModal();
+             },
+             error: () => {
+                this.currentUser.id = `USR-${Date.now()}`;
+                this.allUsers.unshift({ ...this.currentUser });
+                this.applyFilters();
+                this.closeModal();
+             }
           });
       }
   }
@@ -137,11 +148,13 @@ export class UserManagement implements OnInit {
 
   confirmDelete() {
       if (this.userToDelete) {
-          this.adminService.deleteUser(this.userToDelete.id).subscribe(() => {
-              this.allUsers = this.allUsers.filter(u => u.id !== this.userToDelete.id);
-              this.applyFilters();
-              this.isDeleteModalOpen = false;
-              this.userToDelete = null;
+          this.adminService.deleteUser(this.userToDelete.id).subscribe({
+              next: () => {
+                  this.allUsers = this.allUsers.filter(u => u.id !== this.userToDelete.id);
+                  this.applyFilters();
+                  this.isDeleteModalOpen = false;
+                  this.userToDelete = null;
+              }
           });
       }
   }

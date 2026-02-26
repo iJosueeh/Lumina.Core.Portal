@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAngularQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 import { routes } from './app.routes';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
@@ -31,15 +32,33 @@ import { AccountRepository } from '@features/student/domain/repositories/account
 import { AccountMockRepositoryImpl } from '@features/student/infrastructure/repositories/account-mock.repository.impl';
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { TeacherCourseHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-http.repository.impl';
-import { TeacherCourseMockRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-mock.repository.impl';
+
 import { GradesManagementRepository } from '@features/teacher/domain/repositories/grades-management.repository';
 import { GradesManagementHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/grades-management-http.repository.impl';
+import { TeacherInfoRepository } from '@features/teacher/domain/repositories/teacher-info.repository';
+import { TeacherInfoHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-info-http.repository.impl';
+import { TeacherStudentRepository } from '@features/teacher/domain/repositories/teacher-student.repository';
+import { TeacherStudentHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-student-http.repository.impl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+    // TanStack Query configuration
+    provideAngularQuery(
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 60 * 1000, // 5 minutos - datos frescos
+            gcTime: 10 * 60 * 1000, // 10 minutos - tiempo en caché (antes cacheTime)
+            retry: 2, // Reintentar 2 veces en caso de error
+            refetchOnWindowFocus: false, // No refetch al volver a la ventana
+            refetchOnReconnect: true, // Refetch al reconectar internet
+          },
+        },
+      })
+    ),
     // Auth (condicional basado en useMockData)
     {
       provide: AuthRepository,
@@ -80,13 +99,13 @@ export const appConfig: ApplicationConfig = {
       provide: AccountRepository,
       useClass: environment.useMockData ? AccountMockRepositoryImpl : AccountMockRepositoryImpl, // TODO: Crear AccountHttpRepositoryImpl
     },
-    // Teacher Repositories (condicionales basados en useMockData)
-    {
-      provide: TeacherCourseRepository,
-      useClass: environment.useMockData
-        ? TeacherCourseMockRepositoryImpl
-        : TeacherCourseHttpRepositoryImpl,
-    },
+    // Teacher Repositories
+    { provide: TeacherCourseRepository, useClass: TeacherCourseHttpRepositoryImpl },
     { provide: GradesManagementRepository, useClass: GradesManagementHttpRepositoryImpl },
+    { provide: TeacherInfoRepository, useClass: TeacherInfoHttpRepositoryImpl },
+    { 
+      provide: TeacherStudentRepository, 
+      useClass: TeacherStudentHttpRepositoryImpl 
+    },
   ],
 };

@@ -88,20 +88,25 @@
           </button>
           <button
             (click)="saveChanges()"
-            [disabled]="!hasUnsavedChanges()"
-            [class.opacity-50]="!hasUnsavedChanges()"
-            [class.cursor-not-allowed]="!hasUnsavedChanges()"
+            [disabled]="!hasUnsavedChanges() || isSaving()"
+            [class.opacity-50]="!hasUnsavedChanges() || isSaving()"
+            [class.cursor-not-allowed]="!hasUnsavedChanges() || isSaving()"
             class="flex-1 md:flex-none px-4 py-2 bg-teal-500 hover:bg-teal-600 disabled:hover:bg-teal-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-              />
-            </svg>
-            Guardar
+            @if (isSaving()) {
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Guardando...
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                />
+              </svg>
+              Guardar
+            }
           </button>
           <button
             (click)="exportToCSV()"

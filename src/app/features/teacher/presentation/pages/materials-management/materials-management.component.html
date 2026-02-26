@@ -1,0 +1,277 @@
+<div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942] p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Materiales</h1>
+      <p class="text-gray-400 mt-1">Recursos de aprendizaje para tus cursos</p>
+    </div>
+    <button
+      (click)="openAdd()"
+      class="flex items-center gap-2 px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-medium transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Agregar material
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-24">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+    </div>
+  } @else {
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      @for (tipo of tipos; track tipo) {
+        <button
+          (click)="selectedTipo.set(selectedTipo() === tipo ? 'all' : tipo)"
+          class="p-4 rounded-xl border transition-all text-left"
+          [class]="selectedTipo() === tipo
+            ? 'bg-teal-500/10 border-teal-500/50 '
+            : 'bg-white/5 border-white/10 hover:border-white/20'"
+        >
+          <div class="flex items-center gap-2 mb-1">
+            <svg class="w-4 h-4" [class]="tipoColor(tipo).split(' ')[1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tipoIcon(tipo)" />
+            </svg>
+            <span class="text-xs font-medium text-gray-400">{{ tipo }}</span>
+          </div>
+          <p class="text-2xl font-bold text-white">{{ totalByTipo()[tipo] || 0 }}</p>
+        </button>
+      }
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <!-- Search -->
+      <div class="relative flex-1">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar materiales..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          class="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500"
+        />
+      </div>
+      <!-- Course filter -->
+      <select
+        [ngModel]="selectedCourseId()"
+        (ngModelChange)="selectedCourseId.set($event)"
+        class="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-teal-500 min-w-[200px]"
+      >
+        <option value="all" class="bg-[#0f1e33]">Todos los cursos</option>
+        @for (c of courses(); track c.id) {
+          <option [value]="c.id" class="bg-[#0f1e33]">{{ c.codigo }} — {{ c.titulo }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Materials grid -->
+    @if (filteredMaterials().length === 0) {
+      <div class="text-center py-20 text-gray-400">
+        <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-lg font-medium">Sin materiales</p>
+        <p class="text-sm mt-1">Agrega tu primer material para este curso.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        @for (m of filteredMaterials(); track m.id) {
+          <div class="group relative bg-white/5 border border-white/10 hover:border-teal-500/40 rounded-2xl p-5 transition-all hover:shadow-lg hover:shadow-teal-500/5">
+
+            <!-- Tipo badge + actions -->
+            <div class="flex items-start justify-between mb-3">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                [ngClass]="tipoColor(m.tipo)"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tipoIcon(m.tipo)" />
+                </svg>
+                {{ m.tipo }}
+              </span>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="openEdit(m)" class="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button (click)="deleteMaterial(m.id)" class="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Title & desc -->
+            <h3 class="text-base font-semibold text-white mb-1 leading-tight">{{ m.titulo }}</h3>
+            <p class="text-sm text-gray-400 mb-4 line-clamp-2">{{ m.descripcion }}</p>
+
+            <!-- Meta -->
+            <div class="space-y-1.5 text-xs text-gray-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-teal-500/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span class="truncate">{{ m.courseName }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600">{{ m.modulo }}</span>
+                <span class="text-gray-600">{{ m.tamano }}</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/5 text-xs text-gray-500">
+              <span>{{ formatDate(m.fechaSubida) }}</span>
+              <div class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                {{ m.descargas }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal: Agregar / Editar material -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg bg-[#0f1e33] border border-white/10 rounded-2xl shadow-2xl p-8">
+      <button
+        class="absolute top-4 right-4 text-gray-400 hover:text-white"
+        (click)="showModal.set(false)"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <h3 class="text-xl font-bold text-white mb-6">
+        {{ editingMaterial() ? 'Editar material' : 'Agregar material' }}
+      </h3>
+
+      <div class="space-y-4">
+        <!-- Curso -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Curso</label>
+          <select
+            [(ngModel)]="form.courseId"
+            (ngModelChange)="onCourseFormChange()"
+            class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
+          >
+            <option value="" class="bg-[#0f1e33]">Selecciona un curso</option>
+            @for (c of courses(); track c.id) {
+              <option [value]="c.id" class="bg-[#0f1e33]">{{ c.codigo }} — {{ c.titulo }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Título -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Título</label>
+          <input
+            [(ngModel)]="form.titulo"
+            type="text"
+            placeholder="Nombre del material"
+            class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+          <textarea
+            [(ngModel)]="form.descripcion"
+            rows="2"
+            placeholder="Breve descripción del material"
+            class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Tipo + Módulo -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+            <select
+              [(ngModel)]="form.tipo"
+              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-teal-500"
+            >
+              @for (t of tipos; track t) {
+                <option [value]="t" class="bg-[#0f1e33]">{{ t }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Módulo</label>
+            <input
+              [(ngModel)]="form.modulo"
+              type="text"
+              placeholder="Ej: Módulo 1"
+              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500"
+            />
+          </div>
+        </div>
+
+        <!-- URL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">
+            {{ form.tipo === 'Enlace' ? 'URL' : 'URL del archivo' }}
+          </label>
+          <input
+            [(ngModel)]="form.url"
+            type="url"
+            placeholder="https://..."
+            class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <!-- Tamaño (solo si no es enlace) -->
+        @if (form.tipo !== 'Enlace') {
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Tamaño / Duración</label>
+            <input
+              [(ngModel)]="form.tamano"
+              type="text"
+              placeholder="Ej: 3.5 MB o 25 min"
+              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-teal-500"
+            />
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 mt-8">
+        <button
+          (click)="showModal.set(false)"
+          class="px-5 py-2.5 border border-white/10 text-gray-300 rounded-lg hover:bg-white/5 transition-colors text-sm"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="saveModal()"
+          [disabled]="!form.titulo || !form.courseId"
+          class="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+        >
+          {{ editingMaterial() ? 'Guardar cambios' : 'Agregar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

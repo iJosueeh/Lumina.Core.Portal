@@ -1,0 +1,176 @@
+<div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942] relative overflow-hidden">
+  <!-- Floating effects -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-radial from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
+  <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-radial from-teal-500/5 to-transparent rounded-full blur-3xl"></div>
+
+  <!-- Header -->
+  <header class="relative bg-gradient-to-r from-teal-600 via-cyan-500 to-teal-600 px-4 py-6 md:px-8 md:py-8 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+    <div class="relative z-10 flex items-center gap-4">
+      <button
+        (click)="goBack()"
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+      >
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">Detalle del Estudiante</h1>
+        <p class="text-white/80 mt-1 text-sm">Información académica y evaluaciones</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
+
+    <!-- Loading -->
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (!isLoading() && errorMsg()) {
+      <div class="gradient-border-card p-8 text-center">
+        <svg class="w-16 h-16 mx-auto mb-4 text-red-400 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p class="text-lg text-red-400 font-medium">{{ errorMsg() }}</p>
+        <button
+          (click)="goBack()"
+          class="mt-4 px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
+        >Volver</button>
+      </div>
+    }
+
+    <!-- Content -->
+    @if (!isLoading() && !errorMsg() && studentInfo()) {
+      <!-- Student Card -->
+      <div class="gradient-border-card p-6 mb-6">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <!-- Avatar -->
+          <img
+            [src]="studentInfo()!.avatar"
+            [alt]="studentInfo()!.nombreCompleto"
+            class="w-24 h-24 rounded-full ring-4 ring-teal-500/40 shadow-lg flex-shrink-0"
+          />
+          <!-- Info -->
+          <div class="flex-1 text-center sm:text-left">
+            <h2 class="text-2xl font-bold text-white">{{ studentInfo()!.nombreCompleto }}</h2>
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2">
+              <span class="px-3 py-1 bg-teal-500/20 text-teal-300 rounded-full text-sm font-mono border border-teal-500/30">
+                {{ studentInfo()!.codigo }}
+              </span>
+              @if (studentInfo()!.email) {
+                <span class="text-gray-400 text-sm flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  {{ studentInfo()!.email }}
+                </span>
+              }
+            </div>
+            <!-- Courses tags -->
+            @if (studentCourseNames().length > 0) {
+              <div class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
+                @for (course of studentCourseNames(); track course) {
+                  <span class="px-2 py-0.5 bg-cyan-900/30 text-cyan-300 rounded text-xs border border-cyan-500/20">
+                    {{ course }}
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="gradient-border-card p-4 text-center">
+          <p class="text-xs text-gray-400 mb-1">Promedio</p>
+          <p class="text-3xl font-bold" [ngClass]="promedioColor()">
+            {{ promedioData() ? (promedioData()!.promedioGeneral | number: '1.1-1') : '—' }}
+          </p>
+        </div>
+        <div class="gradient-border-card p-4 text-center">
+          <p class="text-xs text-gray-400 mb-1">Total Eval.</p>
+          <p class="text-3xl font-bold text-white">{{ promedioData()?.totalEvaluaciones ?? evaluaciones().length }}</p>
+        </div>
+        <div class="gradient-border-card p-4 text-center">
+          <p class="text-xs text-gray-400 mb-1">Completadas</p>
+          <p class="text-3xl font-bold text-teal-400">{{ promedioData()?.evaluacionesCompletadas ?? 0 }}</p>
+        </div>
+        <div class="gradient-border-card p-4 text-center">
+          <p class="text-xs text-gray-400 mb-1">Nota más alta</p>
+          <p class="text-3xl font-bold text-green-400">
+            {{ promedioData()?.notaMasAlta != null ? (promedioData()!.notaMasAlta! | number: '1.1-1') : '—' }}
+          </p>
+        </div>
+        <div class="gradient-border-card p-4 text-center">
+          <p class="text-xs text-gray-400 mb-1">Nota más baja</p>
+          <p class="text-3xl font-bold text-red-400">
+            {{ promedioData()?.notaMasBaja != null ? (promedioData()!.notaMasBaja! | number: '1.1-1') : '—' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Evaluaciones -->
+      <div class="gradient-border-card overflow-hidden">
+        <div class="p-6 border-b border-white/5">
+          <h3 class="text-lg font-bold text-white">Evaluaciones</h3>
+          <p class="text-sm text-gray-400 mt-1">{{ evaluaciones().length }} evaluaciones asociadas</p>
+        </div>
+
+        @if (evaluaciones().length === 0) {
+          <div class="py-12 text-center text-gray-400">
+            <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>Sin evaluaciones registradas</p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-800/50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Evaluación</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Estado</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Puntaje Máx.</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Fecha Límite</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-700/50">
+                @for (ev of evaluaciones(); track ev.id) {
+                  <tr class="hover:bg-gray-800/30 transition-colors">
+                    <td class="px-6 py-4">
+                      <p class="text-sm font-medium text-white">{{ ev.titulo }}</p>
+                    </td>
+                    <td class="px-4 py-4 text-center">
+                      <span class="px-2 py-1 rounded-full text-xs bg-cyan-900/30 text-cyan-300 border border-cyan-500/20">
+                        {{ getTipoLabel(ev.tipoEvaluacion) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 text-center">
+                      <span class="px-2 py-1 rounded-full text-xs" [ngClass]="getEstadoColor(ev.estado)">
+                        {{ ev.estado }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 text-center text-sm text-gray-300">{{ ev.puntajeMaximo }}</td>
+                    <td class="px-4 py-4 text-center text-sm text-gray-400">{{ formatDate(ev.fechaFin) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>
