@@ -26,7 +26,8 @@ export class TeacherLayoutComponent implements OnInit {
         { icon: 'dashboard', label: 'Dashboard', route: '/teacher/dashboard' },
         { icon: 'book', label: 'Mis Cursos', route: '/teacher/courses' },
         { icon: 'users', label: 'Alumnos', route: '/teacher/students' },
-        { icon: 'chart', label: 'Evaluaciones', route: '/teacher/grades' },
+        { icon: 'clipboard', label: 'Mis Evaluaciones', route: '/teacher/evaluations' },
+        { icon: 'chart', label: 'Calificaciones', route: '/teacher/grades' },
         { icon: 'calendar', label: 'Horario', route: '/teacher/schedule' }
     ];
 

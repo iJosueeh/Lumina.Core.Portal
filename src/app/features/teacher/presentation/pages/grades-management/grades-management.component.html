@@ -194,8 +194,40 @@
                 </th>
                 @for (evaluacion of evaluaciones(); track evaluacion.id) {
                   <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[120px]">
-                    <div>{{ evaluacion.nombre }}</div>
-                    <div class="text-teal-400 font-normal mt-1">({{ evaluacion.peso }}%)</div>
+                    <div class="flex flex-col items-center gap-1">
+                      <div class="flex items-center justify-center gap-2 w-full">
+                        <span>{{ evaluacion.nombre }}</span>
+                        <button
+                          (click)="openEditModal(evaluacion)"
+                          class="text-blue-400 hover:text-blue-300 transition-colors p-1 rounded hover:bg-blue-500/10"
+                          title="Editar evaluación"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          (click)="deleteEvaluation(evaluacion.id)"
+                          class="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-500/10"
+                          title="Eliminar evaluación"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="text-teal-400 font-normal mt-1">({{ evaluacion.peso }}%)</div>
+                    </div>
                   </th>
                 }
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[100px]">
@@ -312,7 +344,9 @@
         <!-- Header del Modal -->
         <div class="sticky top-0 bg-gradient-to-r from-teal-600 via-cyan-500 to-teal-600 px-6 py-4 rounded-t-xl border-b border-gray-700/50">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-white">Crear Nueva Evaluación</h2>
+            <h2 class="text-xl font-bold text-white">
+              {{ isEditMode() ? 'Editar Evaluación' : 'Crear Nueva Evaluación' }}
+            </h2>
             <button
               (click)="closeCreateModal()"
               class="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
@@ -503,6 +537,259 @@
             }
           </div>
 
+          <!-- Gestión de Preguntas -->
+          <div class="border-t border-gray-700/50 pt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Preguntas ({{ preguntas().length }})
+              </h3>
+              <button
+                type="button"
+                (click)="openAddQuestionForm()"
+                class="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg font-medium transition-colors flex items-center gap-2 border border-purple-500/30"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Agregar Pregunta
+              </button>
+            </div>
+
+            <!-- Lista de Preguntas -->
+            @if (preguntas().length > 0) {
+              <div class="space-y-3 mb-4">
+                @for (pregunta of preguntas(); track $index) {
+                  <div class="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs font-medium rounded border border-purple-500/30">
+                            {{ getTipoPreguntaLabel(pregunta.tipoPregunta) }}
+                          </span>
+                          <span class="text-sm text-gray-400">Puntos: {{ pregunta.puntos }}</span>
+                          @if (pregunta.esExistente) {
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs font-medium rounded border border-blue-500/30">
+                              Guardada
+                            </span>
+                          } @else {
+                            <span class="px-2 py-1 bg-amber-500/20 text-amber-300 text-xs font-medium rounded border border-amber-500/30">
+                              Nueva
+                            </span>
+                          }
+                        </div>
+                        <p class="text-gray-200 mb-2">{{ pregunta.texto }}</p>
+                        @if (pregunta.opciones.length > 0) {
+                          <div class="space-y-1 ml-4">
+                            @for (opcion of pregunta.opciones; track $index) {
+                              <div class="flex items-center gap-2 text-sm">
+                                @if (opcion.esCorrecta) {
+                                  <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                } @else {
+                                  <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="9" stroke-width="2"/>
+                                  </svg>
+                                }
+                                <span [class.text-green-300]="opcion.esCorrecta" [class.text-gray-400]="!opcion.esCorrecta">
+                                  {{ opcion.texto }}
+                                </span>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                      @if (!pregunta.esExistente) {
+                        <button
+                          type="button"
+                          (click)="eliminarPregunta($index)"
+                          class="flex-shrink-0 p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Eliminar pregunta nueva"
+                        >
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      }
+                      @if (pregunta.esExistente) {
+                        <div class="flex flex-shrink-0 gap-1">
+                          <button
+                            type="button"
+                            (click)="openEditQuestionForm($index)"
+                            class="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="Editar pregunta"
+                          >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            (click)="eliminarPreguntaExistente($index)"
+                            class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Eliminar pregunta"
+                          >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+              <!-- Formulario de Pregunta -->
+              @if (showAddQuestionForm()) {
+                <div class="bg-gray-800/50 border border-purple-500/30 rounded-lg p-4 mb-4">
+                  <h4 class="text-md font-semibold text-purple-300 mb-4">
+                    {{ editingQuestionIndex() !== null ? 'Editar Pregunta' : 'Nueva Pregunta' }}
+                  </h4>
+                  
+                  <!-- Tipo de Pregunta (no editable en modo edición) -->
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                      Tipo de Pregunta <span class="text-red-400">*</span>
+                    </label>
+                    <select
+                      [formControl]="$any(questionForm.get('tipoPregunta'))"
+                      (change)="onTipoPreguntaChange(+$any($event.target).value)"
+                      [disabled]="editingQuestionIndex() !== null"
+                      class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option [value]="1">Opción Múltiple</option>
+                      <option [value]="2">Verdadero/Falso</option>
+                      <option [value]="3">Respuesta Corta</option>
+                    </select>
+                  </div>
+
+                  <!-- Texto de Pregunta -->
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                      Pregunta <span class="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      [formControl]="$any(questionForm.get('texto'))"
+                      rows="3"
+                      placeholder="Escribe la pregunta aquí..."
+                      class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                    ></textarea>
+                    @if (questionForm.get('texto')?.invalid && questionForm.get('texto')?.touched) {
+                      <p class="mt-1 text-sm text-red-400">La pregunta debe tener al menos 5 caracteres</p>
+                    }
+                  </div>
+
+                  <!-- Puntos -->
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                      Puntos <span class="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      [formControl]="$any(questionForm.get('puntos'))"
+                      min="1"
+                      placeholder="1"
+                      class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    />
+                  </div>
+
+                  <!-- Opciones (solo para Opción Múltiple y Verdadero/Falso) -->
+                  @if (questionForm.get('tipoPregunta')?.value === 1 || questionForm.get('tipoPregunta')?.value === 2) {
+                    <div class="mb-4">
+                      <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-medium text-gray-300">
+                          Opciones <span class="text-red-400">*</span>
+                        </label>
+                        @if (questionForm.get('tipoPregunta')?.value === 1) {
+                          <button
+                            type="button"
+                            (click)="agregarOpcion()"
+                            class="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-sm rounded border border-purple-500/30 transition-colors"
+                          >
+                            + Agregar
+                          </button>
+                        }
+                      </div>
+                      <div class="space-y-2">
+                        @for (opcionForm of opcionesForm; track $index) {
+                          <div class="flex items-center gap-2">
+                            <button
+                              type="button"
+                              (click)="marcarOpcionCorrecta($index)"
+                              [class.bg-green-500/20]="opcionForm.value.esCorrecta"
+                              [class.border-green-500]="opcionForm.value.esCorrecta"
+                              [class.bg-gray-700/30]="!opcionForm.value.esCorrecta"
+                              [class.border-gray-600]="!opcionForm.value.esCorrecta"
+                              class="flex-shrink-0 w-10 h-10 flex items-center justify-center border rounded-lg transition-colors"
+                            >
+                              @if (opcionForm.value.esCorrecta) {
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                              }
+                            </button>
+                            <input
+                              type="text"
+                              [formControl]="$any(opcionForm.get('texto'))"
+                              placeholder="Texto de la opción"
+                              class="flex-1 px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            @if (questionForm.get('tipoPregunta')?.value === 1 && opcionesForm.length > 2) {
+                              <button
+                                type="button"
+                                (click)="eliminarOpcion($index)"
+                                class="flex-shrink-0 p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                              >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Explicación (opcional) -->
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                      Explicación (opcional)
+                    </label>
+                    <textarea
+                      [formControl]="$any(questionForm.get('explicacion'))"
+                      rows="2"
+                      placeholder="Explicación de la respuesta correcta..."
+                      class="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                    ></textarea>
+                  </div>
+
+                  <!-- Botones del Formulario de Pregunta -->
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      (click)="guardarPregunta()"
+                      class="flex-1 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Guardar Pregunta
+                    </button>
+                    <button
+                      type="button"
+                      (click)="closeAddQuestionForm()"
+                      class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
           <!-- Botones de Acción -->
           <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-700/50">
             <button
@@ -520,7 +807,7 @@
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              Crear Evaluación
+              {{ isEditMode() ? 'Guardar Cambios' : 'Crear Evaluación' }}
             </button>
             <button
               type="button"

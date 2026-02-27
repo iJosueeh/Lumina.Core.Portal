@@ -11,6 +11,7 @@ import { environment } from '../../../../../environments/environment';
 export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
     private readonly docentesApiUrl = environment.docentesApiUrl;
     private readonly cursosApiUrl = environment.cursosApiUrl;
+    private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
 
     constructor(private http: HttpClient) {
         super();
@@ -38,7 +39,14 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
                         // Si un curso no existe, omitirlo en lugar de fallar toda la request
                         const cursoRequests = cursosImpartidos.map(ci => 
                             this.http.get<any>(`${this.cursosApiUrl}/Cursos/${ci.cursoId}`).pipe(
-                                map(curso => this.mapToTeacherCourse(curso)),
+                                switchMap(curso => 
+                                    // Obtener conteo de alumnos en paralelo
+                                    this.http.get<any>(`${this.estudiantesApiUrl}/estudiantes/cursos/${ci.cursoId}/conteo`).pipe(
+                                        map(conteo => ({ curso, conteo })),
+                                        catchError(() => of({ curso, conteo: { totalAlumnos: 0, alumnosActivos: 0 } }))
+                                    )
+                                ),
+                                map(({ curso, conteo }) => this.mapToTeacherCourse(curso, conteo)),
                                 catchError(error => {
                                     console.warn(`⚠️ [TEACHER-COURSES-HTTP] Curso no encontrado: ${ci.cursoId}`, error);
                                     return of(null);
@@ -83,16 +91,16 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
         );
     }
 
-    private mapToTeacherCourse(data: any): TeacherCourse {
+    private mapToTeacherCourse(data: any, conteo?: { totalAlumnos: number; alumnosActivos: number }): TeacherCourse {
         return {
             id: data.id || data.cursoId,
-            codigo: data.codigo,
+            codigo: data.codigo || 'N/A',
             titulo: data.titulo || data.nombre,
             descripcion: data.descripcion,
             creditos: data.creditos || 0,
             ciclo: data.ciclo || 'N/A',
-            totalAlumnos: data.totalAlumnos || 0,
-            alumnosActivos: data.alumnosActivos || 0,
+            totalAlumnos: conteo?.totalAlumnos ?? data.totalAlumnos ?? 0,
+            alumnosActivos: conteo?.alumnosActivos ?? data.alumnosActivos ?? 0,
             promedioGeneral: data.promedioGeneral || 0,
             asistenciaPromedio: data.asistenciaPromedio || 0,
             estadoCurso: data.estadoCurso || data.estado || 'Activo',

@@ -2,6 +2,7 @@ export const environment = {
     production: true,
     useMockData: false,
     apiUrl: 'https://api.lumina.edu/api',  // Usuarios - Cambia esto a tu URL de producción
+    usuariosApiUrl: 'https://api.lumina.edu/api',  // Usuarios (alias)
     estudiantesApiUrl: 'https://api.lumina.edu/estudiantes',
     cursosApiUrl: 'https://api.lumina.edu/cursos',
     evaluacionesApiUrl: 'https://api.lumina.edu/evaluaciones',

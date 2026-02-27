@@ -3,6 +3,7 @@ export const environment = {
   useMockData: false, // ← Conectado con Back-End real
   // Microservicios Backend
   apiUrl: 'http://localhost:7777/api', // Usuarios
+  usuariosApiUrl: 'http://localhost:7777/api', // Usuarios (alias)
   estudiantesApiUrl: 'http://localhost:6600/api', // Estudiantes
   cursosApiUrl: 'http://localhost:9999/api', // Cursos (HTTP)
   evaluacionesApiUrl: 'http://localhost:5555/api', // Evaluaciones

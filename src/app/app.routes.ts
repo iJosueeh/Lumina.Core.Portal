@@ -157,6 +157,14 @@ export const routes: Routes = [
         title: 'Gestión de Calificaciones - Portal Docente',
       },
       {
+        path: 'evaluations',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/evaluations-list/evaluations-list.component').then(
+            (m) => m.EvaluationsListComponent,
+          ),
+        title: 'Mis Evaluaciones - Portal Docente',
+      },
+      {
         path: 'attendance',
         loadComponent: () =>
           import('@features/teacher/presentation/pages/attendance-management/attendance-management.component').then(

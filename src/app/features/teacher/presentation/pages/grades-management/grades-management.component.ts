@@ -23,6 +23,26 @@ interface CalificacionEstudiante {
   estado: string;
 }
 
+interface OpcionForm {
+  id?: string;
+  texto: string;
+  esCorrecta: boolean;
+  orden: number;
+}
+
+interface PreguntaForm {
+  id?: string;
+  tipoPregunta: number; // 1=OpcionMultiple, 2=VerdaderoFalso, 3=RespuestaCorta, 4=Emparejamiento
+  texto: string;
+  puntos: number;
+  orden: number;
+  respuestaCorrecta?: string;
+  explicacion?: string;
+  imagenUrl?: string;
+  opciones: OpcionForm[];
+  esExistente?: boolean; // Para saber si es una pregunta que ya existía
+}
+
 interface CourseGradesData {
   courseId: string;
   courseName: string;
@@ -64,10 +84,20 @@ export class GradesManagementComponent implements OnInit {
   searchTerm = signal('');
   hasUnsavedChanges = signal(false);
   showCreateModal = signal(false);
+  isEditMode = signal(false);
+  editingEvaluationId = signal<string | null>(null);
   evaluationForm!: FormGroup;
   showNotificationModal = signal(false);
   notificationMessage = signal('');
   notificationType = signal<'success' | 'info' | 'warning' | 'error'>('success');
+
+  // Gestión de Preguntas
+  preguntas = signal<PreguntaForm[]>([]);
+  showAddQuestionForm = signal(false);
+  currentQuestion = signal<PreguntaForm | null>(null);
+  editingQuestionIndex = signal<number | null>(null);
+  questionForm!: FormGroup;
+  opcionesForm: FormGroup[] = [];
 
   // Computed values
   evaluaciones = computed(() => this.courseGradesData()?.evaluaciones || []);
@@ -98,6 +128,7 @@ export class GradesManagementComponent implements OnInit {
   ) {
     this.userId = this.authRepository.getCurrentUser()?.id ?? '';
     this.initEvaluationForm();
+    this.initQuestionForm();
   }
 
   ngOnInit(): void {
@@ -113,6 +144,140 @@ export class GradesManagementComponent implements OnInit {
       console.error('❌ [GRADES] Error loading teacher data:', e);
       this.isLoading.set(false);
     }
+  }
+
+  // === GESTIÓN DE PREGUNTAS ===
+  
+  openAddQuestionForm(): void {
+    this.showAddQuestionForm.set(true);
+    this.currentQuestion.set(null);
+    this.questionForm.reset({ tipoPregunta: 1, puntos: 1, orden: this.preguntas().length + 1 });
+    this.opcionesForm = [];
+    // Si es opción múltiple o verdadero/falso, agregar opciones por defecto
+    if (this.questionForm.value.tipoPregunta === 1) {
+      this.agregarOpcion();
+      this.agregarOpcion();
+    } else if (this.questionForm.value.tipoPregunta === 2) {
+      this.opcionesForm = [
+        this.fb.group({ texto: ['Verdadero', Validators.required], esCorrecta: [false], orden: [1] }),
+        this.fb.group({ texto: ['Falso', Validators.required], esCorrecta: [false], orden: [2] }),
+      ];
+    }
+  }
+
+  closeAddQuestionForm(): void {
+    this.showAddQuestionForm.set(false);
+    this.currentQuestion.set(null);
+    this.editingQuestionIndex.set(null);
+    this.questionForm.reset();
+    this.opcionesForm = [];
+  }
+
+  onTipoPreguntaChange(tipo: number): void {
+    this.opcionesForm = [];
+    
+    if (tipo === 1) { // Opción Múltiple
+      this.agregarOpcion();
+      this.agregarOpcion();
+    } else if (tipo === 2) { // Verdadero/Falso
+      this.opcionesForm = [
+        this.fb.group({ texto: ['Verdadero', Validators.required], esCorrecta: [false], orden: [1] }),
+        this.fb.group({ texto: ['Falso', Validators.required], esCorrecta: [false], orden: [2] }),
+      ];
+    }
+  }
+
+  agregarOpcion(): void {
+    const opcionForm = this.fb.group({
+      texto: ['', Validators.required],
+      esCorrecta: [false],
+      orden: [this.opcionesForm.length + 1],
+    });
+    this.opcionesForm.push(opcionForm);
+  }
+
+  eliminarOpcion(index: number): void {
+    if (this.opcionesForm.length > 2) {
+      this.opcionesForm.splice(index, 1);
+      // Actualizar orden
+      this.opcionesForm.forEach((form, i) => {
+        form.patchValue({ orden: i + 1 });
+      });
+    } else {
+      this.showNotification('warning', 'Debe haber al menos 2 opciones');
+    }
+  }
+
+  marcarOpcionCorrecta(index: number): void {
+    const tipo = this.questionForm.value.tipoPregunta;
+    
+    if (tipo === 2) { // Verdadero/Falso: solo una correcta
+      this.opcionesForm.forEach((form, i) => {
+        form.patchValue({ esCorrecta: i === index });
+      });
+    } else if (tipo === 1) { // Opción Múltiple: puede haber múltiples correctas
+      const currentValue = this.opcionesForm[index].value.esCorrecta;
+      this.opcionesForm[index].patchValue({ esCorrecta: !currentValue });
+    }
+  }
+
+  guardarPregunta(): void {
+    // Si hay una pregunta en edición, delegar al método de guardar pregunta editada
+    if (this.editingQuestionIndex() !== null) {
+      this.guardarPreguntaEditada();
+      return;
+    }
+
+    if (this.questionForm.invalid) {
+      this.showNotification('warning', 'Complete todos los campos requeridos');
+      return;
+    }
+
+    const tipo = this.questionForm.value.tipoPregunta;
+    const opciones: OpcionForm[] = this.opcionesForm.map(form => form.value);
+    
+    // Validar que haya al menos una opción correcta para tipos con opciones
+    if (tipo === 1 || tipo === 2) {
+      const hayCorrecta = opciones.some(o => o.esCorrecta);
+      if (!hayCorrecta) {
+        this.showNotification('warning', 'Debe marcar al menos una opción como correcta');
+        return;
+      }
+    }
+
+    const pregunta: PreguntaForm = {
+      ...this.questionForm.value,
+      opciones: tipo === 1 || tipo === 2 ? opciones : [],
+    };
+
+    const preguntasActuales = this.preguntas();
+    this.preguntas.set([...preguntasActuales, pregunta]);
+    
+    this.showNotification('success', 'Pregunta agregada correctamente');
+    this.closeAddQuestionForm();
+  }
+
+  eliminarPregunta(index: number): void {
+    if (confirm('¿Estás seguro de eliminar esta pregunta?')) {
+      const preguntasActuales = this.preguntas();
+      preguntasActuales.splice(index, 1);
+      // Actualizar orden
+      preguntasActuales.forEach((p, i) => {
+        p.orden = i + 1;
+      });
+      this.preguntas.set([...preguntasActuales]);
+      this.showNotification('success', 'Pregunta eliminada');
+    }
+  }
+
+  getTipoPreguntaLabel(tipo: number): string {
+    const tipos: Record<number, string> = {
+      1: 'Opción Múltiple',
+      2: 'Verdadero/Falso',
+      3: 'Respuesta Corta',
+      4: 'Emparejamiento',
+    };
+    return tipos[tipo] || 'Desconocido';
   }
 
   async loadCourses(): Promise<void> {
@@ -148,8 +313,11 @@ export class GradesManagementComponent implements OnInit {
       estudiantes: this.http.get<any[]>(
         `${environment.estudiantesApiUrl}/estudiantes/por-docente/${this.docenteId}`
       ),
+      calificaciones: this.http.get<any>(
+        `${environment.evaluacionesApiUrl}/evaluaciones/cursos/${courseId}/calificaciones`
+      ),
     }).subscribe({
-      next: ({ evalResp, estudiantes }) => {
+      next: ({ evalResp, estudiantes, calificaciones }) => {
         const evals: any[] = evalResp.evaluaciones ?? [];
 
         // Calcular peso proporcional al puntajeMaximo
@@ -161,20 +329,47 @@ export class GradesManagementComponent implements OnInit {
           tipo: e.tipo,
         }));
 
-        // Notas vacías indexadas por evaluacionId
-        const notasVacias: { [key: string]: number | null } = {};
-        mappedEvals.forEach((e) => (notasVacias[e.id] = null));
+        // Crear mapa de calificaciones existentes por estudiante
+        const calificacionesMap = new Map<string, { [key: string]: number | null }>();
+        if (calificaciones?.calificaciones) {
+          for (const cal of calificaciones.calificaciones) {
+            const notasPorEval: { [key: string]: number | null } = {};
+            for (const [evalId, notaData] of Object.entries(cal.notasPorEvaluacion || {})) {
+              notasPorEval[evalId] = (notaData as any)?.nota ?? null;
+            }
+            calificacionesMap.set(cal.estudianteId, notasPorEval);
+          }
+        }
 
-        const califs: CalificacionEstudiante[] = estudiantes.map((s: any) => ({
-          estudianteId: s.estudianteId ?? s.id ?? '',
-          estudianteNombre: s.nombreCompleto ?? '',
-          estudianteCodigo:
-            s.codigoEstudiante ??
-            (s.usuarioId ?? '').substring(0, 8).toUpperCase(),
-          notas: { ...notasVacias },
-          promedio: 0,
-          estado: 'Pendiente',
-        }));
+        // Crear array de calificaciones por estudiante
+        const califs: CalificacionEstudiante[] = estudiantes.map((s: any) => {
+          const estudianteId = s.estudianteId ?? s.id ?? '';
+          
+          // Obtener notas existentes o crear vacías
+          const notasExistentes = calificacionesMap.get(estudianteId) || {};
+          const notas: { [key: string]: number | null } = {};
+          mappedEvals.forEach((e) => {
+            notas[e.id] = notasExistentes[e.id] ?? null;
+          });
+
+          const estudiante: CalificacionEstudiante = {
+            estudianteId,
+            estudianteNombre: s.nombreCompleto ?? '',
+            estudianteCodigo:
+              s.codigoEstudiante ??
+              (s.usuarioId ?? '').substring(0, 8).toUpperCase(),
+            notas,
+            promedio: 0,
+            estado: 'Pendiente',
+          };
+
+          // Calcular promedio inicial
+          this.calculateStudentAverage(estudiante);
+          return estudiante;
+        });
+
+        // Calcular estadísticas
+        const estadisticas = this.calculateStatistics(califs);
 
         const course = this.courses().find((c) => c.id === courseId);
         this.courseGradesData.set({
@@ -183,18 +378,10 @@ export class GradesManagementComponent implements OnInit {
           courseCode: course?.codigo ?? '',
           evaluaciones: mappedEvals,
           calificaciones: califs,
-          estadisticas: {
-            promedioGeneral: 0,
-            notaMasAlta: 0,
-            notaMasBaja: 0,
-            aprobados: 0,
-            reprobados: 0,
-            enRiesgo: 0,
-            totalEstudiantes: califs.length,
-          },
+          estadisticas,
         });
         this.isLoading.set(false);
-        console.log(`✅ [GRADES] ${mappedEvals.length} evaluaciones y ${califs.length} estudiantes cargados.`);
+        console.log(`✅ [GRADES] ${mappedEvals.length} evaluaciones y ${califs.length} estudiantes cargados con calificaciones.`);
       },
       error: (error) => {
         console.error('❌ [GRADES] Error loading grades:', error);
@@ -212,6 +399,16 @@ export class GradesManagementComponent implements OnInit {
       estudiante.notas[evaluacionId] = numValue;
       this.hasUnsavedChanges.set(true);
       this.calculateStudentAverage(estudiante);
+      
+      // Recalcular estadísticas
+      const currentData = this.courseGradesData();
+      if (currentData) {
+        const newStats = this.calculateStatistics(califs);
+        this.courseGradesData.set({
+          ...currentData,
+          estadisticas: newStats,
+        });
+      }
     }
   }
 
@@ -238,6 +435,62 @@ export class GradesManagementComponent implements OnInit {
     } else {
       estudiante.estado = 'Reprobado';
     }
+  }
+
+  calculateStatistics(calificaciones: CalificacionEstudiante[]): {
+    promedioGeneral: number;
+    notaMasAlta: number;
+    notaMasBaja: number;
+    aprobados: number;
+    reprobados: number;
+    enRiesgo: number;
+    totalEstudiantes: number;
+  } {
+    if (calificaciones.length === 0) {
+      return {
+        promedioGeneral: 0,
+        notaMasAlta: 0,
+        notaMasBaja: 0,
+        aprobados: 0,
+        reprobados: 0,
+        enRiesgo: 0,
+        totalEstudiantes: 0,
+      };
+    }
+
+    // Filtrar estudiantes que tienen al menos una nota
+    const estudiantesConNotas = calificaciones.filter((c) => c.promedio > 0);
+
+    if (estudiantesConNotas.length === 0) {
+      return {
+        promedioGeneral: 0,
+        notaMasAlta: 0,
+        notaMasBaja: 0,
+        aprobados: 0,
+        reprobados: 0,
+        enRiesgo: 0,
+        totalEstudiantes: calificaciones.length,
+      };
+    }
+
+    const promedios = estudiantesConNotas.map((c) => c.promedio);
+    const promedioGeneral = promedios.reduce((sum, p) => sum + p, 0) / promedios.length;
+    const notaMasAlta = Math.max(...promedios);
+    const notaMasBaja = Math.min(...promedios);
+
+    const aprobados = estudiantesConNotas.filter((c) => c.promedio >= 14).length;
+    const enRiesgo = estudiantesConNotas.filter((c) => c.promedio >= 10.5 && c.promedio < 14).length;
+    const reprobados = estudiantesConNotas.filter((c) => c.promedio < 10.5).length;
+
+    return {
+      promedioGeneral,
+      notaMasAlta,
+      notaMasBaja,
+      aprobados,
+      reprobados,
+      enRiesgo,
+      totalEstudiantes: calificaciones.length,
+    };
   }
 
   saveChanges(): void {
@@ -346,7 +599,20 @@ export class GradesManagementComponent implements OnInit {
     });
   }
 
+  initQuestionForm(): void {
+    this.questionForm = this.fb.group({
+      tipoPregunta: [1, [Validators.required]], // OpcionMultiple por defecto
+      texto: ['', [Validators.required, Validators.minLength(5)]],
+      puntos: [1, [Validators.required, Validators.min(1)]],
+      orden: [1, [Validators.required]],
+      respuestaCorrecta: [''],
+      explicacion: [''],
+    });
+  }
+
   openCreateModal(): void {
+    this.isEditMode.set(false);
+    this.editingEvaluationId.set(null);
     // Si hay un curso seleccionado, prellenar el campo
     const selectedId = this.selectedCourseId();
     if (selectedId) {
@@ -355,13 +621,89 @@ export class GradesManagementComponent implements OnInit {
     this.showCreateModal.set(true);
   }
 
+  openEditModal(evaluacion: Evaluacion): void {
+    this.isEditMode.set(true);
+    this.editingEvaluationId.set(evaluacion.id);
+    this.cargarPreguntasExistentes(evaluacion.id);
+    
+    // Prellenar el formulario con los datos existentes
+    // Necesitamos obtener los datos completos de la evaluación desde el backend
+    this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones/${evaluacion.id}`).subscribe({
+      next: (data) => {
+        this.evaluationForm.patchValue({
+          cursoId: data.cursoId,
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          fechaInicio: new Date(data.fechaInicio).toISOString().slice(0, 16),
+          fechaFin: new Date(data.fechaFin).toISOString().slice(0, 16),
+          peso: evaluacion.peso,
+          puntajeMaximo: data.puntajeMaximo,
+          tipo: evaluacion.tipo,
+        });
+        this.showCreateModal.set(true);
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error loading evaluation:', err);
+        this.showNotification('error', 'Error al cargar la evaluación');
+      },
+    });
+  }
+
   closeCreateModal(): void {
     this.showCreateModal.set(false);
+    this.isEditMode.set(false);
+    this.editingEvaluationId.set(null);
     this.evaluationForm.reset({
       duracionMinutos: 60,
       peso: 0,
       puntajeMaximo: 20,
       intentosMaximos: 1,
+    });
+    // Limpiar preguntas
+    this.preguntas.set([]);
+    this.showAddQuestionForm.set(false);
+    this.currentQuestion.set(null);
+    this.editingQuestionIndex.set(null);
+  }
+
+  agregarPreguntasAEvaluacion(evaluacionId: string, preguntas: PreguntaForm[]): void {
+    console.log(`📝 [GRADES] Agregando ${preguntas.length} preguntas...`);
+    
+    const requests = preguntas.map(pregunta => {
+      const preguntaData = {
+        evaluacionId,
+        tipoPregunta: pregunta.tipoPregunta,
+        texto: pregunta.texto,
+        puntos: pregunta.puntos,
+        orden: pregunta.orden,
+        respuestaCorrecta: pregunta.respuestaCorrecta || null,
+        explicacion: pregunta.explicacion || null,
+        opciones: pregunta.opciones.length > 0 ? pregunta.opciones.map(o => ({
+          texto: o.texto,
+          esCorrecta: o.esCorrecta,
+          orden: o.orden
+        })) : null
+      };
+      
+      return this.http.post(
+        `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`,
+        preguntaData
+      );
+    });
+    
+    forkJoin(requests).subscribe({
+      next: () => {
+        console.log('✅ [GRADES] Preguntas agregadas exitosamente');
+        this.closeCreateModal();
+        this.showNotification('success', `Evaluación creada con ${preguntas.length} preguntas`);
+        this.loadGrades();
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error agregando preguntas:', err);
+        this.showNotification('warning', 'Evaluación creada, pero hubo errores al agregar preguntas');
+        this.closeCreateModal();
+        this.loadGrades();
+      }
     });
   }
 
@@ -373,6 +715,14 @@ export class GradesManagementComponent implements OnInit {
       return;
     }
 
+    if (this.isEditMode()) {
+      this.updateEvaluation();
+    } else {
+      this.createEvaluation();
+    }
+  }
+
+  createEvaluation(): void {
     const formValue = this.evaluationForm.value;
     const evaluationData = {
       ...formValue,
@@ -388,15 +738,84 @@ export class GradesManagementComponent implements OnInit {
       },
     };
 
-    this.http.post(`${environment.evaluacionesApiUrl}/evaluaciones`, evaluationData).subscribe({
-      next: () => {
-        this.closeCreateModal();
-        this.showNotification('success', 'Evaluación creada exitosamente');
-        this.loadGrades();
+    this.http.post<{ id: string }>(`${environment.evaluacionesApiUrl}/evaluaciones`, evaluationData).subscribe({
+      next: (response) => {
+        const evaluacionId = response.id;
+        console.log('✅ [GRADES] Evaluación creada:', evaluacionId);
+        
+        // Si hay preguntas, agregarlas
+        const preguntasToAdd = this.preguntas();
+        if (preguntasToAdd.length > 0) {
+          this.agregarPreguntasAEvaluacion(evaluacionId, preguntasToAdd);
+        } else {
+          this.closeCreateModal();
+          this.showNotification('success', 'Evaluación creada exitosamente');
+          this.loadGrades();
+        }
       },
       error: (err) => {
         console.error('❌ [GRADES] Error creating evaluation:', err);
         this.showNotification('error', 'Error al crear la evaluación. Intente nuevamente.');
+      },
+    });
+  }
+
+  updateEvaluation(): void {
+    const formValue = this.evaluationForm.value;
+    const evaluationData = {
+      titulo: formValue.titulo,
+      descripcion: formValue.descripcion,
+      fechaInicio: new Date(formValue.fechaInicio).toISOString(),
+      fechaFin: new Date(formValue.fechaFin).toISOString(),
+      puntajeMaximo: formValue.puntajeMaximo,
+      tipoEvaluacion: this.mapTipoToEnum(formValue.tipo),
+    };
+
+    const evaluacionId = this.editingEvaluationId();
+    this.http.put(`${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}`, evaluationData).subscribe({
+      next: () => {
+        // Agregar nuevas preguntas si hay
+        const preguntasNuevas = this.preguntas().filter(p => !p.esExistente);
+        if (preguntasNuevas.length > 0) {
+          this.agregarPreguntasAEvaluacion(evaluacionId!, preguntasNuevas);
+        } else {
+          this.closeCreateModal();
+          this.showNotification('success', 'Evaluación actualizada exitosamente');
+          this.loadGrades();
+        }
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error updating evaluation:', err);
+        this.showNotification('error', 'Error al actualizar la evaluación. Intente nuevamente.');
+      },
+    });
+  }
+
+  mapTipoToEnum(tipo: string): number {
+    const tiposMap: { [key: string]: number } = {
+      'Examen': 0,
+      'Practica': 1,
+      'Quiz': 2,
+      'Parcial': 3,
+      'Final': 4,
+      'Tarea': 5,
+    };
+    return tiposMap[tipo] ?? 0;
+  }
+
+  deleteEvaluation(evaluacionId: string): void {
+    if (!confirm('¿Estás seguro de eliminar esta evaluación? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    this.http.delete(`${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}`).subscribe({
+      next: () => {
+        this.showNotification('success', 'Evaluación eliminada exitosamente');
+        this.loadGrades();
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error deleting evaluation:', err);
+        this.showNotification('error', 'Error al eliminar la evaluación. Intente nuevamente.');
       },
     });
   }
@@ -414,6 +833,171 @@ export class GradesManagementComponent implements OnInit {
 
   closeNotificationModal(): void {
     this.showNotificationModal.set(false);
+  }
+
+  cargarPreguntasExistentes(evaluacionId: string): void {
+    console.log('📖 [GRADES] Cargando preguntas de evaluación:', evaluacionId);
+    this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`).subscribe({
+      next: (response) => {
+        const preguntasCargadas: PreguntaForm[] = response.preguntas.map((p: any) => ({
+          id: p.id,
+          tipoPregunta: this.mapTipoStringToEnum(p.tipo),
+          texto: p.texto,
+          puntos: p.puntos,
+          orden: p.orden,
+          respuestaCorrecta: p.respuestaCorrecta,
+          explicacion: p.explicacion,
+          imagenUrl: p.imagenUrl,
+          opciones: p.opciones?.map((o: any) => ({
+            id: o.id,
+            texto: o.texto,
+            esCorrecta: o.esCorrecta,
+            orden: o.orden
+          })) || [],
+          esExistente: true
+        }));
+        
+        this.preguntas.set(preguntasCargadas);
+        console.log('✅ [GRADES] Preguntas cargadas:', preguntasCargadas.length);
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error cargando preguntas:', err);
+        this.preguntas.set([]);
+      }
+    });
+  }
+
+  mapTipoStringToEnum(tipo: string): number {
+    const tiposMap: { [key: string]: number } = {
+      'multiple-choice': 1,
+      'true-false': 2,
+      'short-answer': 3,
+      'matching': 4
+    };
+    return tiposMap[tipo] || 1;
+  }
+
+  openEditQuestionForm(index: number): void {
+    const pregunta = this.preguntas()[index];
+    if (!pregunta.esExistente) {
+      this.showNotification('warning', 'Solo se pueden editar preguntas guardadas');
+      return;
+    }
+
+    this.editingQuestionIndex.set(index);
+    this.currentQuestion.set(pregunta);
+    this.showAddQuestionForm.set(true);
+
+    // Prellenar formulario
+    this.questionForm.patchValue({
+      tipoPregunta: pregunta.tipoPregunta,
+      texto: pregunta.texto,
+      puntos: pregunta.puntos,
+      orden: pregunta.orden,
+      respuestaCorrecta: pregunta.respuestaCorrecta || '',
+      explicacion: pregunta.explicacion || ''
+    });
+
+    // Prellenar opciones
+    this.opcionesForm = pregunta.opciones.map(o => 
+      this.fb.group({
+        id: [o.id],
+        texto: [o.texto, Validators.required],
+        esCorrecta: [o.esCorrecta],
+        orden: [o.orden]
+      })
+    );
+  }
+
+  guardarPreguntaEditada(): void {
+    if (this.questionForm.invalid) {
+      this.showNotification('warning', 'Complete todos los campos requeridos');
+      return;
+    }
+
+    const tipo = this.questionForm.value.tipoPregunta;
+    const opciones: OpcionForm[] = this.opcionesForm.map(form => form.value);
+
+    if (tipo === 1 || tipo === 2) {
+      const hayCorrecta = opciones.some(o => o.esCorrecta);
+      if (!hayCorrecta) {
+        this.showNotification('warning', 'Debe marcar al menos una opción como correcta');
+        return;
+      }
+    }
+
+    const index = this.editingQuestionIndex();
+    if (index === null) return;
+
+    const pregunta = this.preguntas()[index];
+    const evaluacionId = this.editingEvaluationId();
+
+    // Actualizar pregunta en el backend
+    const updateData = {
+      texto: this.questionForm.value.texto,
+      puntos: this.questionForm.value.puntos,
+      respuestaCorrecta: this.questionForm.value.respuestaCorrecta || null,
+      explicacion: this.questionForm.value.explicacion || null,
+      imagenUrl: pregunta.imagenUrl || null,
+      opciones: tipo === 1 || tipo === 2 ? opciones.map(o => ({
+        texto: o.texto,
+        esCorrecta: o.esCorrecta,
+        orden: o.orden
+      })) : null
+    };
+
+    this.http.put(
+      `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas/${pregunta.id}`,
+      updateData
+    ).subscribe({
+      next: () => {
+        // Actualizar en el signal
+        const preguntasActualizadas = [...this.preguntas()];
+        preguntasActualizadas[index] = {
+          ...pregunta,
+          texto: updateData.texto,
+          puntos: updateData.puntos,
+          respuestaCorrecta: updateData.respuestaCorrecta,
+          explicacion: updateData.explicacion,
+          opciones: tipo === 1 || tipo === 2 ? opciones : []
+        };
+        this.preguntas.set(preguntasActualizadas);
+        this.showNotification('success', 'Pregunta actualizada correctamente');
+        this.closeAddQuestionForm();
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error actualizando pregunta:', err);
+        this.showNotification('error', 'Error al actualizar la pregunta');
+      }
+    });
+  }
+
+  eliminarPreguntaExistente(index: number): void {
+    const pregunta = this.preguntas()[index];
+    if (!pregunta.esExistente || !pregunta.id) {
+      this.showNotification('warning', 'Solo se pueden eliminar preguntas guardadas');
+      return;
+    }
+
+    if (!confirm('¿Estás seguro de eliminar esta pregunta? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    const evaluacionId = this.editingEvaluationId();
+    this.http.delete(
+      `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas/${pregunta.id}`
+    ).subscribe({
+      next: () => {
+        const preguntasActualizadas = this.preguntas();
+        preguntasActualizadas.splice(index, 1);
+        this.preguntas.set([...preguntasActualizadas]);
+        this.showNotification('success', 'Pregunta eliminada correctamente');
+      },
+      error: (err) => {
+        console.error('❌ [GRADES] Error eliminando pregunta:', err);
+        this.showNotification('error', 'Error al eliminar la pregunta');
+      }
+    });
   }
 }
 

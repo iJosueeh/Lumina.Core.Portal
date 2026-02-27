@@ -8,8 +8,9 @@ export interface EstudianteMetricas {
 }
 
 export interface EstudianteMetricasCompletas extends EstudianteMetricas {
-  // Futuras métricas de otros servicios
+  // Métricas de otros servicios
   asistencia?: number;
   tareasEntregadas?: number;
   tareasPendientes?: number;
+  ultimoAcceso?: string; // ISO string date
 }

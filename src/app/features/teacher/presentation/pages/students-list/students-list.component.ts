@@ -62,6 +62,9 @@ export class StudentsListComponent {
   // Caché de métricas de estudiantes
   private metricasCache = signal<Map<string, EstudianteMetricasCompletas>>(new Map());
 
+  // Caché de últimos accesos de usuarios
+  private ultimosAccesosCache = signal<Map<string, string | null>>(new Map());
+
   // Transformar estudiantes del backend al formato de la UI
   allStudents = computed(() => {
     const students = this.studentsQuery.data() || [];
@@ -73,12 +76,13 @@ export class StudentsListComponent {
   error = computed(() => this.studentsQuery.error());
 
   constructor() {
-    // Cargar nombres de cursos y métricas cuando haya estudiantes
+    // Cargar nombres de cursos, métricas y últimos accesos cuando haya estudiantes
     effect(() => {
       const students = this.allStudents();
       if (students.length > 0) {
         this.loadCourseNames(students);
         this.loadStudentMetrics(students);
+        this.loadUltimosAccesos(students);
       }
     });
   }
@@ -131,8 +135,8 @@ export class StudentsListComponent {
 
   /**
    * Transforma un estudiante del backend al formato de la UI
-   * Integra métricas reales desde el API de Evaluaciones
-   * NOTA: Asistencia y Tareas aún son mock (pendientes de implementación de sus APIs)
+   * Integra métricas reales desde el API de Evaluaciones (promedio, tareas)
+   * NOTA: Asistencia y UltimoAcceso aún son mock (pendientes de implementación de sus APIs)
    */
   private transformToUIStudent(student: TeacherStudent): CourseStudent {
     const [nombre, ...apellidosArr] = student.nombreCompleto.split(' ');
@@ -153,12 +157,13 @@ export class StudentsListComponent {
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(student.nombreCompleto)}&background=0D8ABC&color=fff`,
       // MÉTRICAS REALES desde API de Evaluaciones
       promedio: metricas?.promedioGeneral ?? 0,
-      // MOCK DATA temporal: Asistencia y Tareas (APIs pendientes de implementación)
+      tareasEntregadas: metricas?.tareasEntregadas ?? 0,
+      tareasPendientes: metricas?.tareasPendientes ?? 0,
+      // MOCK DATA temporal: Asistencia (API pendiente de implementación)
       asistencia: metricas?.asistencia ?? this.generateMockAttendance(student.id),
-      tareasEntregadas: metricas?.tareasEntregadas ?? this.deterministicInt(student.id + 'te', 5, 20),
-      tareasPendientes: metricas?.tareasPendientes ?? this.deterministicInt(student.id + 'tp', 0, 4),
       estado: this.calculateEstudianteStatus(metricas),
-      ultimoAcceso: this.generateMockLastAccess(student.id),
+      // DATO REAL: UltimoAcceso desde API de Usuarios
+      ultimoAcceso: this.ultimosAccesosCache().get(student.usuarioId) ?? this.generateMockLastAccess(student.id),
       courseId: courseId,
       courseName: this.getCourseName(courseId),
     };
@@ -239,6 +244,40 @@ export class StudentsListComponent {
       console.log('✅ [STUDENTS-LIST] Métricas de estudiantes cargadas');
     } catch (error) {
       console.error('❌ [STUDENTS-LIST] Error cargando métricas:', error);
+    }
+  }
+
+  /**
+   * Carga los últimos accesos de múltiples estudiantes desde el API de Usuarios
+   */
+  private async loadUltimosAccesos(students: CourseStudent[]): Promise<void> {
+    // Obtener los usuarioIds únicos
+    const backendStudents = this.studentsQuery.data() || [];
+    const usuarioIds = backendStudents.map((s: TeacherStudent) => s.usuarioId);
+    const cache = this.ultimosAccesosCache();
+    
+    // Filtrar usuarios sin último acceso en caché
+    const idsToLoad = usuarioIds.filter(id => !cache.has(id));
+    
+    if (idsToLoad.length === 0) {
+      return;
+    }
+
+    console.log(`🕒 [STUDENTS-LIST] Cargando últimos accesos de ${idsToLoad.length} usuarios...`);
+
+    try {
+      const accesosMap = await firstValueFrom(
+        this.metricasService.getUltimosAccesos(idsToLoad)
+      );
+      
+      // Actualizar caché inmutablemente
+      const newCache = new Map(cache);
+      accesosMap.forEach((acceso, usuarioId) => newCache.set(usuarioId, acceso));
+      this.ultimosAccesosCache.set(newCache);
+
+      console.log('✅ [STUDENTS-LIST] Últimos accesos cargados');
+    } catch (error) {
+      console.error('❌ [STUDENTS-LIST] Error cargando últimos accesos:', error);
     }
   }
 
