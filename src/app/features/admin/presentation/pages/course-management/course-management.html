@@ -340,9 +340,21 @@
                 
                 @if (activeTab === 'evaluations') {
                     <div class="space-y-6 animate-fade-in">
-                        <!-- Add Evaluation Form -->
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                            <h4 class="text-sm font-bold text-gray-700">Agregar Nueva Evaluación</h4>
+                        <!-- Add/Edit Evaluation Form -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3 evaluation-form">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-bold text-gray-700">
+                                    {{isEditingEvaluation ? 'Editar Evaluación' : 'Agregar Nueva Evaluación'}}
+                                </h4>
+                                @if (isEditingEvaluation) {
+                                    <button (click)="cancelEditEvaluation()" class="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Cancelar
+                                    </button>
+                                }
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                                 <div class="md:col-span-2">
                                      <input type="text" [(ngModel)]="newEval.nombre" placeholder="Nombre (ej: Examen Final)" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -361,28 +373,62 @@
                                      <input type="date" [(ngModel)]="newEval.fechaLimite" class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                             </div>
-                            <button (click)="addEvaluation()" [disabled]="!newEval.nombre || !newEval.peso" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Agregar Evaluación</button>
+                            <div class="grid gap-2" [class]="isEditingEvaluation && currentCourse.evaluaciones[editingEvaluationIndex]?.id ? 'grid-cols-2' : 'grid-cols-1'">
+                                <button (click)="addEvaluation()" [disabled]="!newEval.nombre || !newEval.peso" [class]="isEditingEvaluation ? 'bg-green-600 text-white py-2 rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'">
+                                    {{isEditingEvaluation ? 'Actualizar Evaluación' : 'Agregar Evaluación'}}
+                                </button>
+                                @if (isEditingEvaluation && currentCourse.evaluaciones[editingEvaluationIndex]?.id) {
+                                    <button (click)="editQuestionsFromForm()" class="bg-indigo-600 text-white py-2 rounded text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                                        </svg>
+                                        Editar Preguntas
+                                    </button>
+                                }
+                            </div>
                         </div>
                         
                         <!-- Evaluations List -->
                         <div class="space-y-2">
                              @for (eval of currentCourse.evaluaciones; track eval.id; let i = $index) {
-                                 <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm group">
-                                     <div>
-                                         <div class="flex items-center gap-2 mb-1">
-                                             <span class="font-bold text-gray-800">{{eval.nombre}}</span>
-                                             <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 border border-gray-200">{{eval.tipo}}</span>
+                                 <div class="p-4 bg-white rounded-lg border border-gray-200 shadow-sm group">
+                                     <div class="flex items-start justify-between">
+                                         <div class="flex-1">
+                                             <div class="flex items-center gap-2 mb-1">
+                                                 <span class="font-bold text-gray-800">{{eval.nombre}}</span>
+                                                 <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 border border-gray-200">{{eval.tipo}}</span>
+                                                 @if (eval.tipo === 'Quiz' || eval.tipo === 'Examen') {
+                                                     <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-600 border border-blue-200">
+                                                         {{eval.preguntas?.length || 0}} pregunta{{(eval.preguntas?.length || 0) !== 1 ? 's' : ''}}
+                                                     </span>
+                                                 }
+                                             </div>
+                                             <div class="text-xs text-gray-500 flex gap-4 mb-2">
+                                                 <span>Peso: <span class="font-medium text-gray-700">{{eval.peso}}%</span></span>
+                                                 <span>Fecha: <span class="font-medium text-gray-700">{{eval.fechaLimite || 'Sin fecha'}}</span></span>
+                                             </div>
+                                             @if (eval.tipo === 'Quiz' || eval.tipo === 'Examen') {
+                                                 <button (click)="openQuestionEditor(i)" class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 mt-2">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                                     </svg>
+                                                     {{eval.preguntas?.length > 0 ? 'Editar preguntas' : 'Agregar preguntas'}}
+                                                 </button>
+                                             }
                                          </div>
-                                         <div class="text-xs text-gray-500 flex gap-4">
-                                             <span>Peso: <span class="font-medium text-gray-700">{{eval.peso}}%</span></span>
-                                             <span>Fecha: <span class="font-medium text-gray-700">{{eval.fechaLimite || 'Sin fecha'}}</span></span>
-                                         </div>
+                                          <div class="flex items-center gap-2">
+                                              <button (click)="editEvaluation(i)" class="text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Editar evaluación">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                  </svg>
+                                              </button>
+                                              <button (click)="removeEvaluation(i)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Eliminar evaluación">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                             </button>
+                                          </div>
                                      </div>
-                                      <button (click)="removeEvaluation(i)" class="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                     </button>
                                  </div>
                              } @empty {
                                  <div class="text-center py-8 text-gray-400 text-sm border border-dashed border-gray-200 rounded-lg">
@@ -432,8 +478,8 @@
 
 <!-- Material Modal -->
     @if (isMaterialModalOpen) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 transform transition-all scale-100">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in" (click)="isMaterialModalOpen = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 transform transition-all scale-100" (click)="$event.stopPropagation()">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Añadir Material</h3>
             
             <div class="space-y-4">
@@ -477,7 +523,125 @@
         </div>
     </div>
     }
+<!-- Question Editor Modal -->
+@if (showQuestionEditor) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in overflow-y-auto" (click)="closeQuestionEditor()">
+        <div class="bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden" (click)="$event.stopPropagation()">
+            <!-- Header -->
+            <div class="p-6 border-b border-white/20">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-1">Editor de Preguntas</h3>
+                        <p class="text-blue-100 text-sm">{{currentCourse.evaluaciones[editingEvalIndex]?.nombre}}</p>
+                    </div>
+                    <button (click)="closeQuestionEditor()" class="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
+            <!-- Questions List -->
+            <div class="p-6 space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto">
+                @for (q of questionsList; track $index; let qi = $index) {
+                    <div class="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
+                        <!-- Question Header -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-sm">
+                                    {{qi + 1}}
+                                </span>
+                                <span class="text-sm font-medium text-gray-500">Pregunta</span>
+                            </div>
+                            @if (questionsList.length > 1) {
+                                <button (click)="removeQuestion(qi)" class="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Eliminar pregunta">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                    </svg>
+                                </button>
+                            }
+                        </div>
+
+                        <!-- Question Text -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Texto de la Pregunta</label>
+                            <textarea [(ngModel)]="q.texto" placeholder="Escribe tu pregunta aquí..." rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+                        </div>
+
+                        <!-- Points & Explanation -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Puntos</label>
+                                <input type="number" [(ngModel)]="q.puntos" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Explicación (Opcional)</label>
+                                <input type="text" [(ngModel)]="q.explicacion" placeholder="Razón de la respuesta correcta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Options -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Opciones <span class="text-gray-500 text-xs">(marca la correcta)</span></label>
+                            <div class="space-y-2">
+                                @for (op of q.opciones; track $index; let oi = $index) {
+                                    <div class="flex items-center gap-2">
+                                        <!-- Radio Button -->
+                                        <input type="radio" [name]="'correct-' + qi" [checked]="op.esCorrecta" (change)="setCorrectOption(qi, oi)" class="w-5 h-5 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer">
+                                        
+                                        <!-- Option Text -->
+                                        <input type="text" [(ngModel)]="op.texto" [placeholder]="'Opción ' + getOptionLabel(oi)" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" [class.border-green-500]="op.esCorrecta" [class.bg-green-50]="op.esCorrecta">
+                                        
+                                        <!-- Remove Option Button -->
+                                        @if (q.opciones.length > 2) {
+                                            <button (click)="removeOption(qi, oi)" class="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Eliminar opción">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                                
+                                <!-- Add Option Button -->
+                                <button (click)="addOption(qi)" class="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                    Agregar Opción
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Add Question Button -->
+                <button (click)="addQuestion()" class="w-full py-3 border-2 border-dashed border-white/30 rounded-xl text-white hover:border-white hover:bg-white/10 transition-colors font-medium flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Agregar Nueva Pregunta
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-white/20 bg-white/5 flex justify-between items-center">
+                <span class="text-white/80 text-sm">
+                    {{questionsList.length}} pregunta{{questionsList.length !== 1 ? 's' : ''}}
+                </span>
+                <div class="flex gap-3">
+                    <button (click)="closeQuestionEditor()" class="px-5 py-2.5 text-white/90 hover:bg-white/10 rounded-lg font-medium transition-colors">
+                        Cancelar
+                    </button>
+                    <button (click)="saveQuestions()" class="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-bold hover:bg-blue-50 shadow-lg transition-colors">
+                        Guardar Preguntas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
     <!-- Generic Confirmation Modal -->
     @if (isConfirmModalOpen) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../infrastructure/services/admin.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-course-management',
@@ -47,7 +48,14 @@ export class CourseManagement implements OnInit {
   newModuleTitle = '';
   
   // New Evaluation Form Data
-  newEval: any = { nombre: '', tipo: 'Examen', peso: 0, fechaLimite: '' };
+  newEval: any = { nombre: '', tipo: 'Examen', peso: 0, fechaLimite: '', preguntas: [] };
+  isEditingEvaluation = false;
+  editingEvaluationIndex = -1;
+  
+  // Quiz Editor
+  showQuestionEditor = false;
+  editingEvalIndex = -1;
+  questionsList: any[] = [];
 
   isEditing = false;
   isLoading = false;
@@ -107,7 +115,7 @@ export class CourseManagement implements OnInit {
       this.isEditing = false;
       this.activeTab = 'general';
       this.currentCourse = { 
-          name: '', code: '', teacherName: '', capacity: 150, status: 'DRAFT', 
+          name: '', code: '', teacherName: '', instructorId: null, capacity: 150, status: 'DRAFT', 
           description: '', ciclo: '2024-1', creditos: 3,
           modules: [], evaluaciones: [],
           coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop'
@@ -122,6 +130,21 @@ export class CourseManagement implements OnInit {
       this.currentCourse = JSON.parse(JSON.stringify(course));
       if(!this.currentCourse.modules) this.currentCourse.modules = [];
       if(!this.currentCourse.evaluaciones) this.currentCourse.evaluaciones = [];
+      
+      // Cargar evaluaciones del curso desde el microservicio de Evaluaciones
+      if (this.currentCourse.id) {
+          console.log('🔍 Cargando evaluaciones del curso:', this.currentCourse.id);
+          this.adminService.getCourseEvaluations(this.currentCourse.id).subscribe({
+              next: (evaluaciones) => {
+                  console.log('✅ Evaluaciones cargadas:', evaluaciones.length);
+                  this.currentCourse.evaluaciones = evaluaciones;
+              },
+              error: (err) => {
+                  console.error('❌ Error cargando evaluaciones:', err);
+              }
+          });
+      }
+      
       this.isModalOpen = true;
   }
 
@@ -132,19 +155,31 @@ export class CourseManagement implements OnInit {
   }
 
   resetEvalForm() {
-      this.newEval = { nombre: '', tipo: 'Examen', peso: 0, fechaLimite: '' };
+      this.newEval = { nombre: '', tipo: 'Examen', peso: 0, fechaLimite: '', preguntas: [] };
+      this.isEditingEvaluation = false;
+      this.editingEvaluationIndex = -1;
   }
 
   saveCourse() {
       if (this.isEditing) {
+          // Primero actualizar el curso
           this.adminService.updateCourse(this.currentCourse).subscribe({
               next: () => {
-                  const index = this.allCourses.findIndex(c => c.id === this.currentCourse.id);
-                  if (index !== -1) {
-                      this.allCourses[index] = this.currentCourse;
-                      this.applyFilters();
-                  }
-                  this.closeModal();
+                  console.log('✅ Curso actualizado, procesando evaluaciones...');
+                  
+                  // Procesar evaluaciones: crear nuevas o actualizar existentes
+                  this.saveEvaluations().then(() => {
+                      const index = this.allCourses.findIndex(c => c.id === this.currentCourse.id);
+                      if (index !== -1) {
+                          this.allCourses[index] = this.currentCourse;
+                          this.applyFilters();
+                      }
+                      this.closeModal();
+                      console.log('✅ Curso y evaluaciones guardados exitosamente');
+                  });
+              },
+              error: (err) => {
+                  console.error('❌ Error guardando curso:', err);
               }
           });
       } else {
@@ -164,6 +199,107 @@ export class CourseManagement implements OnInit {
               }
           });
       }
+  }
+  
+  // Guardar evaluaciones en el backend
+  async saveEvaluations(): Promise<void> {
+      if (!this.currentCourse.evaluaciones || this.currentCourse.evaluaciones.length === 0) {
+          console.log('📝 No hay evaluaciones para guardar');
+          return;
+      }
+
+      console.log('🔍 [DEBUG] Evaluaciones antes de guardar:', this.currentCourse.evaluaciones.map((e: any) => ({
+          nombre: e.nombre,
+          id: e.id,
+          preguntasCount: e.preguntas?.length || 0,
+          preguntas: e.preguntas
+      })));
+
+      const evaluationsToSave = this.currentCourse.evaluaciones.map(async (evaluacion: any) => {
+          const isNewEvaluation = !this.isValidGuid(evaluacion.id);
+          
+          console.log(`🔍 Evaluación "${evaluacion.nombre}" tiene ${(evaluacion.preguntas || []).length} preguntas totales`);
+          
+          // Filtrar solo preguntas válidas antes de enviar al backend
+          const validQuestions = (evaluacion.preguntas || []).filter((q: any, index: number) => {
+              const hasText = q.texto && q.texto.trim().length > 0;
+              
+              // Filtrar opciones vacías automáticamente
+              const opcionesConTexto = (q.opciones || []).filter((o: any) => 
+                  o.texto && o.texto.trim().length > 0
+              );
+              
+              const allOptionsValid = opcionesConTexto.length >= 2;
+              const hasCorrectAnswer = opcionesConTexto.some((o: any) => o.esCorrecta);
+              
+              const isValid = hasText && allOptionsValid && hasCorrectAnswer;
+              
+              if (!isValid) {
+                  console.log(`❌ Pregunta ${index + 1} no válida:`, {
+                      texto: q.texto || '(vacío)',
+                      tieneTexto: hasText,
+                      opcionesTotales: q.opciones?.length || 0,
+                      opcionesConTexto: opcionesConTexto.length,
+                      opcionesValidas: allOptionsValid,
+                      tieneRespuestaCorrecta: hasCorrectAnswer,
+                      opcionesDetalle: q.opciones?.map((o: any, i: number) => ({
+                          indice: i + 1,
+                          texto: o.texto || '(VACÍO)',
+                          longitud: (o.texto || '').trim().length,
+                          esCorrecta: o.esCorrecta
+                      }))
+                  });
+              } else {
+                  // Si es válida pero tiene opciones vacías, limpiarlas antes de enviar
+                  if (opcionesConTexto.length < q.opciones.length) {
+                      q.opciones = opcionesConTexto;
+                      console.log(`🧹 Pregunta ${index + 1}: Limpiadas ${q.opciones.length - opcionesConTexto.length} opciones vacías`);
+                  }
+              }
+              
+              return isValid;
+          });
+          
+          console.log(`✅ ${validQuestions.length} preguntas válidas de ${(evaluacion.preguntas || []).length} totales`);
+          
+          const evaluationWithCourseId = {
+              ...evaluacion,
+              cursoId: this.currentCourse.id,
+              docenteId: this.currentCourse.instructorId || '00000000-0000-0000-0000-000000000000',
+              preguntas: validQuestions // Solo enviar preguntas válidas al backend
+          };
+          
+          console.log('📋 Datos de evaluación a enviar:', {
+              docenteId: evaluationWithCourseId.docenteId,
+              cursoId: evaluationWithCourseId.cursoId,
+              instructorIdOriginal: this.currentCourse.instructorId
+          });
+
+          try {
+              if (isNewEvaluation) {
+                  console.log(`🆕 Creando evaluación: ${evaluacion.nombre} (${validQuestions.length} preguntas)`);
+                  const response = await firstValueFrom(this.adminService.createEvaluation(evaluationWithCourseId));
+                  // Actualizar ID local con el ID real del backend
+                  evaluacion.id = response.id || response.Id || evaluacion.id;
+                  console.log('✅ Evaluación creada con ID:', evaluacion.id);
+              } else {
+                  console.log(`🔄 Actualizando evaluación: ${evaluacion.nombre} (${validQuestions.length} preguntas)`);
+                  await firstValueFrom(this.adminService.updateEvaluation(evaluationWithCourseId));
+                  console.log('✅ Evaluación actualizada:', evaluacion.id);
+                  
+                  // Sincronizar preguntas (eliminar viejas y agregar nuevas)
+                  if (validQuestions.length > 0) {
+                      console.log(`🔄 Sincronizando ${validQuestions.length} preguntas...`);
+                      await firstValueFrom(this.adminService.syncEvaluationQuestions(evaluacion.id, validQuestions));
+                      console.log('✅ Preguntas sincronizadas');
+                  }
+              }
+          } catch (err) {
+              console.error('❌ Error procesando evaluación:', err);
+          }
+      });
+
+      await Promise.all(evaluationsToSave);
   }
   
   // Module Management
@@ -327,17 +463,252 @@ export class CourseManagement implements OnInit {
   // Evaluation Management
   addEvaluation() {
       if (!this.newEval.nombre || !this.newEval.peso) return;
-      const newEv = { 
-          id: `EV-${Date.now()}`, 
-          ...this.newEval, 
-          estado: 'Pendiente' // Default status
-      };
-      this.currentCourse.evaluaciones.push(newEv);
+      
+      if (this.isEditingEvaluation && this.editingEvaluationIndex >= 0) {
+          // Actualizar evaluación existente
+          const existingEval = this.currentCourse.evaluaciones[this.editingEvaluationIndex];
+          this.currentCourse.evaluaciones[this.editingEvaluationIndex] = {
+              ...existingEval,
+              nombre: this.newEval.nombre,
+              tipo: this.newEval.tipo,
+              peso: this.newEval.peso,
+              fechaLimite: this.newEval.fechaLimite
+          };
+          console.log('✅ Evaluación actualizada:', this.currentCourse.evaluaciones[this.editingEvaluationIndex]);
+      } else {
+          // Crear nueva evaluación
+          const newEv = { 
+              id: `EV-${Date.now()}`, 
+              ...this.newEval, 
+              estado: 'Pendiente',
+              preguntas: [] // Default empty questions
+          };
+          this.currentCourse.evaluaciones.push(newEv);
+          console.log('✅ Nueva evaluación agregada:', newEv);
+      }
+      
       this.resetEvalForm();
+  }
+  
+  editEvaluation(evalIndex: number) {
+      const evaluacion = this.currentCourse.evaluaciones[evalIndex];
+      this.isEditingEvaluation = true;
+      this.editingEvaluationIndex = evalIndex;
+      
+      // Convertir fecha ISO a formato yyyy-MM-dd para input[type="date"]
+      let fechaFormatted = '';
+      const fechaRaw = evaluacion.fechaLimite || evaluacion.fechaFin || '';
+      if (fechaRaw) {
+          try {
+              const date = new Date(fechaRaw);
+              if (!isNaN(date.getTime())) {
+                  fechaFormatted = date.toISOString().split('T')[0];
+              }
+          } catch (e) {
+              console.warn('⚠️ Error parsing date:', fechaRaw);
+          }
+      }
+      
+      this.newEval = {
+          nombre: evaluacion.nombre || evaluacion.titulo || '',
+          tipo: evaluacion.tipo || 'Examen',
+          peso: evaluacion.peso || evaluacion.puntajeMaximo || 0,
+          fechaLimite: fechaFormatted
+      };
+      console.log('✏️ Editando evaluación:', evaluacion);
+      
+      // Scroll al formulario
+      setTimeout(() => {
+          const formElement = document.querySelector('.evaluation-form');
+          if (formElement) {
+              formElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+      }, 100);
+  }
+  
+  cancelEditEvaluation() {
+      this.resetEvalForm();
+  }
+  
+  editQuestionsFromForm() {
+      if (this.editingEvaluationIndex >= 0) {
+          const evalIndex = this.editingEvaluationIndex;
+          // Primero guarda los cambios del formulario
+          this.addEvaluation();
+          // Luego abre el editor de preguntas con el índice guardado
+          setTimeout(() => {
+              this.openQuestionEditor(evalIndex);
+          }, 100);
+      }
   }
 
   removeEvaluation(index: number) {
-      this.currentCourse.evaluaciones.splice(index, 1);
+      this.openConfirmModal(
+          'Eliminar Evaluación',
+          '¿Estás seguro de eliminar esta evaluación? Se perderán todas las preguntas asociadas.',
+          () => {
+              this.currentCourse.evaluaciones.splice(index, 1);
+          }
+      );
+  }
+  
+  // Question Editor Methods
+  openQuestionEditor(evalIndex: number) {
+      this.editingEvalIndex = evalIndex;
+      const evaluacion = this.currentCourse.evaluaciones[evalIndex];
+      
+      // Priorizar preguntas locales (permiten edición temporal antes de guardar)
+      if (evaluacion.preguntas && evaluacion.preguntas.length > 0) {
+          console.log('📝 Usando preguntas locales guardadas:', evaluacion.preguntas.length);
+          this.questionsList = JSON.parse(JSON.stringify(evaluacion.preguntas));
+          this.showQuestionEditor = true;
+          return;
+      }
+      
+      // Verificar si es un ID real del backend (GUID) para cargar preguntas
+      const isRealId = evaluacion.id && this.isValidGuid(evaluacion.id);
+      
+      if (isRealId) {
+          console.log('🔍 Cargando preguntas de la evaluación desde backend:', evaluacion.id);
+          this.adminService.getEvaluationQuestions(evaluacion.id).subscribe({
+              next: (preguntas) => {
+                  console.log('✅ Preguntas cargadas del backend:', preguntas.length);
+                  this.questionsList = preguntas.length > 0 
+                      ? JSON.parse(JSON.stringify(preguntas))  
+                      : [this.createEmptyQuestion()];
+                  // Guardar en objeto local para futuras ediciones
+                  evaluacion.preguntas = this.questionsList;
+                  this.showQuestionEditor = true;
+              },
+              error: (err) => {
+                  console.warn('⚠️ Error cargando preguntas, empezando con pregunta vacía:', err.message);
+                  this.questionsList = [this.createEmptyQuestion()];
+                  this.showQuestionEditor = true;
+              }
+          });
+      } else {
+          // Evaluación nueva sin preguntas locales
+          console.log('🆕 Evaluación nueva, empezando con pregunta vacía');
+          this.questionsList = [this.createEmptyQuestion()];
+          this.showQuestionEditor = true;
+      }
+  }
+  
+  closeQuestionEditor() {
+      this.showQuestionEditor = false;
+      this.editingEvalIndex = -1;
+      this.questionsList = [];
+  }
+
+  getOptionLabel(index: number): string {
+      return String.fromCharCode(65 + index); // A, B, C, D, etc.
+  }
+  
+  // Helper para validar si un ID es un GUID real del backend
+  isValidGuid(id: string): boolean {
+      if (!id) return false;
+      // GUIDs tienen formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return guidPattern.test(id);
+  }
+  
+  createEmptyQuestion() {
+      return {
+          id: `Q-${Date.now()}-${Math.random()}`,
+          texto: '',
+          puntos: 10,
+          explicacion: '',
+          opciones: [
+              { id: `O-${Date.now()}-1`, texto: '', esCorrecta: true },
+              { id: `O-${Date.now()}-2`, texto: '', esCorrecta: false },
+              { id: `O-${Date.now()}-3`, texto: '', esCorrecta: false },
+              { id: `O-${Date.now()}-4`, texto: '', esCorrecta: false }
+          ]
+      };
+  }
+  
+  addQuestion() {
+      this.questionsList.push(this.createEmptyQuestion());
+  }
+  
+  removeQuestion(qIdx: number) {
+      this.openConfirmModal(
+          'Eliminar Pregunta',
+          '¿Eliminar esta pregunta?',
+          () => {
+              this.questionsList.splice(qIdx, 1);
+          }
+      );
+  }
+  
+  setCorrectOption(qIdx: number, oIdx: number) {
+      this.questionsList[qIdx].opciones.forEach((o: any, i: number) => {
+          o.esCorrecta = (i === oIdx);
+      });
+  }
+  
+  addOption(qIdx: number) {
+      this.questionsList[qIdx].opciones.push({
+          id: `O-${Date.now()}-${Math.random()}`,
+          texto: '',
+          esCorrecta: false
+      });
+  }
+  
+  removeOption(qIdx: number, oIdx: number) {
+      const q = this.questionsList[qIdx];
+      if (q.opciones.length > 2) {
+          q.opciones.splice(oIdx, 1);
+      }
+  }
+  
+  saveQuestions() {
+      if (this.editingEvalIndex >= 0) {
+          console.log('💾 [DEBUG] Guardando preguntas. Índice:', this.editingEvalIndex);
+          console.log('💾 [DEBUG] questionsList:', this.questionsList);
+          
+          // Filtrar preguntas completamente vacías (sin ningún contenido)
+          const questionsWithContent = this.questionsList.filter(q => {
+              const hasQuestionText = q.texto && q.texto.trim().length > 0;
+              const hasAnyOptionText = q.opciones && q.opciones.some((o: any) => o.texto && o.texto.trim().length > 0);
+              return hasQuestionText || hasAnyOptionText; // Guardar si tiene al menos algo de contenido
+          });
+          
+          console.log('💾 [DEBUG] Preguntas con contenido:', questionsWithContent.length);
+          
+          // Guardar preguntas con contenido (incluso si están incompletas) - permite modo borrador
+          this.currentCourse.evaluaciones[this.editingEvalIndex].preguntas = 
+              JSON.parse(JSON.stringify(questionsWithContent));
+          
+          console.log('💾 [DEBUG] Preguntas guardadas en evaluación:', 
+              this.currentCourse.evaluaciones[this.editingEvalIndex].preguntas);
+          
+          // Contar preguntas válidas para feedback
+          const validQuestions = questionsWithContent.filter(q => {
+              const hasText = q.texto && q.texto.trim().length > 0;
+              const allOptionsValid = q.opciones && q.opciones.length >= 2 && 
+                  q.opciones.every((o: any) => o.texto && o.texto.trim().length > 0);
+              const hasCorrectAnswer = q.opciones && q.opciones.some((o: any) => o.esCorrecta);
+              
+              return hasText && allOptionsValid && hasCorrectAnswer;
+          });
+          
+          this.closeQuestionEditor();
+          
+          const totalQuestions = questionsWithContent.length;
+          const validCount = validQuestions.length;
+          const incompleteCount = totalQuestions - validCount;
+          
+          if (totalQuestions === 0) {
+              console.log('📝 No se guardaron preguntas (todas estaban vacías)');
+          } else if (validCount === totalQuestions) {
+              console.log(`✅ ${validCount} pregunta${validCount !== 1 ? 's' : ''} guardada${validCount !== 1 ? 's' : ''} (todas completas)`);
+          } else if (validCount > 0) {
+              console.log(`⚠️ ${validCount} completa${validCount !== 1 ? 's' : ''}, ${incompleteCount} incompleta${incompleteCount !== 1 ? 's' : ''} (guardadas como borrador)`);
+          } else {
+              console.log(`📝 ${totalQuestions} pregunta${totalQuestions !== 1 ? 's' : ''} guardada${totalQuestions !== 1 ? 's' : ''} como borrador (ninguna completa)`);
+          }
+      }
   }
 
   openDeleteModal(course: any) {

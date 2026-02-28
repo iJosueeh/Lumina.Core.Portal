@@ -114,13 +114,24 @@ export class UserManagement implements OnInit {
   saveUser() {
       if (this.isEditing) {
           this.adminService.updateUser(this.currentUser).subscribe({
-              next: () => {
-                  const index = this.allUsers.findIndex(u => u.id === this.currentUser.id);
-                  if (index !== -1) {
-                      this.allUsers[index] = this.currentUser;
-                      this.applyFilters();
+              next: (success) => {
+                  if (success) {
+                      const index = this.allUsers.findIndex(u => u.id === this.currentUser.id);
+                      if (index !== -1) {
+                          // Actualizar el usuario en la lista local
+                          this.allUsers[index] = { ...this.allUsers[index], ...this.currentUser };
+                          this.applyFilters();
+                      }
+                      this.closeModal();
+                      console.log('✅ Usuario actualizado exitosamente');
+                  } else {
+                      console.error('❌ Error al actualizar usuario');
+                      alert('Error al actualizar el usuario. Por favor, verifica los datos e intenta nuevamente.');
                   }
-                  this.closeModal();
+              },
+              error: (err) => {
+                  console.error('❌ Error en la petición:', err);
+                  alert('Error al actualizar el usuario. Por favor, intenta nuevamente.');
               }
           });
       } else {
@@ -149,11 +160,23 @@ export class UserManagement implements OnInit {
   confirmDelete() {
       if (this.userToDelete) {
           this.adminService.deleteUser(this.userToDelete.id).subscribe({
-              next: () => {
-                  this.allUsers = this.allUsers.filter(u => u.id !== this.userToDelete.id);
-                  this.applyFilters();
+              next: (success) => {
+                  if (success) {
+                      this.allUsers = this.allUsers.filter(u => u.id !== this.userToDelete.id);
+                      this.applyFilters();
+                      this.isDeleteModalOpen = false;
+                      this.userToDelete = null;
+                      console.log('✅ Usuario eliminado exitosamente');
+                  } else {
+                      console.error('❌ Error al eliminar usuario');
+                      alert('Error al eliminar el usuario. Por favor, intenta nuevamente.');
+                      this.isDeleteModalOpen = false;
+                  }
+              },
+              error: (err) => {
+                  console.error('❌ Error en la petición:', err);
+                  alert('Error al eliminar el usuario. Por favor, intenta nuevamente.');
                   this.isDeleteModalOpen = false;
-                  this.userToDelete = null;
               }
           });
       }
@@ -242,5 +265,15 @@ export class UserManagement implements OnInit {
 
   getPagesArray(): number[] {
       return Array(this.totalPages).fill(0).map((x, i) => i + 1);
+  }
+
+  getRoleLabel(role: string): string {
+      const roleMap: Record<string, string> = {
+          'ADMIN': 'Administrador',
+          'TEACHER': 'Docente',
+          'STUDENT': 'Estudiante',
+          'USER': 'Usuario'
+      };
+      return roleMap[role] || role;
   }
 }
