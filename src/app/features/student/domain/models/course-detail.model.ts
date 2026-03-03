@@ -6,6 +6,7 @@ export interface Module {
   title: string;
   lessons: Lesson[];
   duration: string;
+  description?: string;
   isExpanded: boolean;
 }
 
@@ -16,6 +17,7 @@ export interface Lesson {
   duration: string;
   isCompleted: boolean;
   isLocked: boolean;
+  description?: string;
   availableIn?: string;
 }
 

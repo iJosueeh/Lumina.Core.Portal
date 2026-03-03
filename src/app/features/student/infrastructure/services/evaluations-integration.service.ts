@@ -255,4 +255,94 @@ export class EvaluationsIntegrationService {
       isCorrect: opcion.esCorrecta
     };
   }
+
+  /**
+   * Crea un nuevo intento de evaluación para un estudiante
+   */
+  createQuizAttempt(evaluacionId: string, estudianteId: string): Observable<{ intentoId: string }> {
+    console.log('📡 Creando nuevo intento de evaluación:', { evaluacionId, estudianteId });
+    return this.http.post<{ intentoId: string }>(
+      `${this.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/intentos`,
+      { estudianteId }
+    ).pipe(
+      tap(response => {
+        console.log('✅ Intento creado exitosamente:', response.intentoId);
+        // Invalidar caché de intentos
+        this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`);
+      }),
+      catchError(error => {
+        console.error('❌ Error al crear intento de evaluación:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Completa un intento de evaluación enviando las respuestas del estudiante
+   */
+  submitQuizAttempt(
+    intentoId: string,
+    respuestas: Array<{
+      preguntaId: string;
+      respuestaEstudiante: string;
+      esCorrecta: boolean;
+      puntosObtenidos: number;
+    }>,
+    puntajeMaximo: number,
+    estudianteId: string,
+    tiempoEmpleadoMinutos?: number
+  ): Observable<{
+    intentoId: string;
+    calificacion: number;
+    respuestasCorrectas: number;
+    totalPreguntas: number;
+  }> {
+    console.log('📡 Enviando respuestas de evaluación:', { intentoId, respuestas: respuestas.length, puntajeMaximo });
+    return this.http.post<{
+      intentoId: string;
+      calificacion: number;
+      respuestasCorrectas: number;
+      totalPreguntas: number;
+    }>(
+      `${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/completar`,
+      {
+        respuestas: respuestas.map(r => ({
+          preguntaId: r.preguntaId,
+          respuestaEstudiante: r.respuestaEstudiante,
+          esCorrecta: r.esCorrecta,
+          puntosObtenidos: r.puntosObtenidos
+        })),
+        puntajeMaximo,
+        tiempoEmpleadoMinutos
+      }
+    ).pipe(
+      tap(result => {
+        console.log('✅ Evaluación completada exitosamente:', result);
+        // Invalidar caché de intentos
+        this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`);
+      }),
+      catchError(error => {
+        console.error('❌ Error al enviar respuestas de evaluación:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Abandona un intento de evaluación en progreso
+   */
+  abandonQuizAttempt(intentoId: string): Observable<void> {
+    console.log('💤 Abandonando intento:', intentoId);
+    return this.http.post<void>(
+      `${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/abandonar`,
+      {}
+    ).pipe(
+      catchError(error => {
+        // Silenciar el error en abandon (best-effort)
+        console.warn('⚠️ No se pudo marcar el intento como abandonado:', error);
+        return of(undefined as void);
+      })
+    );
+  }
 }
+

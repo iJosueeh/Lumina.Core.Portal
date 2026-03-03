@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 import {
@@ -31,7 +31,7 @@ type TabType = 'description' | 'content' | 'materials' | 'evaluations';
   templateUrl: './course-detail.component.html',
   styles: '',
 })
-export class CourseDetailComponent implements OnInit {
+export class CourseDetailComponent implements OnInit, OnDestroy {
   activeTab: TabType = 'content';
   courseId = signal<string>('');
   studentId = signal<string>('');
@@ -125,6 +125,7 @@ export class CourseDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private getCourseDetailUseCase: GetCourseDetailUseCase,
     private materialsService: MaterialsService,
     private evaluationsService: EvaluationsIntegrationService,
@@ -146,6 +147,15 @@ export class CourseDetailComponent implements OnInit {
     if (userId) {
       this.studentId.set(userId);
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/student/dashboard']);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop';
   }
 
   // ========== HORARIOS ==========
@@ -592,49 +602,118 @@ export class CourseDetailComponent implements OnInit {
       return;
     }
 
-    // Cargar el quiz con todas sus preguntas desde el backend
+    // Crear intento en el backend primero
     this.loadingQuiz.set(true);
-    this.evaluationsService.getEvaluacionConPreguntas(quizSummary.id).subscribe({
-      next: (quizWithQuestions) => {
-        this.loadingQuiz.set(false);
-        this.activeQuiz.set(quizWithQuestions);
+    this.evaluationsService.createQuizAttempt(quizSummary.id, this.studentId()).subscribe({
+      next: (intentoResponse) => {
+        console.log('✅ Intento creado:', intentoResponse.intentoId);
+        this.currentAttemptId.set(intentoResponse.intentoId);
+
+        // Ahora cargar el quiz con todas sus preguntas
+        this.evaluationsService.getEvaluacionConPreguntas(quizSummary.id).subscribe({
+          next: (quizWithQuestions) => {
+            this.loadingQuiz.set(false);
+            this.activeQuiz.set(quizWithQuestions);
+          },
+          error: (err) => {
+            console.error('❌ Error al cargar la evaluación con preguntas:', err);
+            this.loadingQuiz.set(false);
+            alert('Error al cargar la evaluación. Por favor, intente nuevamente.');
+          }
+        });
       },
       error: (err) => {
-        console.error('❌ Error al cargar la evaluación con preguntas:', err);
+        console.error('❌ Error al crear intento:', err);
         this.loadingQuiz.set(false);
-        alert('Error al cargar la evaluación. Por favor, intente nuevamente.');
+        alert('Error al iniciar evaluación: ' + (err.error?.mensaje || err.message || 'Máximo de intentos alcanzado o error desconocido'));
       }
     });
   }
+
+  // State for quiz submission
+  submittingQuiz = signal<boolean>(false);
+  currentAttemptId = signal<string | null>(null);
 
   // Manejar envío de quiz
   onQuizSubmit(attempt: QuizAttempt): void {
     console.log('🎯 Correctas:', attempt.answers.filter(a => a.isCorrect === true).length);
     console.log('❌ Incorrectas:', attempt.answers.filter(a => a.isCorrect === false).length);
     
-    // Agregar attempt a la lista
-    const currentAttempts = this.attempts();
-    // Note: attempts is computed from query, we would need to update backend
-    // For now just log it
-    console.log('Current attempts:', currentAttempts);
-
-    // Obtener el quiz actual antes de cerrar
     const currentQuiz = this.activeQuiz();
-
-    // Cerrar quiz
-    this.activeQuiz.set(null);
-
-    // Mostrar resultados
-    if (currentQuiz) {
-      this.activeResults.set({ quiz: currentQuiz, attempt });
+    if (!currentQuiz) {
+      console.error('❌ No hay quiz activo');
+      return;
     }
 
-    // TODO: Guardar en backend
+    const intentoId = this.currentAttemptId();
+    if (!intentoId) {
+      console.error('❌ No hay ID de intento');
+      return;
+    }
+
+    // Mapear respuestas al formato del backend
+    const respuestas = attempt.answers.map(answer => ({
+      preguntaId: answer.questionId,
+      respuestaEstudiante: Array.isArray(answer.answer) ? answer.answer.join(', ') : answer.answer,
+      esCorrecta: answer.isCorrect || false,
+      puntosObtenidos: (answer.isCorrect ? (currentQuiz.questions.find(q => q.id === answer.questionId)?.points || 0) : 0)
+    }));
+
+    this.submittingQuiz.set(true);
+
+    // Enviar respuestas al backend
+    this.evaluationsService.submitQuizAttempt(
+      intentoId,
+      respuestas,
+      currentQuiz.totalPoints,
+      this.studentId(),
+      attempt.timeSpent ?? undefined
+    ).subscribe({
+      next: (result) => {
+        console.log('✅ Evaluación enviada exitosamente:', result);
+        this.submittingQuiz.set(false);
+        
+        // Actualizar el intento con la calificación del backend
+        const updatedAttempt: QuizAttempt = {
+          ...attempt,
+          score: result.calificacion,
+          percentage: result.calificacion,
+          completedAt: new Date()
+        };
+
+        // Cerrar quiz
+        this.activeQuiz.set(null);
+        this.currentAttemptId.set(null);
+
+        // Mostrar resultados
+        this.activeResults.set({ quiz: currentQuiz, attempt: updatedAttempt });
+
+        // Refrescar intentos
+        this.attemptsQuery.refetch();
+      },
+      error: (err) => {
+        console.error('❌ Error al enviar evaluación:', err);
+        this.submittingQuiz.set(false);
+        alert('Error al enviar evaluación: ' + (err.error?.mensaje || err.message || 'Error desconocido'));
+      }
+    });
   }
 
   // Cancelar quiz
   onQuizCancel(): void {
+    const intentoId = this.currentAttemptId();
+    if (intentoId) {
+      this.evaluationsService.abandonQuizAttempt(intentoId).subscribe();
+    }
     this.activeQuiz.set(null);
+    this.currentAttemptId.set(null);
+  }
+
+  ngOnDestroy(): void {
+    const intentoId = this.currentAttemptId();
+    if (intentoId) {
+      this.evaluationsService.abandonQuizAttempt(intentoId).subscribe();
+    }
   }
 
   // Ver resultados

@@ -21,7 +21,7 @@ export class CoursesService {
         cursos.map((curso) => ({
           id: curso.id,
           titulo: curso.nombreCurso || curso.titulo,
-          imagen: curso.imagen || curso.imagenUrl || 'https://via.placeholder.com/400x250?text=Curso',
+          imagen: curso.imagen || curso.imagenUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
         })),
       ),
       catchError((error) => {

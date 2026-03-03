@@ -1,9 +1,10 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withPreloading } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAngularQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 import { routes } from './app.routes';
+import { CustomPreloadStrategy } from './core/router/custom-preload-strategy';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { AuthRepositoryImpl } from '@features/auth/infrastructure/repositories/auth.repository.impl';
 import { AuthMockRepositoryImpl } from '@features/auth/infrastructure/repositories/auth-mock.repository.impl';
@@ -43,7 +44,7 @@ import { TeacherStudentHttpRepositoryImpl } from '@features/teacher/infrastructu
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withPreloading(CustomPreloadStrategy)),
     provideHttpClient(withInterceptors([authInterceptor])),
     // TanStack Query configuration
     provideAngularQuery(

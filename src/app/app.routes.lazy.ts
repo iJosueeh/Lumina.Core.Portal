@@ -6,6 +6,7 @@ export const routes: Routes = [
     redirectTo: 'login',
     pathMatch: 'full',
   },
+  // ✅ Login - Lazy Loading
   {
     path: 'login',
     loadComponent: () => 
@@ -14,6 +15,7 @@ export const routes: Routes = [
       ),
     title: 'Iniciar Sesión - Lumina Core',
   },
+  // ✅ Student Module - Lazy Loading Completo
   {
     path: 'student',
     loadComponent: () =>
@@ -127,6 +129,7 @@ export const routes: Routes = [
       },
     ],
   },
+  // ✅ Teacher Module - Lazy Loading Completo
   {
     path: 'teacher',
     loadComponent: () =>
@@ -230,11 +233,13 @@ export const routes: Routes = [
       },
     ],
   },
+  // ✅ Admin Module - Ya usa Lazy Loading
   {
     path: 'admin',
     loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
     title: 'Portal Administrador'
   },
+  // 404 - Not Found
   {
     path: '**',
     loadComponent: () =>

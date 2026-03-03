@@ -20,6 +20,7 @@ import { CacheService } from '@core/services/cache.service';
 export class DashboardComponent implements OnInit {
   userName = 'Estudiante';
   pendingCount = 0;
+  Math = Math; // Exponer Math para usar en template
 
   courses: CourseProgress[] = [];
   assignments: Assignment[] = [];
@@ -119,6 +120,11 @@ export class DashboardComponent implements OnInit {
 
   viewCourse(courseId: string): void {
     this.router.navigate(['/student/course', courseId]);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
   }
 
   clearCacheAndReload(): void {
