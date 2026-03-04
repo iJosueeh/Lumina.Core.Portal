@@ -1,25 +1,81 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map, forkJoin, of } from 'rxjs';
+import { Observable, map, forkJoin, of, switchMap, catchError } from 'rxjs';
 import { GlobalQuizSummary, GlobalEvaluationsStats } from '../models/global-evaluation.model';
 import { Quiz, QuizAttempt } from '../models/quiz.model';
+import { EvaluationsIntegrationService } from '../../infrastructure/services/evaluations-integration.service';
+import { CoursesRepository } from '../repositories/courses.repository';
+import { AuthService } from '@core/services/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EvaluationsService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private evaluationsIntegrationService: EvaluationsIntegrationService,
+    private coursesRepository: CoursesRepository,
+    private authService: AuthService
+  ) {}
 
   /**
-   * Obtiene todas las evaluaciones de todos los cursos
+   * Obtiene todas las evaluaciones de todos los cursos del estudiante
    */
   getAllEvaluations(): Observable<GlobalQuizSummary[]> {
-    return forkJoin({
-      quizzes: this.http.get<Quiz[]>('/assets/mock-data/quizzes/quizzes.json'),
-      attempts: this.http.get<QuizAttempt[]>('/assets/mock-data/quizzes/quiz-attempts.json')
-    }).pipe(
-      map(({ quizzes, attempts }) => {
-        return quizzes.map(quiz => this.mapToGlobalSummary(quiz, attempts));
+    const studentId = this.authService.getUserId();
+    
+    if (!studentId) {
+      console.error('❌ No se encontró el ID del estudiante');
+      return of([]);
+    }
+
+    console.log('📚 Obteniendo cursos del estudiante:', studentId);
+    
+    return this.coursesRepository.getStudentCourses(studentId).pipe(
+      switchMap(courses => {
+        console.log('✅ Cursos obtenidos:', courses.length);
+        
+        if (courses.length === 0) {
+          return of([]);
+        }
+
+        // Para cada curso, obtener sus evaluaciones y intentos
+        const evaluationRequests = courses.map(course => 
+          forkJoin({
+            course: of(course),
+            evaluations: this.evaluationsIntegrationService.getEvaluationsByCourse(course.id).pipe(
+              catchError(error => {
+                console.warn(`⚠️  Error al obtener evaluaciones del curso ${course.id}:`, error);
+                return of([]);
+              })
+            ),
+            attempts: this.evaluationsIntegrationService.getQuizAttempts(studentId, course.id).pipe(
+              catchError(error => {
+                console.warn(`⚠️  Error al obtener intentos del curso ${course.id}:`, error);
+                return of([]);
+              })
+            )
+          })
+        );
+
+        return forkJoin(evaluationRequests).pipe(
+          map(results => {
+            // Aplanar todas las evaluaciones de todos los cursos
+            const allEvaluations: GlobalQuizSummary[] = [];
+            
+            results.forEach(({ course, evaluations, attempts }) => {
+              evaluations.forEach(quiz => {
+                const summary = this.mapToGlobalSummary(quiz, attempts, course.titulo, course.id);
+                allEvaluations.push(summary);
+              });
+            });
+
+            console.log('✅ Total de evaluaciones obtenidas:', allEvaluations.length);
+            return allEvaluations;
+          })
+        );
+      }),
+      catchError(error => {
+        console.error('❌ Error al obtener evaluaciones:', error);
+        return of([]);
       })
     );
   }
@@ -51,8 +107,16 @@ export class EvaluationsService {
         const urgent = evaluations.filter(e => e.status === 'urgent');
         const upcoming = evaluations.filter(e => e.status === 'upcoming');
 
-        const averageScore = completed.length > 0
-          ? completed.reduce((sum, e) => sum + (e.bestScore || 0), 0) / completed.length
+        // 🔄 Migración: Convertir bestScore de porcentajes (>20) a vigesimal
+        const normalizedScores = completed
+          .map(e => {
+            const score = e.bestScore || 0;
+            return score > 20 ? (score / 100) * 20 : score; // Convertir si es porcentaje
+          })
+          .filter(score => score > 0);
+
+        const averageScore = normalizedScores.length > 0
+          ? normalizedScores.reduce((sum, score) => sum + score, 0) / normalizedScores.length
           : 0;
 
         return {
@@ -69,31 +133,59 @@ export class EvaluationsService {
   /**
    * Mapea un Quiz a GlobalQuizSummary
    */
-  private mapToGlobalSummary(quiz: Quiz, attempts: QuizAttempt[]): GlobalQuizSummary {
+  private mapToGlobalSummary(quiz: Quiz, attempts: QuizAttempt[], courseName: string, courseId: string): GlobalQuizSummary {
     const quizAttempts = attempts.filter(a => a.quizId === quiz.id && a.status === 'completed');
     const bestAttempt = quizAttempts.reduce((best, current) => 
       !best || (current.percentage || 0) > (best.percentage || 0) ? current : best
     , null as QuizAttempt | null);
 
-    const dueDate = quiz.availableUntil ? new Date(quiz.availableUntil) : new Date();
+    const dueDate = quiz.availableUntil ? new Date(quiz.availableUntil) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const now = new Date();
     const status = this.calculateStatus(dueDate, now, quizAttempts.length > 0);
     const timeRemaining = this.calculateTimeRemaining(dueDate, now);
 
+    // 🔄 Migración de datos: Convertir porcentajes antiguos (0-100) a vigesimal (0-20)
+    let bestScore = bestAttempt?.percentage;
+    if (bestScore && bestScore > 20) {
+      // Dato antiguo en formato porcentaje, convertir a vigesimal
+      bestScore = (bestScore / 100) * 20;
+      console.warn(`🔄 Migrando nota de ${bestAttempt?.percentage}% a ${bestScore.toFixed(1)}/20`);
+    }
+
     return {
       id: quiz.id,
       title: quiz.title,
-      courseId: quiz.courseId,
-      courseName: 'Desarrollo Web Full Stack', // TODO: Obtener del curso
-      courseColor: 'bg-teal-500', // TODO: Obtener del curso
+      courseId: courseId,
+      courseName: courseName,
+      courseColor: this.getCourseColor(courseId),
       dueDate,
       status,
       difficulty: quiz.difficulty,
-      bestScore: bestAttempt?.percentage,
+      bestScore,
       attemptsUsed: quizAttempts.length,
       attemptsAllowed: quiz.config.attemptsAllowed,
       timeRemaining
     };
+  }
+
+  /**
+   * Obtiene un color para el curso de forma determinista
+   */
+  private getCourseColor(courseId: string): string {
+    const colors = [
+      'bg-teal-500',
+      'bg-blue-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-cyan-500',
+      'bg-emerald-500',
+      'bg-amber-500'
+    ];
+    
+    // Usar el primer carácter del ID para determinar el color
+    const hash = courseId.charCodeAt(0) % colors.length;
+    return colors[hash];
   }
 
   /**

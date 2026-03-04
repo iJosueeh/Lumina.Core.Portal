@@ -53,6 +53,8 @@ export class MyCoursesComponent implements OnInit {
         // Agregar datos adicionales a los cursos
         this.allCourses = courses.map((course, index) => ({
           ...course,
+          // Asegurar fallback de imagen si no existe
+          imagenUrl: course.imagenUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
           status: this.getStatusForCourse(course.progreso, index),
           professor: this.getProfessorForCourse(index),
           nextModule: course.moduloActual,
@@ -132,5 +134,10 @@ export class MyCoursesComponent implements OnInit {
 
   viewCourse(courseId: string): void {
     this.router.navigate(['/student/course', courseId]);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
   }
 }

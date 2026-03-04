@@ -466,14 +466,17 @@
                         @for (lesson of module.lessons; track lesson.id) {
                           <li>
                             <div
-                              class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors group/lesson cursor-pointer"
-                              (click)="startLesson(lesson)"
+                              class="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors group/lesson"
                             >
-                              <!-- Status Icon -->
-                              <div class="flex-shrink-0">
+                              <!-- Status Icon - Clickeable para marcar/desmarcar -->
+                              <div 
+                                class="flex-shrink-0 cursor-pointer"
+                                (click)="toggleLessonCompletion($event, lesson)"
+                                title="Click para marcar como completada"
+                              >
                                 @if (lesson.isCompleted) {
                                   <svg
-                                    class="w-6 h-6 text-teal-500"
+                                    class="w-6 h-6 text-teal-500 hover:text-teal-400 transition-colors"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                   >
@@ -499,12 +502,18 @@
                                   </svg>
                                 } @else {
                                   <div
-                                    class="w-6 h-6 rounded-full border-2 border-gray-500 group-hover/lesson:border-teal-400 transition-colors"
-                                  ></div>
+                                    class="w-6 h-6 rounded-full border-2 border-gray-500 hover:border-teal-400 hover:bg-teal-500/10 transition-all flex items-center justify-center"
+                                  >
+                                    <span class="text-xs text-gray-600 group-hover/lesson:text-teal-400">⭕</span>
+                                  </div>
                                 }
                               </div>
 
-                              <div class="flex-1 min-w-0">
+                              <!-- Contenido de la lección - Click para abrir -->
+                              <div 
+                                class="flex-1 min-w-0 cursor-pointer"
+                                (click)="startLesson(lesson)"
+                              >
                                 <p
                                   class="text-gray-200 group-hover/lesson:text-teal-400 transition-colors font-medium truncate"
                                 >
@@ -660,7 +669,7 @@
                   <div class="flex items-baseline gap-2">
                     @if (averageQuizScore() > 0) {
                       <span class="text-4xl font-bold" [ngClass]="getScoreColor(averageQuizScore())">
-                        {{ averageQuizScore().toFixed(1) }}%
+                        {{ averageQuizScore().toFixed(1) }}
                       </span>
                     } @else {
                       <span class="text-4xl font-bold text-gray-500">--</span>
@@ -809,21 +818,21 @@
                                 <div class="flex items-center justify-between text-sm mb-1">
                                   <span class="text-gray-400">Mejor calificación</span>
                                   <span class="font-bold" [ngClass]="getScoreColor(quiz.bestPercentage)">
-                                    {{ quiz.bestPercentage.toFixed(1) }}%
+                                    {{ quiz.bestPercentage.toFixed(1) }}
                                   </span>
                                 </div>
                                 <div class="h-2 bg-navy-900 rounded-full overflow-hidden">
                                   <div
                                     class="h-full rounded-full transition-all duration-500"
-                                    [class.bg-green-500]="quiz.bestPercentage >= 90"
+                                    [class.bg-green-500]="quiz.bestPercentage >= 17"
                                     [class.bg-blue-500]="
-                                      quiz.bestPercentage >= 75 && quiz.bestPercentage < 90
+                                      quiz.bestPercentage >= 14 && quiz.bestPercentage < 17
                                     "
                                     [class.bg-yellow-500]="
-                                      quiz.bestPercentage >= 60 && quiz.bestPercentage < 75
+                                      quiz.bestPercentage >= 10.5 && quiz.bestPercentage < 14
                                     "
-                                    [class.bg-red-500]="quiz.bestPercentage < 60"
-                                    [style.width.%]="quiz.bestPercentage"
+                                    [class.bg-red-500]="quiz.bestPercentage < 10.5"
+                                    [style.width.%]="quiz.bestPercentage * 5"
                                   ></div>
                                 </div>
                               </div>

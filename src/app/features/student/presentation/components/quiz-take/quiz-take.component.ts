@@ -200,13 +200,15 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     });
 
     const totalPoints = questionAnswers.reduce((sum, ans) => sum + (ans.pointsEarned || 0), 0);
-    const percentage = Math.round((totalPoints / this.quiz.totalPoints) * 1000) / 10; // Redondear a 1 decimal
-    const passed = percentage >= this.quiz.config.passingScore;
+    // Calcular nota en escala vigesimal peruana (0-20)
+    const grade = Math.round((totalPoints / this.quiz.totalPoints) * 200) / 10; // Redondear a 1 decimal
+    const percentage = grade; // Mantener compatibilidad con código existente
+    const passed = grade >= 10.5; // Aprobado en sistema peruano: >= 10.5
 
     const correctCount = questionAnswers.filter(a => a.isCorrect === true).length;
     const incorrectCount = questionAnswers.filter(a => a.isCorrect === false).length;
     console.log(`📊 Resumen: ${correctCount} correctas, ${incorrectCount} incorrectas de ${this.quiz.questions.length} preguntas`);
-    console.log(`🎯 Puntaje: ${totalPoints}/${this.quiz.totalPoints} (${percentage}%) - ${passed ? '✅ APROBADO' : '❌ NO APROBADO'}`);
+    console.log(`🎯 Nota: ${grade}/20 (${totalPoints}/${this.quiz.totalPoints} puntos) - ${passed ? '✅ APROBADO' : '❌ DESAPROBADO'}`);
 
     const studentId = this.authService.getUserId();
     if (!studentId) {

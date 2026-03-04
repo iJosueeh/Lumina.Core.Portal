@@ -70,13 +70,7 @@ export class EvaluationsIntegrationService {
   getEvaluationsByCourse(courseId: string): Observable<Quiz[]> {
     const cacheKey = `course-evaluations-${courseId}`;
 
-    // Verificar si existe en caché
-    const cachedData = this.cacheService.get<Quiz[]>(cacheKey);
-    if (cachedData) {
-      console.log('✅ Evaluaciones obtenidas del caché:', cacheKey);
-      return of(cachedData);
-    }
-
+    // Sin caché para evaluaciones (para obtener siempre intentos actualizados del backend)
     console.log('📡 Realizando petición HTTP para evaluaciones:', cacheKey);
     return this.http.get<{ evaluaciones: EvaluacionResponse[] }>(`${this.evaluacionesApiUrl}/evaluaciones?cursoId=${courseId}`)
       .pipe(
@@ -98,13 +92,7 @@ export class EvaluationsIntegrationService {
   getQuizAttempts(studentId: string, courseId: string): Observable<QuizAttempt[]> {
     const cacheKey = `quiz-attempts-${studentId}-${courseId}`;
 
-    // Verificar si existe en caché
-    const cachedData = this.cacheService.get<QuizAttempt[]>(cacheKey);
-    if (cachedData) {
-      console.log('✅ Intentos de evaluaciones obtenidos del caché:', cacheKey);
-      return of(cachedData);
-    }
-
+    // Sin caché para intentos (para reflejar siempre el estado actual)
     console.log('📡 Realizando petición HTTP para intentos de evaluaciones:', cacheKey);
     return this.http.get<{ intentos: any[] }>(`${this.evaluacionesApiUrl}/evaluaciones/intentos?estudianteId=${studentId}&cursoId=${courseId}`)
       .pipe(
@@ -127,13 +115,21 @@ export class EvaluationsIntegrationService {
   private mapToQuizAttempt(intento: any): QuizAttempt {
     console.log('🔄 Mapeando intento del backend:', intento);
 
+    // Mapear respuestas con normalización de nombres de propiedades
+    const answers = (intento.answers || intento.respuestas || []).map((r: any) => ({
+      questionId: r.questionId || r.preguntaId,
+      answer: r.answer || r.respuestaEstudiante,
+      isCorrect: r.isCorrect ?? r.esCorrecta ?? false,
+      pointsEarned: r.pointsEarned ?? r.puntosObtenidos ?? 0
+    }));
+
     const mapped = {
       id: intento.id,
       quizId: intento.quizId || intento.evaluacionId,
       studentId: intento.studentId || intento.estudianteId,
       attemptNumber: intento.attemptNumber || intento.numeroIntento || 1,
       status: (intento.status || intento.estado || 'completed') as 'in-progress' | 'completed' | 'abandoned',
-      answers: intento.answers || intento.respuestas || [], // Intentar mapear respuestas si existen
+      answers: answers,
       startedAt: new Date(intento.startedAt || intento.fechaInicio),
       completedAt: intento.completedAt ? new Date(intento.completedAt) :
         intento.fechaFin ? new Date(intento.fechaFin) : undefined,

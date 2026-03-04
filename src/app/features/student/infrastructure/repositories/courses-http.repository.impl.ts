@@ -118,6 +118,21 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
     }
 
     private mapToCourseDetail(response: any): CourseDetail {
+        // Map modules first to calculate progress
+        const mappedModules = response.modulos?.map((m: any) => this.mapToModule(m)) || response.modules?.map((m: any) => this.mapToModule(m)) || [];
+        
+        // Calculate progress based on completed lessons
+        const totalLessons = mappedModules.reduce((total: number, module: Module) => total + (module.lessons?.length || 0), 0);
+        const completedLessons = mappedModules.reduce((total: number, module: Module) => 
+            total + (module.lessons?.filter((l: Lesson) => l.isCompleted).length || 0), 0
+        );
+        const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+        
+        // Calculate completed modules (all lessons in module are completed)
+        const completedModules = mappedModules.filter((module: Module) => 
+            module.lessons?.length > 0 && module.lessons.every((l: Lesson) => l.isCompleted)
+        ).length;
+        
         return {
             id: response.idCurso || response.id,
             title: response.nombreCurso || response.titulo || 'Curso sin título',
@@ -135,11 +150,11 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
                 }
             },
             semester: response.duracion || response.semestre || '2024-1',
-            progress: 0,
-            completedModules: 0,
-            totalModules: response.modulos?.length || response.modules?.length || 0,
+            progress,
+            completedModules,
+            totalModules: mappedModules.length,
             coverImage: response.imagenUrl || response.imagen || response.imageUrl || response.coverImage || response.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop',
-            modules: response.modulos?.map((m: any) => this.mapToModule(m)) || response.modules?.map((m: any) => this.mapToModule(m)) || [],
+            modules: mappedModules,
             materials: [],
             forums: [],
             forumPosts: [],

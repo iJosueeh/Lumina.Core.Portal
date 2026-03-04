@@ -39,7 +39,12 @@ export class QuizResultsComponent implements OnInit {
 
   // Computed properties
   scorePercentage = computed(() => {
-    return this.attempt.percentage || 0;
+    return this.attempt.percentage || 0; // Ahora es nota vigesimal 0-20
+  });
+
+  // Convertir nota 0-20 a porcentaje 0-100 para barras de progreso
+  gradeAsPercentage = computed(() => {
+    return (this.scorePercentage() / 20) * 100;
   });
 
   passedQuiz = computed(() => {
@@ -73,19 +78,19 @@ export class QuizResultsComponent implements OnInit {
   });
 
   getScoreColor(): string {
-    const percentage = this.scorePercentage();
-    if (percentage >= 90) return 'text-green-500';
-    if (percentage >= 75) return 'text-blue-500';
-    if (percentage >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    const grade = this.scorePercentage(); // Ahora es nota 0-20
+    if (grade >= 17) return 'text-green-500';   // Excelente
+    if (grade >= 14) return 'text-blue-500';    // Bueno
+    if (grade >= 10.5) return 'text-yellow-500'; // Aprobado
+    return 'text-red-500';  // Desaprobado
   }
 
   getScoreBgColor(): string {
-    const percentage = this.scorePercentage();
-    if (percentage >= 90) return 'bg-green-500';
-    if (percentage >= 75) return 'bg-blue-500';
-    if (percentage >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    const grade = this.scorePercentage(); // Ahora es nota 0-20
+    if (grade >= 17) return 'bg-green-500';   // Excelente
+    if (grade >= 14) return 'bg-blue-500';    // Bueno
+    if (grade >= 10.5) return 'bg-yellow-500'; // Aprobado
+    return 'bg-red-500';  // Desaprobado
   }
 
   getQuestionById(questionId: string) {

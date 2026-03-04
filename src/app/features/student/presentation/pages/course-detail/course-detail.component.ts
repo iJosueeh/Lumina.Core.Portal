@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { injectQuery, injectQueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 import {
   CourseDetail,
@@ -20,6 +20,7 @@ import { QuizResultsComponent } from '../../components/quiz-results/quiz-results
 import { GetCourseDetailUseCase } from '@features/student/application/use-cases/get-course-detail.usecase';
 import { MaterialsService } from '@features/student/infrastructure/services/materials.service';
 import { EvaluationsIntegrationService } from '@features/student/infrastructure/services/evaluations-integration.service';
+import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
 import { AuthService } from '@core/services/auth.service';
 
 type TabType = 'description' | 'content' | 'materials' | 'evaluations';
@@ -35,6 +36,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   activeTab: TabType = 'content';
   courseId = signal<string>('');
   studentId = signal<string>('');
+  
+  // Query Client para invalidar caché
+  private queryClient = injectQueryClient();
 
   tabs = [
     { id: 'description' as TabType, label: 'Descripción', icon: 'document' },
@@ -129,12 +133,18 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     private getCourseDetailUseCase: GetCourseDetailUseCase,
     private materialsService: MaterialsService,
     private evaluationsService: EvaluationsIntegrationService,
+    private progressStorage: ProgressStorageService,
     private authService: AuthService
   ) {
-    // Effect para logging de performance
+    // Effect para logging de performance y aplicar progreso guardado
     effect(() => {
-      if (!this.isLoadingAny() && this.course()) {
+      const courseData = this.course();
+      
+      if (!this.isLoadingAny() && courseData) {
         console.log(`✅ Curso cargado: ${this.materials().length} materiales, ${this.quizzes().length} evaluaciones, ${this.attempts().length} intentos`);
+        
+        // Aplicar progreso guardado
+        this.applyStoredProgress();
       }
     });
   }
@@ -147,6 +157,25 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     if (userId) {
       this.studentId.set(userId);
     }
+
+    // Leer query params
+    this.route.queryParams.subscribe(params => {
+      // Si viene un tab específico, activarlo
+      if (params['tab']) {
+        this.activeTab = params['tab'] as TabType;
+      }
+      
+      // Si viene un evaluationId, abrir automáticamente los resultados
+      if (params['evaluationId'] && this.activeTab === 'evaluations') {
+        // Esperar a que se carguen los datos
+        setTimeout(() => {
+          const quizSummary = this.quizSummaries().find(q => q.id === params['evaluationId']);
+          if (quizSummary && quizSummary.status === 'completed') {
+            this.viewQuizResults(quizSummary);
+          }
+        }, 1000);
+      }
+    });
   }
 
   goBack(): void {
@@ -311,6 +340,12 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         status = 'in-progress';
       }
 
+      // 🔄 Migración: Convertir porcentajes antiguos (>20) a vigesimal
+      let bestPercentage = bestAttempt?.percentage;
+      if (bestPercentage && bestPercentage > 20) {
+        bestPercentage = (bestPercentage / 100) * 20;
+      }
+
       const summary: QuizSummary = {
         id: quiz.id,
         title: quiz.title,
@@ -326,7 +361,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
         attemptsUsed: completedAttempts.length,
         attemptsAllowed: quiz.config.attemptsAllowed,
         bestScore: bestAttempt?.score,
-        bestPercentage: bestAttempt?.percentage,
+        bestPercentage,
         passed: bestAttempt?.passed,
       };
 
@@ -362,8 +397,15 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   averageQuizScore = computed(() => {
     const quizzesWithScores = this.quizSummaries().filter(q => q.bestPercentage !== undefined);
     if (quizzesWithScores.length === 0) return 0;
-    const total = quizzesWithScores.reduce((sum, q) => sum + (q.bestPercentage || 0), 0);
-    return total / quizzesWithScores.length;
+    
+    // 🔄 Normalizar notas (convertir porcentajes antiguos si existen)
+    const normalizedScores = quizzesWithScores.map(q => {
+      const score = q.bestPercentage || 0;
+      return score > 20 ? (score / 100) * 20 : score;
+    });
+    
+    const total = normalizedScores.reduce((sum, score) => sum + score, 0);
+    return total / normalizedScores.length;
   });
 
   completionPercentage = computed(() => {
@@ -445,10 +487,117 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       : `Iniciando ${lessonType}: "${lesson.title}"\n\nDuración: ${lesson.duration}\n\nEn una implementación completa, esto abriría el contenido de la lección en un modal o nueva página.`;
 
     alert(message);
+  }
 
-    // Marcar como completada si no lo estaba
-    if (!lesson.isCompleted) {
-      lesson.isCompleted = true;
+  private recalculateAndUpdateCourseProgress(updatedCourse: any): void {
+    const totalLessons = updatedCourse.modules.reduce((total: number, module: any) => 
+      total + (module.lessons?.length || 0), 0);
+    const completedLessons = updatedCourse.modules.reduce((total: number, module: any) => 
+      total + (module.lessons?.filter((l: any) => l.isCompleted).length || 0), 0);
+    
+    updatedCourse.progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+    
+    const completedModules = updatedCourse.modules.filter((module: any) => 
+      module.lessons?.length > 0 && module.lessons.every((l: any) => l.isCompleted)
+    ).length;
+    
+    updatedCourse.completedModules = completedModules;
+    
+    this.queryClient.setQueryData(['course-detail', this.courseId()], updatedCourse);
+  }
+
+  toggleLessonCompletion(event: Event, lesson: Lesson): void {
+    // Prevenir que se active el click del contenedor
+    event.stopPropagation();
+    
+    if (lesson.isLocked) {
+      return;
+    }
+
+    const courseData = this.course();
+    if (!courseData?.modules) return;
+
+    const updatedCourse = { ...courseData };
+    updatedCourse.modules = courseData.modules.map(module => {
+      const updatedModule = { ...module };
+      updatedModule.lessons = module.lessons?.map(l => {
+        if (l.id === lesson.id) {
+          const newCompletedState = !l.isCompleted;
+          
+          this.progressStorage.saveLessonProgress(
+            this.courseId(),
+            this.studentId(),
+            l.id,
+            newCompletedState
+          );
+          
+          return { ...l, isCompleted: newCompletedState };
+        }
+        return l;
+      });
+      return updatedModule;
+    });
+    
+    this.recalculateAndUpdateCourseProgress(updatedCourse);
+    
+    const newLesson = updatedCourse.modules
+      .flatMap(m => m.lessons || [])
+      .find(l => l.id === lesson.id);
+    
+    const status = newLesson?.isCompleted ? '✅ completada' : '⭕ pendiente';
+    console.log(`Lección "${lesson.title}" marcada como ${status}. Progreso: ${updatedCourse.progress}%`);
+  }
+
+  /**
+   * Aplica el progreso guardado en localStorage a las lecciones del curso
+   */
+  private applyStoredProgress(): void {
+    const courseData = this.course();
+    if (!courseData?.modules) return;
+    
+    let appliedCount = 0;
+    let hasChanges = false;
+    
+    // Clonar el curso para no mutar el original
+    const updatedCourse = { ...courseData };
+    updatedCourse.modules = courseData.modules.map(module => {
+      const updatedModule = { ...module };
+      updatedModule.lessons = module.lessons?.map(lesson => {
+        const isSaved = this.progressStorage.isLessonCompleted(
+          this.courseId(),
+          this.studentId(),
+          lesson.id
+        );
+        
+        if (isSaved && !lesson.isCompleted) {
+          appliedCount++;
+          hasChanges = true;
+          return { ...lesson, isCompleted: true };
+        }
+        return lesson;
+      });
+      return updatedModule;
+    });
+    
+    if (hasChanges) {
+      // Recalcular progreso manualmente
+      const totalLessons = updatedCourse.modules.reduce((total, module) => 
+        total + (module.lessons?.length || 0), 0);
+      const completedLessons = updatedCourse.modules.reduce((total, module) => 
+        total + (module.lessons?.filter(l => l.isCompleted).length || 0), 0);
+      
+      updatedCourse.progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      
+      const completedModules = updatedCourse.modules.filter(module => 
+        module.lessons?.length > 0 && module.lessons.every(l => l.isCompleted)
+      ).length;
+      
+      updatedCourse.completedModules = completedModules;
+      
+      console.log(`📦 Progreso restaurado: ${appliedCount} lecciones → ${updatedCourse.progress}% completado`);
+      
+      // Actualizar el cache con los datos modificados
+      this.queryClient.setQueryData(['course-detail', this.courseId()], updatedCourse);
     }
   }
 
@@ -845,11 +994,12 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Obtener color de calificación
-  getScoreColor(percentage: number): string {
-    if (percentage >= 90) return 'text-green-600 dark:text-green-400';
-    if (percentage >= 75) return 'text-blue-600 dark:text-blue-400';
-    if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+  // Obtener color de calificación (escala vigesimal 0-20)
+  getScoreColor(grade: number): string {
+    if (grade >= 17) return 'text-green-600 dark:text-green-400'; // Excelente
+    if (grade >= 14) return 'text-blue-600 dark:text-blue-400';   // Bueno
+    if (grade >= 10.5) return 'text-yellow-600 dark:text-yellow-400'; // Aprobado
+    return 'text-red-600 dark:text-red-400';  // Desaprobado
   }
 }
+

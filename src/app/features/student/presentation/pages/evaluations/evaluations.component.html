@@ -33,36 +33,49 @@
             </svg>
           </div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-white">{{ stats().averageScore.toFixed(1) }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">+0.4 vs ciclo anterior</div>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold text-gray-900 dark:text-white" [ngClass]="getScoreColor(stats().averageScore)">{{ stats().averageScore.toFixed(1) }}</span>
+          <span class="text-xl font-semibold text-gray-500 dark:text-gray-400">/20</span>
+        </div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Escala vigesimal</div>
       </div>
 
-      <!-- Créditos Aprobados -->
+      <!-- Evaluaciones Completadas -->
       <div class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400">CRÉDITOS APROBADOS</h3>
+          <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400">EVALUACIONES COMPLETADAS</h3>
           <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
             <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
             </svg>
           </div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-white">{{ stats().totalCompleted }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">En evaluaciones completadas</div>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold text-gray-900 dark:text-white">{{ stats().totalCompleted }}</span>
+          <span class="text-lg font-semibold text-gray-500 dark:text-gray-400">/ {{ stats().totalCompleted + stats().totalPending }}</span>
+        </div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Del total de evaluaciones</div>
       </div>
 
-      <!-- Cursos Completados -->
+      <!-- Cursos con Evaluaciones -->
       <div class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400">CURSOS COMPLETADOS</h3>
+          <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400">CURSOS EN EVALUACIÓN</h3>
           <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
             <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
             </svg>
           </div>
         </div>
-        <div class="text-4xl font-bold text-gray-900 dark:text-white">{{ evaluationsByCourse().length }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">En el ciclo actual</div>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-bold dark:text-white" [class.text-green-500]="completedCourses() > 0" [class.text-gray-900]="completedCourses() === 0">
+            {{ completedCourses() }}
+          </span>
+          <span class="text-lg font-semibold text-gray-500 dark:text-gray-400">/ {{ totalCoursesWithEvaluations() }}</span>
+        </div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          {{ completedCourses() === 0 ? 'Ningún curso completado aún' : 'Cursos con todas las evaluaciones aprobadas' }}
+        </div>
       </div>
     </div>
 
@@ -133,15 +146,29 @@
           <svg class="w-24 h-24 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p class="text-gray-500 dark:text-gray-400 font-medium">No hay evaluaciones para mostrar</p>
+          <p class="text-gray-500 dark:text-gray-400 font-medium mb-2">No hay evaluaciones para mostrar</p>
+          <p class="text-gray-400 dark:text-gray-500 text-sm">
+            {{selectedFilter() === 'all' ? 'No tienes cursos con evaluaciones activas' : 
+              selectedFilter() === 'pending' ? 'No tienes evaluaciones pendientes' : 
+              'No has completado ninguna evaluación aún'}}
+          </p>
         </div>
       } @else {
         <div class="space-y-6">
           @for (course of evaluationsByCourse(); track course.courseId) {
             <div class="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-dark-border overflow-hidden">
-              <!-- Course Header -->
-              <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center justify-between mb-4">
+              <!-- Course Header with Background Image -->
+              <div class="relative p-6 border-b border-gray-200 dark:border-gray-700 overflow-hidden">
+                <!-- Background gradient overlay -->
+                <div 
+                  class="absolute inset-0 bg-gradient-to-r opacity-10"
+                  [style.background]="'linear-gradient(135deg, ' + course.courseColor + ' 0%, transparent 100%)'"
+                ></div>
+                
+                <!-- Background pattern -->
+                <div class="absolute inset-0 opacity-5" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+                
+                <div class="relative z-10 flex items-center justify-between mb-4">
                   <div>
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ course.courseName }}</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -149,15 +176,16 @@
                     </p>
                   </div>
                   <div class="text-right">
-                    <div class="text-2xl font-bold" [ngClass]="getScoreColor(course.totalCredits)">
-                      {{ course.totalCredits.toFixed(1) }}
+                    <div class="flex items-baseline gap-1 justify-end">
+                      <span class="text-2xl font-bold" [ngClass]="getScoreColor(course.totalCredits)">{{ course.totalCredits.toFixed(1) }}</span>
+                      <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">/20</span>
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Promedio</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Promedio del curso</div>
                   </div>
                 </div>
                 
                 <!-- Progress Bar -->
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="relative z-10 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     class="bg-gradient-to-r from-teal-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
                     [style.width.%]="course.progress"
@@ -172,8 +200,8 @@
                     <tr>
                       <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Evaluación</th>
                       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Dificultad</th>
-                      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Avance</th>
-                      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Promedio</th>
+                      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Intentos</th>
+                      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Nota Final</th>
                       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Estado</th>
                       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
                     </tr>
@@ -199,22 +227,39 @@
                           </span>
                         </td>
                         <td class="px-6 py-4 text-center">
-                          <div class="flex items-center justify-center gap-2">
-                            <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                class="bg-blue-500 h-2 rounded-full"
-                                [style.width.%]="(evaluation.attemptsUsed / evaluation.attemptsAllowed) * 100"
-                              ></div>
+                          <div class="flex flex-col items-center gap-1">
+                            <div class="flex items-center gap-2 w-full justify-center">
+                              <div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                <div
+                                  class="h-2 rounded-full transition-all duration-300"
+                                  [class.bg-green-500]="evaluation.attemptsUsed < evaluation.attemptsAllowed"
+                                  [class.bg-yellow-500]="evaluation.attemptsUsed === evaluation.attemptsAllowed && evaluation.status === 'completed'"
+                                  [class.bg-red-500]="evaluation.attemptsUsed === evaluation.attemptsAllowed && evaluation.status !== 'completed'"
+                                  [style.width.%]="getProgressPercentage(evaluation.attemptsUsed, evaluation.attemptsAllowed)"
+                                ></div>
+                              </div>
+                              <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                {{ evaluation.attemptsUsed }}/{{ evaluation.attemptsAllowed }}
+                              </span>
                             </div>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">
-                              {{ evaluation.attemptsUsed }}/{{ evaluation.attemptsAllowed }}
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ evaluation.attemptsUsed === 0 ? 'Sin intentos' : 
+                                 evaluation.attemptsUsed < evaluation.attemptsAllowed ? 'Disponible' : 
+                                 'Completado' }}
                             </span>
                           </div>
                         </td>
                         <td class="px-6 py-4 text-center">
-                          <span class="text-lg font-bold" [ngClass]="getScoreColor(evaluation.bestScore)">
-                            {{ evaluation.bestScore !== undefined ? evaluation.bestScore.toFixed(1) : '--' }}
-                          </span>
+                          @if (evaluation.bestScore !== undefined) {
+                            <div class="flex items-baseline gap-1 justify-center">
+                              <span class="text-lg font-bold" [ngClass]="getScoreColor(evaluation.bestScore)">
+                                {{ evaluation.bestScore.toFixed(1) }}
+                              </span>
+                              <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">/20</span>
+                            </div>
+                          } @else {
+                            <span class="text-lg font-bold text-gray-400">--</span>
+                          }
                         </td>
                         <td class="px-6 py-4 text-center">
                           <span
@@ -226,10 +271,10 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                           <button
-                            (click)="navigateToCourse(evaluation.courseId)"
+                            (click)="navigateToCourse(course.courseId, evaluation.status === 'completed' ? evaluation.id : undefined)"
                             class="text-teal-500 hover:text-teal-600 font-semibold text-sm"
                           >
-                            {{ evaluation.status === 'completed' ? 'Ver Resultados' : 'En Curso' }}
+                            {{ evaluation.status === 'completed' ? 'Ver Resultados' : 'Comenzar' }}
                           </button>
                         </td>
                       </tr>
