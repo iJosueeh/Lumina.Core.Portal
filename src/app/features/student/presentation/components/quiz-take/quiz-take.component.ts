@@ -25,6 +25,7 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   timeRemaining = signal<number>(0);
   isSubmitting = signal(false);
   showConfirmDialog = signal(false);
+  showExitDialog = signal(false);
 
   // Timer
   private timerInterval?: number;
@@ -166,6 +167,18 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     this.showConfirmDialog.set(false);
   }
 
+  requestCancel(): void {
+    if (this.isSubmitting()) {
+      return;
+    }
+
+    this.showExitDialog.set(true);
+  }
+
+  dismissCancel(): void {
+    this.showExitDialog.set(false);
+  }
+
   submitQuiz(): void {
     this.isSubmitting.set(true);
     this.stopTimer();
@@ -288,9 +301,8 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   }
 
   cancel(): void {
-    if (confirm('¿Estás seguro de que quieres salir? Se perderá tu progreso.')) {
-      this.stopTimer();
-      this.onCancel.emit();
-    }
+    this.showExitDialog.set(false);
+    this.stopTimer();
+    this.onCancel.emit();
   }
 }

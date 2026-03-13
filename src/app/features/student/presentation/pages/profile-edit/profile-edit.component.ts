@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -8,7 +8,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ProfileRepository } from '../../../domain/repositories/profile.repository';
 import { StudentProfile, SocialLinks } from '../../../domain/models/student-profile.model';
 import { AuthService } from '@core/services/auth.service';
@@ -16,7 +16,7 @@ import { AuthService } from '@core/services/auth.service';
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile-edit.component.html',
   styleUrl: './profile-edit.component.css',
 })
@@ -29,15 +29,15 @@ export class ProfileEditComponent implements OnInit {
   successMessage = signal<string | null>(null);
   photoPreview = signal<string | null>(null);
   selectedFile = signal<File | null>(null);
+  showDiscardDialog = signal(false);
 
   // Forms
   profileForm!: FormGroup;
   socialLinksForm!: FormGroup;
 
-  // Computed
-  hasChanges = computed(() => {
-    return this.profileForm?.dirty || this.socialLinksForm?.dirty || this.selectedFile() !== null;
-  });
+  hasChanges(): boolean {
+    return !!(this.profileForm?.dirty || this.socialLinksForm?.dirty || this.selectedFile());
+  }
 
   private authService = inject(AuthService);
 
@@ -193,9 +193,23 @@ export class ProfileEditComponent implements OnInit {
 
   // Guardar cambios
   async saveChanges(): Promise<void> {
-    if (this.profileForm.invalid || this.socialLinksForm.invalid) {
-      this.error.set('Por favor corrige los errores en el formulario');
+    const hasPhotoChanges = this.selectedFile() !== null;
+    const hasProfileChanges = this.profileForm.dirty;
+    const hasSocialChanges = this.socialLinksForm.dirty;
+
+    if (!hasPhotoChanges && !hasProfileChanges && !hasSocialChanges) {
+      this.error.set('No hay cambios para guardar');
+      return;
+    }
+
+    if (hasProfileChanges && this.profileForm.invalid) {
+      this.error.set('Por favor corrige los errores en la información personal');
       this.markFormGroupTouched(this.profileForm);
+      return;
+    }
+
+    if (hasSocialChanges && this.socialLinksForm.invalid) {
+      this.error.set('Por favor corrige los errores en redes sociales');
       this.markFormGroupTouched(this.socialLinksForm);
       return;
     }
@@ -212,16 +226,18 @@ export class ProfileEditComponent implements OnInit {
         await this.uploadPhoto(userId);
       }
 
-      // 2. Actualizar perfil
-      const profileData: Partial<StudentProfile> = {
-        ...this.profileForm.value,
-      };
+      // 2. Actualizar perfil solo si fue editado
+      if (hasProfileChanges) {
+        const profileData = this.getDirtyValues(this.profileForm) as Partial<StudentProfile>;
 
-      await this.profileRepository.updateProfile(userId, profileData).toPromise();
+        await this.profileRepository.updateProfile(userId, profileData).toPromise();
+      }
 
-      // 3. Actualizar redes sociales
-      const socialLinks: SocialLinks = this.socialLinksForm.value;
-      await this.profileRepository.updateSocialLinks(userId, socialLinks).toPromise();
+      // 3. Actualizar redes sociales solo si fueron editadas
+      if (hasSocialChanges) {
+        const socialLinks = this.getDirtyValues(this.socialLinksForm) as SocialLinks;
+        await this.profileRepository.updateSocialLinks(userId, socialLinks).toPromise();
+      }
 
       this.successMessage.set('✅ Perfil actualizado exitosamente');
       this.profileForm.markAsPristine();
@@ -262,14 +278,47 @@ export class ProfileEditComponent implements OnInit {
     });
   }
 
+  private getDirtyValues(formGroup: FormGroup): Record<string, unknown> {
+    const dirtyValues: Record<string, unknown> = {};
+
+    Object.keys(formGroup.controls).forEach((key) => {
+      const control = formGroup.get(key);
+
+      if (!control) {
+        return;
+      }
+
+      if (control instanceof FormGroup) {
+        const nestedDirtyValues = this.getDirtyValues(control);
+        if (Object.keys(nestedDirtyValues).length > 0) {
+          dirtyValues[key] = nestedDirtyValues;
+        }
+        return;
+      }
+
+      if (control.dirty) {
+        dirtyValues[key] = control.value;
+      }
+    });
+
+    return dirtyValues;
+  }
+
   cancel(): void {
     if (this.hasChanges()) {
-      if (confirm('¿Descartar los cambios realizados?')) {
-        this.router.navigate(['/student/profile']);
-      }
+      this.showDiscardDialog.set(true);
     } else {
       this.router.navigate(['/student/profile']);
     }
+  }
+
+  dismissDiscardDialog(): void {
+    this.showDiscardDialog.set(false);
+  }
+
+  confirmDiscardChanges(): void {
+    this.showDiscardDialog.set(false);
+    this.router.navigate(['/student/profile']);
   }
 
   // Helpers para template
@@ -279,10 +328,10 @@ export class ProfileEditComponent implements OnInit {
 
     if (control.errors['required']) return 'Este campo es obligatorio';
     if (control.errors['email']) return 'Email inválido';
-    if (control.errors['minLength'])
-      return `Mínimo ${control.errors['minLength'].requiredLength} caracteres`;
-    if (control.errors['maxLength'])
-      return `Máximo ${control.errors['maxLength'].requiredLength} caracteres`;
+    if (control.errors['minlength'])
+      return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
+    if (control.errors['maxlength'])
+      return `Máximo ${control.errors['maxlength'].requiredLength} caracteres`;
     if (control.errors['pattern']) return 'Formato inválido';
     if (control.errors['invalidPhone']) return 'Teléfono inválido (formato: +51987654321)';
     if (control.errors['invalidUrl']) return 'URL inválida';

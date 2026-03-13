@@ -29,6 +29,7 @@ import { ResourcesMockRepositoryImpl } from '@features/student/infrastructure/re
 import { environment } from '../environments/environment';
 import { ProfileRepository } from '@features/student/domain/repositories/profile.repository';
 import { ProfileMockRepositoryImpl } from '@features/student/infrastructure/repositories/profile-mock.repository.impl';
+import { ProfileApiRepositoryImpl } from '@features/student/infrastructure/repositories/profile-api.repository.impl';
 import { AccountRepository } from '@features/student/domain/repositories/account.repository';
 import { AccountMockRepositoryImpl } from '@features/student/infrastructure/repositories/account-mock.repository.impl';
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
@@ -94,7 +95,7 @@ export const appConfig: ApplicationConfig = {
     // Profile and Account Repositories (condicionales basados en useMockData)
     {
       provide: ProfileRepository,
-      useClass: environment.useMockData ? ProfileMockRepositoryImpl : ProfileMockRepositoryImpl, // TODO: Crear ProfileHttpRepositoryImpl
+      useClass: environment.useMockData ? ProfileMockRepositoryImpl : ProfileApiRepositoryImpl,
     },
     {
       provide: AccountRepository,

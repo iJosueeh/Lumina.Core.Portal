@@ -83,8 +83,8 @@
           </div>
           <div class="text-gray-300">
             <p class="text-lg">
-              <span class="font-bold">{{ attempt.score }}</span> de
-              <span class="font-bold">{{ quiz.totalPoints }}</span> puntos
+              <span class="font-bold" [ngClass]="getScoreColor()">{{ scorePercentage().toFixed(1) }}</span>
+              <span class="text-gray-400"> / 20 pts</span>
             </p>
             <p class="text-sm text-gray-400">
               {{ correctAnswersCount() }} correctas, {{ incorrectAnswersCount() }} incorrectas

@@ -39,7 +39,22 @@ export class QuizResultsComponent implements OnInit {
 
   // Computed properties
   scorePercentage = computed(() => {
-    return this.attempt.percentage || 0; // Ahora es nota vigesimal 0-20
+    const raw = this.attempt.percentage || 0;
+    // Si el valor ya está en escala vigesimal (0-20), usarlo directamente
+    if (raw >= 0 && raw <= 20) return raw;
+    // Recalcular desde respuestas si el valor almacenado es incorrecto
+    const answers = this.attempt.answers || [];
+    const questions = this.quiz?.questions || [];
+    if (answers.length > 0 && questions.length > 0) {
+      const totalPts = questions.reduce((s, q) => s + (q.points || 0), 0);
+      const earned = answers.reduce((s, a) => s + (a.pointsEarned || 0), 0);
+      if (totalPts > 0) return Math.min(Math.round((earned / totalPts) * 2000) / 100, 20);
+      // Fallback: contar respuestas correctas
+      const correct = answers.filter(a => a.isCorrect).length;
+      return Math.min((correct / questions.length) * 20, 20);
+    }
+    // Último recurso: tratar como porcentaje de 100
+    return Math.min((raw / 100) * 20, 20);
   });
 
   // Convertir nota 0-20 a porcentaje 0-100 para barras de progreso
@@ -48,7 +63,8 @@ export class QuizResultsComponent implements OnInit {
   });
 
   passedQuiz = computed(() => {
-    return this.attempt.passed || false;
+    // Aprobado en escala vigesimal: nota >= 10.5 (equivale al 52.5%)
+    return this.scorePercentage() >= 10.5;
   });
 
   correctAnswersCount = computed(() => {

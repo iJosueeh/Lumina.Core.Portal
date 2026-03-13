@@ -1,9 +1,8 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProfileRepository } from '../../../domain/repositories/profile.repository';
 import { StudentProfile } from '../../../domain/models/student-profile.model';
-import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-profile-view',
@@ -13,8 +12,6 @@ import { AuthService } from '@core/services/auth.service';
   styleUrl: './profile-view.component.css',
 })
 export class ProfileViewComponent implements OnInit {
-  private authService = inject(AuthService);
-
   // Signals
   profile = signal<StudentProfile | null>(null);
   isLoading = signal(true);
@@ -55,10 +52,9 @@ export class ProfileViewComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Obtener ID del usuario actual (en producción vendría del auth service)
-    const userId = '550e8400-e29b-41d4-a716-446655440000';
-
-    this.profileRepository.getStudentProfile(userId).subscribe({
+    // El backend obtiene el usuario autenticado desde el token JWT
+    // No es necesario pasar el ID explícitamente
+    this.profileRepository.getStudentProfile('').subscribe({
       next: (profile) => {
         this.profile.set(profile);
         this.isLoading.set(false);

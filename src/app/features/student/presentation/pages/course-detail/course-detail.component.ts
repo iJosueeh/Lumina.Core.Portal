@@ -811,10 +811,12 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     this.submittingQuiz.set(true);
 
     // Enviar respuestas al backend
+    // Usar la suma real de puntos de las preguntas como puntajeMaximo para escala vigesimal correcta
+    const puntajeMaximo = currentQuiz.questions.reduce((sum, q) => sum + (q.points || 0), 0) || currentQuiz.totalPoints;
     this.evaluationsService.submitQuizAttempt(
       intentoId,
       respuestas,
-      currentQuiz.totalPoints,
+      puntajeMaximo,
       this.studentId(),
       attempt.timeSpent ?? undefined
     ).subscribe({
@@ -867,18 +869,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   // Ver resultados
   viewQuizResults(quizSummary: QuizSummary): void {
-    console.log('👀 Intentando ver resultados de quiz:', quizSummary.id);
-
     // Buscar el mejor intento
     const attempts = this.attempts().filter((a: any) => a.quizId === quizSummary.id && a.status === 'completed');
-    console.log('📊 Intentos encontrados para este quiz:', attempts.length);
-    
-    if (attempts.length > 0) {
-      console.log('🔍 Primer intento:', attempts[0]);
-      console.log('📋 Respuestas en primer intento:', attempts[0].answers?.length || 0);
-    }
-    
-    const bestAttempt = attempts.reduce((best: any, current: any) => 
+    const bestAttempt = attempts.reduce((best: any, current: any) =>
       !best || (current.percentage || 0) > (best.percentage || 0) ? current : best
     , null as QuizAttempt | null);
 
@@ -887,39 +880,29 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('🏆 Mejor intento seleccionado:', bestAttempt);
-    console.log('📝 Respuestas en mejor intento:', bestAttempt.answers?.length || 0);
-
-    // Si el intento no tiene respuestas, cargar el quiz con preguntas y generar respuestas mock
-    if (!bestAttempt.answers || bestAttempt.answers.length === 0) {
-      console.log('⚠️ El intento no tiene respuestas, cargando quiz con preguntas para generar mock...');
-      this.loadingQuiz.set(true);
-      this.evaluationsService.getEvaluacionConPreguntas(quizSummary.id).subscribe({
-        next: (quizWithQuestions) => {
-          console.log('✅ Quiz cargado con', quizWithQuestions.questions.length, 'preguntas');
-          // Generar respuestas mock basadas en el porcentaje obtenido
-          const mockAnswers = this.generateMockAnswers(quizWithQuestions, bestAttempt.percentage || 0);
-          const attemptWithAnswers = { ...bestAttempt, answers: mockAnswers };
-          console.log('✅ Respuestas mock generadas:', mockAnswers.length);
-          this.loadingQuiz.set(false);
-          this.activeResults.set({ quiz: quizWithQuestions, attempt: attemptWithAnswers });
-        },
-        error: (err) => {
-          console.error('❌ Error al cargar quiz con preguntas:', err);
-          this.loadingQuiz.set(false);
-          alert('Error al cargar los detalles de la evaluación.');
+    // Siempre cargar el quiz con preguntas completas para mostrar la revisión correctamente
+    this.loadingQuiz.set(true);
+    this.evaluationsService.getEvaluacionConPreguntas(quizSummary.id).subscribe({
+      next: (quizWithQuestions) => {
+        this.loadingQuiz.set(false);
+        if (!bestAttempt.answers || bestAttempt.answers.length === 0) {
+          // Sin respuestas en BD: generar mock normalizando el porcentaje
+          const totalPts = quizWithQuestions.questions.reduce((s, q) => s + (q.points || 0), 0);
+          const pctForMock = totalPts > 0
+            ? Math.min(((bestAttempt.percentage || 0) / totalPts) * 100, 100)
+            : Math.min(((bestAttempt.percentage || 0) / 20) * 100, 100);
+          const mockAnswers = this.generateMockAnswers(quizWithQuestions, pctForMock);
+          this.activeResults.set({ quiz: quizWithQuestions, attempt: { ...bestAttempt, answers: mockAnswers } });
+        } else {
+          this.activeResults.set({ quiz: quizWithQuestions, attempt: bestAttempt });
         }
-      });
-    } else {
-      // El intento ya tiene respuestas, buscar el quiz
-      const quiz = this.quizzes().find(q => q.id === quizSummary.id);
-      if (!quiz) {
-        console.error('❌ Quiz not found:', quizSummary.id);
-        return;
+      },
+      error: (err) => {
+        console.error('❌ Error al cargar quiz con preguntas:', err);
+        this.loadingQuiz.set(false);
+        alert('Error al cargar los detalles de la evaluación.');
       }
-      // Mostrar resultados directamente
-      this.activeResults.set({ quiz, attempt: bestAttempt });
-    }
+    });
   }
 
   // Generar respuestas mock para intentos sin respuestas del backend
