@@ -234,20 +234,41 @@ export class AdminService {
   }
 
   // User Actions
+  checkEmailExists(email: string): Observable<boolean> {
+    const normalized = (email ?? '').trim().toLowerCase();
+    if (!normalized) return of(false);
+
+    return this.http.get<any[]>(`${this.usuariosApiUrl}/usuarios`).pipe(
+      map((users) => users.some((u: any) => {
+        const rawEmail = (u.email ?? u.Email ?? u.correoElectronico ?? u.CorreoElectronico ?? '').toString().trim().toLowerCase();
+        return rawEmail === normalized;
+      })),
+      catchError(() => of(false))
+    );
+  }
+
   createUser(user: any): Observable<any> {
     const nameParts = (user.fullName ?? '').trim().split(' ');
+    const nombres = (user.nombresPersona ?? nameParts[0] ?? 'Nuevo').trim();
+    const apellidoPaterno = (user.apellidoPaterno ?? nameParts[1] ?? nameParts[0] ?? 'Sin').trim();
+    const apellidoMaterno = (user.apellidoMaterno ?? nameParts[2] ?? 'Apellido').trim();
+    const password = (user.password ?? '').toString().trim() || 'Temporal@1234';
+    const provincia = user.provincia ?? 'Lima';
+    const distrito = user.distrito ?? 'Lima';
+    const rol = user.role === 'TEACHER' ? 'Teacher' : user.role === 'ADMIN' ? 'Admin' : 'Student';
     const body = {
-      password: user.password ?? 'Temporal@1234',
-      rol: user.role === 'TEACHER' ? 'Docente' : user.role === 'ADMIN' ? 'Admin' : 'Estudiante',
-      apellidoPaterno: nameParts[1] ?? nameParts[0] ?? 'Sin',
-      apellidoMaterno: nameParts[2] ?? 'Apellido',
-      nombres: nameParts[0] ?? 'Nuevo',
+      password,
+      rol,
+      apellidoPaterno,
+      apellidoMaterno,
+      nombres,
       fechaNacimiento: user.fechaNacimiento ?? new Date('2000-01-01').toISOString(),
       correoElectronico: user.email,
       pais: user.pais ?? 'Peru',
       departamento: user.department ?? 'Lima',
-      provincia: 'Lima',
-      distrito: 'Lima',
+      provincia,
+      ciudad: user.ciudad ?? provincia,
+      distrito,
       calle: '-'
     };
     return this.http.post<any>(`${this.usuariosApiUrl}/usuarios`, body);
