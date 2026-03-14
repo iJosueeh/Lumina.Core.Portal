@@ -6,6 +6,46 @@
     class="absolute top-0 left-0 w-96 h-96 bg-gradient-radial from-teal-500/10 to-transparent rounded-full blur-3xl animate-pulse"
   ></div>
 
+  @if (notification(); as toast) {
+    <div class="fixed top-6 right-6 z-[70] w-full max-w-sm px-4">
+      <div
+        class="rounded-xl border shadow-xl backdrop-blur-sm p-4 pb-3 flex items-start gap-3 overflow-hidden"
+        [class.toast-enter]="!notificationClosing()"
+        [class.toast-leave]="notificationClosing()"
+        [ngClass]="{
+          'bg-green-950/90 border-green-500/40 text-green-100': toast.type === 'success',
+          'bg-red-950/90 border-red-500/40 text-red-100': toast.type === 'error',
+          'bg-slate-900/90 border-slate-500/40 text-slate-100': toast.type === 'info'
+        }"
+      >
+        <div class="flex-1 text-sm font-medium leading-5">{{ toast.message }}</div>
+        <button
+          (click)="closeNotification()"
+          class="opacity-70 hover:opacity-100 transition-opacity"
+          aria-label="Cerrar notificación"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        @if (!notificationClosing()) {
+          <div class="absolute left-0 right-0 bottom-0 h-1 bg-white/10">
+            <div
+              class="h-full toast-progress"
+              [style.animation-duration.ms]="notificationDuration()"
+              [ngClass]="{
+                'bg-green-300/80': toast.type === 'success',
+                'bg-red-300/80': toast.type === 'error',
+                'bg-slate-300/80': toast.type === 'info'
+              }"
+            ></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   @if (isLoading()) {
     <div class="flex items-center justify-center min-h-screen">
       <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-500"></div>
@@ -219,54 +259,82 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-white">Estudiantes Inscritos</h2>
+            <button
+              (click)="openAssignStudentModal()"
+              class="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Asignar estudiante/usuario
+            </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @for (student of students(); track student.id) {
-              <div
-                class="gradient-border-card p-5 hover:shadow-lg hover:shadow-teal-500/10 transition-all cursor-pointer"
-                (click)="viewStudentDetails(student.id)"
+          @if (students().length === 0) {
+            <div class="gradient-border-card p-10 text-center">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-500/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12 0H7m8-12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <h3 class="text-lg font-semibold text-white mb-1">Aún no hay estudiantes inscritos</h3>
+              <p class="text-sm text-gray-400 mb-5">Usa el botón superior para asignar un estudiante o un usuario al curso.</p>
+              <button
+                (click)="openAssignStudentModal()"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
               >
-                <div class="flex items-start gap-4">
-                  <img
-                    [src]="student.avatar"
-                    [alt]="student.nombre + ' ' + student.apellidos"
-                    class="w-12 h-12 rounded-full"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-white truncate">
-                      {{ student.nombre }} {{ student.apellidos }}
-                    </h3>
-                    <p class="text-sm text-gray-400">{{ student.codigo }}</p>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Asignar primer estudiante
+              </button>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (student of students(); track student.id) {
+                <div
+                  class="gradient-border-card p-5 hover:shadow-lg hover:shadow-teal-500/10 transition-all cursor-pointer"
+                  (click)="viewStudentDetails(student.id)"
+                >
+                  <div class="flex items-start gap-4">
+                    <img
+                      [src]="student.avatar"
+                      [alt]="student.nombre + ' ' + student.apellidos"
+                      class="w-12 h-12 rounded-full"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-semibold text-white truncate">
+                        {{ student.nombre }} {{ student.apellidos }}
+                      </h3>
+                      <p class="text-sm text-gray-400">{{ student.codigo }}</p>
+                    </div>
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0"
+                      [ngClass]="getStudentStatusColor(student.estado)"
+                    >
+                      {{ student.estado }}
+                    </span>
                   </div>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0"
-                    [ngClass]="getStudentStatusColor(student.estado)"
-                  >
-                    {{ student.estado }}
-                  </span>
-                </div>
 
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                  <div>
-                    <p class="text-xs text-gray-400">Promedio</p>
-                    <p class="text-lg font-bold text-teal-400">{{ student.promedio | number: '1.1-1' }}</p>
+                  <div class="mt-4 grid grid-cols-2 gap-3">
+                    <div>
+                      <p class="text-xs text-gray-400">Promedio</p>
+                      <p class="text-lg font-bold text-teal-400">{{ student.promedio | number: '1.1-1' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-400">Asistencia</p>
+                      <p class="text-lg font-bold text-cyan-400">{{ student.asistencia | number: '1.0-0' }}%</p>
+                    </div>
                   </div>
-                  <div>
-                    <p class="text-xs text-gray-400">Asistencia</p>
-                    <p class="text-lg font-bold text-cyan-400">{{ student.asistencia | number: '1.0-0' }}%</p>
-                  </div>
-                </div>
 
-                <div class="mt-3 pt-3 border-t border-gray-700/50">
-                  <div class="flex items-center justify-between text-xs text-gray-400">
-                    <span>{{ student.tareasEntregadas }} tareas entregadas</span>
-                    <span>{{ getTimeAgo(student.ultimoAcceso) }}</span>
+                  <div class="mt-3 pt-3 border-t border-gray-700/50">
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                      <span>{{ student.tareasEntregadas }} tareas entregadas</span>
+                      <span>{{ getTimeAgo(student.ultimoAcceso) }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         </div>
       }
 
@@ -573,11 +641,24 @@
         <h3 class="text-xl font-bold text-white mb-1">Agregar Preguntas</h3>
         <p class="text-sm text-teal-400 mb-6">{{ editingQuizzTitle() }}</p>
 
+        @if (loadingQuestions()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400"></div>
+          </div>
+        } @else {
+
         <div class="space-y-6">
           @for (q of questionsList; track $index; let qi = $index) {
             <div class="p-5 bg-white/5 border border-white/10 rounded-xl space-y-4">
               <div class="flex items-start justify-between gap-3">
-                <span class="text-sm font-semibold text-teal-400 mt-1">Pregunta {{ qi + 1 }}</span>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-sm font-semibold text-teal-400">Pregunta {{ qi + 1 }}</span>
+                  @if (q.esExistente) {
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                      Existente
+                    </span>
+                  }
+                </div>
                 @if (questionsList.length > 1) {
                   <button
                     (click)="removeQuestion(qi)"
@@ -683,7 +764,7 @@
           </button>
           <button
             (click)="submitQuestions()"
-            [disabled]="savingQuestions()"
+            [disabled]="savingQuestions() || loadingQuestions()"
             class="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
           >
             @if (savingQuestions()) {
@@ -694,6 +775,153 @@
               Guardando...
             } @else {
               Guardar preguntas
+            }
+          </button>
+        </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Asignar Estudiante/Usuario -->
+  @if (showAssignStudentModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div class="relative w-full max-w-xl bg-[#0f1e33] border border-white/10 rounded-2xl shadow-2xl p-8">
+        <button
+          class="absolute top-4 right-4 text-gray-400 hover:text-white"
+          (click)="closeAssignStudentModal()"
+          [disabled]="isAssigningStudent()"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <h3 class="text-xl font-bold text-white mb-1">Asignar al curso</h3>
+        <p class="text-sm text-gray-400 mb-6">Selecciona un estudiante existente o usa un UsuarioId para matricular.</p>
+
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <button
+            type="button"
+            (click)="assignMode.set('student')"
+            class="px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
+            [ngClass]="assignMode() === 'student' ? 'bg-teal-500/20 border-teal-500/50 text-teal-300' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/20'"
+          >
+            Estudiante existente
+          </button>
+          <button
+            type="button"
+            (click)="assignMode.set('usuario')"
+            class="px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
+            [ngClass]="assignMode() === 'usuario' ? 'bg-teal-500/20 border-teal-500/50 text-teal-300' : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/20'"
+          >
+            Usuario existente
+          </button>
+        </div>
+
+        @if (assignMode() === 'student') {
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Estudiante</label>
+            <select
+              [ngModel]="selectedStudentId()"
+              (ngModelChange)="selectedStudentId.set($event)"
+              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-teal-500"
+            >
+              <option value="" class="bg-slate-900">Selecciona un estudiante</option>
+              @for (student of assignableStudents(); track student.id) {
+                <option [value]="student.id" class="bg-slate-900">
+                  {{ student.nombreCompleto }} - {{ student.email }}
+                </option>
+              }
+            </select>
+
+            @if (assignableStudents().length === 0) {
+              <p class="text-xs text-gray-400 mt-2">
+                No hay estudiantes adicionales disponibles para este docente. Puedes usar la opción de Usuario por ID.
+              </p>
+            }
+          </div>
+        } @else {
+          @if (loadingAssignableUsers()) {
+            <div class="flex items-center justify-center py-8">
+              <div class="animate-spin rounded-full h-7 w-7 border-b-2 border-teal-400"></div>
+            </div>
+          } @else if (canLoadAssignableUsers()) {
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Buscar usuario</label>
+                <input
+                  [ngModel]="userSearchTerm()"
+                  (ngModelChange)="userSearchTerm.set($event)"
+                  type="text"
+                  placeholder="Escribe nombre o correo"
+                  class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Usuario</label>
+                <select
+                  [ngModel]="selectedUserId()"
+                  (ngModelChange)="selectedUserId.set($event)"
+                  class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-teal-500"
+                >
+                  <option value="" class="bg-slate-900">Selecciona un usuario</option>
+                  @for (user of filteredAssignableUsers(); track user.id) {
+                    <option [value]="user.id" class="bg-slate-900">
+                      {{ user.nombreCompleto || user.email }} - {{ user.email }}
+                    </option>
+                  }
+                </select>
+              </div>
+
+              @if (filteredAssignableUsers().length === 0) {
+                <p class="text-xs text-gray-400">
+                  No se encontraron usuarios Student con ese criterio o ya están asignados en este curso.
+                </p>
+              }
+            </div>
+          } @else {
+            <div>
+              <p class="text-xs text-amber-300 mb-3">
+                No fue posible listar usuarios (probable restricción por rol). Usa un UsuarioId manual como alternativa.
+              </p>
+              <label class="block text-sm font-medium text-gray-300 mb-2">UsuarioId (GUID)</label>
+              <input
+                [ngModel]="usuarioIdToAssign()"
+                (ngModelChange)="usuarioIdToAssign.set($event)"
+                type="text"
+                placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+                class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+              />
+              <p class="text-xs text-gray-400 mt-2">
+                Si el perfil de estudiante no existe para ese usuario, se intentará crear automáticamente.
+              </p>
+            </div>
+          }
+        }
+
+        <div class="flex justify-end gap-3 mt-8">
+          <button
+            (click)="closeAssignStudentModal()"
+            [disabled]="isAssigningStudent()"
+            class="px-5 py-2.5 border border-white/10 text-gray-300 rounded-lg hover:bg-white/5 disabled:opacity-50 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            (click)="submitAssignStudent()"
+            [disabled]="isAssigningStudent() || (assignMode() === 'student' ? !selectedStudentId() : (canLoadAssignableUsers() ? !selectedUserId() : !usuarioIdToAssign()))"
+            class="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            @if (isAssigningStudent()) {
+              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              Asignando...
+            } @else {
+              Confirmar asignación
             }
           </button>
         </div>

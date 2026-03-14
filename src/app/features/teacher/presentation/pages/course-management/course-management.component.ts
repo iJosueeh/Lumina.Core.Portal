@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,8 @@ interface EvaluacionApi {
 }
 
 interface QuestionDraft {
+  id?: string;
+  esExistente?: boolean;
   texto: string;
   puntos: number;
   explicacion: string;
@@ -108,22 +110,94 @@ interface CourseStudent {
 }
 
 type TabType = 'overview' | 'modulos' | 'estudiantes' | 'evaluaciones';
+type NotificationType = 'success' | 'error' | 'info';
+type AssignMode = 'student' | 'usuario';
+
+interface ProgramacionItem {
+  id: string;
+  cursoId: string;
+  docenteId?: string;
+  estado?: string;
+}
+
+interface AssignableUser {
+  id: string;
+  nombreCompleto: string;
+  email: string;
+  rolNombre: string;
+}
 
 @Component({
   selector: 'app-course-management',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './course-management.component.html',
-  styles: ``,
+  styles: `
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px) translateX(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+      }
+    }
+
+    @keyframes toastFadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-6px) translateX(8px);
+      }
+    }
+
+    @keyframes toastProgress {
+      from {
+        width: 100%;
+      }
+      to {
+        width: 0%;
+      }
+    }
+
+    .toast-enter {
+      animation: toastSlideIn 220ms ease-out;
+    }
+
+    .toast-leave {
+      animation: toastFadeOut 170ms ease-in;
+    }
+
+    .toast-progress {
+      animation-name: toastProgress;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+  `,
 })
-export class CourseManagementComponent implements OnInit {
+export class CourseManagementComponent implements OnInit, OnDestroy {
   courseId = signal<string>('');
   course = signal<TeacherCourseDetail | null>(null);
   students = signal<CourseStudent[]>([]);
+  allTeacherStudents = signal<TeacherStudent[]>([]);
   modulos = signal<Modulo[]>([]);
   expandedModules = signal<Set<string>>(new Set());
   isLoading = signal(true);
   activeTab = signal<TabType>('overview');
+  showAssignStudentModal = signal(false);
+  assignMode = signal<AssignMode>('student');
+  selectedStudentId = signal('');
+  selectedUserId = signal('');
+  userSearchTerm = signal('');
+  assignableUsers = signal<AssignableUser[]>([]);
+  loadingAssignableUsers = signal(false);
+  canLoadAssignableUsers = signal(true);
+  usuarioIdToAssign = signal('');
+  isAssigningStudent = signal(false);
 
   // Computed values
   totalStudents = computed(() => this.course()?.totalAlumnos || 0);
@@ -133,6 +207,23 @@ export class CourseManagementComponent implements OnInit {
   );
   totalLecciones = computed(() => {
     return this.modulos().reduce((acc, m) => acc + m.lecciones.length, 0);
+  });
+  assignableStudents = computed(() => {
+    const enrolled = new Set(this.students().map((s) => s.id.toLowerCase()));
+    return this.allTeacherStudents().filter((s) => !enrolled.has(s.id.toLowerCase()));
+  });
+  filteredAssignableUsers = computed(() => {
+    const term = this.userSearchTerm().trim().toLowerCase();
+    const users = this.assignableUsers();
+
+    if (!term) {
+      return users;
+    }
+
+    return users.filter((u) => {
+      const content = `${u.nombreCompleto} ${u.email}`.toLowerCase();
+      return content.includes(term);
+    });
   });
 
   private route = inject(ActivatedRoute);
@@ -162,7 +253,12 @@ export class CourseManagementComponent implements OnInit {
   editingQuizzId = signal('');
   editingQuizzTitle = signal('');
   savingQuestions = signal(false);
+  loadingQuestions = signal(false);
   questionsList: QuestionDraft[] = [];
+  notification = signal<{ type: NotificationType; message: string } | null>(null);
+  notificationClosing = signal(false);
+  notificationDuration = signal(3500);
+  private notificationTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -171,6 +267,46 @@ export class CourseManagementComponent implements OnInit {
       console.log('🔍 [COURSE-MANAGEMENT] Received courseId from route:', courseId);
       this.loadCourseData();
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+      this.notificationTimer = null;
+    }
+  }
+
+  showNotification(type: NotificationType, message: string, duration = 3500): void {
+    this.notificationClosing.set(false);
+    this.notificationDuration.set(duration);
+    this.notification.set({ type, message });
+
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+      this.notificationTimer = null;
+    }
+
+    this.notificationTimer = setTimeout(() => {
+      this.closeNotification();
+    }, duration);
+  }
+
+  closeNotification(): void {
+    if (!this.notification() || this.notificationClosing()) {
+      return;
+    }
+
+    this.notificationClosing.set(true);
+
+    if (this.notificationTimer) {
+      clearTimeout(this.notificationTimer);
+      this.notificationTimer = null;
+    }
+
+    setTimeout(() => {
+      this.notification.set(null);
+      this.notificationClosing.set(false);
+    }, 170);
   }
 
   loadCourseData(): void {
@@ -187,6 +323,7 @@ export class CourseManagementComponent implements OnInit {
     }).subscribe({
       next: ({ courseData, allStudents }) => {
         console.log('✅ [COURSE-MANAGEMENT] Course loaded:', courseData.titulo);
+        this.allTeacherStudents.set(allStudents);
 
         // Filter students enrolled in this specific course
         const courseId = this.courseId();
@@ -509,6 +646,7 @@ export class CourseManagementComponent implements OnInit {
         this.http.post<string>(`${environment.evaluacionesApiUrl}/evaluaciones`, body)
       );
       console.log('✅ [COURSE-MGMT] Quizz creado id:', newId);
+      this.showNotification('success', 'Evaluación creada. Ahora puedes gestionar sus preguntas.');
       this.showCreateQuizzModal.set(false);
       await this.loadEvaluaciones();
       if (newId) {
@@ -516,6 +654,7 @@ export class CourseManagementComponent implements OnInit {
       }
     } catch (err) {
       console.error('❌ [COURSE-MGMT] Error creando quizz:', err);
+      this.showNotification('error', 'No se pudo crear la evaluación quizz.');
     }
   }
 
@@ -528,12 +667,47 @@ export class CourseManagementComponent implements OnInit {
   openQuestionEditor(evaluacionId: string, titulo: string): void {
     this.editingQuizzId.set(evaluacionId);
     this.editingQuizzTitle.set(titulo);
-    this.questionsList = [this.createEmptyQuestion()];
+    this.questionsList = [];
     this.showQuestionEditor.set(true);
+    this.loadExistingQuestions(evaluacionId);
+  }
+
+  private async loadExistingQuestions(evaluacionId: string): Promise<void> {
+    this.loadingQuestions.set(true);
+    try {
+      const response = await firstValueFrom(
+        this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`)
+      );
+
+      const preguntas = response?.preguntas ?? response?.Preguntas ?? [];
+      if (!Array.isArray(preguntas) || preguntas.length === 0) {
+        this.questionsList = [this.createEmptyQuestion()];
+        return;
+      }
+
+      this.questionsList = preguntas.map((p: any) => ({
+        id: p.id ?? p.Id,
+        esExistente: true,
+        texto: p.texto ?? p.Texto ?? p.enunciado ?? p.Enunciado ?? '',
+        puntos: Number(p.puntos ?? p.Puntos ?? p.puntaje ?? p.Puntaje ?? 10),
+        explicacion: p.explicacion ?? p.Explicacion ?? '',
+        opciones: (p.opciones ?? p.Opciones ?? []).map((o: any) => ({
+          texto: o.texto ?? o.Texto ?? o.contenido ?? o.Contenido ?? '',
+          esCorrecta: Boolean(o.esCorrecta ?? o.EsCorrecta ?? o.correcta ?? o.Correcta ?? false),
+        })),
+      }));
+    } catch (err) {
+      console.error('❌ [COURSE-MGMT] Error cargando preguntas existentes:', err);
+      this.showNotification('error', 'No se pudieron cargar las preguntas de esta evaluación.');
+      this.questionsList = [this.createEmptyQuestion()];
+    } finally {
+      this.loadingQuestions.set(false);
+    }
   }
 
   private createEmptyQuestion(): QuestionDraft {
     return {
+      esExistente: false,
       texto: '',
       puntos: 10,
       explicacion: '',
@@ -550,8 +724,33 @@ export class CourseManagementComponent implements OnInit {
     this.questionsList = [...this.questionsList, this.createEmptyQuestion()];
   }
 
-  removeQuestion(idx: number): void {
+  async removeQuestion(idx: number): Promise<void> {
+    const question = this.questionsList[idx];
+    if (!question) return;
+
+    const evaluacionId = this.editingQuizzId();
+
+    if (question.esExistente && question.id) {
+      try {
+        await firstValueFrom(
+          this.http.delete(
+            `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas/${question.id}`
+          )
+        );
+        console.log('✅ [COURSE-MGMT] Pregunta existente eliminada:', question.id);
+        this.showNotification('success', 'Pregunta eliminada correctamente.');
+      } catch (err) {
+        console.error('❌ [COURSE-MGMT] Error eliminando pregunta existente:', err);
+        this.showNotification('error', 'No se pudo eliminar la pregunta seleccionada.');
+        return;
+      }
+    }
+
     this.questionsList = this.questionsList.filter((_, i) => i !== idx);
+
+    if (this.questionsList.length === 0) {
+      this.questionsList = [this.createEmptyQuestion()];
+    }
   }
 
   setCorrectOpcion(qIdx: number, oIdx: number): void {
@@ -569,16 +768,50 @@ export class CourseManagementComponent implements OnInit {
 
   async submitQuestions(): Promise<void> {
     const evaluacionId = this.editingQuizzId();
+    const existingQuestions = this.questionsList.filter(
+      (q) => q.esExistente && q.id,
+    ) as Array<QuestionDraft & { id: string }>;
+    const newQuestionsWithOrder = this.questionsList
+      .map((q, idx) => ({ q, orden: idx + 1 }))
+      .filter(({ q }) => !q.esExistente);
+
+    if (existingQuestions.length === 0 && newQuestionsWithOrder.length === 0) {
+      this.showQuestionEditor.set(false);
+      this.showNotification('info', 'No hay cambios para guardar.');
+      return;
+    }
+
     this.savingQuestions.set(true);
     try {
-      for (let i = 0; i < this.questionsList.length; i++) {
-        const q = this.questionsList[i];
-        const body = {
+      for (const q of existingQuestions) {
+        const updateBody = {
+          texto: q.texto,
+          puntos: q.puntos,
+          respuestaCorrecta: null,
+          explicacion: q.explicacion || null,
+          imagenUrl: null,
+          opciones: q.opciones.map((o, oIdx) => ({
+            texto: o.texto,
+            esCorrecta: o.esCorrecta,
+            orden: oIdx + 1,
+          })),
+        };
+
+        await firstValueFrom(
+          this.http.put<any>(
+            `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas/${q.id}`,
+            updateBody,
+          ),
+        );
+      }
+
+      for (const { q, orden } of newQuestionsWithOrder) {
+        const createBody = {
           evaluacionId,
           tipoPregunta: 1, // OpcionMultiple
           texto: q.texto,
           puntos: q.puntos,
-          orden: i + 1,
+          orden,
           explicacion: q.explicacion || null,
           respuestaCorrecta: null,
           opciones: q.opciones.map((o, oIdx) => ({
@@ -590,18 +823,267 @@ export class CourseManagementComponent implements OnInit {
         await firstValueFrom(
           this.http.post<any>(
             `${environment.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`,
-            body
+            createBody
           )
         );
       }
-      console.log(`✅ [COURSE-MGMT] ${this.questionsList.length} preguntas guardadas`);
+
+      console.log(
+        `✅ [COURSE-MGMT] Preguntas actualizadas: ${existingQuestions.length}, nuevas: ${newQuestionsWithOrder.length}`,
+      );
+      this.showNotification('success', 'Preguntas guardadas correctamente.');
       this.showQuestionEditor.set(false);
       await this.loadEvaluaciones();
     } catch (err) {
       console.error('❌ [COURSE-MGMT] Error guardando preguntas:', err);
+      this.showNotification('error', 'Ocurrió un error al guardar las preguntas.');
     } finally {
       this.savingQuestions.set(false);
     }
+  }
+
+  openAssignStudentModal(): void {
+    this.assignMode.set('student');
+    this.selectedUserId.set('');
+    this.userSearchTerm.set('');
+    this.usuarioIdToAssign.set('');
+    this.selectedStudentId.set(this.assignableStudents()[0]?.id ?? '');
+    this.loadAssignableUsers();
+    this.showAssignStudentModal.set(true);
+  }
+
+  closeAssignStudentModal(): void {
+    this.showAssignStudentModal.set(false);
+    this.isAssigningStudent.set(false);
+  }
+
+  async submitAssignStudent(): Promise<void> {
+    if (this.isAssigningStudent()) {
+      return;
+    }
+
+    this.isAssigningStudent.set(true);
+
+    try {
+      const programacionId = await this.resolveProgramacionIdForCurrentCourse();
+
+      if (!programacionId) {
+        this.showNotification('error', 'No se encontró una programación activa para este curso.');
+        return;
+      }
+
+      const estudianteId = await this.resolveEstudianteIdToAssign();
+      if (!estudianteId) {
+        this.showNotification('error', 'No se pudo resolver el estudiante a matricular.');
+        return;
+      }
+
+      await firstValueFrom(
+        this.http.post<any>(`${environment.estudiantesApiUrl}/matricula`, {
+          estudianteId,
+          programacionId,
+        }),
+      );
+
+      this.showNotification('success', 'Estudiante asignado al curso correctamente.');
+      this.closeAssignStudentModal();
+      this.loadCourseData();
+    } catch (err) {
+      console.error('❌ [COURSE-MGMT] Error asignando estudiante:', err);
+      this.showNotification('error', this.extractApiErrorMessage(err, 'No se pudo asignar el estudiante al curso.'));
+    } finally {
+      this.isAssigningStudent.set(false);
+    }
+  }
+
+  private async resolveProgramacionIdForCurrentCourse(): Promise<string | null> {
+    const usuarioId = this.authService.getUserId();
+    if (!usuarioId) {
+      return null;
+    }
+
+    const teacherInfo = await this.teacherQuery.getTeacherInfo(usuarioId);
+    const programacionesResponse = await firstValueFrom(
+      this.http.get<any>(`${environment.estudiantesApiUrl}/programaciones?docenteId=${teacherInfo.id}`),
+    );
+
+    const collection = Array.isArray(programacionesResponse)
+      ? programacionesResponse
+      : Array.isArray(programacionesResponse?.value)
+        ? programacionesResponse.value
+        : [];
+
+    const programaciones: ProgramacionItem[] = collection
+      .map((p: any) => ({
+        id: this.extractGuidLikeValue(p?.id),
+        cursoId: this.extractGuidLikeValue(p?.cursoId),
+        docenteId: this.extractGuidLikeValue(p?.docenteId),
+        estado: String(p?.estado ?? ''),
+      }))
+      .filter((p: ProgramacionItem) => Boolean(p.id) && Boolean(p.cursoId));
+
+    const normalizedCourseId = this.normalizeGuid(this.courseId());
+    const found = programaciones.find((p) => this.normalizeGuid(p.cursoId) === normalizedCourseId);
+
+    return found?.id ?? null;
+  }
+
+  private async resolveEstudianteIdToAssign(): Promise<string | null> {
+    if (this.assignMode() === 'student') {
+      const selected = this.selectedStudentId();
+      return selected || null;
+    }
+
+    const selectedUserId = this.selectedUserId().trim();
+    const usuarioId = (selectedUserId || this.usuarioIdToAssign()).trim();
+    if (!this.isGuid(usuarioId)) {
+      throw new Error('Ingresa un UsuarioId válido (GUID).');
+    }
+
+    const existingStudent = this.allTeacherStudents().find(
+      (s) => this.normalizeGuid(s.usuarioId) === this.normalizeGuid(usuarioId),
+    );
+    if (existingStudent?.id) {
+      return existingStudent.id;
+    }
+
+    // Si no existe perfil de estudiante, intentamos crearlo desde el usuarioId.
+    const createdResponse = await firstValueFrom(
+      this.http.post<any>(`${environment.estudiantesApiUrl}/estudiantes`, {
+        usuarioId,
+      }),
+    );
+
+    const createdId = this.extractGuidLikeValue(createdResponse?.id ?? createdResponse);
+    return createdId || null;
+  }
+
+  private loadAssignableUsers(): void {
+    this.loadingAssignableUsers.set(true);
+
+    firstValueFrom(this.http.get<any>(`${environment.usuariosApiUrl}/usuarios`))
+      .then((response) => {
+        const rawUsers = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.value)
+            ? response.value
+            : [];
+
+        const enrolledUsuarioIds = new Set(
+          this.allTeacherStudents()
+            .filter((s) => s.cursos.includes(this.courseId()))
+            .map((s) => this.normalizeGuid(s.usuarioId)),
+        );
+
+        const users = rawUsers
+          .map((u: any) => {
+            const id = this.extractGuidLikeValue(u?.id ?? u?.Id);
+            const nombres = String(u?.nombresPersona ?? u?.NombresPersona ?? '').trim();
+            const apellidoPaterno = String(u?.apellidoPaterno ?? u?.ApellidoPaterno ?? '').trim();
+            const apellidoMaterno = String(u?.apellidoMaterno ?? u?.ApellidoMaterno ?? '').trim();
+            const rolNombre = String(u?.rolNombre ?? u?.RolNombre ?? '').trim();
+            const email = String(u?.email ?? u?.Email ?? u?.correoElectronico ?? '').trim();
+
+            return {
+              id,
+              nombreCompleto: [nombres, apellidoPaterno, apellidoMaterno].filter(Boolean).join(' ').trim(),
+              email,
+              rolNombre,
+            } as AssignableUser;
+          })
+          .filter((u: AssignableUser) => {
+            if (!u.id || !u.email) return false;
+            if (this.normalizeGuid(u.id) === this.normalizeGuid(this.authService.getUserId() || '')) return false;
+            if (enrolledUsuarioIds.has(this.normalizeGuid(u.id))) return false;
+            return u.rolNombre.toLowerCase() === 'student';
+          })
+          .sort((a: AssignableUser, b: AssignableUser) =>
+            `${a.nombreCompleto} ${a.email}`.localeCompare(`${b.nombreCompleto} ${b.email}`, 'es', {
+              sensitivity: 'base',
+            }),
+          );
+
+        this.assignableUsers.set(users);
+        this.selectedUserId.set(users[0]?.id ?? '');
+        this.canLoadAssignableUsers.set(true);
+      })
+      .catch((error) => {
+        console.warn('⚠️ [COURSE-MGMT] No se pudo cargar usuarios para combobox:', error);
+        this.assignableUsers.set([]);
+        this.selectedUserId.set('');
+        this.canLoadAssignableUsers.set(false);
+      })
+      .finally(() => {
+        this.loadingAssignableUsers.set(false);
+      });
+  }
+
+  private extractGuidLikeValue(value: any): string {
+    if (!value) return '';
+
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (typeof value?.value === 'string') {
+      return value.value;
+    }
+
+    if (typeof value?.id === 'string') {
+      return value.id;
+    }
+
+    if (typeof value?.id?.value === 'string') {
+      return value.id.value;
+    }
+
+    return '';
+  }
+
+  private normalizeGuid(value: string): string {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  private isGuid(value: string): boolean {
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return guidRegex.test(String(value || '').trim());
+  }
+
+  private extractApiErrorMessage(error: any, fallback: string): string {
+    const payload = error?.error;
+
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload?.description) {
+      return payload.description;
+    }
+
+    if (payload?.message) {
+      return payload.message;
+    }
+
+    if (payload?.error?.description) {
+      return payload.error.description;
+    }
+
+    if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+      return String(payload.errors[0]);
+    }
+
+    if (payload?.errors && typeof payload.errors === 'object') {
+      const firstKey = Object.keys(payload.errors)[0];
+      const firstError = firstKey ? payload.errors[firstKey] : null;
+      if (Array.isArray(firstError) && firstError.length > 0) {
+        return String(firstError[0]);
+      }
+      if (typeof firstError === 'string' && firstError.trim()) {
+        return firstError;
+      }
+    }
+
+    return fallback;
   }
 
   viewStudentDetails(studentId: string): void {
