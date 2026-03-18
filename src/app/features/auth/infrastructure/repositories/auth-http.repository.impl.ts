@@ -7,6 +7,7 @@ import { LoginCredentials } from '@features/auth/domain/models/login-credentials
 import { User } from '@features/auth/domain/models/user.model';
 import { environment } from '../../../../../environments/environment';
 import { CookieService } from '@core/services/cookie.service';
+import { CacheService } from '@core/services/cache.service';
 
 interface LoginResponse {
     token: string;
@@ -28,7 +29,8 @@ export class AuthHttpRepositoryImpl extends AuthRepository {
 
     constructor(
         private http: HttpClient,
-        private cookieService: CookieService
+        private cookieService: CookieService,
+        private cacheService: CacheService
     ) {
         super();
     }
@@ -157,6 +159,9 @@ export class AuthHttpRepositoryImpl extends AuthRepository {
                 // Limpiar localStorage por seguridad
                 localStorage.removeItem('currentUser');
                 localStorage.removeItem('token');
+
+                // Limpiar cache de datos de sesión previa
+                this.cacheService.clear();
                 
                 console.log('✅ Usuario mapeado correctamente:', user);
                 return user;
@@ -187,6 +192,9 @@ export class AuthHttpRepositoryImpl extends AuthRepository {
         // Limpiar localStorage por compatibilidad
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
+
+        // Limpiar cache para evitar datos de usuario previo
+        this.cacheService.clear();
         
         console.log('🗑️ [AUTH HTTP REPO] Cookies y localStorage limpiados');
     }

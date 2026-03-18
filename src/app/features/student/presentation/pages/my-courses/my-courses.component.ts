@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { CacheService } from '@core/services/cache.service';
 
 type FilterType = 'all' | 'in-progress' | 'completed' | 'semester';
 
@@ -37,6 +38,7 @@ export class MyCoursesComponent implements OnInit {
   constructor(
     private getCoursesUseCase: GetStudentCoursesUseCase,
     private authRepository: AuthRepository,
+    private cacheService: CacheService,
     private router: Router,
   ) {}
 
@@ -48,6 +50,9 @@ export class MyCoursesComponent implements OnInit {
   }
 
   loadCourses(studentId: string): void {
+    // Force refresh when entering page to reflect recent enrollments.
+    this.cacheService.invalidate(`student-courses-${studentId}`);
+
     this.getCoursesUseCase.execute(studentId).subscribe({
       next: (courses) => {
         // Agregar datos adicionales a los cursos

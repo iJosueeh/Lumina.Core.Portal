@@ -60,6 +60,8 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData(studentId: string): void {
+    this.cacheService.invalidate(`student-courses-${studentId}`);
+
     // Cargar cursos
     this.getCoursesUseCase.execute(studentId).subscribe({
       next: (courses) => {
