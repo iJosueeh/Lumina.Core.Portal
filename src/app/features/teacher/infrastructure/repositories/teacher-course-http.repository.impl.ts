@@ -20,45 +20,35 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
     override getCoursesByTeacher(usuarioId: string): Observable<TeacherCourse[]> {
         console.log('🔍 [TEACHER-COURSES-HTTP] Fetching courses for usuarioId:', usuarioId);
         
-        // KISS: Obtener docente por usuarioId, luego sus cursos asignados
+        // Step 1: Get docente from usuarioId
         return this.http.get<any>(`${this.docentesApiUrl}/docente/by-usuario/${usuarioId}`).pipe(
             switchMap(docenteResponse => {
                 const docenteId = docenteResponse.id?.value || docenteResponse.id;
                 console.log('✅ [TEACHER-COURSES-HTTP] DocenteId obtenido:', docenteId);
                 
-                // Obtener cursos impartidos del docente
-                return this.http.get<any[]>(`${this.docentesApiUrl}/cursosImpartidos/${docenteId}`).pipe(
-                    switchMap(cursosImpartidos => {
-                        console.log('📚 [TEACHER-COURSES-HTTP] Cursos impartidos:', cursosImpartidos.length);
+                // Step 2: Get all courses and filter by instructorId
+                return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
+                    map(allCursos => {
+                        console.log('📚 [TEACHER-COURSES-HTTP] Total de cursos:', allCursos.length);
                         
-                        if (cursosImpartidos.length === 0) {
-                            return of([]);
-                        }
+                        // Filter courses where instructorId matches docenteId
+                        const teacherCourses = allCursos.filter((curso: any) => {
+                            const instructorId = curso.instructorId || curso.InstructorId;
+                            return instructorId === docenteId;
+                        });
                         
-                        // Por cada curso impartido, obtener detalles del curso
-                        // Si un curso no existe, omitirlo en lugar de fallar toda la request
-                        const cursoRequests = cursosImpartidos.map(ci => 
-                            this.http.get<any>(`${this.cursosApiUrl}/Cursos/${ci.cursoId}`).pipe(
-                                switchMap(curso => 
-                                    // Obtener conteo de alumnos en paralelo
-                                    this.http.get<any>(`${this.estudiantesApiUrl}/estudiantes/cursos/${ci.cursoId}/conteo`).pipe(
-                                        map(conteo => ({ curso, conteo })),
-                                        catchError(() => of({ curso, conteo: { totalAlumnos: 0, alumnosActivos: 0 } }))
-                                    )
-                                ),
-                                map(({ curso, conteo }) => this.mapToTeacherCourse(curso, conteo)),
-                                catchError(error => {
-                                    console.warn(`⚠️ [TEACHER-COURSES-HTTP] Curso no encontrado: ${ci.cursoId}`, error);
-                                    return of(null);
-                                })
-                            )
-                        );
-                        
-                        return forkJoin(cursoRequests).pipe(
-                            map(results => results.filter(curso => curso !== null) as TeacherCourse[])
-                        );
+                        console.log('📚 [TEACHER-COURSES-HTTP] Cursos del docente:', teacherCourses.length);
+                        return teacherCourses.map(curso => this.mapToTeacherCourse(curso));
+                    }),
+                    catchError(error => {
+                        console.error('❌ [TEACHER-COURSES-HTTP] Error fetching courses:', error);
+                        return of([]);
                     })
                 );
+            }),
+            catchError(error => {
+                console.error('❌ [TEACHER-COURSES-HTTP] Error fetching docente:', error);
+                return of([]);
             })
         );
     }

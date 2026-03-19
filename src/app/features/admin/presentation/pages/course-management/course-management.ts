@@ -47,6 +47,10 @@ export class CourseManagement implements OnInit {
   courseToDelete: any = null;
   newModuleTitle = '';
   
+  // Docentes
+  docentes: any[] = [];
+  docentesLoading = false;
+
   // New Evaluation Form Data
   newEval: any = { nombre: '', tipo: 'Examen', peso: 0, fechaLimite: '', preguntas: [] };
   isEditingEvaluation = false;
@@ -120,6 +124,7 @@ export class CourseManagement implements OnInit {
           modules: [], evaluaciones: [],
           coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop'
       };
+      this.loadDocentes(true);
       this.isModalOpen = true;
   }
 
@@ -130,6 +135,32 @@ export class CourseManagement implements OnInit {
       this.currentCourse = JSON.parse(JSON.stringify(course));
       if(!this.currentCourse.modules) this.currentCourse.modules = [];
       if(!this.currentCourse.evaluaciones) this.currentCourse.evaluaciones = [];
+      this.currentCourse.modules = this.normalizeModules(this.currentCourse.modules);
+      this.currentCourse.evaluaciones = this.normalizeEvaluaciones(this.currentCourse.evaluaciones);
+
+      this.isModalOpen = true;
+
+      // Cargar detalle real para prellenar módulos/metadata existentes del curso.
+      if (this.currentCourse.id) {
+          this.adminService.getCourseDetail(this.currentCourse.id).subscribe({
+              next: (courseDetail) => {
+                  const selectedInstructorId = this.normalizeGuidValue(this.currentCourse?.instructorId);
+                  const detailInstructorId = this.normalizeGuidValue(courseDetail?.instructorId);
+                  const finalInstructorId = selectedInstructorId ?? detailInstructorId ?? null;
+
+                  this.currentCourse = {
+                      ...this.currentCourse,
+                      ...courseDetail,
+                      instructorId: finalInstructorId,
+                      modules: this.normalizeModules(courseDetail?.modules || this.currentCourse.modules),
+                      evaluaciones: this.normalizeEvaluaciones(this.currentCourse.evaluaciones)
+                  };
+              },
+              error: (err) => {
+                  console.warn('⚠️ No se pudo cargar detalle de curso, usando datos de lista:', err);
+              }
+          });
+      }
       
       // Cargar evaluaciones del curso desde el microservicio de Evaluaciones
       if (this.currentCourse.id) {
@@ -137,15 +168,91 @@ export class CourseManagement implements OnInit {
           this.adminService.getCourseEvaluations(this.currentCourse.id).subscribe({
               next: (evaluaciones) => {
                   console.log('✅ Evaluaciones cargadas:', evaluaciones.length);
-                  this.currentCourse.evaluaciones = evaluaciones;
+                  this.currentCourse.evaluaciones = this.normalizeEvaluaciones(evaluaciones);
               },
               error: (err) => {
                   console.error('❌ Error cargando evaluaciones:', err);
               }
           });
       }
+
+      // Cargar docentes disponibles
+      this.loadDocentes(true);
+  }
+
+  loadDocentes(forceReload = false) {
+      if (!forceReload && this.docentes.length > 0) {
+          return;
+      }
+
+      this.docentesLoading = true;
+      this.adminService.getDocentes().subscribe({
+          next: (docentes) => {
+              this.docentes = docentes;
+              this.docentesLoading = false;
+              console.log('👨‍🏫 Docentes cargados:', this.docentes.length);
+          },
+          error: (err) => {
+              console.error('❌ Error cargando docentes:', err);
+              this.docentesLoading = false;
+          }
+      });
+  }
+
+  onInstructorChange(instructorId: any): void {
+      console.log('📝 [DEBUG] Instructor seleccionado:', instructorId, 'Tipo:', typeof instructorId);
+
+      this.currentCourse.instructorId = this.normalizeGuidValue(instructorId);
       
-      this.isModalOpen = true;
+      console.log('📝 [DEBUG] Valor final de instructorId:', this.currentCourse.instructorId, 'Tipo:', typeof this.currentCourse.instructorId);
+  }
+
+  private normalizeModules(modules: any[]): any[] {
+      return (modules || []).map((m: any, index: number) => ({
+          id: m.id ?? `MOD-${Date.now()}-${index}`,
+          title: m.title ?? m.titulo ?? `Módulo ${index + 1}`,
+          description: m.description ?? m.descripcion ?? '',
+          duration: m.duration ?? m.duracion ?? '',
+          topics: Array.isArray(m.topics)
+              ? m.topics
+              : Array.isArray(m.lecciones)
+                  ? m.lecciones
+                  : [],
+          materials: Array.isArray(m.materials) ? m.materials : [],
+          isExpanded: m.isExpanded ?? true
+      }));
+  }
+
+  private normalizeEvaluaciones(evaluaciones: any[]): any[] {
+      return (evaluaciones || []).map((e: any) => ({
+          ...e,
+          tipo: this.normalizeEvaluationType(e.tipo ?? e.tipoEvaluacion),
+          nombre: e.nombre ?? e.titulo ?? '',
+          peso: e.peso ?? e.puntajeMaximo ?? 0,
+          fechaLimite: e.fechaLimite ?? e.fechaFin ?? '',
+          preguntas: Array.isArray(e.preguntas) ? e.preguntas : []
+      }));
+  }
+
+  private normalizeEvaluationType(tipo: any): string {
+      const tipoMap: Record<string, string> = {
+          '1': 'Examen',
+          '2': 'Práctica',
+          '3': 'Proyecto',
+          '4': 'Quiz',
+          'EXAMEN': 'Examen',
+          'TAREA': 'Práctica',
+          'PROYECTO': 'Proyecto',
+          'QUIZ': 'Quiz',
+          'QUIZZ': 'Quiz'
+      };
+
+      if (tipo === null || tipo === undefined) {
+          return 'Examen';
+      }
+
+      const normalized = String(tipo).toUpperCase();
+      return tipoMap[normalized] || String(tipo);
   }
 
   closeModal() {
@@ -261,11 +368,17 @@ export class CourseManagement implements OnInit {
           });
           
           console.log(`✅ ${validQuestions.length} preguntas válidas de ${(evaluacion.preguntas || []).length} totales`);
+
+          const docenteId = this.normalizeGuidValue(this.currentCourse.instructorId);
+          if (!docenteId) {
+              console.error('❌ No se puede guardar evaluación: debe asignar un docente válido al curso');
+              return;
+          }
           
           const evaluationWithCourseId = {
               ...evaluacion,
               cursoId: this.currentCourse.id,
-              docenteId: this.currentCourse.instructorId || '00000000-0000-0000-0000-000000000000',
+              docenteId: docenteId,
               preguntas: validQuestions // Solo enviar preguntas válidas al backend
           };
           
@@ -610,6 +723,18 @@ export class CourseManagement implements OnInit {
       // GUIDs tienen formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       return guidPattern.test(id);
+  }
+
+  private normalizeGuidValue(value: any): string | null {
+      const candidate = value?.value ?? value?.Value ?? value?.id ?? value;
+      if (candidate === null || candidate === undefined) return null;
+
+      const normalized = String(candidate).trim();
+      if (!normalized || normalized.toLowerCase() === 'null' || normalized.toLowerCase() === 'undefined') {
+          return null;
+      }
+
+      return this.isValidGuid(normalized) ? normalized : null;
   }
   
   createEmptyQuestion() {
