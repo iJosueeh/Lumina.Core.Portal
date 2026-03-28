@@ -1,15 +1,4 @@
-/* ========================================
-   LUMINA CORE - MODERN DESIGN SYSTEM
-   Gradient Vibrant Theme with 3D Effects
-   ======================================== */
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ========================================
-   CSS VARIABLES - DESIGN TOKENS
-   ======================================== */
+@import "tailwindcss";
 
 :root {
   /* === DARK THEME COLORS === */
@@ -59,10 +48,6 @@
   --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* ========================================
-   UTILITY CLASSES - GRADIENTS
-   ======================================== */
-
 .gradient-primary {
   background: var(--gradient-primary);
 }
@@ -85,10 +70,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
-/* ========================================
-   GLASSMORPHISM CARDS (DARK THEME)
-   ======================================== */
 
 .glass-card {
   background: var(--glass-dark);
@@ -115,10 +96,6 @@
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
-
-/* ========================================
-   GRADIENT BORDER CARDS (TEAL THEME)
-   ======================================== */
 
 .gradient-border-card {
   position: relative;
@@ -148,10 +125,6 @@
   box-shadow: var(--shadow-3d-lg), var(--glow-teal);
 }
 
-/* ========================================
-   3D CARD EFFECTS
-   ======================================== */
-
 .card-3d {
   position: relative;
   transform-style: preserve-3d;
@@ -167,10 +140,6 @@
 .card-3d-tilt:hover {
   transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateY(-8px);
 }
-
-/* ========================================
-   ANIMATED GRADIENT BACKGROUNDS
-   ======================================== */
 
 .animated-gradient {
   background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
@@ -189,10 +158,6 @@
     background-position: 0% 50%;
   }
 }
-
-/* ========================================
-   FLOATING LIGHT EFFECTS
-   ======================================== */
 
 .light-effect {
   position: absolute;
@@ -235,10 +200,6 @@
     transform: translate(40px, 20px) scale(1.05);
   }
 }
-
-/* ========================================
-   GLOW BUTTONS
-   ======================================== */
 
 .btn-glow {
   position: relative;
@@ -283,10 +244,6 @@
   height: 300px;
 }
 
-/* ========================================
-   SHIMMER EFFECT
-   ======================================== */
-
 .shimmer {
   position: relative;
   overflow: hidden;
@@ -312,10 +269,6 @@
   }
 }
 
-/* ========================================
-   PULSE ANIMATION
-   ======================================== */
-
 .pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
 }
@@ -329,10 +282,6 @@
     box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
   }
 }
-
-/* ========================================
-   LOADING SKELETON WITH GRADIENT
-   ======================================== */
 
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -355,17 +304,9 @@
   }
 }
 
-/* ========================================
-   PARALLAX SCROLL EFFECT
-   ======================================== */
-
 .parallax-layer {
   transition: transform 0.1s ease-out;
 }
-
-/* ========================================
-   MICRO-INTERACTIONS
-   ======================================== */
 
 .hover-lift {
   transition:
@@ -394,10 +335,6 @@
   transform: rotate(5deg);
 }
 
-/* ========================================
-   PROGRESS BAR WITH GRADIENT
-   ======================================== */
-
 .progress-gradient {
   background: var(--gradient-primary);
   border-radius: 9999px;
@@ -417,10 +354,6 @@
   animation: shimmer 2s infinite;
 }
 
-/* ========================================
-   BADGE WITH GLOW
-   ======================================== */
-
 .badge-glow {
   background: var(--gradient-primary);
   color: white;
@@ -431,10 +364,6 @@
   box-shadow: var(--glow-blue);
   animation: pulseGlow 2s ease-in-out infinite;
 }
-
-/* ========================================
-   TOOLTIP WITH GLASSMORPHISM
-   ======================================== */
 
 .tooltip-glass {
   background: var(--glass-white-strong);
@@ -447,10 +376,6 @@
   box-shadow: 0 4px 16px var(--glass-shadow);
 }
 
-/* ========================================
-   RESPONSIVE UTILITIES
-   ======================================== */
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -460,10 +385,6 @@
     transition-duration: 0.01ms !important;
   }
 }
-
-/* ========================================
-   DARK MODE ENHANCEMENTS
-   ======================================== */
 
 .dark {
   --glass-white: rgba(31, 41, 55, 0.3);
@@ -479,10 +400,6 @@
 .dark .light-effect-2 {
   background: radial-gradient(circle, rgba(240, 147, 251, 0.15) 0%, transparent 70%);
 }
-
-/* ========================================
-   SCROLL ANIMATIONS
-   ======================================== */
 
 .fade-in-up {
   animation: fadeInUp 0.6s ease-out;
@@ -512,10 +429,6 @@
   }
 }
 
-/* ========================================
-   STAGGER ANIMATIONS
-   ======================================== */
-
 .stagger-item {
   animation: fadeInUp 0.6s ease-out backwards;
 }
@@ -539,10 +452,6 @@
   animation-delay: 0.6s;
 }
 
-/* ========================================
-   MODAL ANIMATIONS
-   ======================================== */
-
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -561,4 +470,3 @@
     transform: scale(1);
   }
 }
-
