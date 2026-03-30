@@ -268,6 +268,16 @@ export class CourseManagement implements OnInit {
   }
 
   saveCourse() {
+      // Si hay un módulo a medio crear, agregarlo automáticamente
+      if (this.newModuleTitle && this.newModuleTitle.trim()) {
+          this.addModule();
+      }
+
+      // Si hay una evaluación a medio crear o editar, actualizarla
+      if (this.newEval.nombre && this.newEval.peso) {
+          this.addEvaluation();
+      }
+
       if (this.isEditing) {
           // Primero actualizar el curso
           this.adminService.updateCourse(this.currentCourse).subscribe({
@@ -615,7 +625,10 @@ export class CourseManagement implements OnInit {
           try {
               const date = new Date(fechaRaw);
               if (!isNaN(date.getTime())) {
-                  fechaFormatted = date.toISOString().split('T')[0];
+                  const y = date.getFullYear();
+                  const m = String(date.getMonth() + 1).padStart(2, '0');
+                  const d = String(date.getDate()).padStart(2, '0');
+                  fechaFormatted = `${y}-${m}-${d}`;
               }
           } catch (e) {
               console.warn('⚠️ Error parsing date:', fechaRaw);
