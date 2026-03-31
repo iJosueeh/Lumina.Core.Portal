@@ -267,7 +267,7 @@ export class CourseManagement implements OnInit {
       this.editingEvaluationIndex = -1;
   }
 
-  saveCourse() {
+  saveCourse(closeAfter = true) {
       // Si hay un módulo a medio crear, agregarlo automáticamente
       if (this.newModuleTitle && this.newModuleTitle.trim()) {
           this.addModule();
@@ -291,7 +291,10 @@ export class CourseManagement implements OnInit {
                           this.allCourses[index] = this.currentCourse;
                           this.applyFilters();
                       }
-                      this.closeModal();
+                      
+                      if (closeAfter) {
+                          this.closeModal();
+                      }
                       console.log('✅ Curso y evaluaciones guardados exitosamente');
                   });
               },
@@ -306,13 +309,19 @@ export class CourseManagement implements OnInit {
                   this.currentCourse.id = (typeof result === 'string' ? result : (result?.value ?? result?.id ?? `CRS-${Date.now()}`));
                   this.allCourses.unshift({ ...this.currentCourse });
                   this.applyFilters();
-                  this.closeModal();
+                  
+                  if (closeAfter) {
+                      this.closeModal();
+                  }
               },
               error: () => {
                   this.currentCourse.id = `CRS-${Date.now()}`;
                   this.allCourses.unshift({ ...this.currentCourse });
                   this.applyFilters();
-                  this.closeModal();
+                  
+                  if (closeAfter) {
+                      this.closeModal();
+                  }
               }
           });
       }
@@ -458,6 +467,7 @@ export class CourseManagement implements OnInit {
 
   // Material Modal
   isMaterialModalOpen = false;
+  isUploadingMaterial = false;
   newMaterialName = '';
   selectedFile: File | null = null;
   currentModuleForMaterial: any = null;
@@ -466,12 +476,24 @@ export class CourseManagement implements OnInit {
       this.currentModuleForMaterial = module;
       this.newMaterialName = '';
       this.selectedFile = null;
+      this.isUploadingMaterial = false;
       this.isMaterialModalOpen = true;
   }
 
   onFileSelected(event: any) {
       const file = event.target.files[0];
       if (file) {
+          // Validar tamaño de archivo (10MB = 10 * 1024 * 1024 bytes)
+          const maxSizeInMB = 10;
+          const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+          
+          if (file.size > maxSizeInBytes) {
+              alert(`El archivo es demasiado grande. El límite es de ${maxSizeInMB}MB.`);
+              event.target.value = ''; // Reset input
+              this.selectedFile = null;
+              return;
+          }
+
           this.selectedFile = file;
           // Auto-fill name if empty
           if (!this.newMaterialName) {
@@ -481,37 +503,73 @@ export class CourseManagement implements OnInit {
   }
 
   confirmAddMaterial() {
-      if (!this.newMaterialName || !this.currentModuleForMaterial) return;
+      if (!this.newMaterialName || !this.currentModuleForMaterial || !this.selectedFile) {
+          alert('Por favor selecciona un archivo y asigna un nombre.');
+          return;
+      }
+
+      // Normalizar IDs para asegurar que son GUIDs válidos
+      const cursoId = this.normalizeGuidValue(this.currentCourse?.id);
+      const moduloId = this.normalizeGuidValue(this.currentModuleForMaterial?.id);
+
+      const isNewCourseOrModule = !cursoId || 
+                                  cursoId.startsWith('NEW-') || 
+                                  !moduloId ||
+                                  moduloId.startsWith('MOD-') ||
+                                  moduloId.startsWith('module-');
       
-      let type = 'LINK';
-      let url = '#';
-
-      if (this.selectedFile) {
-          // Determine type based on extension mock
-          const ext = this.selectedFile.name.split('.').pop()?.toLowerCase();
-          if (ext === 'pdf') type = 'PDF';
-          else if (['mp4', 'mov', 'avi'].includes(ext || '')) type = 'VIDEO';
-          else type = 'FILE'; // Generic
-
-          // Create object URL for demo purposes
-          url = URL.createObjectURL(this.selectedFile);
-      } 
-
-      const newMaterial = {
-          id: `MAT-${Date.now()}`,
-          title: this.newMaterialName,
-          type: type,
-          url: url,
-          topicRef: null
-      };
-
-      if (!this.currentModuleForMaterial.materials) this.currentModuleForMaterial.materials = [];
-      this.currentModuleForMaterial.materials.push(newMaterial);
+      if (isNewCourseOrModule) {
+          alert('Debes guardar los cambios del curso y sus módulos antes de poder subir archivos.');
+          return;
+      }
       
+      let type = 'FILE';
+      const ext = this.selectedFile.name.split('.').pop()?.toLowerCase();
+      if (ext === 'pdf') type = 'PDF';
+      else if (['mp4', 'mov', 'avi'].includes(ext || '')) type = 'VIDEO';
+      else if (['jpg', 'jpeg', 'png', 'gif'].includes(ext || '')) type = 'IMAGE';
+
+      this.isUploadingMaterial = true;
+
+      this.adminService.uploadMaterial(cursoId, moduloId, this.selectedFile)
+          .subscribe({
+              next: (res) => {
+                  this.isUploadingMaterial = false;
+                  const newMaterial = {
+                      id: `MAT-${Date.now()}`,
+                      title: this.newMaterialName,
+                      type: type,
+                      url: res.url,
+                      topicRef: null
+                  };
+
+                  if (!this.currentModuleForMaterial.materials) {
+                      this.currentModuleForMaterial.materials = [];
+                  }
+                  
+                  this.currentModuleForMaterial.materials.push(newMaterial);
+                  console.log('✅ Material subido exitosamente:', res.url);
+                  
+                  // IMPORTANTE: Al ser una subida directa al servidor, 
+                  // debemos persistir el cambio en el objeto del curso inmediatamente
+                  this.saveCourse(); 
+                  
+                  this.closeMaterialModal();
+              },
+              error: (err) => {
+                  this.isUploadingMaterial = false;
+                  console.error('❌ Error en el componente al subir:', err);
+                  alert('Error al subir material: ' + (err.message || 'Error desconocido del servidor'));
+              }
+          });
+  }
+
+  closeMaterialModal() {
       this.isMaterialModalOpen = false;
       this.newMaterialName = '';
       this.selectedFile = null;
       this.currentModuleForMaterial = null;
+      this.isUploadingMaterial = false;
   }
 
   // Confirmation Modal (Generic)

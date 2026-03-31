@@ -380,21 +380,28 @@ export class AdminService {
       modulos: (course.modules ?? []).map((m: any) => ({
         titulo: m.title ?? m.titulo,
         descripcion: m.description ?? '',
-        lecciones: m.topics ?? []
+        lecciones: m.topics ?? [],
+        materiales: (m.materials ?? []).map((mat: any) => ({
+          id: this.extractGuid(mat.id),
+          nombreOriginal: mat.title || mat.nombreOriginal,
+          tipoArchivo: mat.type || mat.tipoArchivo,
+          url: mat.url,
+          tamañoBytes: mat.size || mat.tamañoBytes || 0
+        }))
       })),
       requisitos: []
-    };
-    return this.http.post<any>(`${this.cursosApiUrl}/cursos`, body);
-  }
+      };
+      return this.http.post<any>(`${this.cursosApiUrl}/cursos`, body);
+      }
 
-  updateCourse(course: any): Observable<boolean> {
-    console.log('🔄 [ADMIN] Actualizando curso:', course);
-    console.log('🔄 [ADMIN] InstructorId recibido:', course.instructorId, 'Tipo:', typeof course.instructorId);
-    
-    // Preparar datos para el backend (contrato Cursos API)
-    const instructorId = this.extractGuid(course.instructorId);
-    
-    const courseData = {
+      updateCourse(course: any): Observable<boolean> {
+      console.log('🔄 [ADMIN] Actualizando curso:', course);
+      console.log('🔄 [ADMIN] InstructorId recibido:', course.instructorId, 'Tipo:', typeof course.instructorId);
+
+      // Preparar datos para el backend (contrato Cursos API)
+      const instructorId = this.extractGuid(course.instructorId);
+
+      const courseData = {
       Nombre: course.name,
       Descripcion: course.description || '',
       Capacidad: Number(course.capacity || 1),
@@ -405,17 +412,24 @@ export class AdminService {
       Categoria: course.categoria || '',
       InstructorId: instructorId,
       Modulos: (course.modules || []).map((m: any) => ({
+        Id: this.extractGuid(m.id),
         Titulo: m.title || m.titulo || '',
         Descripcion: m.description || m.descripcion || '',
-        Lecciones: m.topics || m.lecciones || []
+        Lecciones: m.topics || m.lecciones || [],
+        Materiales: (m.materials || []).map((mat: any) => ({
+          Id: this.extractGuid(mat.id),
+          NombreOriginal: mat.title || mat.nombreOriginal || '',
+          TipoArchivo: mat.type || mat.tipoArchivo || '',
+          Url: mat.url || '',
+          TamañoBytes: Number(mat.size || mat.tamañoBytes || 0)
+        }))
       })),
       Requisitos: course.requisitos || [],
       Codigo: course.code || null,
       Creditos: Number(course.creditos || 3),
       Ciclo: course.ciclo || null,
       EstadoCurso: course.status || 'Activo'
-    };
-    
+      };    
     console.log('📤 [ADMIN] InstructorId enviado:', courseData.InstructorId, 'Tipo:', typeof courseData.InstructorId);
     console.log('📤 [ADMIN] Datos preparados para enviar:', courseData);
 
@@ -782,6 +796,17 @@ export class AdminService {
       catchError((error) => {
         console.error('❌ [ADMIN SERVICE] Error obteniendo cursos del docente:', error);
         return of([]);
+      })
+    );
+  }
+
+  uploadMaterial(cursoId: string, moduloId: string, file: File): Observable<{url: string}> {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    return this.http.post<{url: string}>(`${this.cursosApiUrl}/cursos/${cursoId}/modulos/${moduloId}/materiales`, formData).pipe(
+      catchError(error => {
+        console.error('❌ [ADMIN] Error subiendo material:', error);
+        return throwError(() => new Error('Error al subir el archivo al servidor.'));
       })
     );
   }
