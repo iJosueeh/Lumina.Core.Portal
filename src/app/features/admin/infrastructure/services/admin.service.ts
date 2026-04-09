@@ -274,7 +274,13 @@ export class AdminService {
           description: m.descripcion ?? m.Descripcion ?? m.description ?? '',
           duration: m.duracion ?? m.Duracion ?? '',
           topics: m.lecciones ?? m.Lecciones ?? m.topics ?? [],
-          materials: m.materials ?? [],
+          materials: (m.materials ?? m.materiales ?? m.Materiales ?? []).map((mat: any) => ({
+            id: mat.id ?? mat.Id,
+            title: mat.title ?? mat.titulo ?? mat.Titulo ?? mat.nombreOriginal ?? mat.NombreOriginal ?? mat.nombre ?? mat.Nombre ?? 'Material',
+            type: mat.type ?? mat.tipo ?? mat.Tipo ?? mat.tipoArchivo ?? mat.TipoArchivo ?? 'FILE',
+            url: mat.url ?? mat.Url ?? '',
+            size: mat.size ?? mat.tamañoBytes ?? mat.tamanoBytes ?? mat.TamañoBytes ?? mat.TamanoBytes ?? 0
+          })),
           isExpanded: true
         }))
       })),

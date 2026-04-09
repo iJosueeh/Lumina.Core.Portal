@@ -466,6 +466,32 @@
                       </svg>
                     </div>
                   }
+
+                  @if (hasModuleMaterials(modulo)) {
+                    <div class="mt-4 pt-4 border-t border-gray-700/50">
+                      <h4 class="text-sm font-semibold text-teal-300 mb-2">Material del módulo</h4>
+                      <div class="space-y-2">
+                        @for (material of modulo.materiales; track material.id) {
+                          <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-white/5 border border-gray-700/50">
+                            <button
+                              class="flex-1 min-w-0 text-left"
+                              (click)="openMaterial(material)"
+                              [attr.aria-label]="'Abrir ' + material.titulo"
+                            >
+                              <p class="text-sm text-gray-200 truncate">{{ material.titulo }}</p>
+                              <p class="text-xs text-gray-500 mt-0.5">{{ material.tipo }}</p>
+                            </button>
+                            <button
+                              class="text-xs text-teal-300 hover:text-teal-200 font-semibold"
+                              (click)="openMaterial(material)"
+                            >
+                              Vista previa
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
                 }
               </div>
@@ -543,6 +569,64 @@
           }
         </div>
       }
+    </div>
+  }
+
+  @if (showMaterialPreview() && selectedMaterial(); as previewMaterial) {
+    <div class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div class="relative w-full max-w-6xl h-[88vh] bg-[#0f1e33] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/10 bg-white/5">
+          <div class="min-w-0">
+            <p class="text-xs uppercase tracking-[0.2em] text-teal-400 font-semibold">Vista previa del material</p>
+            <h3 class="text-lg font-bold text-white truncate">{{ previewMaterial.titulo }}</h3>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <a
+              [href]="previewMaterial.url"
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Descargar
+            </a>
+            <a
+              [href]="previewMaterial.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-gray-200 hover:bg-white/5 transition-colors"
+            >
+              Abrir original
+            </a>
+            <button
+              (click)="closeMaterialPreview()"
+              class="w-10 h-10 inline-flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
+              aria-label="Cerrar vista previa"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 bg-[#08111f]">
+          @if (materialPreviewUrl(); as safeUrl) {
+            <iframe
+              [src]="safeUrl"
+              class="w-full h-full border-0 bg-white"
+              title="Vista previa del material"
+            ></iframe>
+          } @else {
+            <div class="h-full flex items-center justify-center text-gray-300">
+              No se pudo generar la vista previa del material.
+            </div>
+          }
+        </div>
+      </div>
     </div>
   }
 

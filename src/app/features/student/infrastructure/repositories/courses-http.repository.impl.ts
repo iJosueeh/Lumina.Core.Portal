@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap, catchError } from 'rxjs';
+import { Observable, map, of, tap, catchError, timeout, retry } from 'rxjs';
 import { CoursesRepository } from '../../domain/repositories/courses.repository';
 import { CourseProgress } from '../../domain/models/course-progress.model';
 import { CourseDetail, Module, Lesson, Instructor } from '../../domain/models/course-detail.model';
@@ -14,6 +14,7 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
     private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
     private readonly cursosApiUrl = environment.cursosApiUrl;
     private readonly CACHE_TTL = 3 * 60 * 1000; // 3 minutos
+    private readonly ESTUDIANTES_TIMEOUT_MS = 12000;
 
     constructor(
         private http: HttpClient,
@@ -31,8 +32,16 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
         }
 
         console.log('📡 Realizando petición HTTP:', cacheKey);
+
+        if (this.isUnsafeBrowserPort(this.estudiantesApiUrl)) {
+            console.warn('⚠️ Puerto bloqueado por navegador en estudiantesApiUrl; usando fallback de Cursos sin llamar API de Estudiantes.');
+            return this.getCoursesFallback(cacheKey);
+        }
+
         return this.http.get<any[]>(`${this.estudiantesApiUrl}/estudiantes/${studentId}/cursos-matriculados`)
             .pipe(
+                timeout(this.ESTUDIANTES_TIMEOUT_MS),
+                retry({ count: 1, delay: 300 }),
                 map(courses => courses.map(course => ({
                     id: course.id,
                     titulo: course.titulo || course.nombreCurso || 'Curso sin título',
@@ -49,33 +58,49 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
                     console.log('💾 Datos almacenados en caché:', cacheKey, courses.length, 'cursos');
                 }),
                 catchError(error => {
-                    console.warn('⚠️ API de Estudiantes no disponible, usando API de Cursos como fallback:', error.status);
-                    // Fallback: cargar todos los cursos disponibles desde el API de Cursos
-                    return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
-                        map(cursos => cursos.map((curso, index) => {
-                            const seed = this.hashStr(curso.id ?? String(index));
-                            return {
-                                id: curso.id,
-                                titulo: curso.titulo || curso.nombreCurso || 'Curso sin título',
-                                categoria: curso.categoria || 'General',
-                                moduloActual: `M\u00f3dulo ${(seed % 5) + 1}`,
-                                progreso: 20 + (seed % 61), // 20–80%, determinista
-                                ultimoAcceso: new Date(Date.now() - ((seed % 7) + 1) * 24 * 60 * 60 * 1000),
-                                imagenUrl: curso.imagenUrl || curso.imagen || curso.imageUrl || curso.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
-                                colorCategoria: this.getCategoryColor(curso.categoria)
-                            };
-                        })),
-                        tap(courses => {
-                            this.cacheService.set(cacheKey, courses, this.CACHE_TTL);
-                            console.log('💾 Datos de Cursos almacenados en caché:', cacheKey, courses.length, 'cursos');
-                        }),
-                        catchError(err => {
-                            console.error('❌ Error al cargar cursos:', err);
-                            return of([]); // Retornar array vacío en caso de error total
-                        })
-                    );
+                    console.warn('⚠️ API de Estudiantes no disponible o lenta, usando API de Cursos como fallback:', error.status ?? error.name ?? error);
+                    return this.getCoursesFallback(cacheKey);
                 })
             );
+    }
+
+    private getCoursesFallback(cacheKey: string): Observable<CourseProgress[]> {
+        // Fallback: cargar todos los cursos disponibles desde el API de Cursos
+        return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
+            map(cursos => cursos.map((curso, index) => {
+                const seed = this.hashStr(curso.id ?? String(index));
+                return {
+                    id: curso.id,
+                    titulo: curso.titulo || curso.nombreCurso || 'Curso sin título',
+                    categoria: curso.categoria || 'General',
+                    moduloActual: `M\u00f3dulo ${(seed % 5) + 1}`,
+                    progreso: 20 + (seed % 61), // 20–80%, determinista
+                    ultimoAcceso: new Date(Date.now() - ((seed % 7) + 1) * 24 * 60 * 60 * 1000),
+                    imagenUrl: curso.imagenUrl || curso.imagen || curso.imageUrl || curso.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
+                    colorCategoria: this.getCategoryColor(curso.categoria)
+                };
+            })),
+            tap(courses => {
+                this.cacheService.set(cacheKey, courses, this.CACHE_TTL);
+                console.log('💾 Datos de Cursos almacenados en caché:', cacheKey, courses.length, 'cursos');
+            }),
+            catchError(err => {
+                console.error('❌ Error al cargar cursos:', err);
+                return of([]); // Retornar array vacío en caso de error total
+            })
+        );
+    }
+
+    private isUnsafeBrowserPort(baseUrl: string): boolean {
+        try {
+            const parsed = new URL(baseUrl);
+            const port = Number(parsed.port || (parsed.protocol === 'https:' ? 443 : 80));
+            // Puertos bloqueados por navegadores modernos (incluye el caso reportado 6666)
+            const blockedPorts = new Set([6665, 6666, 6667, 6668, 6669]);
+            return blockedPorts.has(port);
+        } catch {
+            return false;
+        }
     }
 
     private hashStr(s: string): number {

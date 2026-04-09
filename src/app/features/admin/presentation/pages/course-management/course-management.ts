@@ -218,7 +218,21 @@ export class CourseManagement implements OnInit {
               : Array.isArray(m.lecciones)
                   ? m.lecciones
                   : [],
-          materials: Array.isArray(m.materials) ? m.materials : [],
+          materials: (
+              Array.isArray(m.materials)
+                  ? m.materials
+                  : Array.isArray(m.materiales)
+                      ? m.materiales
+                      : Array.isArray(m.Materiales)
+                          ? m.Materiales
+                          : []
+          ).map((mat: any, materialIndex: number) => ({
+              id: mat.id ?? mat.Id ?? `MAT-${Date.now()}-${index}-${materialIndex}`,
+              title: mat.title ?? mat.nombreOriginal ?? mat.NombreOriginal ?? mat.nombre ?? mat.Nombre ?? 'Material sin nombre',
+              type: mat.type ?? mat.tipoArchivo ?? mat.TipoArchivo ?? 'FILE',
+              url: mat.url ?? mat.Url ?? '',
+              size: mat.size ?? mat.tamañoBytes ?? mat.tamanoBytes ?? mat.TamañoBytes ?? mat.TamanoBytes ?? 0
+          })),
           isExpanded: m.isExpanded ?? true
       }));
   }
@@ -550,11 +564,12 @@ export class CourseManagement implements OnInit {
                   this.currentModuleForMaterial.materials.push(newMaterial);
                   console.log('✅ Material subido exitosamente:', res.url);
                   
-                  // IMPORTANTE: Al ser una subida directa al servidor, 
-                  // debemos persistir el cambio en el objeto del curso inmediatamente
-                  this.saveCourse(); 
-                  
+                  // Notificar al usuario sin cerrar todo el modal principal
+                  // Solo cerramos el modal de subir material, no el de edición del curso
                   this.closeMaterialModal();
+                  
+                  // Opcional: Podrías añadir un toast de éxito aquí si tienes un servicio para ello
+                  alert('¡Material subido con éxito!');
               },
               error: (err) => {
                   this.isUploadingMaterial = false;

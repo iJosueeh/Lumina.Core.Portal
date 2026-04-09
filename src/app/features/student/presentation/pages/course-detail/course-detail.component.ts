@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, inject } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery, injectQueryClient } from '@tanstack/angular-query-experimental';
@@ -36,6 +37,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   activeTab: TabType = 'content';
   courseId = signal<string>('');
   studentId = signal<string>('');
+  selectedMaterial = signal<CourseMaterial | null>(null);
+  showMaterialPreview = signal(false);
+  private sanitizer = inject(DomSanitizer);
   
   // Query Client para invalidar caché
   private queryClient = injectQueryClient();
@@ -108,6 +112,10 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   materials = computed(() => this.materialsQuery.data() ?? []);
   quizzes = computed(() => this.evaluationsQuery.data() ?? []);
   attempts = computed(() => this.attemptsQuery.data() ?? []);
+  materialPreviewUrl = computed<SafeResourceUrl | null>(() => {
+    const material: CourseMaterial | null = this.selectedMaterial();
+    return material?.url ? this.sanitizer.bypassSecurityTrustResourceUrl(material.url) : null;
+  });
   
   isLoadingCourse = computed(() => 
     this.courseQuery.isLoading() || 
@@ -266,10 +274,8 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   materialTypes: MaterialType[] = ['video', 'pdf', 'code', 'link', 'document'];
 
   // Computed: materiales filtrados
-  // TODO: Los materiales actualmente vienen vacíos del backend - implementar en CoursesHttpRepositoryImpl
   filteredMaterials = computed(() => {
-    const courseData = this.course();
-    let materials = courseData?.materials || [];
+    let materials = this.materials();
 
     // Filtrar por tipo
     if (this.activeFilter() !== 'all') {
@@ -620,20 +626,29 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   }
 
   countByType(type: MaterialType): number {
-    const courseData = this.course();
-    return (courseData?.materials || []).filter((m: any) => m.type === type).length;
+    return this.materials().filter((m: any) => m.type === type).length;
   }
 
   downloadMaterial(material: CourseMaterial): void {
-    console.log('Downloading:', material.title);
-    // Simular descarga
-    window.open(material.url, '_blank');
+    if (!material.url) {
+      return;
+    }
+
+    window.open(material.url, '_blank', 'noopener,noreferrer');
   }
 
   previewMaterial(material: CourseMaterial): void {
-    console.log('Previewing:', material.title);
-    // Abrir en modal o nueva ventana
-    window.open(material.url, '_blank');
+    if (!material.url) {
+      return;
+    }
+
+    this.selectedMaterial.set(material);
+    this.showMaterialPreview.set(true);
+  }
+
+  closeMaterialPreview(): void {
+    this.showMaterialPreview.set(false);
+    this.selectedMaterial.set(null);
   }
 
   getMaterialIcon(type: MaterialType): string {
@@ -672,13 +687,19 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   }
 
   hasRelatedMaterials(lesson: Lesson): boolean {
-    const courseData = this.course();
-    return courseData?.materials?.some((m: any) => m.lessonId === lesson.id) || false;
+    return this.materials().some((m: any) => m.lessonId === lesson.id);
   }
 
   getMaterialsForLesson(lessonId: string): CourseMaterial[] {
-    const courseData = this.course();
-    return courseData?.materials?.filter((m: any) => m.lessonId === lessonId) || [];
+    return this.materials().filter((m: any) => m.lessonId === lessonId);
+  }
+
+  hasMaterialsForModule(moduleId: string): boolean {
+    return this.materials().some((m) => m.moduleId === moduleId);
+  }
+
+  getMaterialsForModule(moduleId: string): CourseMaterial[] {
+    return this.materials().filter((m) => m.moduleId === moduleId);
   }
 
   getTotalLessons(): number {

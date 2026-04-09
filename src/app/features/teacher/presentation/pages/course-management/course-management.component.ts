@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, signal, computed, inject } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -82,8 +83,16 @@ interface Modulo {
   descripcion: string;
   duracion: string;
   lecciones: Leccion[];
+  materiales: ModuloMaterial[];
   completado: boolean;
   porcentajeCompletado: number;
+}
+
+interface ModuloMaterial {
+  id: string;
+  titulo: string;
+  tipo: string;
+  url: string;
 }
 
 interface Leccion {
@@ -198,6 +207,9 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   canLoadAssignableUsers = signal(true);
   usuarioIdToAssign = signal('');
   isAssigningStudent = signal(false);
+  selectedMaterial = signal<ModuloMaterial | null>(null);
+  showMaterialPreview = signal(false);
+  private sanitizer = inject(DomSanitizer);
 
   // Computed values
   totalStudents = computed(() => this.course()?.totalAlumnos || 0);
@@ -224,6 +236,10 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
       const content = `${u.nombreCompleto} ${u.email}`.toLowerCase();
       return content.includes(term);
     });
+  });
+  materialPreviewUrl = computed<SafeResourceUrl | null>(() => {
+    const material: ModuloMaterial | null = this.selectedMaterial();
+    return material?.url ? this.sanitizer.bypassSecurityTrustResourceUrl(material.url) : null;
   });
 
   private route = inject(ActivatedRoute);
@@ -425,12 +441,28 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         completada: false,
       }),
     );
+
+    const materialesRaw = m.materiales ?? m.Materiales ?? m.materials ?? [];
+    const materiales: ModuloMaterial[] = Array.isArray(materialesRaw)
+      ? materialesRaw
+          .map((mat: any, materialIndex: number) => ({
+            id: String(mat.id ?? mat.Id ?? `${m.id || index}-mat-${materialIndex}`),
+            titulo: String(
+              mat.titulo ?? mat.Titulo ?? mat.nombreOriginal ?? mat.NombreOriginal ?? 'Material'
+            ),
+            tipo: String(mat.tipo ?? mat.Tipo ?? mat.tipoArchivo ?? mat.TipoArchivo ?? 'archivo'),
+            url: String(mat.url ?? mat.Url ?? ''),
+          }))
+          .filter((mat: ModuloMaterial) => !!mat.url)
+      : [];
+
     return {
       id: m.id || String(index + 1),
       orden: index + 1,
       titulo: m.titulo || `Módulo ${index + 1}`,
       descripcion: m.descripcion || '',
       duracion: `${Math.max(lecciones.length, 1) * 30} min`,
+      materiales,
       completado: false,
       porcentajeCompletado: 0,
       lecciones,
@@ -467,6 +499,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         titulo: 'Introducción al Curso',
         descripcion: 'Fundamentos y conceptos básicos para iniciar el aprendizaje',
         duracion: '2 horas',
+        materiales: [],
         completado: true,
         porcentajeCompletado: 100,
         lecciones: [
@@ -499,6 +532,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         titulo: 'Conceptos Fundamentales',
         descripcion: 'Teoría y práctica de los conceptos core del curso',
         duracion: '4 horas',
+        materiales: [],
         completado: false,
         porcentajeCompletado: 65,
         lecciones: [
@@ -538,6 +572,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         titulo: 'Aplicaciones Avanzadas',
         descripcion: 'Casos de uso reales y proyectos prácticos',
         duracion: '6 horas',
+        materiales: [],
         completado: false,
         porcentajeCompletado: 30,
         lecciones: [
@@ -1120,8 +1155,27 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     this.expandedModules.set(current);
   }
 
-  viewLeccion(leccionId: string): void {
-    this.setActiveTab('materiales' as any);
+  viewLeccion(_leccionId: string): void {
+    this.showNotification('info', 'Selecciona un material del módulo para abrirlo.');
+  }
+
+  hasModuleMaterials(module: Modulo): boolean {
+    return module.materiales.length > 0;
+  }
+
+  openMaterial(material: ModuloMaterial): void {
+    if (!material.url) {
+      this.showNotification('error', 'El material no tiene URL disponible.');
+      return;
+    }
+
+    this.selectedMaterial.set(material);
+    this.showMaterialPreview.set(true);
+  }
+
+  closeMaterialPreview(): void {
+    this.showMaterialPreview.set(false);
+    this.selectedMaterial.set(null);
   }
 
   goBack(): void {
