@@ -1173,6 +1173,62 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     this.showMaterialPreview.set(true);
   }
 
+  async downloadMaterial(material: ModuloMaterial): Promise<void> {
+    if (!material.url) {
+      this.showNotification('error', 'El material no tiene URL disponible.');
+      return;
+    }
+
+    try {
+      const response = await fetch(material.url, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error(`No se pudo descargar el archivo: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const downloadName = this.resolveFileName(material, response);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = downloadName;
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('No se pudo forzar la descarga del material, usando fallback.', error);
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = material.url;
+      fallbackLink.download = this.resolveFileName(material);
+      fallbackLink.target = '_blank';
+      fallbackLink.rel = 'noopener noreferrer';
+      document.body.appendChild(fallbackLink);
+      fallbackLink.click();
+      document.body.removeChild(fallbackLink);
+    }
+  }
+
+  private resolveFileName(material: ModuloMaterial, response?: Response): string {
+    const disposition = response?.headers.get('content-disposition') || '';
+    const quotedMatch = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    if (quotedMatch?.[1]) {
+      return decodeURIComponent(quotedMatch[1].trim());
+    }
+
+    try {
+      const url = new URL(material.url);
+      const fromPath = decodeURIComponent(url.pathname.split('/').pop() || '').trim();
+      if (fromPath) {
+        return fromPath;
+      }
+    } catch {
+      // Ignorar y usar fallback por titulo.
+    }
+
+    return `${material.titulo || 'material'}`;
+  }
+
   closeMaterialPreview(): void {
     this.showMaterialPreview.set(false);
     this.selectedMaterial.set(null);

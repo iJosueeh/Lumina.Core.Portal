@@ -52,6 +52,14 @@ export const routes: Routes = [
         title: 'Detalle del Curso - Portal Estudiante',
       },
       {
+        path: 'course/:id/learn/:lessonId',
+        loadComponent: () =>
+          import('@features/student/presentation/pages/video-classroom/video-classroom.component').then(
+            m => m.VideoClassroomComponent
+          ),
+        title: 'Aula de Video - Portal Estudiante',
+      },
+      {
         path: 'evaluations',
         loadComponent: () =>
           import('./features/student/presentation/pages/evaluations/evaluations.component').then(

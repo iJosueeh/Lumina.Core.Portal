@@ -137,6 +137,17 @@ export class MyCoursesComponent implements OnInit {
     return 'Continuar Aprendizaje';
   }
 
+  getCourseBadge(progreso: number): string {
+    if (progreso === 100) return 'Completado';
+    return 'En Progreso';
+  }
+
+  getProgressBarClass(progreso: number): string {
+    if (progreso >= 70) return 'bg-gradient-to-r from-emerald-300 to-emerald-500';
+    if (progreso >= 30) return 'bg-gradient-to-r from-cyan-300 to-cyan-500';
+    return 'bg-gradient-to-r from-violet-300 to-violet-500';
+  }
+
   viewCourse(courseId: string): void {
     this.router.navigate(['/student/course', courseId]);
   }

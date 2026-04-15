@@ -34,7 +34,7 @@ type TabType = 'description' | 'content' | 'materials' | 'evaluations';
   styles: '',
 })
 export class CourseDetailComponent implements OnInit, OnDestroy {
-  activeTab: TabType = 'content';
+  activeTab: TabType = 'description';
   courseId = signal<string>('');
   studentId = signal<string>('');
   selectedMaterial = signal<CourseMaterial | null>(null);
@@ -107,7 +107,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     retry: 1,
   }));
 
-  // 📊 Computed signals para el template
   course = computed(() => this.courseQuery.data());
   materials = computed(() => this.materialsQuery.data() ?? []);
   quizzes = computed(() => this.evaluationsQuery.data() ?? []);
@@ -150,6 +149,10 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       
       if (!this.isLoadingAny() && courseData) {
         console.log(`✅ Curso cargado: ${this.materials().length} materiales, ${this.quizzes().length} evaluaciones, ${this.attempts().length} intentos`);
+
+        if (!this.expandedModules.size && courseData.modules?.length) {
+          this.expandedModules.add(courseData.modules[0].id);
+        }
         
         // Aplicar progreso guardado
         this.applyStoredProgress();
@@ -195,8 +198,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop';
   }
 
-  // ========== HORARIOS ==========
-  // Generar horarios mock para el curso
   private generateMockSchedule(): import('@features/student/domain/models/course-detail.model').CourseSchedule[] {
     const scheduleTypes: Array<{dias: string[], horario: {inicio: string, fin: string}, modalidad: 'Presencial' | 'Virtual' | 'Híbrido', aula: string, tipo: string}> = [
       {
@@ -473,9 +474,40 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     return this.getLessonIcon(type);
   }
 
+  openLesson(module: Module, lesson: Lesson): void {
+    if (lesson.type !== 'video') {
+      this.startLesson(lesson);
+      return;
+    }
+
+    this.openVideoClassroom(module, lesson);
+  }
+
+  openVideoClassroom(module: Module, lesson: Lesson): void {
+    if (lesson.isLocked) {
+      return;
+    }
+
+    this.router.navigate(['/student/course', this.courseId(), 'learn', lesson.id], {
+      queryParams: { moduleId: module.id },
+    });
+  }
+
   startLesson(lesson: Lesson): void {
     if (lesson.isLocked) {
       return;
+    }
+
+    if (lesson.type === 'video') {
+      const courseData = this.course();
+      const lessonModule = courseData?.modules.find((module) =>
+        (module.lessons || []).some((item) => item.id === lesson.id),
+      );
+
+      if (lessonModule) {
+        this.openVideoClassroom(lessonModule, lesson);
+        return;
+      }
     }
 
     // Simular inicio de lección
@@ -529,27 +561,27 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       updatedModule.lessons = module.lessons?.map(l => {
         if (l.id === lesson.id) {
           const newCompletedState = !l.isCompleted;
-          
+
           this.progressStorage.saveLessonProgress(
             this.courseId(),
             this.studentId(),
             l.id,
             newCompletedState
           );
-          
+
           return { ...l, isCompleted: newCompletedState };
         }
         return l;
       });
       return updatedModule;
     });
-    
+
     this.recalculateAndUpdateCourseProgress(updatedCourse);
-    
+
     const newLesson = updatedCourse.modules
       .flatMap(m => m.lessons || [])
       .find(l => l.id === lesson.id);
-    
+
     const status = newLesson?.isCompleted ? '✅ completada' : '⭕ pendiente';
     console.log(`Lección "${lesson.title}" marcada como ${status}. Progreso: ${updatedCourse.progress}%`);
   }
@@ -629,12 +661,59 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
     return this.materials().filter((m: any) => m.type === type).length;
   }
 
-  downloadMaterial(material: CourseMaterial): void {
+  async downloadMaterial(material: CourseMaterial): Promise<void> {
     if (!material.url) {
       return;
     }
 
-    window.open(material.url, '_blank', 'noopener,noreferrer');
+    try {
+      const response = await fetch(material.url, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error(`No se pudo descargar el archivo: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const downloadName = this.resolveFileName(material, response);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = downloadName;
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('No se pudo forzar la descarga del material, usando fallback.', error);
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = material.url;
+      fallbackLink.download = this.resolveFileName(material);
+      fallbackLink.target = '_blank';
+      fallbackLink.rel = 'noopener noreferrer';
+      document.body.appendChild(fallbackLink);
+      fallbackLink.click();
+      document.body.removeChild(fallbackLink);
+    }
+  }
+
+  private resolveFileName(material: CourseMaterial, response?: Response): string {
+    const disposition = response?.headers.get('content-disposition') || '';
+    const quotedMatch = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    if (quotedMatch?.[1]) {
+      return decodeURIComponent(quotedMatch[1].trim());
+    }
+
+    try {
+      const url = new URL(material.url);
+      const fromPath = decodeURIComponent(url.pathname.split('/').pop() || '').trim();
+      if (fromPath) {
+        return fromPath;
+      }
+    } catch {
+      // Ignorar y usar fallback por titulo.
+    }
+
+    return `${material.title || 'material'}`;
   }
 
   previewMaterial(material: CourseMaterial): void {

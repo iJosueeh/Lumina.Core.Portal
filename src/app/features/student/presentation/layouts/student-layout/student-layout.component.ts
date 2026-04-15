@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, RouterOutlet } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { LayoutService } from '@features/student/domain/services/layout.service';
 
 interface MenuItem {
   icon: string;
@@ -34,6 +35,7 @@ export class StudentLayoutComponent implements OnInit {
   constructor(
     private authRepository: AuthRepository,
     private router: Router,
+    protected layoutService: LayoutService,
   ) {}
 
   ngOnInit(): void {
@@ -54,5 +56,10 @@ export class StudentLayoutComponent implements OnInit {
 
   closeSidebar(): void {
     this.isSidebarOpen = false;
+  }
+
+  isSidebarHidden(): boolean {
+    const hiddenByRoute = this.router.url.includes('/learn/');
+    return hiddenByRoute || this.layoutService.isSidebarHidden();
   }
 }

@@ -151,13 +151,13 @@ export class EvaluationsComponent implements OnInit {
   getStatusBadge(status: string): { text: string; class: string } {
     switch (status) {
       case 'urgent':
-        return { text: 'En Riesgo', class: 'bg-red-500 text-white' };
+        return { text: 'En riesgo', class: 'bg-rose-500/15 text-rose-300 border border-rose-400/30' };
       case 'upcoming':
-        return { text: 'En Curso', class: 'bg-yellow-500 text-white' };
+        return { text: 'En curso', class: 'bg-amber-500/15 text-amber-300 border border-amber-400/30' };
       case 'completed':
-        return { text: 'Aprobado', class: 'bg-green-500 text-white' };
+        return { text: 'Aprobado', class: 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/30' };
       default:
-        return { text: 'Disponible', class: 'bg-blue-500 text-white' };
+        return { text: 'Disponible', class: 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30' };
     }
   }
 
