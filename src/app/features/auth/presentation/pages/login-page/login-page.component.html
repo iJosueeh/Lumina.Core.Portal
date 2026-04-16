@@ -1,163 +1,185 @@
-<div class="flex h-screen overflow-hidden bg-gray-50">
-    <!-- Left Side: Branding -->
-    <div
-        class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-teal-600 to-teal-800 text-white p-12 flex-col justify-between relative overflow-hidden">
-        <!-- Background Pattern (Optional) -->
-        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+<div class="min-h-screen bg-[#070d1e] text-white overflow-hidden">
+  <div class="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+    <section class="relative hidden lg:block overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(84,214,255,0.12),transparent_28%),radial-gradient(circle_at_20%_20%,rgba(98,123,255,0.08),transparent_22%),linear-gradient(180deg,#09101f_0%,#070d1e_60%,#050913_100%)]"></div>
+
+      <svg class="absolute inset-0 h-full w-full opacity-80" viewBox="0 0 900 1200" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="waveLine" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#79e4ff" stop-opacity="0.6"></stop>
+            <stop offset="100%" stop-color="#5ea8ff" stop-opacity="0.05"></stop>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#89ecff" stop-opacity="0.7"></stop>
+            <stop offset="100%" stop-color="#89ecff" stop-opacity="0"></stop>
+          </radialGradient>
+        </defs>
+
+        <g fill="none" stroke="url(#waveLine)" stroke-width="2">
+          <path d="M-20,180 C120,40 250,40 360,200 C470,360 620,360 760,180 C820,100 880,70 940,90" opacity="0.22"></path>
+          <path d="M-30,320 C100,160 220,140 340,280 C460,420 610,450 770,290 C830,230 890,210 950,230" opacity="0.35"></path>
+          <path d="M-40,480 C90,300 240,280 360,420 C490,570 650,590 810,430 C860,380 920,350 980,360" opacity="0.4"></path>
+          <path d="M-20,640 C110,500 250,470 360,610 C490,770 640,790 780,620 C840,550 900,520 960,540" opacity="0.45"></path>
+          <path d="M-10,820 C120,700 260,650 380,790 C510,940 650,960 800,800 C860,730 910,700 970,720" opacity="0.32"></path>
+        </g>
+
+        <g stroke="#7ae9ff" stroke-opacity="0.12" stroke-width="1">
+          <circle cx="115" cy="130" r="5" fill="#7ae9ff" fill-opacity="0.7"></circle>
+          <circle cx="230" cy="210" r="3" fill="#7ae9ff" fill-opacity="0.6"></circle>
+          <circle cx="680" cy="180" r="4" fill="#7ae9ff" fill-opacity="0.7"></circle>
+          <circle cx="760" cy="360" r="3" fill="#7ae9ff" fill-opacity="0.6"></circle>
+          <circle cx="160" cy="760" r="4" fill="#7ae9ff" fill-opacity="0.7"></circle>
+          <circle cx="760" cy="820" r="5" fill="#7ae9ff" fill-opacity="0.7"></circle>
+          <path d="M115 130 L230 210 L340 150" opacity="0.35"></path>
+          <path d="M680 180 L760 360 L820 260" opacity="0.3"></path>
+          <path d="M160 760 L240 680 L340 760" opacity="0.32"></path>
+        </g>
+
+        <ellipse cx="430" cy="520" rx="280" ry="410" fill="url(#glow)" opacity="0.45"></ellipse>
+        <ellipse cx="330" cy="690" rx="260" ry="360" fill="url(#glow)" opacity="0.25"></ellipse>
+      </svg>
+
+      <div class="absolute left-16 top-16 h-40 w-40 rounded-full bg-cyan-400/5 blur-3xl"></div>
+      <div class="absolute right-10 top-28 h-56 w-56 rounded-full bg-cyan-300/5 blur-3xl"></div>
+      <div class="absolute left-20 bottom-24 h-64 w-64 rounded-full bg-violet-400/5 blur-3xl"></div>
+
+      <div class="relative z-10 flex h-full items-center px-12 py-16 xl:px-16 xl:py-20">
+        <div class="max-w-[430px] rounded-[2rem] border border-white/10 bg-white/8 p-8 backdrop-blur-md shadow-[0_24px_80px_rgba(0,0,0,0.35)] translate-y-6">
+          <h1 class="text-[2.15rem] font-extrabold leading-[1.08] tracking-tight text-[#e9efff] md:text-[2.45rem]">
+            Transformando el futuro
+            <br />
+            con tecnología
+          </h1>
+          <p class="mt-5 max-w-[340px] text-[1.02rem] leading-7 text-[#b9c4e0]">
+            Bienvenido al Portal de Acceso Unificado. Su viaje hacia el conocimiento comienza aquí.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="relative flex items-center justify-center px-5 py-12 sm:px-8 lg:px-10">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(89,222,255,0.08),transparent_22%),linear-gradient(180deg,#070d1e_0%,#090f22_100%)]"></div>
+
+      <div class="relative z-10 w-full max-w-[420px]">
+        <div class="mx-auto mb-9 flex h-14 w-14 items-center justify-center rounded-[1.1rem] border border-white/8 bg-[#1a2238] shadow-[0_18px_30px_rgba(0,0,0,0.24),0_0_0_1px_rgba(255,255,255,0.02)]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7 text-cyan-300">
+            <path d="M12.75 2.98a1.5 1.5 0 0 0-1.5 0l-7.5 4.33A1.5 1.5 0 0 0 3 8.61v8.66a1.5 1.5 0 0 0 .75 1.3l7.5 4.33a1.5 1.5 0 0 0 1.5 0l7.5-4.33a1.5 1.5 0 0 0 .75-1.3V8.61a1.5 1.5 0 0 0-.75-1.3l-7.5-4.33ZM12 7.25a.75.75 0 0 1 .75.75v2.25h2.25a.75.75 0 0 1 0 1.5h-2.25V14a.75.75 0 0 1-1.5 0v-2.25H9a.75.75 0 0 1 0-1.5h2.25V8a.75.75 0 0 1 .75-.75Z" />
+          </svg>
         </div>
 
-        <!-- Logo -->
-        <div class="relative z-10 flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-8 h-8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.499 5.216 50.552 50.552 0 00-2.658.814m-15.482 0A50.55 50.55 0 0112 13.489a50.55 50.55 0 0110.499-3.342" />
+        <div class="text-center">
+          <h2 class="text-3xl font-extrabold tracking-tight text-[#eef3ff]">Iniciar Sesión</h2>
+          <p class="mt-2 text-[1rem] text-[#a8b4d1]">Accede a tu cuenta para continuar.</p>
+        </div>
+
+        <div class="mt-9 rounded-full border border-white/10 bg-[#11182d] p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+          <div class="grid grid-cols-3 gap-1">
+            <button
+              *ngFor="let role of roles"
+              type="button"
+              (click)="setRole(role.id)"
+              class="rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200"
+              [ngClass]="{
+                'bg-[#262f4f] text-cyan-200 shadow-[inset_0_0_0_1px_rgba(116,226,255,0.08)]': selectedRole === role.id,
+                'text-[#b1bbd5] hover:text-white': selectedRole !== role.id
+              }"
+            >
+              {{ role.label }}
+            </button>
+          </div>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-10 space-y-6">
+          <div class="space-y-2">
+            <label for="username" class="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#94a0bf]">
+              Usuario / Correo institucional
+            </label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[#8f99b8]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Zm-12 14.25a8.25 8.25 0 1 1 16.5 0v.75H3.75v-.75Z" />
+                </svg>
+              </div>
+              <input
+                id="username"
+                type="email"
+                formControlName="username"
+                placeholder="nombre.apellido@institucion.edu"
+                class="h-14 w-full rounded-[1.2rem] border border-transparent bg-[#070b16] px-12 text-[0.98rem] text-[#eff4ff] outline-none placeholder:text-[#47506c] focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                [ngClass]="{'border-rose-500/60 focus:border-rose-400/60 focus:ring-rose-400/10': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label for="password" class="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#94a0bf]">
+              Contraseña
+            </label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[#8f99b8]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 0h10.5A2.25 2.25 0 0 1 20.25 12v6.75A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25V12A2.25 2.25 0 0 1 6 9.75Z" />
+                </svg>
+              </div>
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                class="h-14 w-full rounded-[1.2rem] border border-transparent bg-[#070b16] px-12 pr-14 text-[0.98rem] text-[#eff4ff] outline-none placeholder:text-[#47506c] focus:border-cyan-300/30 focus:ring-2 focus:ring-cyan-300/10"
+                [ngClass]="{'border-rose-500/60 focus:border-rose-400/60 focus:ring-rose-400/10': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}"
+              />
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#8f99b8] transition-colors hover:text-white"
+                aria-label="Mostrar u ocultar contraseña"
+              >
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c1.96-5.15 6.25-8.25 9.75-8.25S20.04 6.85 21.75 12c-1.96 5.15-6.25 8.25-9.75 8.25S3.96 17.15 2.25 12Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65M9.88 9.88a3 3 0 1 0 4.243 4.243" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <a href="#" class="text-sm font-semibold text-cyan-300 transition-colors hover:text-cyan-200">
+              ¿Olvidó su contraseña?
+            </a>
+          </div>
+
+          <div
+            *ngIf="errorMessage"
+            class="rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-200"
+          >
+            {{ errorMessage }}
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="isLoading || loginForm.invalid"
+            class="mt-2 flex h-14 w-full items-center justify-center rounded-full bg-[#5fe7ff] text-[1rem] font-semibold text-[#072336] shadow-[0_10px_28px_rgba(63,205,233,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-[#6feeff] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            <svg *ngIf="isLoading" class="mr-3 h-5 w-5 animate-spin text-[#072336]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span class="text-xl font-bold tracking-wide">Portal Estudiantil</span>
+            {{ isLoading ? 'Ingresando...' : 'Ingresar' }}
+          </button>
+        </form>
+
+        <div class="mt-12 text-center text-xs text-[#8993b1]">
+          <div class="flex items-center justify-center gap-5">
+            <a href="#" class="transition-colors hover:text-[#d6ddf1]">Términos de Servicio</a>
+            <a href="#" class="transition-colors hover:text-[#d6ddf1]">Política de Privacidad</a>
+          </div>
+          <p class="mt-4 tracking-[0.18em] uppercase text-[#55607d]">© 2024 Lumina Archive Systems</p>
         </div>
-
-        <!-- Hero Text -->
-        <div class="relative z-10 max-w-lg mb-20">
-            <h1 class="text-5xl font-extrabold mb-6 leading-tight">
-                Transformando el futuro con tecnología.
-            </h1>
-            <p class="text-teal-100 text-lg leading-relaxed">
-                Bienvenido al Portal de Acceso Unificado. Su viaje hacia el conocimiento comienza aquí.
-            </p>
-        </div>
-
-        <!-- Decorative Bottom Shape -->
-        <div
-            class="absolute bottom-0 left-0 right-0 h-32 bg-white/10 backdrop-blur-sm transform skew-y-3 origin-bottom-right">
-        </div>
-    </div>
-
-    <!-- Right Side: Login Form -->
-    <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 bg-white overflow-y-auto">
-
-        <div class="w-full max-w-md">
-            <!-- Mobile Logo (Visible only on small screens) -->
-            <div class="lg:hidden flex justify-center mb-8">
-                <div class="flex items-center gap-2 text-teal-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-10 h-10">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.499 5.216 50.552 50.552 0 00-2.658.814m-15.482 0A50.55 50.55 0 0112 13.489a50.55 50.55 0 0110.499-3.342" />
-                    </svg>
-                    <span class="text-2xl font-bold">Lumina.Core</span>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-900">Iniciar Sesión</h2>
-                <p class="text-gray-500 mt-2">Accede a tu cuenta para continuar.</p>
-            </div>
-
-            <!-- Role Tabs -->
-            <div class="flex p-1 bg-gray-100 rounded-xl mb-8">
-                <button *ngFor="let role of roles" (click)="setRole(role.id)"
-                    class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200" [ngClass]="{
-                        'bg-white text-gray-900 shadow-sm': selectedRole === role.id,
-                        'text-gray-500 hover:text-gray-700': selectedRole !== role.id
-                    }">
-                    {{ role.label }}
-                </button>
-            </div>
-
-            <!-- Form -->
-            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
-                <!-- Username -->
-                <div class="space-y-2">
-                    <label for="username" class="text-sm font-medium text-gray-900">
-                        Usuario / Correo Institucional
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                            </svg>
-                        </div>
-                        <input id="username" type="email" formControlName="username" placeholder="Ingrese su usuario"
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow sm:text-sm"
-                            [ngClass]="{'border-red-500 focus:ring-red-500': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}">
-                    </div>
-                </div>
-
-                <!-- Password -->
-                <div class="space-y-2">
-                    <label for="password" class="text-sm font-medium text-gray-900">
-                        Contraseña
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                        </div>
-                        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-                            placeholder="Ingrese su contraseña"
-                            class="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow sm:text-sm"
-                            [ngClass]="{'border-red-500 focus:ring-red-500': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
-                        <button type="button" (click)="togglePasswordVisibility()"
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
-                            <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Forgot Password -->
-                <div class="flex items-center justify-end">
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                        ¿Olvidó su contraseña?
-                    </a>
-                </div>
-
-                <!-- Error Message -->
-                <div *ngIf="errorMessage"
-                    class="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    {{ errorMessage }}
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" [disabled]="isLoading || loginForm.invalid"
-                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                    <svg *ngIf="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    {{ isLoading ? 'Ingresando...' : 'Ingresar' }}
-                </button>
-            </form>
-        </div>
-
-        <div class="absolute bottom-6 w-full text-center text-xs text-gray-400">
-            <a href="#" class="hover:text-gray-600 mr-4">Términos de Servicio</a>
-            <span>•</span>
-            <a href="#" class="hover:text-gray-600 ml-4">Política de Privacidad</a>
-        </div>
-    </div>
+      </div>
+    </section>
+  </div>
 </div>

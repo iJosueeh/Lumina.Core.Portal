@@ -17,7 +17,10 @@
         <div class="px-3">
           <p class="text-xs font-bold uppercase tracking-[0.1em] text-teal-400/90">Sección {{ section.order }}</p>
           <p class="text-sm font-semibold text-white mt-1">{{ section.title }}</p>
-          <p class="text-xs text-gray-500 mt-1">{{ section.videos.length }} {{ section.videos.length === 1 ? 'vídeo' : 'vídeos' }}</p>
+          <p class="text-xs text-gray-500 mt-1">
+            {{ section.videos.length }} {{ section.videos.length === 1 ? 'vídeo' : 'vídeos' }}
+            · {{ getSectionResourcesCount(section) }} {{ getSectionResourcesCount(section) === 1 ? 'material' : 'materiales' }}
+          </p>
         </div>
 
         <!-- Videos List -->
@@ -51,6 +54,25 @@
                     <p class="text-sm font-medium text-white line-clamp-2 group-hover:text-teal-200 transition-colors">
                       {{ video.title }}
                     </p>
+                    <p class="mt-1 text-[11px] text-gray-400">
+                      {{ getLessonResourcesCount(video) }} {{ getLessonResourcesCount(video) === 1 ? 'material' : 'materiales' }}
+                    </p>
+
+                    @if (activeLessonId === video.lessonId && getLessonResourcesCount(video) > 0) {
+                      <div class="mt-2 space-y-1.5">
+                        @for (resource of video.resources; track resource.id) {
+                          <a
+                            [href]="resource.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center justify-between gap-2 rounded-md border border-white/10 bg-black/20 px-2.5 py-1.5 text-[11px] text-gray-300 hover:border-teal-500/40 hover:text-teal-200"
+                          >
+                            <span class="truncate">{{ resource.title }}</span>
+                            <span class="flex-shrink-0 uppercase text-[10px] text-teal-300">{{ resource.type }}</span>
+                          </a>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <!-- Status Badge -->

@@ -18,10 +18,10 @@
           </button>
 
           <!-- Course Title Section -->
-          @if (course(); as courseData) {
+          @if (classroomData(); as courseData) {
             <div class="flex flex-col min-w-0">
               <p class="text-xs uppercase tracking-[0.2em] text-teal-400/70 font-semibold">AULA DE APRENDIZAJE</p>
-              <h1 class="text-lg md:text-xl font-bold truncate">{{ courseData.title }}</h1>
+              <h1 class="text-lg md:text-xl font-bold truncate">{{ courseData.courseTitle }}</h1>
             </div>
           }
         </div>
@@ -41,7 +41,7 @@
   </header>
 
   <!-- MAIN CONTENT -->
-  @if (courseQuery.isLoading() || courseQuery.isFetching()) {
+  @if (classroomQuery.isLoading() || classroomQuery.isFetching()) {
     <div class="h-[70vh] flex items-center justify-center">
       <div class="flex flex-col items-center gap-4">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500/20 border-t-teal-500"></div>
@@ -182,38 +182,98 @@
             </div>
           </div>
 
-          <!-- RECURSOS DE LA LECCIÓN CARD -->
-          <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 space-y-3">
-            <div class="flex items-start gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-teal-400 flex-shrink-0 mt-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542m16.5 0c.017.117.026.232.026.344v11.285c0 1.396-.7 2.637-1.876 3.37m0-13.83V9.776" />
-              </svg>
-              <h3 class="text-base font-bold text-white">Recursos de la lección</h3>
+          <div class="rounded-xl border border-amber-300/25 bg-amber-500/5 backdrop-blur-sm p-5 space-y-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-bold text-white">{{ displayedMaterialsTitle() }}</h3>
+              <span class="px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[11px] font-semibold uppercase tracking-wide">
+                {{ displayedMaterials().length }} {{ displayedMaterials().length === 1 ? 'recurso' : 'recursos' }}
+              </span>
             </div>
-            <div class="space-y-2">
-              @if (activeVideoLesson() && activeVideoLesson()!.resources.length) {
-                @for (resource of activeVideoLesson()!.resources; track resource.id) {
+
+            @if (shouldShowSectionSummary()) {
+              <div class="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wide">
+                <span class="px-2.5 py-1 rounded-full border border-white/15 bg-white/5 text-gray-200">
+                  Seccion: {{ activeSection()?.title || 'Sin seccion' }}
+                </span>
+                <span class="px-2.5 py-1 rounded-full border border-white/15 bg-white/5 text-gray-200">
+                  Totales seccion: {{ activeSectionMaterials().length }}
+                </span>
+              </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              <label class="text-xs text-gray-300 space-y-1">
+                <span class="block uppercase tracking-wide">Fuente</span>
+                <select
+                  [value]="materialScope()"
+                  (change)="onMaterialScopeChange($any($event.target).value)"
+                  class="w-full rounded-lg border border-white/15 bg-[#101827] px-3 py-2 text-sm text-white outline-none focus:border-amber-400/60"
+                >
+                  <option value="lesson">Lección actual</option>
+                  <option value="section">Sección activa</option>
+                  <option value="course">Todo el curso</option>
+                </select>
+              </label>
+
+              <label class="text-xs text-gray-300 space-y-1">
+                <span class="block uppercase tracking-wide">Tipo</span>
+                <select
+                  [value]="materialTypeFilter()"
+                  (change)="onMaterialTypeFilterChange($any($event.target).value)"
+                  class="w-full rounded-lg border border-white/15 bg-[#101827] px-3 py-2 text-sm text-white outline-none focus:border-amber-400/60"
+                >
+                  <option value="all">Todos</option>
+                  <option value="pdf">PDF</option>
+                  <option value="zip">ZIP</option>
+                  <option value="link">LINK</option>
+                  <option value="code">CODE</option>
+                </select>
+              </label>
+            </div>
+
+            @if (displayedMaterials().length) {
+              <div class="space-y-2">
+                @for (resource of displayedMaterials(); track resource.id) {
                   <a
                     [href]="resource.url"
+                    [attr.download]="shouldResourceDownload(resource.type) ? '' : null"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-teal-500/50 transition-all group"
+                    [title]="getResourceTypeLabel(resource.type)"
+                    class="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-amber-400/40 transition-all"
                   >
-                    <div class="flex items-center gap-2 min-w-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-teal-400 flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-13.5-4.5L9 2.25m0 0l4.5 4.5M9 2.25v13.5" />
-                      </svg>
-                      <div class="min-w-0">
-                        <p class="text-sm font-medium text-gray-200 truncate">{{ resource.title }}</p>
-                        <p class="text-xs text-gray-500">{{ resource.type | uppercase }}</p>
-                      </div>
-                    </div>
+                    <span class="truncate text-sm text-gray-200">{{ resource.title }}</span>
+
+                    <span class="flex-shrink-0 inline-flex items-center gap-2">
+                      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300">
+                      @if (isResourceType(resource.type, 'pdf')) {
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H8.25m.75 12h6m-6 3h4.5M12 3v4.5a.75.75 0 00.75.75h4.5M6.375 3h3.75a1.875 1.875 0 011.875 1.875v14.25A1.875 1.875 0 0110.125 21H6.375A1.875 1.875 0 014.5 19.125V4.875A1.875 1.875 0 016.375 3z" />
+                        </svg>
+                      } @else if (isResourceType(resource.type, 'zip')) {
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5V6.108a2.25 2.25 0 00-.66-1.59l-1.608-1.608a2.25 2.25 0 00-1.59-.66H7.5A2.25 2.25 0 005.25 4.5v15A2.25 2.25 0 007.5 21.75h9A2.25 2.25 0 0018.75 19.5V18m-6.75-9h.008v.008H12V9zm0 2.25h.008v.008H12v-.008zm0 2.25h.008v.008H12v-.008zm0 2.25h.008v.008H12v-.008zm6 1.5v-4.5m0 0l-1.5 1.5m1.5-1.5l1.5 1.5" />
+                        </svg>
+                      } @else if (isResourceType(resource.type, 'code')) {
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L21 12l-3.75 5.25M6.75 6.75L3 12l3.75 5.25M13.5 4.5L10.5 19.5" />
+                        </svg>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-1.35l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                        </svg>
+                      }
+                      </span>
+                      <span class="px-2 py-1 rounded-md border border-white/15 bg-white/5 text-[11px] uppercase tracking-wide text-gray-200 font-semibold">
+                        {{ getResourceActionLabel(resource.type) }}
+                      </span>
+                    </span>
                   </a>
                 }
-              } @else {
-                <p class="text-sm text-gray-400 text-center py-3">No hay recursos disponibles</p>
-              }
-            </div>
+              </div>
+            } @else {
+              <p class="text-sm text-gray-400">No hay materiales para el filtro seleccionado.</p>
+            }
           </div>
 
         </div>

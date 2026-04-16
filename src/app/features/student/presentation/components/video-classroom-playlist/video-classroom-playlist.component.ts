@@ -20,4 +20,12 @@ export class VideoClassroomPlaylistComponent {
   onSelect(video: VideoLessonViewModel): void {
     this.selectVideo.emit(video);
   }
+
+  getSectionResourcesCount(section: VideoSectionViewModel): number {
+    return section.videos.reduce((acc, video) => acc + (video.resources?.length || 0), 0);
+  }
+
+  getLessonResourcesCount(video: VideoLessonViewModel): number {
+    return video.resources?.length || 0;
+  }
 }

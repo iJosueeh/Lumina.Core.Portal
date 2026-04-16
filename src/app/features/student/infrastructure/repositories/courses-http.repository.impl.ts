@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, tap, catchError, timeout, retry } from 'rxjs';
 import { CoursesRepository } from '../../domain/repositories/courses.repository';
 import { CourseProgress } from '../../domain/models/course-progress.model';
-import { CourseDetail, Module, Lesson, Instructor } from '../../domain/models/course-detail.model';
+import { CourseDetail, Module, Lesson, Instructor, CourseMaterial, MaterialType } from '../../domain/models/course-detail.model';
 import { environment } from '../../../../../environments/environment';
 import { CacheService } from '../../../../core/services/cache.service';
 
@@ -144,7 +144,7 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
 
     private mapToCourseDetail(response: any): CourseDetail {
         // Map modules first to calculate progress
-        const mappedModules = response.modulos?.map((m: any) => this.mapToModule(m)) || response.modules?.map((m: any) => this.mapToModule(m)) || [];
+        const mappedModules: Module[] = response.modulos?.map((m: any) => this.mapToModule(m)) || response.modules?.map((m: any) => this.mapToModule(m)) || [];
         
         // Calculate progress based on completed lessons
         const totalLessons = mappedModules.reduce((total: number, module: Module) => total + (module.lessons?.length || 0), 0);
@@ -158,6 +158,8 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
             module.lessons?.length > 0 && module.lessons.every((l: Lesson) => l.isCompleted)
         ).length;
         
+        const flattenedMaterials = mappedModules.flatMap((module) => module.materials || []);
+
         return {
             id: response.idCurso || response.id,
             title: response.nombreCurso || response.titulo || 'Curso sin título',
@@ -180,7 +182,7 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
             totalModules: mappedModules.length,
             coverImage: response.imagenUrl || response.imagen || response.imageUrl || response.coverImage || response.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop',
             modules: mappedModules,
-            materials: [],
+            materials: flattenedMaterials,
             forums: [],
             forumPosts: [],
             forumComments: [],
@@ -215,9 +217,15 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
     }
 
     private mapToModule(module: any): Module {
+        const moduleId = String(module.id || `module-${Math.random()}`);
+        const moduleTitle = module.titulo || module.title || 'Módulo';
+        const moduleMaterials = (module.materiales || module.Materiales || []).map((material: any) =>
+            this.mapToModuleMaterial(material, moduleId, moduleTitle)
+        );
+
         return {
-            id: module.id || `module-${Math.random()}`,
-            title: module.titulo || module.title,
+            id: moduleId,
+            title: moduleTitle,
             lessons: module.lecciones?.map((leccion: any, index: number) => {
                 // Si leccion es un objeto con propiedades
                 if (typeof leccion === 'object' && leccion !== null) {
@@ -243,7 +251,39 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
             }) || [],
             duration: module.duracion || module.duration || '2 horas',
             description: module.descripcion || module.description,
+            materials: moduleMaterials,
             isExpanded: false
         };
+    }
+
+    private mapToModuleMaterial(material: any, moduleId: string, moduleName: string): CourseMaterial {
+        const title = material.titulo || material.Titulo || material.nombreOriginal || material.NombreOriginal || 'Material';
+        const rawType = material.tipoArchivo || material.TipoArchivo || material.tipo || material.Tipo || 'document';
+
+        return {
+            id: String(material.id || material.Id || `${moduleId}-${title}`).trim(),
+            title: String(title),
+            type: this.mapTipoToMaterialType(String(rawType)),
+            moduleId,
+            moduleName,
+            lessonId: undefined,
+            lessonName: undefined,
+            description: undefined,
+            url: String(material.url || material.Url || '').trim(),
+            fileSize: undefined,
+            duration: undefined,
+            isViewed: false,
+            uploadDate: new Date(material.fechaCreacion || material.FechaCreacion || Date.now()),
+            downloadCount: undefined,
+        };
+    }
+
+    private mapTipoToMaterialType(tipo: string): MaterialType {
+        const normalized = (tipo || '').toLowerCase();
+        if (normalized.includes('pdf')) return 'pdf';
+        if (normalized.includes('video') || normalized.includes('mp4') || normalized.includes('youtube') || normalized.includes('vimeo')) return 'video';
+        if (normalized.includes('link') || normalized.includes('url')) return 'link';
+        if (normalized.includes('code') || normalized.includes('codigo') || normalized.includes('zip')) return 'code';
+        return 'document';
     }
 }

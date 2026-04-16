@@ -7,6 +7,7 @@ export interface Module {
   lessons: Lesson[];
   duration: string;
   description?: string;
+  materials?: CourseMaterial[];
   isExpanded: boolean;
 }
 
