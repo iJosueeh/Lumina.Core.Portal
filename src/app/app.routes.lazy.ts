@@ -6,7 +6,6 @@ export const routes: Routes = [
     redirectTo: 'login',
     pathMatch: 'full',
   },
-  // ✅ Login - Lazy Loading
   {
     path: 'login',
     loadComponent: () => 
@@ -15,7 +14,6 @@ export const routes: Routes = [
       ),
     title: 'Iniciar Sesión - Lumina Core',
   },
-  // ✅ Student Module - Lazy Loading Completo
   {
     path: 'student',
     loadComponent: () =>
@@ -35,7 +33,7 @@ export const routes: Routes = [
             m => m.DashboardComponent
           ),
         title: 'Dashboard - Portal Estudiante',
-        data: { preload: true } // Precargar después de login
+        data: { preload: true }
       },
       {
         path: 'courses',
@@ -80,8 +78,8 @@ export const routes: Routes = [
       {
         path: 'schedule',
         loadComponent: () =>
-          import('@features/student/presentation/pages/schedule/schedule.component').then(
-            m => m.ScheduleComponent
+          import('@features/student/presentation/pages/schedule/schedule-page/schedule.component').then(
+            (c) => c.ScheduleComponent,
           ),
         title: 'Mi Horario - Portal Estudiante',
       },
@@ -137,7 +135,6 @@ export const routes: Routes = [
       },
     ],
   },
-  // ✅ Teacher Module - Lazy Loading Completo
   {
     path: 'teacher',
     loadComponent: () =>
@@ -157,7 +154,7 @@ export const routes: Routes = [
             m => m.TeacherDashboardComponent
           ),
         title: 'Dashboard - Portal Docente',
-        data: { preload: true } // Precargar después de login
+        data: { preload: true }
       },
       {
         path: 'courses',
@@ -241,13 +238,11 @@ export const routes: Routes = [
       },
     ],
   },
-  // ✅ Admin Module - Ya usa Lazy Loading
   {
     path: 'admin',
     loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
     title: 'Portal Administrador'
   },
-  // 404 - Not Found
   {
     path: '**',
     loadComponent: () =>

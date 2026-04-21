@@ -1,0 +1,7 @@
+@reference "../../../../../../../../styles.css";
+
+/* Estilos para la Tabla de Usuarios */
+:host {
+  display: block;
+  width: 100%;
+}

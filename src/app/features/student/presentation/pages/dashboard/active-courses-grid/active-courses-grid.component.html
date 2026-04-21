@@ -1,0 +1,56 @@
+<div class="space-y-4">
+    <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-800">Cursos en Curso</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (isLoading) {
+            @for (i of [1,2,3]; track i) {
+                <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                    <app-skeleton-loader height="160px" variant="rect"></app-skeleton-loader>
+                    <div class="p-5 space-y-3">
+                        <app-skeleton-loader height="20px" width="80%"></app-skeleton-loader>
+                        <app-skeleton-loader height="14px" width="50%"></app-skeleton-loader>
+                    </div>
+                </div>
+            }
+        } @else {
+            @for (course of courses; track course.id) {
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 overflow-hidden group cursor-pointer"
+                    (click)="viewCourse.emit(course.id)">
+                    <div class="relative h-40 overflow-hidden">
+                        <img [src]="course.imagenUrl" [alt]="course.titulo" 
+                            (error)="onImageError($event)"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4">
+                            <span class="px-2 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                                {{ course.categoria }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-slate-800 group-hover:text-teal-600 transition-colors mb-1 truncate">{{ course.titulo }}</h3>
+                        <p class="text-xs text-slate-400 mb-4">{{ course.moduloActual }}</p>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+                                <span>Progreso</span>
+                                <span>{{ course.progreso }}%</span>
+                            </div>
+                            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div [class]="getProgressColor(course.progreso)" 
+                                    class="h-full rounded-full transition-all duration-1000"
+                                    [style.width.%]="course.progreso"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            } @empty {
+                <div class="col-span-full py-12 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100 opacity-50">
+                    <p class="font-medium text-slate-500">No estás matriculado en ningún curso actualmente.</p>
+                </div>
+            }
+        }
+    </div>
+</div>

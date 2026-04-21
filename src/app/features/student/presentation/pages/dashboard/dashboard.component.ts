@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
@@ -10,134 +10,76 @@ import { Announcement } from '@features/student/domain/models/announcement.model
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
 
+// Sub-components
+import { WelcomeHeaderComponent } from './welcome-header/welcome-header.component';
+import { StudentStatsComponent } from './student-stats/student-stats.component';
+import { ActiveCoursesGridComponent } from './active-courses-grid/active-courses-grid.component';
+import { UpcomingAssignmentsComponent } from './upcoming-assignments/upcoming-assignments.component';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule, RouterModule, WelcomeHeaderComponent, 
+    StudentStatsComponent, ActiveCoursesGridComponent, UpcomingAssignmentsComponent
+  ],
   templateUrl: './dashboard.component.html',
-  styles: ``,
+  styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
-  userName = 'Estudiante';
-  pendingCount = 0;
-  Math = Math; // Exponer Math para usar en template
+  private getCoursesUseCase = inject(GetStudentCoursesUseCase);
+  private getAssignmentsUseCase = inject(GetUpcomingAssignmentsUseCase);
+  private getAnnouncementsUseCase = inject(GetRecentAnnouncementsUseCase);
+  private authRepository = inject(AuthRepository);
+  public router = inject(Router);
+  private cacheService = inject(CacheService);
 
-  courses: CourseProgress[] = [];
-  assignments: Assignment[] = [];
-  announcements: Announcement[] = [];
-
-  isLoadingCourses = true;
-  isLoadingAssignments = true;
-  isLoadingAnnouncements = true;
-
-  // View Controls
-  assignmentsLimit = 3;
-  announcementsLimit = 3;
-
-  toggleAssignmentsView(): void {
-    this.assignmentsLimit = this.assignmentsLimit === 3 ? this.assignments.length : 3;
-  }
-
-  toggleAnnouncementsView(): void {
-    this.announcementsLimit = this.announcementsLimit === 3 ? this.announcements.length : 3;
-  }
-
-  constructor(
-    private getCoursesUseCase: GetStudentCoursesUseCase,
-    private getAssignmentsUseCase: GetUpcomingAssignmentsUseCase,
-    private getAnnouncementsUseCase: GetRecentAnnouncementsUseCase,
-    private authRepository: AuthRepository,
-    private router: Router,
-    private cacheService: CacheService
-  ) {}
+  userName = signal('Estudiante');
+  courses = signal<CourseProgress[]>([]);
+  assignments = signal<Assignment[]>([]);
+  announcements = signal<Announcement[]>([]);
+  
+  isLoading = signal(true);
+  pendingCount = signal(0);
 
   ngOnInit(): void {
-    const currentUser = this.authRepository.getCurrentUser();
-    if (currentUser) {
-      this.userName = currentUser.fullName.split(' ')[0]; // Solo primer nombre
-      this.loadDashboardData(currentUser.id);
+    const user = this.authRepository.getCurrentUser();
+    if (user) {
+      this.userName.set(user.fullName.split(' ')[0]);
+      this.loadData(user.id);
     }
   }
 
-  loadDashboardData(studentId: string): void {
+  loadData(studentId: string): void {
+    this.isLoading.set(true);
     this.cacheService.invalidate(`student-courses-${studentId}`);
 
-    // Cargar cursos
     this.getCoursesUseCase.execute(studentId).subscribe({
-      next: (courses) => {
-        this.courses = courses;
-        this.isLoadingCourses = false;
-      },
-      error: () => (this.isLoadingCourses = false),
+      next: (data) => this.courses.set(data),
+      complete: () => this.isLoading.set(false)
     });
 
-    // Cargar tareas
     this.getAssignmentsUseCase.execute(studentId).subscribe({
-      next: (assignments) => {
-        this.assignments = assignments;
-        this.pendingCount = assignments.length || 0;
-        this.isLoadingAssignments = false;
-      },
-      error: () => {
-        this.isLoadingAssignments = false;
-        this.pendingCount = 0;
-      },
+      next: (data) => {
+        this.assignments.set(data);
+        this.pendingCount.set(data.length);
+      }
     });
 
-    // Cargar anuncios
     this.getAnnouncementsUseCase.execute(studentId).subscribe({
-      next: (announcements) => {
-        this.announcements = announcements;
-        this.isLoadingAnnouncements = false;
-      },
-      error: () => (this.isLoadingAnnouncements = false),
+      next: (data) => this.announcements.set(data)
     });
   }
 
-  getProgressColor(progreso: number): string {
-    if (progreso >= 70) return 'bg-blue-500';
-    if (progreso >= 30) return 'bg-yellow-500';
-    return 'bg-green-500';
-  }
-
-  getCategoryColor(categoria: string): string {
-    const colors: Record<string, string> = {
-      PROGRAMACIÓN: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      BACKEND: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-      'BASES DE DATOS': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    };
-    return colors[categoria] || 'bg-gray-100 text-gray-700';
-  }
-
-  getTimeAgo(date: Date): string {
-    const now = new Date();
-    const diff = now.getTime() - new Date(date).getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-
-    if (hours < 1) return 'Hace menos de 1h';
-    if (hours < 24) return `Hace ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `Hace ${days} día${days > 1 ? 's' : ''}`;
-  }
-
-  viewCourse(courseId: string): void {
-    this.router.navigate(['/student/course', courseId]);
-  }
-
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
-  }
-
-  clearCacheAndReload(): void {
-    console.log('🧹 Limpiando caché...');
-    this.cacheService.clear();
-    const currentUser = this.authRepository.getCurrentUser();
-    if (currentUser) {
-      this.isLoadingCourses = true;
-      this.isLoadingAssignments = true;
-      this.isLoadingAnnouncements = true;
-      this.loadDashboardData(currentUser.id);
+  handleRefresh(): void {
+    const user = this.authRepository.getCurrentUser();
+    if (user) {
+      this.cacheService.clear();
+      this.loadData(user.id);
     }
+  }
+
+  navigateToCourse(id: string): void {
+    this.router.navigate(['/student/course', id]);
   }
 }

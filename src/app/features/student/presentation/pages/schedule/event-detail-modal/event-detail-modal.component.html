@@ -1,0 +1,133 @@
+<div
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  (click)="close.emit()"
+>
+  <div
+    class="bg-[#1a2942] rounded-2xl border border-teal-500/20 max-w-lg w-full overflow-hidden shadow-2xl shadow-teal-500/10"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header with color indicator -->
+    <div class="h-2 w-full" [class]="event.color"></div>
+    <div class="p-6 border-b border-teal-500/10 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span
+          class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-teal-500/20 text-teal-400 border border-teal-500/30"
+        >
+          {{ event.type }}
+        </span>
+      </div>
+      <button (click)="close.emit()" class="text-gray-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8">
+      <h2 class="text-2xl font-bold text-white mb-6 leading-tight">
+        {{ event.title }}
+      </h2>
+
+      <div class="space-y-6">
+        <!-- Professor -->
+        @if (event.professor) {
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Profesor</p>
+              <p class="text-white font-semibold">{{ event.professor }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- Time & Location Grid -->
+        <div class="grid grid-cols-2 gap-6">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Horario</p>
+              <p class="text-white font-semibold">{{ event.startTime }} - {{ event.endTime }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center">
+              @if (event.locationType === 'virtual') {
+                <svg class="w-5 h-5 text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z"
+                  />
+                </svg>
+              } @else {
+                <svg class="w-5 h-5 text-teal-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              }
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Ubicación</p>
+              <p class="text-white font-semibold truncate">{{ event.location }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        @if (event.description) {
+          <div class="pt-6 border-t border-teal-500/10">
+            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2">
+              Descripción
+            </p>
+            <p class="text-gray-300 text-sm leading-relaxed">
+              {{ event.description }}
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-6 bg-[#0a1628]/50 border-t border-teal-500/10 flex gap-3">
+      @if (event.meetingLink) {
+        <a
+          [href]="event.meetingLink"
+          target="_blank"
+          class="flex-1 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-bold py-3 px-4 rounded-xl text-center transition-all shadow-lg shadow-teal-500/20"
+        >
+          Unirse a la Clase
+        </a>
+      }
+      <button
+        (click)="close.emit()"
+        class="flex-1 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 font-bold py-3 px-4 rounded-xl transition-all border border-teal-500/20"
+      >
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
+  <div (click)="close.emit()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+  <div [class]="sizeClass" class="relative w-full mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+      <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ title }}</h3>
+      <button (click)="close.emit()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="flex-1 p-6 overflow-y-auto">
+      <ng-content></ng-content>
+    </div>
+    @if (showFooter) {
+      <div class="p-6 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+        <ng-content select="[footer]"></ng-content>
+      </div>
+    }
+  </div>
+</div>

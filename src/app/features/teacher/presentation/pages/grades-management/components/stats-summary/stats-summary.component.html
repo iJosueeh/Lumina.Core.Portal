@@ -1,0 +1,23 @@
+@if (stats) {
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <app-stat-card 
+        label="Promedio Grupal" 
+        [value]="stats.promedioGrupal" 
+        icon="chart-bar" 
+        color="blue">
+    </app-stat-card>
+    <app-stat-card 
+        label="Aprobados" 
+        [value]="stats.aprobados + '%'" 
+        icon="check-circle" 
+        color="green" 
+        trend="META ALCANZADA">
+    </app-stat-card>
+    <app-stat-card 
+        label="Reprobados" 
+        [value]="stats.reprobados + '%'" 
+        icon="exclamation-triangle" 
+        color="orange">
+    </app-stat-card>
+</div>
+}

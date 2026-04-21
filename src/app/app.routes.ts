@@ -33,7 +33,7 @@ export const routes: Routes = [
             m => m.DashboardComponent
           ),
         title: 'Dashboard - Portal Estudiante',
-        data: { preload: true } // Precargar después de login
+        data: { preload: true }
       },
       {
         path: 'courses',
@@ -78,8 +78,8 @@ export const routes: Routes = [
       {
         path: 'schedule',
         loadComponent: () =>
-          import('@features/student/presentation/pages/schedule/schedule.component').then(
-            m => m.ScheduleComponent
+          import('@features/student/presentation/pages/schedule/schedule-page/schedule.component').then(
+            (c) => c.ScheduleComponent,
           ),
         title: 'Mi Horario - Portal Estudiante',
       },
@@ -154,7 +154,7 @@ export const routes: Routes = [
             m => m.TeacherDashboardComponent
           ),
         title: 'Dashboard - Portal Docente',
-        data: { preload: true } // Precargar después de login
+        data: { preload: true }
       },
       {
         path: 'courses',

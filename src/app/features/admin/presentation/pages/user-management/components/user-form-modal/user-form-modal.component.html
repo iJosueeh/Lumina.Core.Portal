@@ -1,0 +1,74 @@
+<app-modal-container 
+    [title]="isEditing ? 'Editar Perfil de Usuario' : 'Registrar Nuevo Usuario'"
+    (close)="close.emit()"
+    [showFooter]="true">
+    
+    <div class="space-y-6">
+        @if (saveError) {
+            <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400 text-sm font-medium animate-in fade-in zoom-in duration-300">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {{ saveError }}
+            </div>
+        }
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Email -->
+            <div class="md:col-span-2">
+                <app-form-field label="Correo Institucional" [required]="true" [error]="emailCheckMessage">
+                    <div class="relative">
+                        <app-input type="email" [ngModel]="user.email" (ngModelChange)="onEmailChange($event)" 
+                            [readonly]="isEditing"
+                            placeholder="usuario@lumina.edu">
+                        </app-input>
+                        
+                        @if (isCheckingEmail) {
+                            <div class="absolute right-4 top-3.5"><div class="animate-spin h-5 w-5 border-2 border-teal-500 border-t-transparent rounded-full"></div></div>
+                        } @else if (emailAvailability === 'available' && !isEditing) {
+                            <div class="absolute right-4 top-3.5 text-green-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                        }
+                    </div>
+                </app-form-field>
+            </div>
+
+            @if (!isEditing) {
+                <app-form-field label="Nombres" [required]="true">
+                    <app-input [(ngModel)]="user.nombresPersona"></app-input>
+                </app-form-field>
+                <app-form-field label="Apellido Paterno" [required]="true">
+                    <app-input [(ngModel)]="user.apellidoPaterno"></app-input>
+                </app-form-field>
+            } @else {
+                <div class="md:col-span-2">
+                    <app-form-field label="Nombre Completo">
+                        <app-input [(ngModel)]="user.fullName"></app-input>
+                    </app-form-field>
+                </div>
+            }
+
+            <app-form-field label="Rol del Sistema">
+                <app-select [(ngModel)]="user.role">
+                    <option value="STUDENT">Estudiante</option>
+                    <option value="TEACHER">Docente</option>
+                    <option value="ADMIN">Administrador</option>
+                </app-select>
+            </app-form-field>
+
+            <app-form-field label="Estado">
+                <app-select [(ngModel)]="user.status">
+                    <option value="ACTIVE">Activo</option>
+                    <option value="SUSPENDED">Suspendido</option>
+                </app-select>
+            </app-form-field>
+        </div>
+    </div>
+
+    <div footer class="flex items-center gap-4">
+        <app-button variant="ghost" (onClick)="close.emit()">Cancelar</app-button>
+        <app-button 
+            [isLoading]="isSaving" 
+            [disabled]="isSaving || (emailAvailability === 'taken' && !isEditing)"
+            (onClick)="submit()">
+            {{ isEditing ? 'Actualizar Usuario' : 'Registrar Usuario' }}
+        </app-button>
+    </div>
+</app-modal-container>

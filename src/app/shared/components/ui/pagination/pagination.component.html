@@ -1,0 +1,31 @@
+<div class="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-100">
+    <div class="text-sm text-slate-500">
+        Página <span class="font-bold text-slate-900">{{ currentPage }}</span> de <span class="font-bold text-slate-900">{{ totalPages }}</span>
+    </div>
+    <div class="flex items-center gap-2">
+        <button 
+            (click)="previousPage()" 
+            [disabled]="currentPage === 1"
+            class="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        
+        <div class="flex items-center gap-1">
+            @for (page of pages; track page) {
+                <button 
+                    (click)="goToPage(page)"
+                    [class]="page === currentPage ? 'bg-teal-600 text-white shadow-lg shadow-teal-500/20' : 'text-slate-600 hover:bg-slate-50'"
+                    class="w-9 h-9 rounded-lg text-sm font-bold transition-all">
+                    {{ page }}
+                </button>
+            }
+        </div>
+
+        <button 
+            (click)="nextPage()" 
+            [disabled]="currentPage === totalPages"
+            class="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+<app-modal-container 
+    [title]="isEdit ? 'Editar Evaluación' : 'Nueva Evaluación'" 
+    (close)="close.emit()"
+    [showFooter]="true">
+    
+    <form [formGroup]="form" class="space-y-4">
+        <app-form-field label="Título de la Evaluación" [required]="true" [error]="form.get('titulo')?.invalid && form.get('titulo')?.touched ? 'El título es requerido' : null">
+            <app-input formControlName="titulo" placeholder="Ej: Examen Parcial I"></app-input>
+        </app-form-field>
+
+        <app-form-field label="Descripción">
+            <app-input formControlName="descripcion" placeholder="Opcional..."></app-input>
+        </app-form-field>
+
+        <div class="grid grid-cols-2 gap-4">
+            <app-form-field label="Peso (%)" [required]="true">
+                <app-input type="number" formControlName="peso"></app-input>
+            </app-form-field>
+            <app-form-field label="Fecha Límite" [required]="true">
+                <app-input type="date" formControlName="fechaFin"></app-input>
+            </app-form-field>
+        </div>
+    </form>
+
+    <div footer class="flex gap-3">
+        <app-button variant="ghost" (onClick)="close.emit()">Cancelar</app-button>
+        <app-button [isLoading]="isSaving" [disabled]="form.invalid" (onClick)="save.emit()">
+            {{ isEdit ? 'Actualizar' : 'Crear Evaluación' }}
+        </app-button>
+    </div>
+</app-modal-container>

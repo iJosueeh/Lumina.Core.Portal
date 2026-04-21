@@ -1,0 +1,41 @@
+<div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+    <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-800">Próximas Tareas</h3>
+        <button (click)="viewAll.emit()" class="text-xs font-bold text-teal-600 hover:underline">Ver todas</button>
+    </div>
+
+    <div class="space-y-4">
+        @if (isLoading) {
+            @for (i of [1,2,3]; track i) {
+                <div class="flex gap-3 animate-pulse">
+                    <app-skeleton-loader variant="rect" height="40px" width="40px" class="rounded-xl"></app-skeleton-loader>
+                    <div class="flex-1 space-y-2">
+                        <app-skeleton-loader height="14px" width="80%"></app-skeleton-loader>
+                        <app-skeleton-loader height="10px" width="40%"></app-skeleton-loader>
+                    </div>
+                </div>
+            }
+        } @else {
+            @for (task of assignments.slice(0, limit); track task.id) {
+                <div class="flex gap-4 group">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                        <i class="fas fa-tasks text-sm"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="text-sm font-bold text-slate-700 truncate mb-0.5">{{ task.titulo }}</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{{ task.cursoNombre }}</span>
+                            <span [class]="task.esUrgente ? 'text-red-500' : 'text-amber-500'" class="text-[10px] font-black uppercase">
+                                {{ getTimeAgo(task.fechaLimite) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            } @empty {
+                <div class="py-8 text-center opacity-30">
+                    <p class="text-sm font-medium">No hay tareas pendientes</p>
+                </div>
+            }
+        }
+    </div>
+</div>

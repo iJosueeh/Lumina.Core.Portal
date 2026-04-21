@@ -1,0 +1,66 @@
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 sticky left-0 bg-white z-10">Estudiante</th>
+                    @for (evaluacion of evaluaciones; track evaluaciones.indexOf(evaluacion)) {
+                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-center min-w-[120px]">
+                            <div class="flex flex-col items-center gap-1">
+                                <span>{{ evaluacion.titulo }}</span>
+                                <span class="text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded">{{ evaluacion.peso }}%</span>
+                                <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-400 hover:text-teal-600 underline">Editar</button>
+                            </div>
+                        </th>
+                    }
+                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-teal-600 text-center bg-teal-50/30">Promedio</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                @if (isLoading) {
+                    @for (i of [1,2,3,4,5]; track i) {
+                        <tr>
+                            <td class="px-6 py-4"><app-skeleton-loader height="20px" width="150px"></app-skeleton-loader></td>
+                            @for (ev of evaluaciones; track ev) {
+                                <td class="px-6 py-4"><app-skeleton-loader height="30px" width="40px" class="mx-auto"></app-skeleton-loader></td>
+                            }
+                            <td class="px-6 py-4"><app-skeleton-loader height="20px" width="40px" class="mx-auto"></app-skeleton-loader></td>
+                        </tr>
+                    }
+                } @else {
+                    @for (calif of calificaciones; track calif.estudianteId) {
+                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="px-6 py-4 sticky left-0 bg-white group-hover:bg-slate-50/50 z-10">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-slate-700">{{ calif.estudianteNombre }}</span>
+                                    <span class="text-xs text-slate-400 font-mono">{{ calif.estudianteCodigo }}</span>
+                                </div>
+                            </td>
+                            @for (nota of calif.notas; track nota.evaluacionId) {
+                                <td class="px-6 py-4">
+                                    <input type="number" [(ngModel)]="nota.valor" 
+                                        class="w-16 mx-auto block text-center bg-slate-50 border-none rounded-lg px-2 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                                        min="0" max="20" step="0.5">
+                                </td>
+                            }
+                            <td class="px-6 py-4 text-center">
+                                <span [class]="calif.promedio >= 10.5 ? 'text-teal-600' : 'text-red-500'" class="font-black text-lg">
+                                    {{ calif.promedio }}
+                                </span>
+                            </td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td [attr.colspan]="evaluaciones.length + 2" class="px-6 py-20 text-center">
+                                <div class="flex flex-col items-center gap-3 opacity-40">
+                                    <i class="fas fa-user-graduate text-5xl text-slate-300"></i>
+                                    <p class="text-xl font-bold tracking-tight text-slate-500">No se encontraron estudiantes</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

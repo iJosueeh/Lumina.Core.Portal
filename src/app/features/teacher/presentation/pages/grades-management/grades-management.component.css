@@ -1,0 +1,24 @@
+@reference "../../../../../../styles.css";
+
+/* Estilos para Gestión de Calificaciones */
+.grades-container {
+  @apply min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942] p-6;
+}
+
+.grade-card {
+  @apply bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm p-6 hover:shadow-lg hover:shadow-teal-500/5 transition-all;
+}
+
+.table-row-hover {
+  @apply hover:bg-white/5 transition-colors cursor-pointer;
+}
+
+/* Animaciones de Toasts (Reutilizadas o globales) */
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.toast-enter {
+  animation: toastSlideIn 0.3s ease-out;
+}

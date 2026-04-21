@@ -1,0 +1,5 @@
+/* Estilos para la Tabla de Cursos de Admin */
+:host {
+  display: block;
+  width: 100%;
+}

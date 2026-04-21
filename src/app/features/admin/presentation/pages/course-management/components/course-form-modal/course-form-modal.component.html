@@ -1,0 +1,95 @@
+<app-modal-container 
+    [title]="isEditing ? 'Editar Curso' : 'Nuevo Curso'" 
+    (close)="close.emit()"
+    size="lg"
+    [showFooter]="true">
+    
+    <!-- Tabs -->
+    <div class="flex items-center gap-6 border-b border-slate-100 mb-6">
+        @for (tab of tabs; track tab.id) {
+            <button 
+                (click)="activeTab = tab.id"
+                [class]="activeTab === tab.id ? 'text-teal-600 border-teal-600' : 'text-slate-400 border-transparent hover:text-slate-600'"
+                class="pb-4 text-sm font-bold border-b-2 transition-all">
+                {{ tab.label }}
+            </button>
+        }
+    </div>
+
+    @if (activeTab === 'general') {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+            <app-form-field label="Nombre del Curso" [required]="true">
+                <app-input [(ngModel)]="course.name" placeholder="Ej: Algoritmos Avanzados"></app-input>
+            </app-form-field>
+
+            <app-form-field label="Código del Curso" [required]="true">
+                <app-input [(ngModel)]="course.code" placeholder="Ej: CS-101"></app-input>
+            </app-form-field>
+
+            <app-form-field label="Docente Responsable">
+                <app-select [(ngModel)]="course.instructorId">
+                    <option [value]="null">Sin asignar</option>
+                    @for (docente of docentes; track docente.id) {
+                        <option [value]="docente.id">{{ docente.nombreCompleto }}</option>
+                    }
+                </app-select>
+            </app-form-field>
+
+            <div class="grid grid-cols-2 gap-4">
+                <app-form-field label="Capacidad">
+                    <app-input type="number" [(ngModel)]="course.capacity"></app-input>
+                </app-form-field>
+                <app-form-field label="Créditos">
+                    <app-input type="number" [(ngModel)]="course.creditos"></app-input>
+                </app-form-field>
+            </div>
+
+            <app-form-field label="Estado del Curso" class="md:col-span-2">
+                <div class="flex gap-2">
+                    @for (st of statuses; track st) {
+                        <button 
+                            (click)="setStatus(st)"
+                            [class]="course.status === st ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50'"
+                            class="px-4 py-2 rounded-xl border text-xs font-bold transition-all flex-1">
+                            {{ st }}
+                        </button>
+                    }
+                </div>
+            </app-form-field>
+        </div>
+    }
+
+    @if (activeTab === 'modules') {
+        <div class="space-y-4 animate-in fade-in duration-300">
+            <div class="flex items-center justify-between">
+                <h4 class="text-sm font-bold text-slate-700">Módulos del Curso</h4>
+                <app-button variant="ghost" (onClick)="addModule()">+ Añadir Módulo</app-button>
+            </div>
+            
+            <div class="space-y-3">
+                @for (module of course.modules; let i = $index; track i) {
+                    <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-100">{{ i + 1 }}</span>
+                        <div class="flex-1">
+                            <app-input [(ngModel)]="module.titulo" placeholder="Título del módulo..."></app-input>
+                        </div>
+                        <app-button variant="danger" (onClick)="removeModule(i)">
+                            <i class="fas fa-trash"></i>
+                        </app-button>
+                    </div>
+                } @empty {
+                    <div class="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl opacity-40">
+                        <p class="text-sm font-medium">No hay módulos registrados</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div footer class="flex items-center gap-4">
+        <app-button variant="ghost" (onClick)="close.emit()">Cancelar</app-button>
+        <app-button (onClick)="save.emit(course)">
+            {{ isEditing ? 'Guardar Cambios' : 'Crear Curso' }}
+        </app-button>
+    </div>
+</app-modal-container>

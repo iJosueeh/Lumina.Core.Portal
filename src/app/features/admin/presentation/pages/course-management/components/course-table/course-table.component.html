@@ -1,0 +1,59 @@
+<div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="border-b border-slate-100 bg-slate-50/50">
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Curso</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Código</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Docente</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Estado</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+            @if (isLoading) {
+                @for (i of [1,2,3,4,5]; track i) {
+                    <tr>
+                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="200px"></app-skeleton-loader></td>
+                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="80px"></app-skeleton-loader></td>
+                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="120px"></app-skeleton-loader></td>
+                        <td class="px-6 py-4"><app-skeleton-loader height="24px" width="70px"></app-skeleton-loader></td>
+                        <td class="px-6 py-4"><app-skeleton-loader height="32px" width="100px" class="ml-auto"></app-skeleton-loader></td>
+                    </tr>
+                }
+            } @else {
+                @for (course of courses; track course.id) {
+                    <tr class="hover:bg-slate-50/50 transition-all group">
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-slate-700 block">{{ course.name }}</span>
+                            <span class="text-xs text-slate-400 font-medium">{{ course.ciclo }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-mono text-slate-500">{{ course.code }}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600 font-medium">{{ course.teacherName || 'Sin asignar' }}</td>
+                        <td class="px-6 py-4">
+                            <app-status-badge [status]="course.status"></app-status-badge>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button (click)="edit.emit(course)" class="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button (click)="delete.emit(course)" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center gap-3 opacity-40">
+                                <i class="fas fa-book-open text-5xl text-slate-300"></i>
+                                <p class="text-xl font-bold tracking-tight text-slate-500">No se encontraron cursos</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
