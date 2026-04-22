@@ -1,0 +1,26 @@
+<div 
+  class="inline-flex items-center gap-1 p-1 rounded-2xl border border-white/10 overflow-x-auto no-scrollbar"
+  [class.bg-[#0a1730]/90]="variant() === 'default'"
+  [class.bg-slate-800/60]="variant() === 'ghost'"
+  [class.bg-transparent]="variant() === 'pills'"
+>
+  @for (tab of tabs(); track tab.id) {
+    <button
+      (click)="selectTab(tab.id)"
+      [class.bg-gradient-to-r]="activeTabId() === tab.id"
+      [class.from-teal-500]="activeTabId() === tab.id && variant() === 'ghost'"
+      [class.to-teal-400]="activeTabId() === tab.id && variant() === 'ghost'"
+      [class.from-cyan-400]="activeTabId() === tab.id && variant() === 'default'"
+      [class.to-sky-300]="activeTabId() === tab.id && variant() === 'default'"
+      [class.text-slate-900]="activeTabId() === tab.id"
+      [class.font-bold]="activeTabId() === tab.id"
+      [class.text-slate-400]="activeTabId() !== tab.id"
+      class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all duration-300 whitespace-nowrap hover:text-white"
+    >
+      @if (tab.icon) {
+        <!-- Opcional: podrías integrar una librería de iconos o usar SVG dinámicos aquí -->
+      }
+      {{ tab.label }}
+    </button>
+  }
+</div>

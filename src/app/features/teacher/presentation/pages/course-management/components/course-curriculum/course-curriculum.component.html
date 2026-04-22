@@ -1,0 +1,93 @@
+<div class="space-y-4">
+  @for (modulo of modulos(); track modulo.id) {
+    <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden">
+      <!-- Módulo Header -->
+      <button
+        (click)="toggleModule(modulo.id)"
+        class="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-700/20 transition-colors"
+      >
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 font-bold">
+            {{ modulo.orden }}
+          </div>
+          <div class="text-left">
+            <h4 class="text-lg font-bold text-white">{{ modulo.titulo }}</h4>
+            <p class="text-xs text-slate-400">{{ modulo.lecciones.length }} lecciones • {{ modulo.duracion }}</p>
+          </div>
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-slate-500 transition-transform duration-300"
+          [class.rotate-180]="expandedModules().has(modulo.id)"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <!-- Lecciones del Módulo -->
+      @if (expandedModules().has(modulo.id)) {
+        <div class="px-6 py-2 border-t border-slate-700/30 divide-y divide-slate-700/20">
+          @for (leccion of modulo.lecciones; track leccion.id) {
+            <div class="py-3 flex items-center justify-between group">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded-lg bg-slate-700/50 text-teal-400 group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getLeccionIcon(leccion.tipo)" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-200">{{ leccion.titulo }}</p>
+                  <p class="text-[10px] text-slate-500 uppercase tracking-wider">{{ leccion.tipo }} • {{ leccion.duracion }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-1.5 text-slate-400 hover:text-white transition-colors" title="Editar lección">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Materiales del Módulo -->
+          @if (modulo.materiales && modulo.materiales.length > 0) {
+            <div class="mt-4 pb-4">
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Recursos Descargables</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (material of modulo.materiales; track material.id) {
+                  <div class="p-3 rounded-xl bg-slate-900/40 border border-slate-700/30 flex items-center justify-between gap-3 group/item">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-teal-400 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <span class="text-xs font-medium text-slate-300 truncate" [title]="material.titulo">{{ material.titulo }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button (click)="onOpenMaterial.emit(material)" class="p-1.5 text-slate-400 hover:text-teal-400 transition-colors" title="Previsualizar">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      <button (click)="onDownloadMaterial.emit(material)" class="p-1.5 text-slate-400 hover:text-teal-400 transition-colors" title="Descargar">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,51 @@
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-3xl overflow-hidden animate-in fade-in duration-700">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
+          <th class="px-8 py-5">Estudiante</th>
+          <th class="px-8 py-5 text-center">Sesiones</th>
+          <th class="px-8 py-5 text-center text-teal-400">Presentes</th>
+          <th class="px-8 py-5 text-center text-red-400">Ausentes</th>
+          <th class="px-8 py-5 text-center text-orange-400">Tardanzas</th>
+          <th class="px-8 py-5 text-right">Porcentaje</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-700/30">
+        @for (r of resumen(); track r.estudianteId) {
+          <tr class="hover:bg-slate-800/60 transition-colors group">
+            <td class="px-8 py-5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-slate-700/50 flex items-center justify-center text-teal-400 font-black border border-white/5">
+                  {{ r.estudianteNombre.charAt(0) }}
+                </div>
+                <p class="text-sm font-bold text-white tracking-tight">{{ r.estudianteNombre }}</p>
+              </div>
+            </td>
+            <td class="px-8 py-5 text-center text-sm font-medium text-slate-400">{{ r.totalSesiones }}</td>
+            <td class="px-8 py-5 text-center text-sm font-bold text-teal-500/80">{{ r.presentes }}</td>
+            <td class="px-8 py-5 text-center text-sm font-bold text-red-500/80">{{ r.ausentes }}</td>
+            <td class="px-8 py-5 text-center text-sm font-bold text-orange-500/80">{{ r.tardanzas }}</td>
+            <td class="px-8 py-5 text-right">
+              <div class="flex flex-col items-end gap-1.5">
+                <span class="text-base font-black tracking-tighter" [class]="getAsistenciaColor(r.porcentajeAsistencia)">
+                  {{ r.porcentajeAsistencia }}%
+                </span>
+                <app-status-badge
+                  [status]="getStatusColor(r.porcentajeAsistencia)"
+                  [label]="r.porcentajeAsistencia >= 90 ? 'Excelente' : (r.porcentajeAsistencia >= 75 ? 'Regular' : 'Riesgo')"
+                />
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="px-8 py-20 text-center text-slate-500 italic font-medium">
+              No hay registros de asistencia para los criterios seleccionados.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

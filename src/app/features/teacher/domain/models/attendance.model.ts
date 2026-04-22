@@ -1,46 +1,46 @@
-export interface Attendance {
-    id: string;
-    cursoId: string;
-    fecha: Date;
-    sesion: number;
-    registros: AttendanceRecord[];
-    tema: string;
-    observaciones?: string;
+export interface Asistencia {
+  estudianteId: string;
+  estado: 'Presente' | 'Ausente' | 'Tardanza';
+  horaLlegada?: string;
+  observacion?: string;
 }
 
-export interface AttendanceRecord {
-    estudianteId: string;
-    nombreCompleto: string;
-    codigo: string;
-    estado: 'Presente' | 'Ausente' | 'Tardanza' | 'Justificado';
-    horaLlegada?: string;
-    observaciones?: string;
+export interface Sesion {
+  id: string;
+  fecha: string;
+  tema: string;
+  tipo: string;
+  duracion: string;
+  asistencias: Asistencia[];
+  porcentajeAsistencia: number;
 }
 
-export interface AttendanceStats {
-    totalSesiones: number;
-    promedioAsistencia: number;
-    estudiantesConBajaAsistencia: StudentAttendanceSummary[];
+export interface ResumenEstudiante {
+  estudianteId: string;
+  estudianteNombre: string;
+  totalSesiones: number;
+  presentes: number;
+  ausentes: number;
+  tardanzas: number;
+  porcentajeAsistencia: number;
 }
 
-export interface StudentAttendanceSummary {
-    estudianteId: string;
-    nombreCompleto: string;
-    codigo: string;
-    totalPresencias: number;
-    totalAusencias: number;
-    totalTardanzas: number;
-    porcentajeAsistencia: number;
+export interface AttendanceData {
+  courseId: string;
+  courseName: string;
+  courseCode: string;
+  sesiones: Sesion[];
+  resumenEstudiantes: ResumenEstudiante[];
 }
 
-export interface AttendanceInput {
-    cursoId: string;
-    fecha: Date;
-    tema: string;
-    registros: Array<{
-        estudianteId: string;
-        estado: 'Presente' | 'Ausente' | 'Tardanza' | 'Justificado';
-        horaLlegada?: string;
-        observaciones?: string;
-    }>;
+export interface AttendanceCourse {
+  id: string;
+  codigo: string;
+  titulo: string;
 }
+
+// Aliases para compatibilidad con repositorio existente
+export type Attendance = Asistencia;
+export type AttendanceStats = any;
+export type AttendanceInput = any;
+export type StudentAttendanceSummary = ResumenEstudiante;

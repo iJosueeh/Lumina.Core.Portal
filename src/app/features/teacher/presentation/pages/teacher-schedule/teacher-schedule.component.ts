@@ -2,25 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
-
-interface HorarioSesion {
-  id: string;
-  cursoId: string;
-  cursoNombre: string;
-  cursoCodigo: string;
-  dia: string;
-  horaInicio: string;
-  horaFin: string;
-  aula: string;
-  tipo: string;
-  modalidad: string;
-}
-
-interface TeacherScheduleData {
-  docenteId: string;
-  docenteNombre: string;
-  sesiones: HorarioSesion[];
-}
+import { HorarioSesion, TeacherScheduleData } from '../../../domain/models/teacher-schedule.model';
 
 @Component({
   selector: 'app-teacher-schedule',
@@ -52,7 +34,7 @@ export class TeacherScheduleComponent implements OnInit {
     const agrupadas: Record<string, HorarioSesion[]> = {};
     
     this.diasSemana.forEach(dia => {
-      agrupadas[dia] = sesiones.filter(s => s.dia === dia);
+      agrupadas[dia] = sesiones.filter((s: HorarioSesion) => s.dia === dia);
     });
     
     return agrupadas;
@@ -62,7 +44,7 @@ export class TeacherScheduleComponent implements OnInit {
   totalSesiones = computed(() => this.sesiones().length);
   totalHorasSemana = computed(() => {
     const sesiones = this.sesiones();
-    return sesiones.reduce((total, sesion) => {
+    return sesiones.reduce((total: number, sesion: HorarioSesion) => {
       const inicio = this.parseTime(sesion.horaInicio);
       const fin = this.parseTime(sesion.horaFin);
       return total + (fin - inicio);
@@ -71,7 +53,7 @@ export class TeacherScheduleComponent implements OnInit {
 
   cursosUnicos = computed(() => {
     const sesiones = this.sesiones();
-    const cursosSet = new Set(sesiones.map(s => s.cursoCodigo));
+    const cursosSet = new Set(sesiones.map((s: HorarioSesion) => s.cursoCodigo));
     return cursosSet.size;
   });
 

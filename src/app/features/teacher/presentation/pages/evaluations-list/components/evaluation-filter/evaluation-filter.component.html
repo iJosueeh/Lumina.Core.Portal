@@ -1,0 +1,24 @@
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Búsqueda -->
+    <div class="lg:col-span-2">
+      <app-input
+        label="Buscar Evaluación"
+        placeholder="Título, descripción o curso..."
+        [(ngModel)]="searchTerm"
+        icon="search"
+      />
+    </div>
+
+    <!-- Filtro por Curso -->
+    <div>
+      <label class="block text-sm font-medium text-slate-400 mb-2">Filtrar por Curso</label>
+      <app-select [(ngModel)]="selectedCourseId">
+        <option value="all">Todos los cursos</option>
+        @for (course of courses(); track course.id) {
+          <option [value]="course.id">{{ course.titulo }}</option>
+        }
+      </app-select>
+    </div>
+  </div>
+</div>

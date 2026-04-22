@@ -1,0 +1,69 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-1 p-1 bg-slate-800/60 rounded-xl border border-white/5">
+      <button
+        (click)="onScopeChange.emit('lesson')"
+        [class.bg-teal-500]="scope() === 'lesson'"
+        [class.text-slate-900]="scope() === 'lesson'"
+        [class.text-slate-400]="scope() !== 'lesson'"
+        class="px-4 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all"
+      >
+        Lección
+      </button>
+      <button
+        (click)="onScopeChange.emit('section')"
+        [class.bg-teal-500]="scope() === 'section'"
+        [class.text-slate-900]="scope() === 'section'"
+        [class.text-slate-400]="scope() !== 'section'"
+        class="px-4 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all"
+      >
+        Sección
+      </button>
+      <button
+        (click)="onScopeChange.emit('course')"
+        [class.bg-teal-500]="scope() === 'course'"
+        [class.text-slate-900]="scope() === 'course'"
+        [class.text-slate-400]="scope() !== 'course'"
+        class="px-4 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all"
+      >
+        Todo el curso
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    @for (res of resources(); track res.id) {
+      <div class="group p-4 rounded-2xl bg-slate-800/40 border border-white/5 hover:border-teal-500/30 transition-all flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-teal-400 flex-shrink-0 group-hover:bg-teal-500 group-hover:text-white transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getResourceIcon(res.type)" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-slate-200 truncate group-hover:text-white transition-colors">{{ res.title }}</p>
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{{ res.type }}</p>
+          </div>
+        </div>
+
+        <button
+          (click)="isDownloadable(res.type) ? onDownload.emit(res) : onOpen.emit(res)"
+          class="p-2 text-slate-500 hover:text-teal-400 transition-colors"
+          [title]="isDownloadable(res.type) ? 'Descargar' : 'Abrir enlace'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            @if (isDownloadable(res.type)) {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            } @else {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            }
+          </svg>
+        </button>
+      </div>
+    } @empty {
+      <div class="col-span-full py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
+        <p class="text-slate-500 font-medium italic">No se encontraron recursos disponibles en este nivel.</p>
+      </div>
+    }
+  </div>
+</div>

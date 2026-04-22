@@ -1,0 +1,45 @@
+<div class="gradient-border-card p-4 md:p-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Búsqueda -->
+    <div class="md:col-span-2">
+      <app-input
+        label="Buscar estudiante"
+        placeholder="Nombre, código o email..."
+        [(ngModel)]="searchTerm"
+        icon="search"
+      />
+    </div>
+
+    <!-- Filtro por Curso -->
+    <div>
+      <label class="block text-sm font-medium text-slate-400 mb-2">Curso</label>
+      <app-select [(ngModel)]="selectedCourse">
+        <option value="all">Todos los cursos</option>
+        @for (opt of courseOptions(); track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </app-select>
+    </div>
+
+    <!-- Filtro por Estado -->
+    <div>
+      <label class="block text-sm font-medium text-slate-400 mb-2">Estado</label>
+      <app-select [(ngModel)]="selectedStatus">
+        <option value="all">Todos los estados</option>
+        @for (opt of statusOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </app-select>
+    </div>
+  </div>
+
+  <!-- Botón Exportar -->
+  <div class="mt-4 flex justify-end">
+    <app-button
+      variant="primary"
+      (onClick)="onExport.emit()"
+    >
+      Exportar CSV
+    </app-button>
+  </div>
+</div>

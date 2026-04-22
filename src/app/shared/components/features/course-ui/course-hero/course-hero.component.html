@@ -1,0 +1,115 @@
+<header class="relative overflow-hidden border-b border-white/10" [class.h-64]="role() === 'teacher'" [class.md:h-80]="role() === 'teacher'">
+  <!-- Background Image & Gradients -->
+  <img
+    [src]="data().coverImage"
+    [alt]="data().titulo"
+    (error)="onImageError($event)"
+    class="absolute inset-0 w-full h-full object-cover opacity-20"
+  />
+  <div class="absolute inset-0 bg-gradient-to-r from-[#070f1d] via-[#08162a]/90 to-[#0a1831]/95"></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-[#070f1d] via-transparent to-transparent"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 md:px-8 py-8 md:py-12">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+      
+      <div class="min-w-0 flex-1">
+        <!-- Back Button -->
+        <button 
+          (click)="onBack.emit()" 
+          class="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors mb-6 group"
+        >
+          <div class="w-8 h-8 rounded-full border border-teal-500/20 flex items-center justify-center group-hover:bg-teal-500/10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
+        </button>
+
+        <!-- Course Meta Badges -->
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          @if (data().codigo) {
+            <span class="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-black uppercase tracking-widest">
+              {{ data().codigo }}
+            </span>
+          }
+          @if (data().nivel) {
+            <span class="px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-black uppercase tracking-widest">
+              {{ data().nivel }}
+            </span>
+          }
+          @if (data().modalidad) {
+            <span class="px-3 py-1 rounded-full bg-slate-500/10 border border-slate-500/20 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+              {{ data().modalidad }}
+            </span>
+          }
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter mb-6 bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent">
+          {{ data().titulo }}
+        </h1>
+
+        <!-- Instructor & Primary Action -->
+        <div class="flex flex-wrap items-center gap-4 md:gap-6">
+          @if (data().instructor; as instructor) {
+            <div class="flex items-center gap-3">
+              <img
+                [src]="instructor.avatar"
+                [alt]="instructor.nombre"
+                (error)="onImageError($event)"
+                class="w-10 h-10 rounded-full border-2 border-teal-500/20"
+              />
+              <div>
+                <p class="text-sm font-bold text-white leading-none">{{ instructor.nombre }}</p>
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mt-1">{{ instructor.cargo }}</p>
+              </div>
+            </div>
+          }
+
+          @if (role() === 'student') {
+            <button
+              (click)="onPrimaryAction.emit()"
+              class="px-8 py-3 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-teal-500/20"
+            >
+              Continuar Aprendiendo
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Progress Section (Hidden for Teacher in Hero) -->
+      @if (role() === 'student' && data().progreso !== undefined) {
+        <div class="hidden md:flex flex-col items-center gap-3 flex-shrink-0 mb-2">
+          <div class="relative w-24 h-24">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6" />
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                fill="none"
+                stroke="url(#heroProgressGradient)"
+                stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="263.9"
+                [attr.stroke-dashoffset]="263.9 - (263.9 * (data().progreso || 0)) / 100"
+              />
+              <defs>
+                <linearGradient id="heroProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2dd4bf" />
+                  <stop offset="100%" stop-color="#22d3ee" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center text-white font-black text-2xl tracking-tighter">
+              {{ data().progreso }}<span class="text-xs text-teal-400 ml-0.5">%</span>
+            </div>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Progreso Total</p>
+        </div>
+      }
+
+    </div>
+  </div>
+</header>

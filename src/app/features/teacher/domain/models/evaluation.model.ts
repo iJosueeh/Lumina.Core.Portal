@@ -43,6 +43,19 @@ export interface EvaluationStats {
     tiempoPromedioMinutos: number;
 }
 
+export interface EvaluacionUI {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  fechaInicio: string;
+  fechaFin: string;
+  puntajeMaximo: number;
+  tipoEvaluacion: string;
+  estado: string;
+  cursoId: string;
+  cursoNombre?: string;
+}
+
 export interface EvaluationInput {
     cursoId: string;
     titulo: string;

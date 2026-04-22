@@ -1,0 +1,65 @@
+<div
+  class="bg-slate-800/40 border border-slate-700/50 rounded-[2rem] p-6 md:p-8 hover:bg-slate-800/60 transition-all cursor-pointer group flex flex-col md:flex-row justify-between gap-6"
+  (click)="onAction.emit(data().id)"
+>
+  <div class="flex-1 min-w-0">
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <app-status-badge [status]="statusColor()" [label]="data().estado" />
+      <app-status-badge [status]="tipoStatus()" [label]="data().tipo" />
+    </div>
+
+    <h3 class="text-2xl md:text-3xl font-black text-white group-hover:text-teal-400 transition-colors mb-2 tracking-tight">
+      {{ data().titulo }}
+    </h3>
+    
+    @if (data().descripcion) {
+      <p class="text-slate-400 text-sm line-clamp-2 mb-6 max-w-2xl leading-relaxed">{{ data().descripcion }}</p>
+    }
+
+    <div class="flex flex-wrap items-center gap-5 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+      @if (data().cursoNombre) {
+        <span class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          {{ data().cursoNombre }}
+        </span>
+      }
+      <span class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        {{ data().puntajeMaximo }} pts máx.
+      </span>
+      @if (data().preguntasCount) {
+        <span class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm0 5.25h.007v.008H3.75V12zm0 5.25h.007v.008H3.75v-.008z" /></svg>
+          {{ data().preguntasCount }} preguntas
+        </span>
+      }
+    </div>
+  </div>
+
+  <div class="flex flex-col justify-between items-end gap-6 md:border-l border-white/5 md:pl-8">
+    <div class="text-right">
+      <p class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">Disponibilidad</p>
+      <p class="text-sm font-bold text-slate-200">{{ formatDate(data().fechaInicio) }}</p>
+      <p class="text-xs text-slate-500">hasta {{ formatDate(data().fechaFin) }}</p>
+    </div>
+
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      @if (role() === 'teacher') {
+        <button
+          (click)="onSecondaryAction.emit({ id: data().id, event: $event })"
+          class="p-3 rounded-2xl bg-white/5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      }
+      
+      <button
+        class="flex-1 md:flex-none px-8 py-3.5 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-teal-500/20"
+      >
+        {{ role() === 'student' ? 'Iniciar Test' : 'Calificaciones' }}
+      </button>
+    </div>
+  </div>
+</div>

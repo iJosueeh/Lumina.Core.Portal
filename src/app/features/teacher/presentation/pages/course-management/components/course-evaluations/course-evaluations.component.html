@@ -1,0 +1,81 @@
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden">
+  <div class="p-6 border-b border-slate-700/50 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h3 class="text-xl font-bold text-white">Evaluaciones del Curso</h3>
+      <p class="text-sm text-slate-400">Crea y gestiona los cuestionarios para tus alumnos</p>
+    </div>
+    <app-button variant="primary" (onClick)="onCreateQuizz.emit()">
+      + Nueva Evaluación
+    </app-button>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+          <th class="px-6 py-4 font-semibold">Título</th>
+          <th class="px-6 py-4 font-semibold">Tipo</th>
+          <th class="px-6 py-4 font-semibold">Preguntas</th>
+          <th class="px-6 py-4 font-semibold">Puntaje</th>
+          <th class="px-6 py-4 font-semibold">Fecha</th>
+          <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-700/30">
+        @if (isLoading()) {
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
+              <p class="mt-2 text-slate-400 text-sm">Cargando evaluaciones...</p>
+            </td>
+          </tr>
+        } @else {
+          @for (evaluacion of evaluaciones(); track evaluacion.id) {
+            <tr class="hover:bg-slate-800/60 transition-colors group">
+              <td class="px-6 py-4">
+                <div>
+                  <p class="text-sm font-semibold text-white">{{ evaluacion.titulo }}</p>
+                  <app-status-badge
+                    [status]="getStatusColor(evaluacion.estado)"
+                    [label]="evaluacion.estado"
+                    class="scale-75 origin-left"
+                  />
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 rounded-lg bg-slate-700 text-slate-300 text-[10px] uppercase font-bold tracking-wider">
+                  {{ evaluacion.tipoEvaluacion }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-300">{{ evaluacion.totalPreguntas }} preguntas</td>
+              <td class="px-6 py-4 text-sm font-bold text-teal-400">{{ evaluacion.puntajeMaximo }} pts</td>
+              <td class="px-6 py-4">
+                <p class="text-xs text-slate-300">{{ formatDate(evaluacion.fechaInicio) }}</p>
+                <p class="text-[10px] text-slate-500">al {{ formatDate(evaluacion.fechaFin) }}</p>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    (click)="onEditQuestions.emit({ id: evaluacion.id, titulo: evaluacion.titulo })"
+                    class="p-2 text-teal-400 hover:bg-teal-500/10 rounded-lg transition-colors"
+                    title="Gestionar preguntas"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-slate-500 italic">
+                No hay evaluaciones creadas para este curso
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

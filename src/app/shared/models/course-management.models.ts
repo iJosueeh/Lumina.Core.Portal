@@ -111,7 +111,7 @@ export interface AssignableUser {
   rolNombre: string;
 }
 
-export type TabType = 'overview' | 'modulos' | 'estudiantes' | 'evaluaciones';
+export type TabType = 'overview' | 'modulos' | 'estudiantes' | 'evaluaciones' | 'description' | 'content';
 export type NotificationType = 'success' | 'error' | 'info';
 export type AssignMode = 'student' | 'usuario';
 

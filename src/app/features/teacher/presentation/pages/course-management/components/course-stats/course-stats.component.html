@@ -1,0 +1,30 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <app-stat-card
+    label="Total Estudiantes"
+    [value]="course().totalAlumnos.toString()"
+    [description]="course().alumnosActivos + ' activos actualmente'"
+    icon="groups"
+    color="blue"
+  />
+  <app-stat-card
+    label="Promedio General"
+    [value]="(course().promedioGeneral | number: '1.1-1') || '0.0'"
+    description="Rendimiento del grupo"
+    icon="grade"
+    color="teal"
+  />
+  <app-stat-card
+    label="Eval. Pendientes"
+    [value]="pendingEvaluationsCount().toString()"
+    description="Por calificar"
+    icon="pending_actions"
+    color="orange"
+  />
+  <app-stat-card
+    label="Contenido"
+    [value]="totalLecciones().toString()"
+    description="Lecciones publicadas"
+    icon="menu_book"
+    color="purple"
+  />
+</div>

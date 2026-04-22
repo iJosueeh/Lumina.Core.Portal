@@ -1,0 +1,67 @@
+<div class="space-y-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <app-stat-card
+      label="Asistencia Promedio"
+      [value]="(promedioAsistencia() | number: '1.0-0') + '%'"
+      description="Rendimiento de puntualidad"
+      icon="analytics"
+      color="teal"
+    />
+    <app-stat-card
+      label="Total Presentes"
+      [value]="totalPresentes().toString()"
+      description="Suma de todas las sesiones"
+      icon="check_circle"
+      color="green"
+    />
+    <app-stat-card
+      label="Total Ausentes"
+      [value]="totalAusentes().toString()"
+      description="Inasistencias registradas"
+      icon="cancel"
+      color="orange"
+    />
+    <app-stat-card
+      label="Total Tardanzas"
+      [value]="totalTardanzas().toString()"
+      description="Llegadas fuera de hora"
+      icon="schedule"
+      color="orange"
+    />
+  </div>
+
+  <div class="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+      <div class="md:col-span-1">
+        <label class="block text-xs font-black uppercase text-slate-500 tracking-[0.2em] mb-2">Seleccionar Curso</label>
+        <app-select [(ngModel)]="selectedCourseId">
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.codigo }} - {{ course.titulo }}</option>
+          }
+        </app-select>
+      </div>
+
+      <div class="md:col-span-1">
+        <app-input
+          label="Buscar Estudiante"
+          placeholder="Nombre del alumno..."
+          [(ngModel)]="searchTerm"
+          icon="search"
+        />
+      </div>
+
+      <div class="md:col-span-1 flex justify-end">
+        <button
+          type="button"
+          (click)="onExport.emit()"
+          class="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all font-bold text-xs uppercase tracking-widest flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Exportar Reporte
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

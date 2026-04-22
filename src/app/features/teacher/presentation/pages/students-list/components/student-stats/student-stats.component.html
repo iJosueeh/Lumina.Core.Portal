@@ -1,0 +1,23 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <app-stat-card
+    label="Total Estudiantes"
+    [value]="total().toString()"
+    description="En todos los cursos"
+    icon="groups"
+    color="blue"
+  />
+  <app-stat-card
+    label="Estudiantes Activos"
+    [value]="active().toString()"
+    [description]="activePercentage() + '% del total'"
+    icon="check_circle"
+    color="green"
+  />
+  <app-stat-card
+    label="En Riesgo"
+    [value]="atRisk().toString()"
+    description="Requieren atención"
+    icon="warning"
+    color="orange"
+  />
+</div>

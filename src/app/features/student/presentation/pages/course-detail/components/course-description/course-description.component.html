@@ -1,0 +1,118 @@
+<div class="grid grid-cols-12 gap-8">
+  <div class="col-span-12 lg:col-span-8 space-y-8">
+    <div class="space-y-6 fade-in">
+      <section class="bg-[#0f1c34]/90 p-6 md:p-7 rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+        <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-4 h-4 rounded-full bg-cyan-300/25 inline-flex items-center justify-center">
+            <span class="w-2 h-2 rounded-full bg-cyan-300"></span>
+          </span>
+          Acerca del curso
+        </h2>
+        <div 
+          class="text-gray-300 leading-relaxed course-description-content" 
+          [innerHTML]="course().description"
+        ></div>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Learning Objectives -->
+        <section class="bg-[#0f1c34]/90 p-6 rounded-3xl border border-white/10">
+          <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-teal-400">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
+            Lo que aprenderás
+          </h3>
+          <ul class="space-y-3">
+            @for (item of (course().learningObjectives || []); track $index) {
+              <li class="flex items-start gap-3 text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-teal-500 mt-0.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                <span>{{ item }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <!-- Requirements -->
+        <section class="bg-[#0f1c34]/90 p-6 rounded-3xl border border-white/10">
+          <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-orange-400">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            Requisitos
+          </h3>
+          <ul class="space-y-3">
+            @for (req of (course().requirements || []); track $index) {
+              <li class="flex items-start gap-3 text-gray-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2.5"></span>
+                <span>{{ req }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
+
+      <!-- Horarios del Curso -->
+      @if (course().schedule && course().schedule?.length! > 0) {
+        <section class="bg-[#0f1c34]/90 p-6 rounded-3xl border border-white/10">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-teal-400">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+            Horarios de Clase
+            </h3>
+            <span class="text-[10px] uppercase tracking-[0.2em] px-2 py-1 rounded-full bg-violet-500/20 text-violet-200">Zona: GMT -5</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            @for (sch of course().schedule; track sch.id) {
+              <div class="rounded-2xl border border-white/10 bg-[#0b1830] px-4 py-3 text-center">
+                <p class="text-[11px] uppercase tracking-[0.12em] text-gray-400 font-semibold mb-2">{{ sch.diaSemana }}</p>
+                <p class="text-lg font-bold text-white">{{ sch.horaInicio }} - {{ sch.horaFin }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+
+  <aside class="col-span-12 lg:col-span-4 space-y-8">
+    <div class="rounded-3xl border border-white/10 bg-[#121f3b]/95 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+      <div class="h-16 bg-gradient-to-r from-[#1c2f59] to-[#243f75]"></div>
+      <div class="px-6 pb-6 -mt-8 text-center">
+        <img
+          [src]="course().instructor.avatar"
+          alt="Instructor"
+          (error)="onImageError($event)"
+          class="w-16 h-16 rounded-full border-2 border-cyan-300 mx-auto"
+        />
+        <h3 class="mt-4 text-xl font-bold text-white">{{ course().instructor.name }}</h3>
+        <p class="text-[11px] uppercase tracking-[0.14em] text-cyan-300 font-semibold">{{ course().instructor.title }}</p>
+
+        <div class="mt-5 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p class="text-white font-bold">450k+</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-400">Estudiantes</p>
+          </div>
+          <div>
+            <p class="text-white font-bold">4.9/5</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-400">Rating</p>
+          </div>
+          <div>
+            <p class="text-white font-bold">{{ course().totalModules }}</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-400">Cursos</p>
+          </div>
+        </div>
+
+        <p class="mt-4 text-xs italic text-gray-400">"Mi pasión es enseñar lo que sé de la manera más sencilla posible."</p>
+
+        <button class="mt-5 w-full py-2.5 rounded-full border border-white/15 text-white hover:bg-white/5 transition-colors font-semibold text-sm">
+          Seguir Instructor
+        </button>
+      </div>
+    </div>
+  </aside>
+</div>

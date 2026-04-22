@@ -12,6 +12,8 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "target": "ES2022",
     "module": "es2022",
     "moduleResolution": "bundler",

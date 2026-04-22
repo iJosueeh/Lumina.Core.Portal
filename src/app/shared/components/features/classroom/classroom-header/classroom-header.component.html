@@ -1,0 +1,63 @@
+<header class="bg-[#0a1120] border-b border-white/5 px-6 py-4 flex items-center justify-between gap-6 sticky top-0 z-50">
+  <div class="flex items-center gap-4 min-w-0">
+    <button
+      (click)="onBack.emit()"
+      class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all flex-shrink-0"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    
+    <div class="min-w-0">
+      <h1 class="text-xs font-bold text-teal-500 uppercase tracking-[0.2em] truncate">{{ courseTitle() }}</h1>
+      <p class="text-sm font-bold text-white truncate mt-0.5">{{ lessonTitle() }}</p>
+    </div>
+  </div>
+
+  <div class="hidden md:flex items-center gap-6">
+    <div class="flex items-center gap-3">
+      <button
+        [disabled]="!hasPrevious()"
+        (click)="onPrevious.emit()"
+        class="p-2 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+      </button>
+      
+      <button
+        [disabled]="!hasNext()"
+        (click)="onNext.emit()"
+        class="px-6 py-2 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold text-sm transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+      >
+        Siguiente Lección
+      </button>
+    </div>
+
+    <div class="h-8 w-px bg-white/10"></div>
+
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tu Progreso</p>
+        <div class="flex items-center gap-3 mt-1">
+          <div class="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-teal-500" [style.width.%]="progress()"></div>
+          </div>
+          <span class="text-xs font-bold text-white">{{ progress() }}%</span>
+        </div>
+      </div>
+      
+      <button
+        (click)="onToggleAutoplay.emit()"
+        class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/5 hover:bg-white/5 transition-all"
+      >
+        <div class="relative w-8 h-4 bg-slate-700 rounded-full transition-colors" [class.bg-teal-500]="autoplay()">
+          <div class="absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform" [class.translate-x-4]="autoplay()"></div>
+        </div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Autoplay</span>
+      </button>
+    </div>
+  </div>
+</header>

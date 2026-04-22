@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit, signal, computed, inject } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +26,13 @@ import {
 import { CreateQuizzModalComponent } from './components/create-quizz-modal/create-quizz-modal.component';
 import { QuestionEditorComponent } from './components/question-editor/question-editor.component';
 import { AssignStudentModalComponent } from './components/assign-student-modal/assign-student-modal.component';
+import { CourseHeroComponent } from '../../../../../shared/components/features/course-ui/course-hero/course-hero.component';
+import { CourseStatsComponent } from './components/course-stats/course-stats.component';
+import { CourseStudentsComponent } from './components/course-students/course-students.component';
+import { CourseCurriculumComponent } from './components/course-curriculum/course-curriculum.component';
+import { CourseEvaluationsComponent } from './components/course-evaluations/course-evaluations.component';
+import { FilePreviewModalComponent, SharedFileResource } from '../../../../../shared/components/features/file-viewer/file-preview-modal/file-preview-modal.component';
+import { TabNavComponent } from '../../../../../shared/components/ui/tab-nav/tab-nav.component';
 
 @Component({
   selector: 'app-course-management',
@@ -37,14 +43,19 @@ import { AssignStudentModalComponent } from './components/assign-student-modal/a
     FormsModule, 
     CreateQuizzModalComponent, 
     QuestionEditorComponent, 
-    AssignStudentModalComponent
+    AssignStudentModalComponent,
+    CourseHeroComponent,
+    CourseStatsComponent,
+    CourseStudentsComponent,
+    CourseCurriculumComponent,
+    CourseEvaluationsComponent,
+    FilePreviewModalComponent,
+    TabNavComponent
   ],
   templateUrl: './course-management.component.html',
   styleUrl: './course-management.component.css',
 })
 export class CourseManagementComponent implements OnInit, OnDestroy {
-  // Services
-  private sanitizer = inject(DomSanitizer);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private courseRepository = inject(TeacherCourseRepository);
@@ -54,13 +65,12 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   public notificationService = inject(NotificationService);
   private courseMapper = inject(CourseMapper);
 
-  // State Signals
+  // State
   courseId = signal<string>('');
   course = signal<TeacherCourseDetail | null>(null);
   students = signal<CourseStudent[]>([]);
   allTeacherStudents = signal<TeacherStudent[]>([]);
   modulos = signal<Modulo[]>([]);
-  expandedModules = signal<Set<string>>(new Set());
   isLoading = signal(true);
   activeTab = signal<TabType>('overview');
   
@@ -75,19 +85,12 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   selectedMaterial = signal<ModuloMaterial | null>(null);
   showMaterialPreview = signal(false);
 
-  // Computed values
-  totalStudents = computed(() => this.course()?.totalAlumnos || 0);
-  averageGrade = computed(() => this.course()?.promedioGeneral || 0);
-  pendingEvaluations = computed(() => this.course()?.evaluaciones.filter((e) => e.estado === 'En Calificación').length || 0);
-  totalLecciones = computed(() => this.modulos().reduce((acc, m) => acc + m.lecciones.length, 0));
-  materialPreviewUrl = computed<SafeResourceUrl | null>(() => {
-    const material = this.selectedMaterial();
-    return material?.url ? this.sanitizer.bypassSecurityTrustResourceUrl(material.url) : null;
-  });
-
   // Evaluaciones
   courseEvaluaciones = signal<EvaluacionApi[]>([]);
   isLoadingEvaluaciones = signal(false);
+
+  // Computed values
+  totalLecciones = computed(() => this.modulos().reduce((acc, m) => acc + m.lecciones.length, 0));
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -109,38 +112,22 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: ({ courseData, allStudents }) => {
         this.allTeacherStudents.set(allStudents);
-        const courseId = this.courseId();
-        const enrolledStudents = allStudents.filter((s) => s.cursos.includes(courseId));
+        const enrolledStudents = allStudents.filter((s) => s.cursos.includes(this.courseId()));
 
         this.course.set({
+          ...courseData,
           id: courseData.id,
-          codigo: courseData.codigo,
-          titulo: courseData.titulo,
-          descripcion: courseData.descripcion || 'Sin descripción',
-          creditos: courseData.creditos,
-          ciclo: courseData.ciclo,
           totalAlumnos: enrolledStudents.length || courseData.totalAlumnos,
           alumnosActivos: enrolledStudents.length || courseData.alumnosActivos,
-          alumnosInactivos: 0,
-          promedioGeneral: courseData.promedioGeneral,
-          asistenciaPromedio: courseData.asistenciaPromedio,
-          estadoCurso: courseData.estadoCurso,
           coverImage: courseData.imagen || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200',
-          horario: courseData.horario || [],
-          nivel: courseData.nivel,
-          modalidad: courseData.modalidad,
-          duracion: courseData.duracion,
-          categoria: courseData.categoria,
-          instructorNombre: courseData.instructor?.nombre,
           stats: { aprobados: 0, reprobados: 0, enRiesgo: 0, tareasEntregadas: 0, tareasPendientes: 0, promedioMasAlto: 0, promedioMasBajo: 0 },
           evaluaciones: [],
-        });
+        } as any);
 
-        const modulosApi = courseData.modulos;
-        if (modulosApi && Array.isArray(modulosApi) && modulosApi.length > 0) {
-          this.modulos.set(modulosApi.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
+        if (courseData.modulos && courseData.modulos.length > 0) {
+          this.modulos.set(courseData.modulos.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
         } else {
-          this.loadFallbackModules();
+          this.modulos.set([{ id: '1', orden: 1, titulo: 'Introducción', descripcion: 'Conceptos básicos', duracion: '2h', materiales: [], completado: true, porcentajeCompletado: 100, lecciones: [] }]);
         }
 
         this.students.set(enrolledStudents.map((s) => this.courseMapper.mapTeacherStudentToCourseStudent(s)));
@@ -152,11 +139,10 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   }
 
   async loadEvaluaciones(): Promise<void> {
-    const courseId = this.courseId();
-    if (!courseId) return;
+    if (!this.courseId()) return;
     this.isLoadingEvaluaciones.set(true);
     try {
-      const resp = await firstValueFrom(this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones?cursoId=${courseId}`));
+      const resp = await firstValueFrom(this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones?cursoId=${this.courseId()}`));
       this.courseEvaluaciones.set((resp.evaluaciones || []).map((e: any) => ({
         id: e.id,
         titulo: e.titulo,
@@ -177,68 +163,16 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   onQuizzCreated(ev: { id: string; titulo: string }): void {
     this.showCreateQuizzModal.set(false);
     this.loadEvaluaciones();
-    this.openQuestionEditor(ev.id, ev.titulo);
+    this.openQuestionEditor(ev);
   }
 
-  openQuestionEditor(id: string, titulo: string): void {
-    this.editingQuizzId.set(id);
-    this.editingQuizzTitle.set(titulo);
+  openQuestionEditor(ev: { id: string, titulo: string }): void {
+    this.editingQuizzId.set(ev.id);
+    this.editingQuizzTitle.set(ev.titulo);
     this.showQuestionEditor.set(true);
   }
 
-  // UI Helpers
-  setActiveTab(tab: TabType): void { this.activeTab.set(tab); }
-  
-  getStatusColor(estado: string): string {
-    const colors: Record<string, string> = {
-      'En Calificación': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      Completado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      Pendiente: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-      Activo: 'bg-teal-900/40 text-teal-300 border border-teal-500/30',
-      Finalizado: 'bg-gray-800/60 text-gray-300 border border-gray-500/30',
-      Programado: 'bg-blue-900/40 text-blue-300 border border-blue-500/30',
-    };
-    return colors[estado] || 'bg-gray-800/60 text-gray-400 border border-gray-600/30';
-  }
-
-  getStudentStatusColor(estado: string): string {
-    const colors: Record<string, string> = {
-      Activo: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      'En Riesgo': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      Inactivo: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-    };
-    return colors[estado] || 'bg-gray-100 text-gray-700';
-  }
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  getTimeAgo(timestamp: string): string {
-    const diff = new Date().getTime() - new Date(timestamp).getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    if (hours < 1) return 'Hace menos de 1h';
-    if (hours < 24) return `Hace ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `Hace ${days} día${days > 1 ? 's' : ''}`;
-  }
-
-  getLeccionIcon(tipo: string): string {
-    const icons: Record<string, string> = {
-      video: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z',
-      lectura: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-      quiz: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      tarea: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    };
-    return icons[tipo] || icons['lectura'];
-  }
-
-  toggleModuleExpansion(moduleId: string): void {
-    const current = new Set(this.expandedModules());
-    current.has(moduleId) ? current.delete(moduleId) : current.add(moduleId);
-    this.expandedModules.set(current);
-  }
-
+  // Material Actions
   openMaterial(material: ModuloMaterial): void {
     if (!material.url) {
       this.notificationService.show('error', 'El material no tiene URL disponible.');
@@ -248,7 +182,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     this.showMaterialPreview.set(true);
   }
 
-  async downloadMaterial(material: ModuloMaterial): Promise<void> {
+  async downloadMaterial(material: SharedFileResource): Promise<void> {
     if (!material.url) return;
     try {
       const response = await fetch(material.url, { credentials: 'include' });
@@ -262,12 +196,6 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     } catch {
       window.open(material.url, '_blank');
     }
-  }
-
-  private loadFallbackModules(): void {
-    this.modulos.set([
-      { id: '1', orden: 1, titulo: 'Introducción', descripcion: 'Conceptos básicos', duracion: '2h', materiales: [], completado: true, porcentajeCompletado: 100, lecciones: [] },
-    ]);
   }
 
   goBack(): void { this.router.navigate(['/teacher/dashboard']); }
