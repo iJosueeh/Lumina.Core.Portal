@@ -1,13 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assignment } from '@features/student/domain/models/assignment.model';
-import { ButtonComponent } from '../../../../../../shared/components/ui/button/button.component';
-import { SkeletonLoaderComponent } from '../../../../../../shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-upcoming-assignments',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, SkeletonLoaderComponent],
   templateUrl: './upcoming-assignments.component.html',
   styleUrl: './upcoming-assignments.component.css'
 })

@@ -1,14 +1,16 @@
 export const environment = {
   production: false,
-  useMockData: false, // ← Conectado con Back-End real
-  // Microservicios Backend
-  apiUrl: 'http://localhost:7777/api', // Usuarios
-  usuariosApiUrl: 'http://localhost:7777/api', // Usuarios (alias)
-  estudiantesApiUrl: 'http://localhost:6601/api', // Estudiantes
-  cursosApiUrl: 'http://localhost:9999/api', // Cursos (HTTP)
-  evaluacionesApiUrl: 'http://localhost:5555/api', // Evaluaciones
-  noticiasEventosApiUrl: 'http://localhost:4444/api', // NoticiasEventos
-  docentesApiUrl: 'http://localhost:8888/api', // Docentes
-  carrerasApiUrl: 'http://localhost:5000/api', // Carreras
-  pedidosApiUrl: 'http://localhost:3333/api', // Pedidos
+  useMockData: false,
+  // API Gateway Base URL
+  gatewayUrl: 'http://localhost:5000',
+  
+  // Microservicios via Gateway
+  usuariosApiUrl: 'http://localhost:5000/usuarios/api',
+  estudiantesApiUrl: 'http://localhost:5000/estudiantes/api',
+  cursosApiUrl: 'http://localhost:5000/cursos/api',
+  evaluacionesApiUrl: 'http://localhost:5000/evaluaciones/api',
+  noticiasEventosApiUrl: 'http://localhost:5000/noticias/api',
+  docentesApiUrl: 'http://localhost:5000/docentes/api',
+  carrerasApiUrl: 'http://localhost:5000/carreras/api',
+  apiUrl: 'http://localhost:5000/usuarios/api', // Legacy or default
 };

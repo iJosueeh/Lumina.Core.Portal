@@ -15,6 +15,7 @@ import { ClassroomPlayerComponent } from '@shared/components/features/classroom/
 import { ClassroomPlaylistComponent, ClassroomLesson } from '@shared/components/features/classroom/classroom-playlist/classroom-playlist.component';
 import { ClassroomResourcesComponent, ClassroomResource } from '@shared/components/features/classroom/classroom-resources/classroom-resources.component';
 import { ClassroomHeaderComponent } from '@shared/components/features/classroom/classroom-header/classroom-header.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-video-classroom',
@@ -24,7 +25,8 @@ import { ClassroomHeaderComponent } from '@shared/components/features/classroom/
     ClassroomPlayerComponent, 
     ClassroomPlaylistComponent, 
     ClassroomResourcesComponent, 
-    ClassroomHeaderComponent
+    ClassroomHeaderComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './video-classroom.component.html',
 })
