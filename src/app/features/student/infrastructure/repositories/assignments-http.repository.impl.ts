@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap } from 'rxjs';
+import { Observable, map, of, tap, timeout, catchError } from 'rxjs';
 import { AssignmentsRepository } from '../../domain/repositories/assignments.repository';
 import { Assignment } from '../../domain/models/assignment.model';
 import { environment } from '../../../../../environments/environment';
@@ -29,33 +29,60 @@ export class AssignmentsHttpRepositoryImpl implements AssignmentsRepository {
         }
 
         console.log(`🌐 Obteniendo assignments desde API para estudiante ${studentId}`);
-        return this.http.get<any[]>(`${this.evaluacionesApiUrl}/Evaluaciones?estudianteId=${studentId}`)
+        return this.http.get<any>(`${this.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`)
             .pipe(
-                map(assignments => assignments
-                    .filter(a => new Date(a.fechaLimite) > new Date()) // Solo futuras
-                    .map(assignment => {
-                        const dueDate = new Date(assignment.fechaLimite);
-                        const today = new Date();
-                        const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                timeout(30000), // Aumentar a 30s
+                map(response => {
+                    const assignments = this.extractEvaluaciones(response);
+                    return assignments
+                        .filter(a => a && a.fechaLimite && new Date(a.fechaLimite) > new Date()) // Solo futuras y válidas
+                        .map(assignment => {
+                            const dueDate = new Date(assignment.fechaLimite);
+                            const today = new Date();
+                            const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-                        return {
-                            id: assignment.id,
-                            titulo: assignment.titulo,
-                            cursoNombre: assignment.cursoNombre,
-                            fechaLimite: dueDate,
-                            esUrgente: daysUntil <= 3,
-                            mes: dueDate.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase(),
-                            dia: dueDate.getDate()
-                        };
-                    })
-                    .sort((a, b) => a.fechaLimite.getTime() - b.fechaLimite.getTime())
-                    .slice(0, 5) // Top 5
-                ),
+                            return {
+                                id: assignment.id,
+                                titulo: assignment.titulo,
+                                cursoNombre: assignment.cursoNombre,
+                                fechaLimite: dueDate,
+                                esUrgente: daysUntil <= 3,
+                                mes: dueDate.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase(),
+                                dia: dueDate.getDate()
+                            };
+                        })
+                        .sort((a, b) => a.fechaLimite.getTime() - b.fechaLimite.getTime())
+                        .slice(0, 5); // Top 5
+                }),
                 tap(assignments => {
                     // Guardar en caché
                     this.cacheService.set(cacheKey, assignments, this.CACHE_TTL);
                     console.log(`💾 Assignments guardados en caché (TTL: ${this.CACHE_TTL / 1000}s)`);
+                }),
+                catchError(error => {
+                    console.error('❌ Error al cargar tareas del backend:', error);
+                    return of([]);
                 })
             );
+    }
+
+    private extractEvaluaciones(response: any): any[] {
+        if (Array.isArray(response)) {
+            return response;
+        }
+
+        if (response && Array.isArray(response.data)) {
+            return response.data;
+        }
+
+        if (response && Array.isArray(response.evaluaciones)) {
+            return response.evaluaciones;
+        }
+
+        if (response && Array.isArray(response.items)) {
+            return response.items;
+        }
+
+        return [];
     }
 }

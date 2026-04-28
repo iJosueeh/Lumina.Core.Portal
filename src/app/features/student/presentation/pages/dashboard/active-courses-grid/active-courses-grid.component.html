@@ -1,12 +1,22 @@
-<div class="space-y-6">
+<div class="space-y-8">
   <div class="flex items-center justify-between">
-    <h2 class="text-xl font-bold text-white tracking-tight">Cursos en Curso</h2>
+    <h2 class="text-2xl font-black text-white tracking-tight">Cursos en Curso</h2>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10">
     @if (isLoading) {
       @for (i of [1,2,3]; track i) {
-        <app-skeleton-loader height="320px" variant="rect" class="rounded-[2rem] overflow-hidden" />
+        <div class="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/50 p-6 space-y-6">
+          <app-skeleton-loader height="180px" variant="rect" class="rounded-3xl overflow-hidden" />
+          <div class="space-y-3">
+            <app-skeleton-loader height="12px" width="30%" class="rounded-full" />
+            <app-skeleton-loader height="24px" width="80%" class="rounded-lg" />
+          </div>
+          <div class="pt-4 border-t border-slate-800/50 flex justify-between items-center">
+             <app-skeleton-loader height="10px" width="20%" />
+             <app-skeleton-loader height="10px" width="20%" />
+          </div>
+        </div>
       }
     } @else {
       @for (course of courses; track course.id) {
@@ -14,9 +24,10 @@
           [data]="{
             id: course.id,
             titulo: course.titulo,
-            codigo: 'PROG-101',
+            codigo: course.codigo || 'CURSO',
             coverImage: course.imagenUrl,
-            modalidad: 'Virtual',
+            modalidad: course.modalidad || 'Virtual',
+            nivel: course.nivel || 'Básico',
             progreso: course.progreso
           }"
           role="student"

@@ -7,4 +7,7 @@ export interface CourseProgress {
     ultimoAcceso: Date;
     imagenUrl: string;
     colorCategoria: string;
+    codigo?: string;
+    modalidad?: string;
+    nivel?: string;
 }

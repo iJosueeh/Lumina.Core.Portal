@@ -1,90 +1,121 @@
-<div class="min-h-screen bg-gradient-to-br from-[#020c22] via-[#041331] to-[#03102b] text-white">
-  <section class="border-b border-white/5 bg-gradient-to-r from-white/5 via-white/0 to-white/5">
-    <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-10 md:py-12">
-      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">Mis Cursos</h1>
-      <p class="mt-3 text-xl text-gray-300">Gestiona tu aprendizaje y revisa tu progreso semestral.</p>
-
-      <div class="mt-8 flex flex-wrap items-center gap-3">
-        @for (filter of filters; track filter.id) {
-          <button
-            (click)="setFilter(filter.id)"
-            [class.bg-cyan-400]="activeFilter === filter.id"
-            [class.text-[#052033]]="activeFilter === filter.id"
-            [class.font-semibold]="activeFilter === filter.id"
-            [class.shadow-[0_0_20px_rgba(34,211,238,0.35)]]="activeFilter === filter.id"
-            [class.border-white/10]="activeFilter !== filter.id"
-            [class.text-gray-300]="activeFilter !== filter.id"
-            class="px-5 py-2.5 rounded-full border bg-[#101f3a]/80 hover:bg-[#17284a] transition-all text-sm"
-            [attr.aria-pressed]="activeFilter === filter.id"
-          >
-            {{ filter.label }}
-          </button>
-        }
+<div class="min-h-screen bg-[#020617] text-slate-200 pb-20">
+  <!-- Header de Sección -->
+  <header class="relative overflow-hidden pt-12 pb-20 px-4 md:px-8 border-b border-slate-800/50 bg-[#020617]">
+    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5"></div>
+    <div class="max-w-[1400px] mx-auto relative z-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">Mis Cursos</h1>
+          <p class="mt-4 text-lg text-slate-400 max-w-2xl">Gestiona tu aprendizaje, revisa tu progreso semestral y continúa donde lo dejaste.</p>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="flex flex-wrap gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
+          @for (filter of filters; track filter.id) {
+            <button
+              (click)="setFilter(filter.id)"
+              [class.bg-slate-800]="activeFilter() === filter.id"
+              [class.text-cyan-400]="activeFilter() === filter.id"
+              [class.shadow-sm]="activeFilter() === filter.id"
+              class="px-5 py-2 rounded-xl text-sm font-medium transition-all hover:text-white"
+            >
+              {{ filter.label }}
+            </button>
+          }
+        </div>
       </div>
     </div>
-  </section>
+  </header>
 
-  <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-8 md:py-10">
-    @if (isLoading) {
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+  <main class="max-w-[1400px] mx-auto px-4 md:px-8 -mt-10 relative z-20">
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-          <div class="h-[430px] rounded-3xl border border-white/10 bg-[#0d1a33]/80 animate-pulse"></div>
+          <div class="bg-slate-900/80 rounded-3xl border border-slate-800 p-4 space-y-4">
+            <app-skeleton-loader variant="rect" height="180px" class="rounded-2xl"></app-skeleton-loader>
+            <app-skeleton-loader variant="text" class="w-1/4"></app-skeleton-loader>
+            <app-skeleton-loader variant="text" class="w-3/4 h-8"></app-skeleton-loader>
+            <app-skeleton-loader variant="rect" height="40px" class="rounded-xl"></app-skeleton-loader>
+          </div>
         }
       </div>
-    } @else if (filteredCourses.length === 0) {
-      <div class="rounded-3xl border border-white/10 bg-[#0d1a33]/85 px-8 py-16 text-center">
-        <h3 class="text-3xl font-bold">No hay cursos en esta categoría</h3>
-        <p class="text-gray-400 mt-3 text-lg">Intenta con otro filtro para ver más resultados.</p>
-      </div>
     } @else {
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        @for (course of filteredCourses; track course.id) {
-          <article
-            (click)="viewCourse(course.id)"
-            class="rounded-3xl border border-white/10 bg-[#0d1a33]/90 overflow-hidden cursor-pointer hover:border-cyan-300/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.45)] transition-all"
-          >
-            <div class="relative h-56 overflow-hidden">
-              <img
-                [src]="course.imagenUrl"
-                [alt]="course.titulo"
-                (error)="onImageError($event)"
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-[#07142a] via-[#07142a]/40 to-transparent"></div>
-              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/35 text-cyan-200 text-[10px] font-bold uppercase tracking-[0.14em]">
-                {{ getCourseBadge(course.progreso) }}
-              </span>
-            </div>
-
-            <div class="px-5 py-5">
-              <p class="text-[11px] uppercase tracking-[0.14em] text-violet-300/90 font-semibold">{{ course.categoria }}</p>
-              <h3 class="mt-2 text-3xl font-bold leading-tight line-clamp-2">{{ course.titulo }}</h3>
-              <p class="mt-2 text-gray-300">{{ course.professor }}</p>
-
-              <div class="mt-6">
-                <div class="flex items-center justify-between text-sm mb-2">
-                  <span class="text-gray-400">Progreso</span>
-                  <span class="font-bold text-cyan-300">{{ course.progreso }}%</span>
-                </div>
-                <div class="h-2 rounded-full bg-[#1b2a49] overflow-hidden">
-                  <div
-                    [class]="getProgressBarClass(course.progreso)"
-                    [style.width.%]="course.progreso"
-                    class="h-full rounded-full"
-                  ></div>
+      @if (filteredCourses().length === 0) {
+        <div class="bg-slate-900/50 rounded-3xl border border-slate-800/50 p-20 text-center backdrop-blur-sm">
+          <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-book-open text-3xl text-slate-600"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-white">No se encontraron cursos</h3>
+          <p class="text-slate-400 mt-2">Intenta cambiar el filtro para ver tus otras asignaturas.</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          @for (course of filteredCourses(); track course.id) {
+            <article 
+              class="group bg-slate-900/60 rounded-[2.5rem] border border-slate-800 hover:border-slate-700 transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm"
+              (click)="viewCourse(course.id)"
+            >
+              <!-- Imagen del Curso -->
+              <div class="relative h-56 overflow-hidden">
+                <img 
+                  [src]="course.imagenUrl" 
+                  [alt]="course.titulo"
+                  (error)="onImageError($event)"
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                
+                <div class="absolute top-4 left-4">
+                  <app-status-badge 
+                    [status]="course.progreso === 100 ? 'ACTIVO' : 'PENDIENTE'" 
+                    [label]="course.progreso === 100 ? 'Completado' : 'En Progreso'"
+                  ></app-status-badge>
                 </div>
               </div>
 
-              <button
-                (click)="$event.stopPropagation(); viewCourse(course.id)"
-                class="mt-6 w-full py-3 rounded-full bg-cyan-400 hover:bg-cyan-300 text-[#052033] font-bold transition-colors"
-              >
-                {{ getButtonText(course.status, course.progreso) }}
-              </button>
-            </div>
-          </article>
-        }
-      </div>
+              <!-- Contenido -->
+              <div class="p-8">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-500/80">{{ course.categoria }}</span>
+                <h3 class="text-2xl font-bold text-white mt-3 leading-tight group-hover:text-cyan-400 transition-colors duration-300 leading-tight line-clamp-2">{{ course.titulo }}</h3>
+                
+                <div class="flex items-center gap-3 mt-4 text-slate-400">
+                  <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                    <i class="fas fa-chalkboard-teacher text-xs"></i>
+                  </div>
+                  <span class="text-sm font-medium">{{ course.moduloActual }}</span>
+                </div>
+
+                <!-- Barra de Progreso -->
+                <div class="mt-8">
+                  <div class="flex justify-between items-end mb-2.5">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Tu Progreso</span>
+                    <span class="text-sm font-black text-white">{{ course.progreso }}%</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-1000 ease-out"
+                      [class]="getProgressBarClass(course.progreso)"
+                      [style.width.%]="course.progreso"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="mt-8">
+                  <app-button
+                    variant="primary"
+                    (onClick)="$event.stopPropagation(); viewCourse(course.id)"
+                    class="w-full block"
+                  >
+                    {{ course.progreso === 100 ? 'Ver Certificado' : 'Continuar' }}
+                    <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
+                  </app-button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
     }
   </main>
 </div>

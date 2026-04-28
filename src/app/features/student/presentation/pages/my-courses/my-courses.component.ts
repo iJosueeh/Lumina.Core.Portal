@@ -1,151 +1,98 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
+import { ButtonComponent } from '@shared/components/ui/button/button.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
 
 type FilterType = 'all' | 'in-progress' | 'completed' | 'semester';
-
-interface CourseWithStatus extends CourseProgress {
-  status: 'En Progreso' | 'Activo' | 'Completado' | 'Nuevo' | 'Examen';
-  nextModule?: string;
-  professor?: string;
-  rating?: string;
-}
 
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonComponent, SkeletonLoaderComponent, StatusBadgeComponent],
   templateUrl: './my-courses.component.html',
   styles: ``,
 })
 export class MyCoursesComponent implements OnInit {
-  activeFilter: FilterType = 'all';
-  allCourses: CourseWithStatus[] = [];
-  filteredCourses: CourseWithStatus[] = [];
-  isLoading = true;
+  // Signals para estado reactivo
+  allCourses = signal<CourseProgress[]>([]);
+  activeFilter = signal<FilterType>('all');
+  isLoading = signal<boolean>(true);
+  error = signal<string | null>(null);
+
+  // Computed para filtrado eficiente
+  filteredCourses = computed(() => {
+    const courses = this.allCourses();
+    const filter = this.activeFilter();
+
+    if (filter === 'in-progress') return courses.filter(c => c.progreso > 0 && c.progreso < 100);
+    if (filter === 'completed') return courses.filter(c => c.progreso === 100);
+    return courses;
+  });
 
   filters = [
     { id: 'all' as FilterType, label: 'Todos' },
     { id: 'in-progress' as FilterType, label: 'En Progreso' },
     { id: 'completed' as FilterType, label: 'Completados' },
-    { id: 'semester' as FilterType, label: 'Año 2026' },
+    { id: 'semester' as FilterType, label: 'Semestre 2026' },
   ];
 
   constructor(
     private getCoursesUseCase: GetStudentCoursesUseCase,
     private authRepository: AuthRepository,
-    private cacheService: CacheService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
-    const currentUser = this.authRepository.getCurrentUser();
-    if (currentUser) {
-      this.loadCourses(currentUser.id);
-    }
+    this.refresh();
   }
 
-  loadCourses(studentId: string): void {
-    // Force refresh when entering page to reflect recent enrollments.
-    this.cacheService.invalidate(`student-courses-${studentId}`);
+  refresh(): void {
+    const currentUser = this.authRepository.getCurrentUser();
+    if (!currentUser) {
+      this.error.set('Usuario no identificado');
+      this.isLoading.set(false);
+      return;
+    }
 
-    this.getCoursesUseCase.execute(studentId).subscribe({
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    // Patrón reactivo: suscripción directa que actualiza el signal
+    this.getCoursesUseCase.execute(currentUser.id).subscribe({
       next: (courses) => {
-        // Agregar datos adicionales a los cursos
-        this.allCourses = courses.map((course, index) => ({
-          ...course,
-          // Asegurar fallback de imagen si no existe
-          imagenUrl: course.imagenUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
-          status: this.getStatusForCourse(course.progreso, index),
-          professor: this.getProfessorForCourse(index),
-          nextModule: course.moduloActual,
-          rating: '18/20',
-        }));
-        this.filteredCourses = this.allCourses;
-        this.isLoading = false;
+        console.log('📚 Cursos recibidos:', courses);
+        this.allCourses.set(courses);
+        this.isLoading.set(false);
       },
-      error: () => (this.isLoading = false),
+      error: (err) => {
+        console.error('❌ Error en MyCoursesComponent:', err);
+        this.error.set('No se pudieron cargar los cursos. Por favor, reintenta.');
+        this.isLoading.set(false);
+      },
     });
   }
 
   setFilter(filter: FilterType): void {
-    this.activeFilter = filter;
-
-    switch (filter) {
-      case 'all':
-        this.filteredCourses = this.allCourses;
-        break;
-      case 'in-progress':
-        this.filteredCourses = this.allCourses.filter((c) => c.progreso > 0 && c.progreso < 100);
-        break;
-      case 'completed':
-        this.filteredCourses = this.allCourses.filter((c) => c.progreso === 100);
-        break;
-      case 'semester':
-        this.filteredCourses = this.allCourses; // Filtrar por semestre
-        break;
-    }
+    this.activeFilter.set(filter);
   }
 
-  getStatusForCourse(
-    progreso: number,
-    index: number,
-  ): 'En Progreso' | 'Activo' | 'Completado' | 'Nuevo' | 'Examen' {
-    if (progreso === 100) return 'Completado';
-    if (progreso === 0) return 'Nuevo';
-    if (index === 1) return 'Activo';
-    if (index === 5) return 'Examen';
-    return 'En Progreso';
-  }
-
-  getProfessorForCourse(index: number): string {
-    const professors = [
-      'Prof. Carlos Mendoza',
-      'Prof. Ana García',
-      'Prof. Sofía Martínez',
-      'Prof. Jorge Ruiz',
-      'Prof. María López',
-      'Prof. Roberto Díaz',
-    ];
-    return professors[index] || 'Prof. Asignado';
-  }
-
-  getStatusColor(status: string): string {
-    const colors: Record<string, string> = {
-      'En Progreso': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      Activo: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      Completado: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-      Nuevo: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      Examen: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-700';
-  }
-
-  getProgressColor(progreso: number): string {
-    if (progreso === 100) return 'bg-green-500';
-    if (progreso >= 70) return 'bg-blue-500';
-    if (progreso >= 30) return 'bg-yellow-500';
-    return 'bg-gray-400';
-  }
-
-  getButtonText(status: string, progreso: number): string {
-    if (progreso === 100) return 'Ver Certificado';
-    return 'Continuar Aprendizaje';
-  }
-
-  getCourseBadge(progreso: number): string {
-    if (progreso === 100) return 'Completado';
-    return 'En Progreso';
+  getBadgeStatus(progreso: number): 'success' | 'warning' | 'info' | 'default' {
+    if (progreso === 100) return 'success';
+    if (progreso >= 50) return 'info';
+    if (progreso > 0) return 'warning';
+    return 'default';
   }
 
   getProgressBarClass(progreso: number): string {
-    if (progreso >= 70) return 'bg-gradient-to-r from-emerald-300 to-emerald-500';
-    if (progreso >= 30) return 'bg-gradient-to-r from-cyan-300 to-cyan-500';
-    return 'bg-gradient-to-r from-violet-300 to-violet-500';
+    if (progreso >= 70) return 'bg-cyan-400';
+    if (progreso >= 30) return 'bg-blue-400';
+    return 'bg-violet-400';
   }
 
   viewCourse(courseId: string): void {
@@ -157,3 +104,4 @@ export class MyCoursesComponent implements OnInit {
     img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
   }
 }
+

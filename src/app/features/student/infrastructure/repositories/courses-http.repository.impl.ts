@@ -14,7 +14,7 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
     private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
     private readonly cursosApiUrl = environment.cursosApiUrl;
     private readonly CACHE_TTL = 3 * 60 * 1000; // 3 minutos
-    private readonly ESTUDIANTES_TIMEOUT_MS = 12000;
+    private readonly ESTUDIANTES_TIMEOUT_MS = 30000; // 30 segundos
 
     constructor(
         private http: HttpClient,
@@ -22,68 +22,68 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
     ) { }
 
     getStudentCourses(studentId: string): Observable<CourseProgress[]> {
-        const cacheKey = `student-courses-${studentId}`;
-        
-        // Verificar si existe en caché
-        const cachedData = this.cacheService.get<CourseProgress[]>(cacheKey);
-        if (cachedData) {
-            console.log('✅ Datos obtenidos del caché:', cacheKey);
-            return of(cachedData);
-        }
+        console.time(`⏱️ Carga Cursos Estudiante ${studentId}`);
 
-        console.log('📡 Realizando petición HTTP:', cacheKey);
-
-        if (this.isUnsafeBrowserPort(this.estudiantesApiUrl)) {
-            console.warn('⚠️ Puerto bloqueado por navegador en estudiantesApiUrl; usando fallback de Cursos sin llamar API de Estudiantes.');
-            return this.getCoursesFallback(cacheKey);
-        }
-
-        return this.http.get<any[]>(`${this.estudiantesApiUrl}/estudiantes/${studentId}/cursos-matriculados`)
+        return this.http.get<any>(`${this.estudiantesApiUrl}/estudiantes/${studentId}/cursos-matriculados`)
             .pipe(
                 timeout(this.ESTUDIANTES_TIMEOUT_MS),
-                retry({ count: 1, delay: 300 }),
-                map(courses => courses.map(course => ({
-                    id: course.id,
-                    titulo: course.titulo || course.nombreCurso || 'Curso sin título',
-                    categoria: course.categoria || 'General',
-                    moduloActual: `Módulo ${Math.ceil((course.leccionesCompletadas || 0) / 5)}`,
-                    progreso: course.progreso || 0,
-                    ultimoAcceso: new Date(course.ultimaActividad),
-                    imagenUrl: course.imagenUrl || course.imagen || course.imageUrl || course.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
-                    colorCategoria: this.getCategoryColor(course.categoria)
-                }))),
-                tap(courses => {
-                    // Guardar en caché
-                    this.cacheService.set(cacheKey, courses, this.CACHE_TTL);
-                    console.log('💾 Datos almacenados en caché:', cacheKey, courses.length, 'cursos');
+                retry({ count: 1, delay: 500 }),
+                map(response => {
+                    // Manejar tanto { success: true, data: [...] } como el array directo
+                    const courses = Array.isArray(response) ? response : (response.data || []);
+
+                    return courses.map((course: any) => {
+                        const rawTitulo = course.titulo || course.Titulo || course.nombreCurso || course.NombreCurso;
+                        const finalTitulo = (typeof rawTitulo === 'string' && rawTitulo.length > 0)
+                            ? rawTitulo 
+                            : 'Título no disponible';
+
+                        return {
+                            id: course.id || course.idCurso || course.Id,
+                            titulo: finalTitulo,
+                            categoria: course.categoria || 'Especialización',
+                            moduloActual: course.moduloActual || 'Módulo 1',
+                            progreso: course.progreso || 0,
+                            ultimoAcceso: new Date(course.ultimoAcceso || course.fechaActualizacion || Date.now()),
+                            imagenUrl: course.imagenUrl || course.portadaUrl || 'assets/images/courses/default.jpg',
+                            colorCategoria: this.getCategoryColor(course.categoria),
+                            codigo: course.codigo || 'ACAD-2026',
+                            modalidad: course.modalidad || 'Presencial/Virtual',
+                            nivel: course.nivel || 'Intermedio'
+                        };
+                    });
                 }),
+                tap(() => console.timeEnd(`⏱️ Carga Cursos Estudiante ${studentId}`)),
                 catchError(error => {
-                    console.warn('⚠️ API de Estudiantes no disponible o lenta, usando API de Cursos como fallback:', error.status ?? error.name ?? error);
-                    return this.getCoursesFallback(cacheKey);
+                    console.error('❌ Error cargando cursos:', error);
+                    return this.getCoursesFallback();
                 })
             );
     }
-
-    private getCoursesFallback(cacheKey: string): Observable<CourseProgress[]> {
+    private getCoursesFallback(): Observable<CourseProgress[]> {
         // Fallback: cargar todos los cursos disponibles desde el API de Cursos
         return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
             map(cursos => cursos.map((curso, index) => {
-                const seed = this.hashStr(curso.id ?? String(index));
+                const cursoId = curso.id || curso.Id || curso.idCurso || String(index);
+                const titulo = curso.titulo || curso.Titulo || curso.nombreCurso || curso.NombreCurso?.value || curso.NombreCurso || 'Curso sin título';
+                const categoria = curso.categoria || curso.Categoria || curso.Categoria?.value || 'General';
+                const nivel = curso.nivel || curso.Nivel || curso.Nivel?.value || 'Intermedio';
+                const imagenUrl = curso.imagenUrl || curso.ImagenUrl || curso.imagen || curso.imageUrl || curso.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
+                const seed = this.hashStr(String(cursoId));
                 return {
-                    id: curso.id,
-                    titulo: curso.titulo || curso.nombreCurso || 'Curso sin título',
-                    categoria: curso.categoria || 'General',
+                    id: cursoId,
+                    titulo,
+                    categoria,
                     moduloActual: `M\u00f3dulo ${(seed % 5) + 1}`,
                     progreso: 20 + (seed % 61), // 20–80%, determinista
                     ultimoAcceso: new Date(Date.now() - ((seed % 7) + 1) * 24 * 60 * 60 * 1000),
-                    imagenUrl: curso.imagenUrl || curso.imagen || curso.imageUrl || curso.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
-                    colorCategoria: this.getCategoryColor(curso.categoria)
+                    imagenUrl,
+                    colorCategoria: this.getCategoryColor(categoria),
+                    codigo: curso.codigo || curso.Codigo || 'ACAD-2026',
+                    modalidad: curso.modalidad || curso.Modalidad || 'Presencial/Virtual',
+                    nivel
                 };
             })),
-            tap(courses => {
-                this.cacheService.set(cacheKey, courses, this.CACHE_TTL);
-                console.log('💾 Datos de Cursos almacenados en caché:', cacheKey, courses.length, 'cursos');
-            }),
             catchError(err => {
                 console.error('❌ Error al cargar cursos:', err);
                 return of([]); // Retornar array vacío en caso de error total

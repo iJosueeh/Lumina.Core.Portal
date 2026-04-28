@@ -98,7 +98,7 @@ export class ScheduleHttpRepositoryImpl extends ScheduleRepository {
         console.log('📡 Realizando petición HTTP para eventos próximos:', cacheKey);
         // Obtener evaluaciones próximas
         return this.http.get<any>(
-            `${this.evaluacionesApiUrl}/Evaluaciones?estudianteId=${studentId}`
+            `${this.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`
         ).pipe(
             map(response => {
                 console.log('🔍 [SCHEDULE] RAW Response del backend:', response);

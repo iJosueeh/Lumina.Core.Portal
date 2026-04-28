@@ -1,17 +1,17 @@
-<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
-    <div class="flex items-start justify-between mb-4">
-        <span class="text-gray-500 font-medium text-xs tracking-wider uppercase">{{label}}</span>
-        <div class="p-2 rounded-lg" [ngClass]="iconBgClass">
-            <i [class]="'fas fa-' + icon + ' w-5 h-5 flex items-center justify-center'"></i>
+<div class="bg-slate-900/60 backdrop-blur-sm p-7 rounded-[2.5rem] border border-slate-800/80 shadow-xl hover:border-cyan-500/20 transition-all group">
+    <div class="flex items-start justify-between mb-6">
+        <span class="text-slate-500 font-black text-[10px] tracking-[0.2em] uppercase">{{label}}</span>
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110" [ngClass]="iconBgClass">
+            <i [class]="'fas fa-' + icon + ' text-sm'"></i>
         </div>
     </div>
     <div class="flex items-baseline gap-3 mb-1">
-        <span class="text-3xl font-bold text-gray-900">{{value}}</span>
+        <span class="text-4xl font-black text-white tracking-tighter">{{value}}</span>
         @if (trend) {
-          <span [class]="trendType === 'positive' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="px-2 py-0.5 rounded text-xs font-bold">
+          <span [class]="trendType === 'positive' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'" class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
               {{trend}}
           </span>
         }
     </div>
-    <p class="text-sm text-gray-500">{{description}}</p>
+    <p class="text-xs font-medium text-slate-500 mt-2">{{description}}</p>
 </div>

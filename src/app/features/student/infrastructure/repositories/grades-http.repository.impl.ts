@@ -69,7 +69,7 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
         console.log('📡 Realizando petición HTTP para calificaciones:', cacheKey);
         // 1. Obtener evaluaciones del estudiante
         return this.http.get<any>(
-            `${this.evaluacionesApiUrl}/Evaluaciones?estudianteId=${studentId}`
+            `${this.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`
         ).pipe(
             map(response => {
                 console.log('🔍 [GRADES] RAW Response del backend:', response);

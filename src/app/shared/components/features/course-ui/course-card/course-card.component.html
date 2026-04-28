@@ -1,48 +1,52 @@
 <div
-  class="bg-slate-800/40 border border-slate-700/50 rounded-3xl overflow-hidden hover:bg-slate-800/60 transition-all cursor-pointer group flex flex-col h-full"
+  class="group bg-slate-900/60 backdrop-blur-sm border border-slate-800/80 rounded-[2rem] overflow-hidden hover:border-cyan-500/30 hover:bg-slate-900/80 transition-all duration-500 cursor-pointer flex flex-col h-full hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
   (click)="onView.emit(data().id)"
 >
-  <!-- Course Image -->
-  <div class="relative h-48 overflow-hidden">
+  <!-- Imagen del Curso -->
+  <div class="relative h-52 overflow-hidden">
     <img
       [src]="data().coverImage"
       [alt]="data().titulo"
       (error)="onImageError($event)"
-      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-80"
+      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
     />
-    <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
     
-    <div class="absolute top-4 left-4 flex flex-wrap gap-2">
+    <!-- Modalidad Badge -->
+    <div class="absolute top-4 left-4">
       @if (data().modalidad) {
-        <span class="px-2.5 py-1 rounded-lg bg-teal-500/20 backdrop-blur-md border border-teal-500/30 text-teal-400 text-[10px] font-black uppercase tracking-widest">
+        <span class="px-3 py-1 rounded-full bg-cyan-500/10 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-[10px] font-black uppercase tracking-[0.15em]">
           {{ data().modalidad }}
         </span>
       }
     </div>
   </div>
 
-  <!-- Content -->
-  <div class="p-6 flex-1 flex flex-col">
-    <div class="mb-4">
-      <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{{ data().codigo }}</p>
-      <h3 class="text-xl font-bold text-white group-hover:text-teal-400 transition-colors leading-tight">
+  <!-- Contenido -->
+  <div class="p-6 sm:p-8 flex-1 flex flex-col">
+    <div class="mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
+        <p class="text-[10px] sm:text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ data().codigo }}</p>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-black text-white group-hover:text-cyan-400 transition-colors duration-300 leading-tight line-clamp-2">
         {{ data().titulo }}
       </h3>
     </div>
 
-    <!-- Dynamic Content by Role -->
-    <div class="mt-auto space-y-5">
+    <!-- Progreso o Estadísticas -->
+    <div class="mt-auto space-y-8">
       
-      <!-- Student: Progress Bar -->
+      <!-- Estudiante: Progreso -->
       @if (role() === 'student' && data().progreso !== undefined) {
-        <div class="space-y-2">
-          <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
-            <span class="text-slate-500">Tu Progreso</span>
-            <span class="text-white">{{ data().progreso }}%</span>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em]">
+            <span class="text-slate-500">Progreso</span>
+            <span class="text-cyan-300">{{ data().progreso }}%</span>
           </div>
-          <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div class="h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
             <div 
-              class="h-full transition-all duration-1000" 
+              class="h-full rounded-full transition-all duration-1000 ease-out" 
               [class]="progressColor()"
               [style.width.%]="data().progreso"
             ></div>
@@ -50,28 +54,17 @@
         </div>
       }
 
-      <!-- Teacher: Stats -->
-      @if (role() === 'teacher') {
-        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-          <div>
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Alumnos</p>
-            <p class="text-lg font-bold text-white tracking-tighter">{{ data().totalAlumnos || 0 }}</p>
-          </div>
-          <div>
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Promedio</p>
-            <p class="text-lg font-bold text-teal-400 tracking-tighter">{{ (data().promedioGeneral | number:'1.1-1') || '0.0' }}</p>
-          </div>
+      <!-- Footer de Tarjeta -->
+      <div class="flex items-center justify-between pt-6 border-t border-slate-800/50">
+        <div class="flex items-center gap-3">
+          <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+          <span class="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ data().nivel || 'Básico' }}</span>
         </div>
-      }
-
-      <div class="flex items-center justify-between gap-4 pt-2">
-        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ data().nivel || 'Nivel Base' }}</span>
-        <button class="text-teal-500 hover:text-teal-400 text-xs font-black uppercase tracking-widest flex items-center gap-2 group/btn">
-          Ver Detalles
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </button>
+        
+        <div class="flex items-center gap-2.5 text-cyan-500 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] group/btn py-1.5 px-3 rounded-xl hover:bg-cyan-500/5 transition-all">
+          Detalles
+          <i class="fas fa-arrow-right text-[9px] group-hover/btn:translate-x-1 transition-transform"></i>
+        </div>
       </div>
     </div>
   </div>
