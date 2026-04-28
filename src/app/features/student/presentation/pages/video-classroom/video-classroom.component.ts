@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery, injectQueryClient } from '@tanstack/angular-query-experimental';
@@ -49,12 +50,37 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
     queryKey: ['course-video-classroom', this.courseId()],
     queryFn: () => lastValueFrom(this.videoClassroomService.getCourseVideoClassroom(this.courseId())),
     enabled: !!this.courseId(),
+    retry: (failureCount, error: unknown) => {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        return false;
+      }
+
+      return failureCount < 2;
+    },
+    refetchOnWindowFocus: false,
   }));
 
   // Data Selectors
   classroomData = computed(() => this.classroomQuery.data());
   sections = computed(() => this.classroomData()?.sections || []);
   allLessons = computed(() => this.sections().flatMap(s => s.videos));
+  queryError = computed(() => this.classroomQuery.error());
+  isCourseUnavailable = computed(() => {
+    const error = this.queryError();
+    return error instanceof HttpErrorResponse && error.status === 404;
+  });
+  isVideoUnavailable = computed(() => {
+    const lesson = this.activeLesson();
+    return !lesson || !lesson.videoUrl || !lesson.videoUrl.trim();
+  });
+  emptyStateTitle = computed(() =>
+    this.isCourseUnavailable() ? 'Aula de video no disponible' : 'No se pudo cargar el curso'
+  );
+  emptyStateDescription = computed(() =>
+    this.isCourseUnavailable()
+      ? 'Este curso todavía no tiene aula de video habilitada o no existe. Puedes volver al curso e intentarlo más tarde.'
+      : 'Ocurrió un error al obtener la información de las lecciones. Por favor, intenta de nuevo.'
+  );
   
   activeLesson = computed(() => {
     const all = this.allLessons();

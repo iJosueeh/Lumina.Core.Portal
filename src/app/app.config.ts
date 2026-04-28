@@ -34,13 +34,14 @@ import { AccountRepository } from '@features/student/domain/repositories/account
 import { AccountMockRepositoryImpl } from '@features/student/infrastructure/repositories/account-mock.repository.impl';
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { TeacherCourseHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-course-http.repository.impl';
-
 import { GradesManagementRepository } from '@features/teacher/domain/repositories/grades-management.repository';
 import { GradesManagementHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/grades-management-http.repository.impl';
 import { TeacherInfoRepository } from '@features/teacher/domain/repositories/teacher-info.repository';
 import { TeacherInfoHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-info-http.repository.impl';
 import { TeacherStudentRepository } from '@features/teacher/domain/repositories/teacher-student.repository';
 import { TeacherStudentHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-student-http.repository.impl';
+import { ADMIN_DASHBOARD_DATA } from '@features/admin/presentation/pages/admin-dashboard/admin-dashboard';
+import { AdminDashboardApiService } from '@features/admin/infrastructure/services/admin-dashboard-api.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -108,6 +109,12 @@ export const appConfig: ApplicationConfig = {
     { 
       provide: TeacherStudentRepository, 
       useClass: TeacherStudentHttpRepositoryImpl 
+    },
+    // Admin Dashboard Data (desde API real)
+    {
+      provide: ADMIN_DASHBOARD_DATA,
+      useFactory: (service: AdminDashboardApiService) => service.getDashboardData(),
+      deps: [AdminDashboardApiService]
     },
   ],
 };

@@ -15,8 +15,11 @@ export class AdminLayout {
   
   menuItems = [
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'dashboard' },
-    { label: 'Gestión de Usuarios', route: '/admin/users', icon: 'users' },
-    { label: 'Gestión de Cursos', route: '/admin/courses', icon: 'book' }
+    { label: 'Analytics', route: '/admin/analytics', icon: 'bar-chart' },
+    { label: 'Institutions', route: '/admin/institutions', icon: 'building' },
+    { label: 'Scholars', route: '/admin/scholars', icon: 'user-graduate' },
+    { label: 'Archive', route: '/admin/archive', icon: 'archive' },
+    { label: 'Reports', route: '/admin/reports', icon: 'file-alt' }
   ];
 
   constructor(private router: Router) {}

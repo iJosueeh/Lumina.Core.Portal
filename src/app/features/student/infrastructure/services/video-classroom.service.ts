@@ -20,7 +20,7 @@ export class VideoClassroomService {
   getCourseVideoClassroom(courseId: string): Observable<VideoClassroomData> {
     return this.http
       .get<ApiWrapper<VideoClassroomApiResponse>>(
-        `${this.estudiantesApiUrl}/estudiantes/aula-video/${courseId}`
+        `${this.estudiantesApiUrl}/estudiantes/cursos/${courseId}/aula-video`
       )
       .pipe(map((response) => mapVideoClassroomResponse(response.data)));
   }
