@@ -87,6 +87,8 @@ export interface Leccion {
   tipo: 'video' | 'lectura' | 'quiz' | 'tarea';
   duracion: string;
   completada: boolean;
+  videoUrl?: string;
+  descripcion?: string;
 }
 
 export interface CourseStudent {

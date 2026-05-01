@@ -1,67 +1,50 @@
-<div class="space-y-6 mb-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <app-stat-card
-      label="Asistencia Promedio"
-      [value]="(promedioAsistencia() | number: '1.0-0') + '%'"
-      description="Rendimiento de puntualidad"
-      icon="analytics"
-      color="teal"
-    />
-    <app-stat-card
-      label="Total Presentes"
-      [value]="totalPresentes().toString()"
-      description="Suma de todas las sesiones"
-      icon="check_circle"
-      color="green"
-    />
-    <app-stat-card
-      label="Total Ausentes"
-      [value]="totalAusentes().toString()"
-      description="Inasistencias registradas"
-      icon="cancel"
-      color="orange"
-    />
-    <app-stat-card
-      label="Total Tardanzas"
-      [value]="totalTardanzas().toString()"
-      description="Llegadas fuera de hora"
-      icon="schedule"
-      color="orange"
-    />
-  </div>
+<div class="flex flex-col md:flex-row items-center justify-between gap-8">
+    <!-- Selectores y Búsqueda -->
+    <div class="flex flex-col md:flex-row items-end gap-6 w-full md:w-auto">
+        
+        <!-- Selector de Curso -->
+        <div class="w-full md:w-80 group">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Asignatura</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <i class="fas fa-book-open text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+                </div>
+                <select 
+                    [ngModel]="selectedCourseId" 
+                    (ngModelChange)="courseChange.emit($event)"
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+                    @for (course of courses(); track course.id) {
+                        <option [value]="course.id" class="bg-slate-900 text-white">{{ course.titulo }} ({{ course.codigo }})</option>
+                    }
+                </select>
+                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                    <i class="fas fa-chevron-down text-[10px] text-slate-500"></i>
+                </div>
+            </div>
+        </div>
 
-  <div class="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-      <div class="md:col-span-1">
-        <label class="block text-xs font-black uppercase text-slate-500 tracking-[0.2em] mb-2">Seleccionar Curso</label>
-        <app-select [(ngModel)]="selectedCourseId">
-          @for (course of courses(); track course.id) {
-            <option [value]="course.id">{{ course.codigo }} - {{ course.titulo }}</option>
-          }
-        </app-select>
-      </div>
-
-      <div class="md:col-span-1">
-        <app-input
-          label="Buscar Estudiante"
-          placeholder="Nombre del alumno..."
-          [(ngModel)]="searchTerm"
-          icon="search"
-        />
-      </div>
-
-      <div class="md:col-span-1 flex justify-end">
-        <button
-          type="button"
-          (click)="onExport.emit()"
-          class="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all font-bold text-xs uppercase tracking-widest flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Exportar Reporte
-        </button>
-      </div>
+        <!-- Buscador -->
+        <div class="w-full md:w-72 group">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Buscar Alumno</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+                </div>
+                <input 
+                    type="text" 
+                    [ngModel]="searchTerm" 
+                    (ngModelChange)="searchChange.emit($event)"
+                    placeholder="Nombre del estudiante..." 
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Botones Rápidos -->
+    <div class="flex items-center gap-4 w-full md:w-auto self-end">
+        <button class="flex-1 md:flex-none px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3">
+            <i class="fas fa-print text-slate-400"></i>
+            <span class="text-sm uppercase tracking-widest">Imprimir</span>
+        </button>
+    </div>
 </div>

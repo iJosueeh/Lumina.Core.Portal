@@ -1,51 +1,55 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-export interface ClassroomSection {
-  id: string;
-  title: string;
-  videos: ClassroomLesson[];
-}
+import { FormsModule } from '@angular/forms';
+import { ButtonComponent } from '@shared/components/ui/button/button.component';
 
 export interface ClassroomLesson {
   lessonId: string;
   title: string;
-  durationSeconds: number;
+  duration: string;
   isCompleted: boolean;
   isLocked: boolean;
+  videoUrl?: string;
+  resources?: any[];
+}
+
+export interface ClassroomSection {
+  title: string;
+  videos: ClassroomLesson[];
 }
 
 @Component({
   selector: 'app-classroom-playlist',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, ButtonComponent],
   templateUrl: './classroom-playlist.component.html',
   styleUrl: './classroom-playlist.component.css'
 })
 export class ClassroomPlaylistComponent {
   sections = input.required<ClassroomSection[]>();
   activeLessonId = input<string | null>(null);
-  
-  onSelectLesson = output<ClassroomLesson>();
+  isEditable = input<boolean>(false); // Nuevo: Habilita botones de edición
+
+  onLessonSelect = output<ClassroomLesson>();
   onToggleCompletion = output<ClassroomLesson>();
+  
+  // Eventos de edición para el Admin
+  onEditLesson = output<ClassroomLesson>();
+  onAddLesson = output<string>(); // Recibe el título de la sección
+  onDeleteLesson = output<string>(); // Recibe el lessonId
+  onReorderLessons = output<ClassroomSection[]>();
 
-  expandedSections = signal<Set<string>>(new Set());
+  expandedSections = signal<Record<string, boolean>>({});
 
-  toggleSection(sectionId: string): void {
-    this.expandedSections.update(prev => {
-      const next = new Set(prev);
-      if (next.has(sectionId)) {
-        next.delete(sectionId);
-      } else {
-        next.add(sectionId);
-      }
-      return next;
+  toggleSection(title: string): void {
+    const current = this.expandedSections();
+    this.expandedSections.set({
+      ...current,
+      [title]: !current[title]
     });
   }
 
-  formatDuration(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  isSectionExpanded(title: string): boolean {
+    return this.expandedSections()[title] !== false;
   }
 }

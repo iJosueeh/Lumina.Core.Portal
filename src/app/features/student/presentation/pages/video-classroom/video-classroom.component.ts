@@ -36,6 +36,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   studentId = signal('');
   selectedLessonId = signal<string | null>(null);
   autoplayEnabled = signal(false);
+  activeTab = signal<'resources' | 'description'>('resources');
   materialScope = signal<'lesson' | 'section' | 'course'>('lesson');
 
   private route = inject(ActivatedRoute);
@@ -130,9 +131,10 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   }
 
   // Event Handlers
-  selectLesson(lesson: ClassroomLesson): void {
-    this.selectedLessonId.set(lesson.lessonId);
-    this.router.navigate(['/student/course', this.courseId(), 'learn', lesson.lessonId]);
+  selectLesson(lesson: any): void {
+    const lessonId = lesson.lessonId;
+    this.selectedLessonId.set(lessonId);
+    this.router.navigate(['/student/course', this.courseId(), 'learn', lessonId]);
   }
 
   async toggleLessonCompletion(lesson: ClassroomLesson): Promise<void> {

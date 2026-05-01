@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
@@ -38,7 +37,6 @@ import { TabType } from '../../../../../shared/models/course-management.models';
   selector: 'app-course-detail',
   standalone: true,
   imports: [
-    CommonModule, 
     QuizTakeComponent, 
     QuizResultsComponent,
     CourseHeroComponent,
@@ -96,7 +94,7 @@ export class CourseDetailComponent implements OnInit {
     enabled: !!this.courseId() && !!this.studentId(),
   }));
 
-  // Quiz State (simplified for Shell)
+  // Quiz State
   loadingQuiz = signal(false);
   isQuizActive = signal(false);
   activeQuiz = signal<any>(null);
@@ -107,7 +105,6 @@ export class CourseDetailComponent implements OnInit {
   course = computed(() => this.courseQuery.data());
   materials = computed(() => this.materialsQuery.data() ?? []);
   
-  // Mapeo de Quiz[] a QuizSummary[]
   quizSummaries = computed<QuizSummary[]>(() => {
     const rawQuizzes = this.evaluationsQuery.data() ?? [];
     const attempts = this.attemptsQuery.data() ?? [];
@@ -152,15 +149,10 @@ export class CourseDetailComponent implements OnInit {
     this.studentId.set(this.authService.getUserId() || '');
   }
 
-  setTab(tab: TabType): void {
-    this.activeTab.set(tab);
-  }
+  setTab(tab: TabType): void { this.activeTab.set(tab); }
 
-  goBack(): void {
-    this.router.navigate(['/student/dashboard']);
-  }
+  goBack(): void { this.router.navigate(['/student/dashboard']); }
 
-  // Material Actions
   previewMaterial(material: CourseMaterial): void {
     this.selectedMaterial.set(material);
     this.showMaterialPreview.set(true);
@@ -175,16 +167,10 @@ export class CourseDetailComponent implements OnInit {
     window.open(material.url, '_blank');
   }
 
-  // Lesson Actions
   toggleLessonCompletion(data: { event: Event, lesson: Lesson }): void {
     data.event.stopPropagation();
     data.lesson.isCompleted = !data.lesson.isCompleted;
-    this.progressStorage.saveLessonProgress(
-      this.courseId(), 
-      this.studentId(), 
-      data.lesson.id, 
-      data.lesson.isCompleted
-    );
+    this.progressStorage.saveLessonProgress(this.courseId(), this.studentId(), data.lesson.id, data.lesson.isCompleted);
   }
 
   openLesson(data: { module: Module, lesson: Lesson }): void {
@@ -200,7 +186,6 @@ export class CourseDetailComponent implements OnInit {
     this.openLesson({ module: courseData.modules[0], lesson: courseData.modules[0].lessons[0] });
   }
 
-  // Quiz Actions
   async startQuiz(quiz: QuizSummary) {
     this.loadingQuiz.set(true);
     try {
@@ -215,12 +200,7 @@ export class CourseDetailComponent implements OnInit {
   async onQuizSubmit(answers: any) {
     this.submittingQuiz.set(true);
     try {
-      const result = await lastValueFrom(this.evaluationsService.submitQuizAttempt(
-        this.activeQuiz().id, 
-        answers, 
-        this.activeQuiz().totalPoints, 
-        this.studentId()
-      ));
+      const result = await lastValueFrom(this.evaluationsService.submitQuizAttempt(this.activeQuiz().id, answers, this.activeQuiz().totalPoints, this.studentId()));
       this.activeResults.set({ quiz: this.activeQuiz(), attempt: result });
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
@@ -229,7 +209,5 @@ export class CourseDetailComponent implements OnInit {
     }
   }
 
-  viewQuizResults(_quiz: QuizSummary) {
-    // Logic to show results if student has attempts
-  }
+  viewQuizResults(_quiz: QuizSummary) { /* Logic to show results */ }
 }

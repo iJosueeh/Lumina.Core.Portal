@@ -1,10 +1,8 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
-import { CacheService } from '@core/services/cache.service';
 import { ButtonComponent } from '@shared/components/ui/button/button.component';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
@@ -14,11 +12,15 @@ type FilterType = 'all' | 'in-progress' | 'completed' | 'semester';
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SkeletonLoaderComponent, StatusBadgeComponent],
+  imports: [ButtonComponent, SkeletonLoaderComponent, StatusBadgeComponent],
   templateUrl: './my-courses.component.html',
   styles: ``,
 })
 export class MyCoursesComponent implements OnInit {
+  private getCoursesUseCase = inject(GetStudentCoursesUseCase);
+  private authRepository = inject(AuthRepository);
+  private router = inject(Router);
+
   // Signals para estado reactivo
   allCourses = signal<CourseProgress[]>([]);
   activeFilter = signal<FilterType>('all');
@@ -42,12 +44,6 @@ export class MyCoursesComponent implements OnInit {
     { id: 'semester' as FilterType, label: 'Semestre 2026' },
   ];
 
-  constructor(
-    private getCoursesUseCase: GetStudentCoursesUseCase,
-    private authRepository: AuthRepository,
-    private router: Router,
-  ) {}
-
   ngOnInit(): void {
     this.refresh();
   }
@@ -63,10 +59,8 @@ export class MyCoursesComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Patrón reactivo: suscripción directa que actualiza el signal
     this.getCoursesUseCase.execute(currentUser.id).subscribe({
       next: (courses) => {
-        console.log('📚 Cursos recibidos:', courses);
         this.allCourses.set(courses);
         this.isLoading.set(false);
       },
@@ -104,4 +98,3 @@ export class MyCoursesComponent implements OnInit {
     img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
   }
 }
-

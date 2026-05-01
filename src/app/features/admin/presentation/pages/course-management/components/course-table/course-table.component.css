@@ -1,5 +1,46 @@
-/* Estilos para la Tabla de Cursos de Admin */
 :host {
-  display: block;
-  width: 100%;
+    display: block;
+    width: 100%;
+}
+
+.course-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.course-table th {
+    background-color: rgba(15, 23, 42, 0.6);
+    color: #94a3b8;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.course-table td {
+    padding: 1.25rem 1.5rem;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+    transition: all 0.3s ease;
+}
+
+.course-table tr:hover td {
+    background-color: rgba(30, 41, 59, 0.4);
+    color: #f8fafc;
+}
+
+.course-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Efecto de cristal en la cabecera */
+.course-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
 }

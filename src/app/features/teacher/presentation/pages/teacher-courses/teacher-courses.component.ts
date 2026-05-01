@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,25 +6,61 @@ import { GetTeacherCoursesUseCase } from '@features/teacher/application/use-case
 import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
+// Atomic UI
+import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
+import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+
 @Component({
     selector: 'app-teacher-courses',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
+    imports: [
+        CommonModule, 
+        RouterModule, 
+        FormsModule,
+        StatCardComponent,
+        StatusBadgeComponent,
+        SkeletonLoaderComponent
+    ],
     templateUrl: './teacher-courses.component.html',
-    styles: ``
 })
 export class TeacherCoursesComponent implements OnInit {
-    courses: TeacherCourse[] = [];
-    filteredCourses: TeacherCourse[] = [];
-    isLoading = true;
-    searchTerm = '';
-    selectedFilter: 'Todos' | 'Activos' | 'Archivados' = 'Todos';
+    private getCoursesUseCase = inject(GetTeacherCoursesUseCase);
+    private authRepository = inject(AuthRepository);
+    private router = inject(Router);
 
-    constructor(
-        private getCoursesUseCase: GetTeacherCoursesUseCase,
-        private authRepository: AuthRepository,
-        private router: Router
-    ) { }
+    // Signals para el estado
+    courses = signal<TeacherCourse[]>([]);
+    isLoading = signal(true);
+    searchTerm = signal('');
+    selectedFilter = signal<'Todos' | 'Activos' | 'Archivados'>('Todos');
+
+    // Lógica de filtrado reactiva con computed
+    filteredCourses = computed(() => {
+        let list = this.courses();
+        const term = this.searchTerm().toLowerCase().trim();
+        const filter = this.selectedFilter();
+
+        if (filter === 'Activos') {
+            list = list.filter(c => c.estadoCurso === 'Activo');
+        } else if (filter === 'Archivados') {
+            list = list.filter(c => c.estadoCurso === 'Finalizado');
+        }
+
+        if (term) {
+            list = list.filter(c => 
+                c.titulo.toLowerCase().includes(term) ||
+                c.codigo.toLowerCase().includes(term)
+            );
+        }
+
+        return list;
+    });
+
+    // Estadísticas rápidas calculadas
+    totalCoursesCount = computed(() => this.courses().length);
+    activeCoursesCount = computed(() => this.courses().filter(c => c.estadoCurso === 'Activo').length);
+    archivedCoursesCount = computed(() => this.courses().filter(c => c.estadoCurso === 'Finalizado').length);
 
     ngOnInit(): void {
         const currentUser = this.authRepository.getCurrentUser();
@@ -34,67 +70,24 @@ export class TeacherCoursesComponent implements OnInit {
     }
 
     loadCourses(teacherId: string): void {
+        this.isLoading.set(true);
         this.getCoursesUseCase.execute(teacherId).subscribe({
-            next: (courses) => {
-                console.log('✅ [TEACHER-COURSES] Cursos cargados:', courses);
-                this.courses = courses;
-                this.applyFilters();
-                this.isLoading = false;
+            next: (data) => {
+                this.courses.set(data);
+                this.isLoading.set(false);
             },
             error: (error) => {
                 console.error('❌ [TEACHER-COURSES] Error cargando cursos:', error);
-                this.isLoading = false;
+                this.isLoading.set(false);
             }
         });
     }
 
-    applyFilters(): void {
-        let filtered = [...this.courses];
-
-        // Filtrar por estado
-        if (this.selectedFilter === 'Activos') {
-            filtered = filtered.filter(c => c.estadoCurso === 'Activo');
-        } else if (this.selectedFilter === 'Archivados') {
-            filtered = filtered.filter(c => c.estadoCurso === 'Finalizado');
-        }
-
-        // Filtrar por búsqueda
-        if (this.searchTerm.trim()) {
-            const term = this.searchTerm.toLowerCase();
-            filtered = filtered.filter(c => 
-                c.titulo.toLowerCase().includes(term) ||
-                c.codigo.toLowerCase().includes(term)
-            );
-        }
-
-        this.filteredCourses = filtered;
-    }
-
-    onSearchChange(): void {
-        this.applyFilters();
-    }
-
     setFilter(filter: 'Todos' | 'Activos' | 'Archivados'): void {
-        this.selectedFilter = filter;
-        this.applyFilters();
+        this.selectedFilter.set(filter);
     }
 
     manageCourse(courseId: string): void {
         this.router.navigate(['/teacher/course', courseId]);
-    }
-
-    getStatusColor(status: string): string {
-        const colors: Record<string, string> = {
-            'Activo': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-            'Finalizado': 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
-            'Programado': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-        };
-        return colors[status] || 'bg-gray-100 text-gray-700';
-    }
-
-    getStudentAvatars(totalAlumnos: number): string[] {
-        // Generar avatares de ejemplo (máximo 4)
-        const count = Math.min(totalAlumnos, 4);
-        return Array(count).fill('').map((_, i) => `https://i.pravatar.cc/150?img=${i + 1}`);
     }
 }

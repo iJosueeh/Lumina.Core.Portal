@@ -1,0 +1,127 @@
+<div class="min-h-screen bg-[#020617] text-slate-200 relative overflow-hidden flex flex-col">
+  <!-- Noise background -->
+  <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none"></div>
+
+  <!-- Editor Top Toolbar -->
+  <header class="h-16 border-b border-slate-800 bg-slate-950/50 backdrop-blur-md px-6 flex items-center justify-between z-30">
+    <div class="flex items-center gap-4">
+      <app-button variant="secondary" size="sm" (onClick)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </app-button>
+      <div>
+        <h2 class="text-sm font-black text-white tracking-widest uppercase">Editor de Contenido</h2>
+        @if (classroomData()) {
+          <p class="text-[10px] text-cyan-500 font-bold uppercase tracking-tighter">{{ classroomData().courseTitle }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-slate-500 mr-4 italic">Modo Administrador Activo</span>
+      <app-button 
+        variant="primary" 
+        size="sm" 
+        [isLoading]="isSaving()"
+        (onClick)="handleSaveAll()"
+      >
+        <i class="fas fa-save mr-2"></i> Guardar Cambios
+      </app-button>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 flex overflow-hidden relative z-10">
+    @if (isLoading()) {
+      <div class="flex-1 flex items-center justify-center bg-[#020617]">
+        <div class="text-center space-y-6">
+          <div class="relative w-24 h-24 mx-auto">
+            <div class="absolute inset-0 border-4 border-cyan-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-t-cyan-500 rounded-full animate-spin"></div>
+          </div>
+          <p class="text-slate-400 font-medium animate-pulse uppercase tracking-[0.2em] text-xs">Cargando Entorno de Edición...</p>
+        </div>
+      </div>
+    } @else {
+      <!-- Left Column: Video Preview & Lesson Editor -->
+      <section class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div class="max-w-5xl mx-auto space-y-8">
+          <!-- Video Section -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-2xl font-black text-white tracking-tight">Previsualización de Video</h3>
+              <div class="bg-cyan-500/10 text-cyan-400 text-[10px] px-3 py-1 rounded-full font-black border border-cyan-500/20 uppercase">Interactivo</div>
+            </div>
+            
+            <app-classroom-player
+              [videoUrl]="activeLesson()?.videoUrl || ''"
+              [title]="activeLesson()?.title || ''"
+              [isEditable]="true"
+              (onEditVideo)="handleEditVideo()"
+              (onUploadVideo)="handleUploadVideo($event)"
+            />
+          </div>
+
+          <!-- Lesson Metadata Editor -->
+          <div class="bg-slate-900/40 rounded-[2.5rem] border border-slate-800/80 p-8 shadow-xl backdrop-blur-sm">
+            <div class="grid grid-cols-1 gap-8">
+              <!-- Fila 1: Título y Duración -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                  <label class="text-xs font-bold text-slate-500 uppercase tracking-widest ml-2">Título de la Lección</label>
+                  <input 
+                    type="text" 
+                    [value]="activeLesson()?.title"
+                    (input)="handleInputTitle($event)"
+                    class="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-4 px-6 text-white focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all"
+                  >
+                </div>
+                <div class="space-y-4">
+                  <label class="text-xs font-bold text-slate-500 uppercase tracking-widest ml-2">Duración Estimada</label>
+                  <input 
+                    type="text" 
+                    [value]="activeLesson()?.duration"
+                    class="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-4 px-6 text-slate-400 focus:border-cyan-500/50 outline-none transition-all cursor-not-allowed"
+                    disabled
+                  >
+                </div>
+              </div>
+
+              <!-- Fila 2: URL del Video -->
+              <div class="space-y-4">
+                <label class="text-xs font-bold text-cyan-500 uppercase tracking-widest ml-2 flex items-center gap-2">
+                  <i class="fas fa-link"></i> Enlace del Video (YouTube o MinIO)
+                </label>
+                <div class="relative group">
+                  <input 
+                    type="text" 
+                    [value]="activeLesson()?.videoUrl"
+                    (input)="handleInputUrl($event)"
+                    placeholder="Pega aquí el link de YouTube o la URL del video..."
+                    class="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-4 pl-6 pr-16 text-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all placeholder:text-slate-700"
+                  >
+                  <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-500 transition-colors">
+                    <i class="fab fa-youtube text-2xl"></i>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 ml-2 italic">Ejemplo: https://www.youtube.com/watch?v=XXXXX</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Playlist Sidebar -->
+      <aside class="w-[400px] border-l border-slate-800 bg-slate-950/20 p-6">
+        <app-classroom-playlist
+          [sections]="sections()"
+          [activeLessonId]="activeLesson()?.lessonId || null"
+          [isEditable]="true"
+          (onLessonSelect)="selectedLessonId.set($event.lessonId)"
+          (onEditLesson)="handleEditLesson($event)"
+          (onAddLesson)="handleAddLesson($event)"
+          (onDeleteLesson)="selectedLessonId.set(null)"
+        />
+      </aside>
+    }
+  </main>
+</div>

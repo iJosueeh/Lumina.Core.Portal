@@ -54,6 +54,7 @@ export interface EvaluacionUI {
   estado: string;
   cursoId: string;
   cursoNombre?: string;
+  peso: number;
 }
 
 export interface EvaluationInput {

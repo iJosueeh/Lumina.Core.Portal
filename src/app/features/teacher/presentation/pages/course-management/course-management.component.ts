@@ -19,7 +19,8 @@ import {
   Modulo, 
   ModuloMaterial, 
   CourseStudent, 
-  TabType 
+  TabType,
+  Leccion
 } from '@shared/models/course-management.models';
 
 // Sub-components
@@ -33,6 +34,8 @@ import { CourseCurriculumComponent } from './components/course-curriculum/course
 import { CourseEvaluationsComponent } from './components/course-evaluations/course-evaluations.component';
 import { FilePreviewModalComponent, SharedFileResource } from '../../../../../shared/components/features/file-viewer/file-preview-modal/file-preview-modal.component';
 import { TabNavComponent } from '../../../../../shared/components/ui/tab-nav/tab-nav.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { AddContentModalComponent } from './components/add-content-modal/add-content-modal.component';
 
 @Component({
   selector: 'app-course-management',
@@ -50,7 +53,9 @@ import { TabNavComponent } from '../../../../../shared/components/ui/tab-nav/tab
     CourseCurriculumComponent,
     CourseEvaluationsComponent,
     FilePreviewModalComponent,
-    TabNavComponent
+    TabNavComponent,
+    SkeletonLoaderComponent,
+    AddContentModalComponent
   ],
   templateUrl: './course-management.component.html',
   styleUrl: './course-management.component.css',
@@ -78,21 +83,25 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   showAssignStudentModal = signal(false);
   showCreateQuizzModal = signal(false);
   showQuestionEditor = signal(false);
+  showAddContentModal = signal(false);
   
   // Selected Item States
   editingQuizzId = signal('');
   editingQuizzTitle = signal('');
   selectedMaterial = signal<ModuloMaterial | null>(null);
   showMaterialPreview = signal(false);
+  activeModuloId = signal('');
+  editingLeccion = signal<Leccion | null>(null);
 
   // Evaluaciones
   courseEvaluaciones = signal<EvaluacionApi[]>([]);
   isLoadingEvaluaciones = signal(false);
 
   // Computed values
-  totalLecciones = computed(() => this.modulos().reduce((acc, m) => acc + m.lecciones.length, 0));
+  totalLecciones = computed(() => this.modulos().reduce((acc, m) => acc + (m.lecciones?.length || 0), 0));
 
   ngOnInit(): void {
+    console.log('🚀 [COURSE-MGMT] Component Initialized');
     this.route.params.subscribe((params) => {
       this.courseId.set(params['id']);
       this.loadCourseData();
@@ -102,6 +111,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {}
 
   loadCourseData(): void {
+    console.log('📥 [COURSE-MGMT] Loading Course Data for:', this.courseId());
     this.isLoading.set(true);
     const usuarioId = this.authService.getUserId();
     const students$ = usuarioId ? this.studentRepository.getStudentsByTeacher(usuarioId).pipe(catchError(() => of([]))) : of([]);
@@ -111,6 +121,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
       allStudents: students$,
     }).subscribe({
       next: ({ courseData, allStudents }) => {
+        console.log('✅ [COURSE-MGMT] Data Received', { courseData, studentsCount: allStudents.length });
         this.allTeacherStudents.set(allStudents);
         const enrolledStudents = allStudents.filter((s) => s.cursos.includes(this.courseId()));
 
@@ -127,15 +138,63 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         if (courseData.modulos && courseData.modulos.length > 0) {
           this.modulos.set(courseData.modulos.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
         } else {
-          this.modulos.set([{ id: '1', orden: 1, titulo: 'Introducción', descripcion: 'Conceptos básicos', duracion: '2h', materiales: [], completado: true, porcentajeCompletado: 100, lecciones: [] }]);
+          console.warn('⚠️ [COURSE-MGMT] No modules found in DB');
+          this.modulos.set([]);
         }
 
         this.students.set(enrolledStudents.map((s) => this.courseMapper.mapTeacherStudentToCourseStudent(s)));
         this.isLoading.set(false);
         this.loadEvaluaciones();
       },
-      error: () => this.isLoading.set(false),
+      error: (err) => {
+        console.error('❌ [COURSE-MGMT] Error loading data', err);
+        this.isLoading.set(false);
+      }
     });
+  }
+
+  openAddContent(moduloId: string): void {
+    console.log('➕ [COURSE-MGMT] Opening Add Content Modal for Modulo:', moduloId);
+    this.editingLeccion.set(null); // Reset para modo creación
+    this.activeModuloId.set(moduloId);
+    this.showAddContentModal.set(true);
+  }
+
+  openEditLesson(ev: {moduloId: string, leccion: Leccion}): void {
+    console.log('✏️ [COURSE-MGMT] Opening Edit Modal for Lesson:', ev.leccion.id);
+    this.activeModuloId.set(ev.moduloId);
+    this.editingLeccion.set(ev.leccion);
+    this.showAddContentModal.set(true);
+  }
+
+  onContentSaved(): void {
+    console.log('💾 [COURSE-MGMT] Content Saved Event Received');
+    this.notificationService.show('success', 'Contenido publicado exitosamente.');
+    this.loadCourseData();
+  }
+
+  previewLesson(lessonId: string): void {
+    console.log('🎬 [COURSE-MGMT] Previewing Lesson:', lessonId);
+    this.router.navigate(['/teacher/course', this.courseId(), 'preview', lessonId]);
+  }
+
+  async createFirstModule(): Promise<void> {
+    console.log('🏗️ [COURSE-MGMT] Creating First Module');
+    this.isLoading.set(true);
+    try {
+        await firstValueFrom(this.http.post(`${environment.cursosApiUrl}/cursos/${this.courseId()}/modulos`, {
+            titulo: 'Introducción al Curso',
+            descripcion: 'Módulo inicial generado automáticamente.'
+        }));
+        console.log('✅ [COURSE-MGMT] First Module Created');
+        this.notificationService.show('success', 'Primer módulo creado exitosamente.');
+        this.loadCourseData();
+    } catch (err) {
+        console.error('❌ [COURSE-MGMT] Error creating module:', err);
+        this.notificationService.show('error', 'No se pudo crear el módulo.');
+    } finally {
+        this.isLoading.set(false);
+    }
   }
 
   async loadEvaluaciones(): Promise<void> {
@@ -154,7 +213,7 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
         puntajeMaximo: e.puntajeMaximo ?? 0,
       })));
     } catch (err) {
-      console.error('❌ Error loading evaluaciones:', err);
+      console.error('❌ [COURSE-MGMT] Error loading evaluaciones:', err);
     } finally {
       this.isLoadingEvaluaciones.set(false);
     }
@@ -196,6 +255,16 @@ export class CourseManagementComponent implements OnInit, OnDestroy {
     } catch {
       window.open(material.url, '_blank');
     }
+  }
+
+  closeAssignModal(): void {
+    console.log('🔒 [COURSE-MGMT] Cerrando modal de asignación');
+    this.showAssignStudentModal.set(false);
+  }
+
+  handleTabChange(tabId: string): void {
+    console.log('🔘 [COURSE-MGMT] Tab Changed to:', tabId);
+    this.activeTab.set(tabId as TabType);
   }
 
   goBack(): void { this.router.navigate(['/teacher/dashboard']); }

@@ -1,27 +1,46 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <app-stat-card 
-        label="Promedio General" 
-        [value]="stats.promedio" 
-        icon="graduation-cap" 
-        color="teal"
-        trend="SOBRESALIENTE">
-    </app-stat-card>
-    <app-stat-card 
-        label="Cursos en Curso" 
-        [value]="stats.cursosActivos.toString()" 
-        icon="book-open" 
-        color="purple">
-    </app-stat-card>
-    <app-stat-card 
-        label="Créditos Acumulados" 
-        [value]="stats.creditosTotales.toString()" 
-        icon="medal" 
-        color="orange">
-    </app-stat-card>
-    <app-stat-card 
-        label="Asistencia Promedio" 
-        [value]="stats.asistencia" 
-        icon="user-check" 
-        color="green">
-    </app-stat-card>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    @if (isLoading) {
+        @for (i of [1,2,3,4]; track i) {
+            <div class="h-36 bg-white/5 rounded-[2.5rem] border border-white/5 p-7 flex flex-col justify-between">
+                <div class="h-4 w-20 bg-white/5 rounded-full animate-pulse"></div>
+                <div class="h-10 w-16 bg-white/5 rounded-xl animate-pulse mt-4"></div>
+            </div>
+        }
+    } @else {
+        <app-stat-card 
+            label="Cursos Activos" 
+            [value]="coursesCount.toString()" 
+            icon="book" 
+            description="En este periodo"
+            color="blue">
+        </app-stat-card>
+
+        <app-stat-card 
+            label="Tareas Pendientes" 
+            [value]="pendingAssignments.toString()" 
+            icon="clock" 
+            description="Entregas próximas"
+            color="orange"
+            [trend]="pendingAssignments > 0 ? 'Revisar' : 'Al día'"
+            [trendType]="pendingAssignments > 0 ? 'negative' : 'positive'">
+        </app-stat-card>
+
+        <app-stat-card 
+            label="Promedio General" 
+            value="16.5" 
+            icon="star" 
+            description="Rendimiento actual"
+            color="teal"
+            trend="+0.5"
+            trendType="positive">
+        </app-stat-card>
+
+        <app-stat-card 
+            label="Asistencia Total" 
+            value="94%" 
+            icon="calendar-check" 
+            description="Registro histórico"
+            color="purple">
+        </app-stat-card>
+    }
 </div>

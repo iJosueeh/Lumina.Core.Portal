@@ -1,0 +1,32 @@
+app-course-management {
+    background-color: #020617 !important;
+    display: block;
+    min-height: 100vh;
+}
+
+.course-management-container {
+    background-color: #020617 !important;
+}
+
+/* Forzar color de iconos */
+.fas, .far, .fab {
+    color: inherit;
+}
+
+.course-table button i {
+    color: #22d3ee !important; /* Cyan por defecto para que se vean */
+}
+
+.course-table button:hover i {
+    color: #ffffff !important;
+}
+
+.pagination-container .page-btn {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+.pagination-container .page-btn.active {
+    background-color: #22d3ee !important;
+    color: #020617 !important;
+}

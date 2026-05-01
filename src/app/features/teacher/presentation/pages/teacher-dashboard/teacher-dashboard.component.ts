@@ -10,10 +10,20 @@ import {
   useInvalidateTeacherCache 
 } from '@features/teacher/infrastructure/queries/teacher-query-hooks';
 
+import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
+import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    StatCardComponent, 
+    StatusBadgeComponent, 
+    SkeletonLoaderComponent
+  ],
   templateUrl: './teacher-dashboard.component.html',
 })
 export class TeacherDashboardComponent {

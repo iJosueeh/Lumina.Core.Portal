@@ -1,65 +1,51 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, RouterOutlet } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
-import { LayoutService } from '@features/student/domain/services/layout.service';
 
 interface MenuItem {
-  icon: string;
-  label: string;
-  route: string;
-  badge?: number;
+    icon: string;
+    label: string;
+    route: string;
+    badge?: number;
 }
 
 @Component({
-  selector: 'app-student-layout',
-  standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
-  templateUrl: './student-layout.component.html',
-  styles: ``,
+    selector: 'app-student-layout',
+    standalone: true,
+    imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+    templateUrl: './student-layout.component.html',
+    styles: ``
 })
-export class StudentLayoutComponent implements OnInit {
-  userName = 'Alejandro Magno';
-  userRole = 'Ingeniería de Software';
-  isSidebarOpen = false;
+export class StudentLayoutComponent {
+    private authRepository = inject(AuthRepository);
+    private router = inject(Router);
 
-  menuItems: MenuItem[] = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/student/dashboard' },
-    { icon: 'book', label: 'Mis Cursos', route: '/student/courses' },
-    { icon: 'chart', label: 'Evaluaciones', route: '/student/evaluations' },
-    { icon: 'calendar', label: 'Horario', route: '/student/schedule' },
-    // { icon: 'folder', label: 'Recursos', route: '/student/resources' } // Temporalmente deshabilitado
-    // { icon: 'bell', label: 'Notificaciones', route: '/student/notifications', badge: 3 }
-  ];
+    isSidebarOpen = signal(false);
+    
+    currentUser = computed(() => this.authRepository.getCurrentUser());
+    userName = computed(() => this.currentUser()?.fullName || 'Estudiante');
+    userAvatar = computed(() => 'https://ui-avatars.com/api/?name=' + this.userName() + '&background=0ea5e9&color=fff');
 
-  constructor(
-    private authRepository: AuthRepository,
-    private router: Router,
-    protected layoutService: LayoutService,
-  ) {}
+    menuItems: MenuItem[] = [
+        { icon: 'th-large', label: 'Dashboard', route: '/student/dashboard' },
+        { icon: 'book', label: 'Mis Cursos', route: '/student/my-courses' },
+        { icon: 'calendar-alt', label: 'Horario', route: '/student/schedule' },
+        { icon: 'chart-bar', label: 'Calificaciones', route: '/student/grades' },
+        { icon: 'file-alt', label: 'Evaluaciones', route: '/student/evaluations' },
+        { icon: 'folder-open', label: 'Recursos', route: '/student/resources' }
+    ];
 
-  ngOnInit(): void {
-    const currentUser = this.authRepository.getCurrentUser();
-    if (currentUser) {
-      this.userName = currentUser.fullName;
+    logout(): void {
+        this.authRepository.logout();
+        this.router.navigate(['/login']);
     }
-  }
 
-  logout(): void {
-    this.authRepository.logout();
-    this.router.navigate(['/login']);
-  }
+    toggleSidebar(): void {
+        this.isSidebarOpen.update(v => !v);
+    }
 
-  toggleSidebar(): void {
-    this.isSidebarOpen = !this.isSidebarOpen;
-  }
-
-  closeSidebar(): void {
-    this.isSidebarOpen = false;
-  }
-
-  isSidebarHidden(): boolean {
-    const hiddenByRoute = this.router.url.includes('/learn/');
-    return hiddenByRoute || this.layoutService.isSidebarHidden();
-  }
+    closeSidebar(): void {
+        this.isSidebarOpen.set(false);
+    }
 }

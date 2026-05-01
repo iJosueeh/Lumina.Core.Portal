@@ -1,0 +1,210 @@
+<div class="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-cyan-500/30 flex flex-col">
+  
+    <!-- Header del Aula -->
+    <header class="h-20 bg-slate-950/40 backdrop-blur-xl border-b border-white/5 flex items-center px-4 md:px-8 justify-between z-30 sticky top-0">
+        <div class="flex items-center gap-4 md:gap-6 min-w-0">
+            <button (click)="goBack()" class="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center transition-all shrink-0">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="min-w-0">
+                <div class="flex items-center gap-3">
+                    <span class="hidden sm:inline-block px-2 py-0.5 bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0">Modo Previsualización</span>
+                    <h1 class="text-white font-black tracking-tight truncate max-w-[200px] md:max-w-md text-sm md:text-base">{{ classroomData()?.courseTitle || 'Cargando Aula...' }}</h1>
+                </div>
+                <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 truncate">
+                    {{ allLessons().length > 0 ? (activeLesson()?.title || 'Selecciona una lección') : 'Sin lecciones' }}
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 md:gap-4 shrink-0">
+            <div class="hidden md:flex flex-col items-end mr-4">
+                <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Contenido Total</span>
+                <span class="text-sm font-black text-white">{{ allLessons().length }} Lecciones</span>
+            </div>
+            <button (click)="showEditModal.set(true)" 
+                class="px-4 md:px-5 py-2 md:py-2.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="fas fa-cog"></i>
+                <span class="hidden sm:inline">Configurar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Área de Contenido -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- Reproductor y Detalles (Columna Izquierda) -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 lg:p-10 space-y-10 relative">
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            @if (isLoading()) {
+                <div class="aspect-video bg-white/5 rounded-[2rem] md:rounded-[2.5rem] border border-white/10 flex flex-col items-center justify-center space-y-6">
+                    <div class="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+                    <p class="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px]">Sincronizando Contenido...</p>
+                </div>
+            } @else if (allLessons().length === 0) {
+                <div class="aspect-video bg-slate-900/40 backdrop-blur-sm border border-dashed border-white/10 rounded-[2rem] md:rounded-[3rem] flex flex-col items-center justify-center p-8 md:p-12 text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5"></div>
+                    <div class="relative z-10">
+                        <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-2xl">
+                            <i class="fas fa-video-slash text-3xl text-slate-700"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white tracking-tighter mb-4">Aún no hay contenido disponible</h2>
+                        <button (click)="goBack()" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-black rounded-2xl transition-all uppercase tracking-widest text-[10px]">
+                            Volver a Gestión de Curso
+                        </button>
+                    </div>
+                </div>
+            } @else {
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-[2rem] md:rounded-[2.5rem] blur opacity-75"></div>
+                    <div class="relative bg-slate-950 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl aspect-video">
+                        @if (activeLesson(); as current) {
+                            <app-classroom-player
+                                [videoUrl]="current.videoUrl"
+                                [title]="current.title"
+                                (onComplete)="goToNext()"
+                            />
+                        }
+                    </div>
+                </div>
+
+                <!-- Info y Navegación -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2 md:px-4">
+                    <div class="space-y-2">
+                        <h2 class="text-xl md:text-3xl font-black text-white tracking-tighter leading-tight">{{ activeLesson()?.title }}</h2>
+                        <div class="flex items-center gap-4 text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            <span>Duración: {{ activeLesson()?.duration || '15:00' }}</span>
+                            <span class="w-1 h-1 rounded-full bg-slate-700"></span>
+                            <span class="truncate">Previsualización Docente</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 md:gap-3">
+                        <button (click)="goToPrevious()" [disabled]="activeLessonIndex() === 0" 
+                            class="p-4 bg-white/5 hover:bg-white/10 disabled:opacity-30 border border-white/10 rounded-2xl transition-all">
+                            <i class="fas fa-chevron-left text-sm"></i>
+                        </button>
+                        <button (click)="goToNext()" [disabled]="activeLessonIndex() === allLessons().length - 1" 
+                            class="p-4 bg-white/5 hover:bg-white/10 disabled:opacity-30 border border-white/10 rounded-2xl transition-all">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <!-- Pestañas Interactivas (Responsive) -->
+            <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-xl min-h-[400px] flex flex-col">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 mb-8">
+                    <div class="flex gap-4 md:gap-8">
+                        <button 
+                            (click)="activeTab.set('resources')"
+                            [class.text-cyan-400]="activeTab() === 'resources'"
+                            [class.border-cyan-500]="activeTab() === 'resources'"
+                            class="pb-4 border-b-2 border-transparent text-[10px] md:text-xs font-black uppercase tracking-widest transition-all">
+                            Recursos de Clase
+                        </button>
+                        <button 
+                            (click)="activeTab.set('description')"
+                            [class.text-cyan-400]="activeTab() === 'description'"
+                            [class.border-cyan-500]="activeTab() === 'description'"
+                            class="pb-4 border-b-2 border-transparent text-[10px] md:text-xs font-black uppercase tracking-widest transition-all">
+                            Descripción
+                        </button>
+                    </div>
+
+                    <!-- Filtros de Alcance (Responsive: Scrollable on mobile) -->
+                    @if (activeTab() === 'resources') {
+                        <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1 overflow-x-auto custom-scrollbar-h shrink-0 max-w-full">
+                            @for (scope of [
+                                {id: 'lesson', label: 'Lección'},
+                                {id: 'section', label: 'Sección'},
+                                {id: 'course', label: 'Curso'}
+                            ]; track scope.id) {
+                                <button 
+                                    (click)="materialScope.set($any(scope.id))"
+                                    [class.bg-slate-800]="materialScope() === scope.id"
+                                    [class.text-white]="materialScope() === scope.id"
+                                    class="px-3 py-1.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-all whitespace-nowrap">
+                                    {{ scope.label }}
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+                
+                <div class="flex-1 animate-in fade-in duration-500">
+                    @if (activeTab() === 'resources') {
+                        @if (currentResources().length > 0) {
+                            <app-classroom-resources 
+                                [resources]="currentResources()"
+                                (onDownload)="null"
+                            />
+                        } @else {
+                            <div class="py-20 text-center space-y-4 opacity-40">
+                                <i class="fas fa-box-open text-3xl"></i>
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em]">No se encontraron recursos.</p>
+                            </div>
+                        }
+                    } @else {
+                        <div class="space-y-6">
+                            <h3 class="text-lg md:text-xl font-black text-white tracking-tight">{{ activeLesson()?.title }}</h3>
+                            <p class="text-slate-400 leading-relaxed text-xs md:text-sm font-medium">
+                                {{ activeLesson()?.description || 'Esta lección no tiene una descripción registrada.' }}
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlist (Responsive Hide/Show or Sidebar) -->
+        <aside class="w-full lg:w-[400px] bg-slate-950/20 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col h-[500px] lg:h-full z-20">
+            <div class="p-6 md:p-8 border-b border-white/5 shrink-0">
+                <h3 class="text-sm font-black text-white uppercase tracking-[0.2em] mb-2">Contenido</h3>
+                <p class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase">{{ sections().length }} Secciones registradas</p>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+                @if (isLoading()) {
+                    @for (i of [1,2,3,4]; track i) {
+                        <div class="mb-6 space-y-3 p-4">
+                            <app-skeleton-loader class="h-6 w-3/4 rounded-lg opacity-10"></app-skeleton-loader>
+                            <app-skeleton-loader class="h-16 w-full rounded-2xl opacity-5"></app-skeleton-loader>
+                        </div>
+                    }
+                } @else if (sections().length === 0) {
+                    <div class="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-40">
+                        <i class="fas fa-layer-group text-4xl"></i>
+                        <p class="text-[10px] font-black uppercase tracking-widest">Playlist vacía</p>
+                    </div>
+                } @else {
+                    <app-classroom-playlist 
+                        [sections]="sections()"
+                        [activeLessonId]="selectedLessonId() || ''"
+                        (onLessonSelect)="selectLesson($event)"
+                    />
+                }
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modal de Edición Directa -->
+    @if (showEditModal() && activeLesson()) {
+        <app-add-content-modal
+            [courseId]="courseId()"
+            [moduloId]="$any(activeLesson()?.moduleId)"
+            [leccionToEdit]="$any(activeLesson())"
+            (onClose)="showEditModal.set(false)"
+            (onSaved)="classroomQuery.refetch()"
+        />
+    }
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+    
+    .custom-scrollbar-h::-webkit-scrollbar { height: 2px; }
+    .custom-scrollbar-h::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
+</style>

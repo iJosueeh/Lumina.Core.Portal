@@ -1,45 +1,61 @@
-<div class="gradient-border-card p-4 md:p-6 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Búsqueda -->
-    <div class="md:col-span-2">
-      <app-input
-        label="Buscar estudiante"
-        placeholder="Nombre, código o email..."
-        [(ngModel)]="searchTerm"
-        icon="search"
-      />
-    </div>
-
-    <!-- Filtro por Curso -->
-    <div>
-      <label class="block text-sm font-medium text-slate-400 mb-2">Curso</label>
-      <app-select [(ngModel)]="selectedCourse">
-        <option value="all">Todos los cursos</option>
-        @for (opt of courseOptions(); track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </app-select>
-    </div>
-
-    <!-- Filtro por Estado -->
-    <div>
-      <label class="block text-sm font-medium text-slate-400 mb-2">Estado</label>
-      <app-select [(ngModel)]="selectedStatus">
-        <option value="all">Todos los estados</option>
-        @for (opt of statusOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </app-select>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  <!-- Búsqueda -->
+  <div class="lg:col-span-2 relative group">
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Buscar Estudiante</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+        <i class="fas fa-search text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+      </div>
+      <input 
+        type="text" 
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchChange.emit($event)"
+        placeholder="Nombre, código o email..." 
+        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
     </div>
   </div>
 
-  <!-- Botón Exportar -->
-  <div class="mt-4 flex justify-end">
-    <app-button
-      variant="primary"
-      (onClick)="onExport.emit()"
-    >
-      Exportar CSV
-    </app-button>
+  <!-- Filtro por Curso -->
+  <div class="group">
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Filtrar por Curso</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+        <i class="fas fa-filter text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+      </div>
+      <select 
+        [ngModel]="selectedCourse()"
+        (ngModelChange)="courseChange.emit($event)"
+        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+        <option value="all" class="bg-slate-900 text-white">Todos los cursos</option>
+        @for (opt of courseOptions(); track opt.value) {
+          <option [value]="opt.value" class="bg-slate-900 text-white">{{ opt.label }}</option>
+        }
+      </select>
+      <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+        <i class="fas fa-chevron-down text-[10px] text-slate-500"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro por Estado -->
+  <div class="group">
+    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Estado Académico</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+        <i class="fas fa-user-tag text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+      </div>
+      <select 
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="statusChange.emit($event)"
+        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+        <option value="all" class="bg-slate-900 text-white">Todos los estados</option>
+        @for (opt of statusOptions; track opt.value) {
+          <option [value]="opt.value" class="bg-slate-900 text-white">{{ opt.label }}</option>
+        }
+      </select>
+      <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+        <i class="fas fa-chevron-down text-[10px] text-slate-500"></i>
+      </div>
+    </div>
   </div>
 </div>

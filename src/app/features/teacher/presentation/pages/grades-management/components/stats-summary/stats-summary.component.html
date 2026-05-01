@@ -2,21 +2,24 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <app-stat-card 
         label="Promedio Grupal" 
-        [value]="stats.promedioGrupal" 
-        icon="chart-bar" 
+        [value]="(stats.promedioGrupal || 0).toString()" 
+        icon="chart-line" 
+        description="Rendimiento medio actual"
         color="blue">
     </app-stat-card>
     <app-stat-card 
-        label="Aprobados" 
-        [value]="stats.aprobados + '%'" 
-        icon="check-circle" 
-        color="green" 
-        trend="META ALCANZADA">
+        label="Tasa de Aprobación" 
+        [value]="(stats.aprobados || 0) + '%'" 
+        icon="check-double" 
+        color="teal" 
+        [trend]="(stats.aprobados || 0) >= 70 ? 'Óptimo' : 'Bajo'"
+        [trendType]="(stats.aprobados || 0) >= 70 ? 'positive' : 'negative'">
     </app-stat-card>
     <app-stat-card 
-        label="Reprobados" 
-        [value]="stats.reprobados + '%'" 
-        icon="exclamation-triangle" 
+        label="En Riesgo / Reprobados" 
+        [value]="(stats.reprobados || 0) + '%'" 
+        icon="user-slash" 
+        description="Requieren seguimiento"
         color="orange">
     </app-stat-card>
 </div>

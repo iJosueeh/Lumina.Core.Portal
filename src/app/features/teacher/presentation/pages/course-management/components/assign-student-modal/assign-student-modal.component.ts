@@ -21,8 +21,8 @@ export class AssignStudentModalComponent implements OnInit {
   @Input({ required: true }) courseId!: string;
   @Input({ required: true }) currentStudents: any[] = [];
   @Input({ required: true }) allTeacherStudents: TeacherStudent[] = [];
-  @Output() close = new EventEmitter<void>();
-  @Output() assigned = new EventEmitter<void>();
+  @Output() onClose = new EventEmitter<void>();
+  @Output() onAssigned = new EventEmitter<void>();
 
   private http = inject(HttpClient);
   private authService = inject(AuthService);
@@ -106,8 +106,8 @@ export class AssignStudentModalComponent implements OnInit {
 
       await firstValueFrom(this.http.post(`${environment.estudiantesApiUrl}/matricula`, { estudianteId, programacionId }));
       this.notificationService.show('success', 'Estudiante asignado correctamente.');
-      this.assigned.emit();
-      this.close.emit();
+      this.onAssigned.emit();
+      this.onClose.emit();
     } catch (err: any) {
       this.notificationService.show('error', err.message || 'Error al asignar estudiante.');
     } finally {

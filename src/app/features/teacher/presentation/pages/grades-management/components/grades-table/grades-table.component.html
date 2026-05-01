@@ -1,66 +1,95 @@
-<div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="relative">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-separate border-spacing-0">
             <thead>
-                <tr class="bg-slate-50/50 border-b border-slate-100">
-                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 sticky left-0 bg-white z-10">Estudiante</th>
+                <tr>
+                    <!-- Header Estudiante (Sticky) -->
+                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 sticky left-0 bg-[#020617] z-30 border-b border-white/5">
+                        Estudiante
+                    </th>
+                    
+                    <!-- Headers Evaluaciones -->
                     @for (evaluacion of evaluaciones; track evaluaciones.indexOf(evaluacion)) {
-                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-center min-w-[120px]">
-                            <div class="flex flex-col items-center gap-1">
-                                <span>{{ evaluacion.titulo }}</span>
-                                <span class="text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded">{{ evaluacion.peso }}%</span>
-                                <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-400 hover:text-teal-600 underline">Editar</button>
+                        <th class="px-6 py-6 text-center min-w-[140px] border-b border-white/5 bg-slate-950/20 backdrop-blur-md">
+                            <div class="flex flex-col items-center gap-2 group">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-300 group-hover:text-cyan-400 transition-colors">{{ evaluacion.titulo }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-black text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">{{ evaluacion.peso }}%</span>
+                                    <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-600 hover:text-white transition-colors">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
                             </div>
                         </th>
                     }
-                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-teal-600 text-center bg-teal-50/30">Promedio</th>
+                    
+                    <!-- Header Promedio -->
+                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500 text-center border-b border-white/5 bg-cyan-500/5 backdrop-blur-md sticky right-0 z-30">
+                        Promedio Final
+                    </th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
-                @if (isLoading) {
-                    @for (i of [1,2,3,4,5]; track i) {
-                        <tr>
-                            <td class="px-6 py-4"><app-skeleton-loader height="20px" width="150px"></app-skeleton-loader></td>
-                            @for (ev of evaluaciones; track ev) {
-                                <td class="px-6 py-4"><app-skeleton-loader height="30px" width="40px" class="mx-auto"></app-skeleton-loader></td>
-                            }
-                            <td class="px-6 py-4"><app-skeleton-loader height="20px" width="40px" class="mx-auto"></app-skeleton-loader></td>
-                        </tr>
-                    }
-                } @else {
-                    @for (calif of calificaciones; track calif.estudianteId) {
-                        <tr class="hover:bg-slate-50/50 transition-colors group">
-                            <td class="px-6 py-4 sticky left-0 bg-white group-hover:bg-slate-50/50 z-10">
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-slate-700">{{ calif.estudianteNombre }}</span>
-                                    <span class="text-xs text-slate-400 font-mono">{{ calif.estudianteCodigo }}</span>
-                                </div>
+            
+            <tbody class="divide-y divide-white/5">
+                @for (calif of calificaciones; track calif.estudianteId) {
+                    <tr class="hover:bg-white/5 transition-all group">
+                        <!-- Celda Estudiante (Sticky) -->
+                        <td class="px-8 py-5 sticky left-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-black text-white group-hover:text-cyan-400 transition-colors">{{ calif.estudianteNombre }}</span>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{{ calif.estudianteCodigo }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Celdas de Notas -->
+                        @for (nota of calif.notas; track nota.evaluacionId) {
+                            <td class="px-6 py-5 text-center">
+                                <input type="number" [(ngModel)]="nota.valor" 
+                                    class="w-16 mx-auto block text-center bg-white/5 border border-white/10 rounded-xl py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all hover:bg-white/10"
+                                    min="0" max="20" step="0.5">
                             </td>
-                            @for (nota of calif.notas; track nota.evaluacionId) {
-                                <td class="px-6 py-4">
-                                    <input type="number" [(ngModel)]="nota.valor" 
-                                        class="w-16 mx-auto block text-center bg-slate-50 border-none rounded-lg px-2 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
-                                        min="0" max="20" step="0.5">
-                                </td>
-                            }
-                            <td class="px-6 py-4 text-center">
-                                <span [class]="calif.promedio >= 10.5 ? 'text-teal-600' : 'text-red-500'" class="font-black text-lg">
+                        }
+
+                        <!-- Celda Promedio (Sticky) -->
+                        <td class="px-8 py-5 text-center sticky right-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
+                                <span [class]="calif.promedio >= 10.5 ? 'text-white' : 'text-orange-500'" class="font-black text-lg tracking-tighter">
                                     {{ calif.promedio }}
                                 </span>
-                            </td>
-                        </tr>
-                    } @empty {
-                        <tr>
-                            <td [attr.colspan]="evaluaciones.length + 2" class="px-6 py-20 text-center">
-                                <div class="flex flex-col items-center gap-3 opacity-40">
-                                    <i class="fas fa-user-graduate text-5xl text-slate-300"></i>
-                                    <p class="text-xl font-bold tracking-tight text-slate-500">No se encontraron estudiantes</p>
+                            </div>
+                        </td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td [attr.colspan]="evaluaciones.length + 2" class="px-8 py-32 text-center">
+                            <div class="flex flex-col items-center gap-4">
+                                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-dashed border-white/10">
+                                    <i class="fas fa-user-graduate text-3xl text-slate-700"></i>
                                 </div>
-                            </td>
-                        </tr>
-                    }
+                                <h3 class="text-xl font-bold text-slate-500">No se encontraron registros académicos</h3>
+                                <p class="text-sm text-slate-600 max-w-xs mx-auto">Selecciona otro curso o ajusta los criterios de búsqueda.</p>
+                            </div>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+</style>

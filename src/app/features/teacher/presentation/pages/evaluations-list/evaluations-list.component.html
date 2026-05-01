@@ -1,72 +1,122 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942] relative overflow-hidden">
-  <!-- Floating Light Effects -->
-  <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-radial from-teal-500/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
-
-  <!-- Header -->
-  <header class="relative bg-gradient-to-r from-violet-600 via-indigo-500 to-indigo-600 px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-    <div class="relative z-10">
-      <h1 class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">Listado de Evaluaciones</h1>
-      <p class="text-white/90 mt-2 drop-shadow">Gestiona los exámenes, prácticas y cuestionarios de todos tus cursos</p>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-    <!-- Filtros -->
-    <app-evaluation-filter
-      [(searchTerm)]="searchTerm"
-      [(selectedCourseId)]="selectedCourseId"
-      [courses]="courses()"
-    />
-
-    <!-- Loading State -->
-    @if (isLoading()) {
-      <div class="grid grid-cols-1 gap-4">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <app-skeleton-loader variant="rect" height="180px" />
+<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
+  
+    <!-- Efectos de Luces Ambientales -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
+  
+    <!-- Header Estilo Glassmorphism -->
+    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
+      <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Banco de Evaluaciones</span>
+            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
+            Mis <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Evaluaciones</span>
+          </h1>
+          <p class="text-slate-500 font-medium max-w-lg">
+            Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos.
+          </p>
+        </div>
+  
+        <div class="flex gap-3">
+          <button routerLink="/teacher/grades" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] text-sm uppercase tracking-widest flex items-center gap-2">
+            <i class="fas fa-plus-circle"></i>
+            Nueva Evaluación
+          </button>
+        </div>
+      </div>
+    </header>
+  
+    <!-- Contenido Principal -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-10">
+      
+      <!-- Filtros -->
+      <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2.5rem]">
+        <app-evaluation-filter
+          [courses]="courses()"
+          [selectedCourseId]="selectedCourseId()"
+          [searchTerm]="searchTerm()"
+          (courseChange)="selectedCourseId.set($any($event))"
+          (searchChange)="searchTerm.set($any($event))"
+        />
+      </div>
+  
+      <!-- Listado -->
+      <div class="space-y-6">
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="h-64 bg-white/5 rounded-[2.5rem] p-8">
+                <app-skeleton-loader class="h-full w-full rounded-3xl opacity-20"></app-skeleton-loader>
+              </div>
+            }
+          </div>
+        } @else {
+          @if (filteredEvaluaciones().length > 0) {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              @for (ev of filteredEvaluaciones(); track ev.id) {
+                <div class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all relative overflow-hidden flex flex-col h-full shadow-2xl">
+                    
+                    <!-- Glow Effect -->
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 rounded-full blur-[80px] group-hover:bg-cyan-500/10 transition-all"></div>
+      
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 border border-white/5">
+                                <i [class]="ev.tipoEvaluacion === 'Examen' ? 'fas fa-file-invoice' : 'fas fa-tasks'"></i>
+                            </div>
+                            <span class="px-3 py-1 bg-white/5 text-[9px] font-black uppercase tracking-widest rounded-full border border-white/10">{{ ev.estado }}</span>
+                        </div>
+        
+                        <div class="space-y-2 mb-6">
+                            <h3 class="text-xl font-black text-white leading-tight group-hover:text-cyan-400 transition-colors truncate">
+                                {{ ev.titulo }}
+                            </h3>
+                            <p class="text-[10px] text-cyan-500 font-black uppercase tracking-widest">{{ ev.cursoNombre }}</p>
+                            <p class="text-xs text-slate-500 line-clamp-2 font-medium">
+                                {{ ev.descripcion || 'Sin descripción detallada.' }}
+                            </p>
+                        </div>
+        
+                        <!-- Meta Info -->
+                        <div class="grid grid-cols-2 gap-3 mb-8 mt-auto">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                                <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Fecha Límite</p>
+                                <p class="text-[10px] font-bold text-slate-300">{{ ev.fechaFin | date:'dd MMM, yyyy' }}</p>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                                <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Peso</p>
+                                <p class="text-[10px] font-black text-white">{{ ev.peso }}%</p>
+                            </div>
+                        </div>
+        
+                        <div class="flex items-center justify-between gap-3 border-t border-white/5 pt-4">
+                            <button (click)="viewDetails(ev.id)" 
+                                class="flex-1 px-4 py-2.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
+                                Ver Notas
+                            </button>
+                            <button (click)="deleteEvaluation({id: ev.id, event: $event})" 
+                                class="w-10 h-10 bg-white/5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="py-32 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+              <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-clipboard-list text-3xl text-slate-700"></i>
+              </div>
+              <h3 class="text-2xl font-black text-white mb-2">No se encontraron evaluaciones</h3>
+              <p class="text-slate-500 max-w-xs mx-auto">Crea una nueva evaluación o ajusta los filtros de búsqueda.</p>
+            </div>
+          }
         }
       </div>
-    }
-
-    <!-- Evaluations List -->
-    @if (!isLoading()) {
-      @if (filteredEvaluaciones().length === 0) {
-        <app-empty-state
-          title="No se encontraron evaluaciones"
-          description="Intenta ajustar los criterios de búsqueda o el filtro de cursos."
-          icon="evaluation"
-        />
-      }
-
-      @if (filteredEvaluaciones().length > 0) {
-        <div class="grid grid-cols-1 gap-6">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">
-              Mostrando {{ filteredEvaluaciones().length }} evaluaciones
-            </p>
-          </div>
-
-          @for (evaluacion of filteredEvaluaciones(); track evaluacion.id) {
-            <app-shared-evaluation-card
-              [data]="{
-                id: evaluacion.id,
-                titulo: evaluacion.titulo,
-                descripcion: evaluacion.descripcion,
-                tipo: evaluacion.tipoEvaluacion,
-                estado: evaluacion.estado,
-                puntajeMaximo: evaluacion.puntajeMaximo,
-                fechaInicio: evaluacion.fechaInicio,
-                fechaFin: evaluacion.fechaFin,
-                cursoNombre: evaluacion.cursoNombre
-              }"
-              role="teacher"
-              (onAction)="viewDetails($event)"
-              (onSecondaryAction)="deleteEvaluation($event)"
-            />
-          }
-        </div>
-      }
-    }
-  </main>
-</div>
+    </main>
+  </div>
+  

@@ -14,15 +14,21 @@ import { mapVideoClassroomResponse } from './video-classroom.mapper';
 })
 export class VideoClassroomService {
   private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
+  private readonly cursosApiUrl = environment.cursosApiUrl;
 
   constructor(private readonly http: HttpClient) {}
 
   getCourseVideoClassroom(courseId: string): Observable<VideoClassroomData> {
+    // Apuntamos al microservicio de CURSOS para obtener el contenido puro
     return this.http
-      .get<ApiWrapper<VideoClassroomApiResponse>>(
-        `${this.estudiantesApiUrl}/estudiantes/cursos/${courseId}/aula-video`
+      .get<any>(
+        `${this.cursosApiUrl}/cursos/${courseId}/classroom`
       )
-      .pipe(map((response) => mapVideoClassroomResponse(response.data)));
+      .pipe(map((response) => {
+        // Normalizamos la respuesta si viene envuelta en success/data
+        const data = response.data || response;
+        return mapVideoClassroomResponse(data);
+      }));
   }
 
   updateLessonProgress(

@@ -14,13 +14,17 @@ export class CourseMapper {
   
   mapApiModuloToModulo(m: any, index: number): Modulo {
     const lecciones: Leccion[] = (m.lecciones || []).map(
-      (titulo: string, i: number) => ({
-        id: `${m.id || index}-${i}`,
-        titulo,
-        tipo: 'lectura' as const,
-        duracion: '30 min',
-        completada: false,
-      }),
+      (l: any, i: number) => {
+        const isString = typeof l === 'string';
+        return {
+          id: String(l.id ?? l.Id ?? `${m.id || index}-${i}`),
+          titulo: isString ? l : (l.titulo ?? l.Titulo ?? 'Nueva Lección'),
+          tipo: String(l.tipo ?? l.Tipo ?? 'video'),
+          duracion: String(l.duracion ?? l.Duracion ?? '15:00'),
+          videoUrl: String(l.videoUrl ?? l.VideoUrl ?? ''),
+          completada: false,
+        };
+      },
     );
 
     const materialesRaw = m.materiales ?? m.Materiales ?? m.materials ?? [];

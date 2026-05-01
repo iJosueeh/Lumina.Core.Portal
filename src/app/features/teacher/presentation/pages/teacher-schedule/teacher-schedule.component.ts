@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { HorarioSesion, TeacherScheduleData } from '../../../domain/models/teacher-schedule.model';
+import { SkeletonLoaderComponent } from '../../../../../shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-teacher-schedule',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkeletonLoaderComponent],
   templateUrl: './teacher-schedule.component.html',
   styles: ``,
 })

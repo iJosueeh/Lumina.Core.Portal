@@ -181,6 +181,22 @@ export const routes: Routes = [
         title: 'Gestión de Curso - Portal Docente',
       },
       {
+        path: 'course/:id/preview',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/video-classroom/video-classroom.component').then(
+            m => m.VideoClassroomComponent
+          ),
+        title: 'Previsualización de Aula - Portal Docente',
+      },
+      {
+        path: 'course/:id/preview/:lessonId',
+        loadComponent: () =>
+          import('@features/teacher/presentation/pages/video-classroom/video-classroom.component').then(
+            m => m.VideoClassroomComponent
+          ),
+        title: 'Previsualización de Aula - Portal Docente',
+      },
+      {
         path: 'students',
         loadComponent: () =>
           import('@features/teacher/presentation/pages/students-list/students-list.component').then(

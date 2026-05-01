@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, RouterOutlet } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
@@ -17,32 +17,24 @@ interface MenuItem {
     templateUrl: './teacher-layout.component.html',
     styles: ``
 })
-export class TeacherLayoutComponent implements OnInit {
-    userName = 'Docente';
-    userRole = 'Profesor';
-    isSidebarOpen = false;
+export class TeacherLayoutComponent {
+    private authRepository = inject(AuthRepository);
+    private router = inject(Router);
+
+    isSidebarOpen = signal(false);
+    
+    currentUser = computed(() => this.authRepository.getCurrentUser());
+    userName = computed(() => this.currentUser()?.fullName || 'Docente');
+    userAvatar = computed(() => 'https://ui-avatars.com/api/?name=' + this.userName() + '&background=0ea5e9&color=fff');
 
     menuItems: MenuItem[] = [
-        { icon: 'dashboard', label: 'Dashboard', route: '/teacher/dashboard' },
+        { icon: 'th-large', label: 'Dashboard', route: '/teacher/dashboard' },
         { icon: 'book', label: 'Mis Cursos', route: '/teacher/courses' },
         { icon: 'users', label: 'Alumnos', route: '/teacher/students' },
-        { icon: 'clipboard', label: 'Mis Evaluaciones', route: '/teacher/evaluations' },
-        { icon: 'chart', label: 'Calificaciones', route: '/teacher/grades' },
-        { icon: 'calendar', label: 'Horario', route: '/teacher/schedule' }
+        { icon: 'file-alt', label: 'Mis Evaluaciones', route: '/teacher/evaluations' },
+        { icon: 'chart-bar', label: 'Calificaciones', route: '/teacher/grades' },
+        { icon: 'calendar-alt', label: 'Horario', route: '/teacher/schedule' }
     ];
-
-    constructor(
-        private authRepository: AuthRepository,
-        private router: Router
-    ) { }
-
-    ngOnInit(): void {
-        const currentUser = this.authRepository.getCurrentUser();
-        if (currentUser) {
-            this.userName = currentUser.fullName;
-            this.userRole = 'Docente';
-        }
-    }
 
     logout(): void {
         this.authRepository.logout();
@@ -50,10 +42,10 @@ export class TeacherLayoutComponent implements OnInit {
     }
 
     toggleSidebar(): void {
-        this.isSidebarOpen = !this.isSidebarOpen;
+        this.isSidebarOpen.update(v => !v);
     }
 
     closeSidebar(): void {
-        this.isSidebarOpen = false;
+        this.isSidebarOpen.set(false);
     }
 }

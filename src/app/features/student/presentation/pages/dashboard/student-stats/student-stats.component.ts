@@ -7,13 +7,9 @@ import { StatCardComponent } from '../../../../../../shared/components/ui/stat-c
   standalone: true,
   imports: [CommonModule, StatCardComponent],
   templateUrl: './student-stats.component.html',
-  styleUrl: './student-stats.component.css'
 })
 export class StudentStatsComponent {
-  @Input() stats: any = {
-    promedio: '15.4',
-    cursosActivos: 6,
-    creditosTotales: 18,
-    asistencia: '92%'
-  };
+  @Input() coursesCount: number = 0;
+  @Input() pendingAssignments: number = 0;
+  @Input() isLoading: boolean = false;
 }

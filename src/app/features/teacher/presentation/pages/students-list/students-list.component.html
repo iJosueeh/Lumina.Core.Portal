@@ -1,82 +1,90 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942] relative overflow-hidden">
-  <!-- Floating Light Effects -->
-  <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-radial from-teal-500/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
+<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
+  
+  <!-- Efectos de Luces Ambientales -->
+  <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
 
-  <!-- Header -->
-  <header class="relative bg-gradient-to-r from-teal-600 via-cyan-500 to-teal-600 px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-    <div class="relative z-10">
-      <h1 class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">Lista de Estudiantes</h1>
-      <p class="text-white/90 mt-2 drop-shadow">Gestiona todos tus estudiantes en un solo lugar</p>
+  <!-- Header Estilo Glassmorphism -->
+  <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
+    <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div class="space-y-2">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Gestión de Estudiantes</span>
+          <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
+          Lista de <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Estudiantes</span>
+        </h1>
+        <p class="text-slate-500 font-medium max-w-lg">
+          Monitorea el progreso, asistencia y desempeño de todos tus alumnos.
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <button (click)="exportToCSV()" class="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center gap-3 group">
+          <i class="fas fa-file-export text-cyan-400 group-hover:scale-110 transition-transform"></i>
+          Exportar CSV
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-    <!-- Tarjetas de Estadísticas -->
+  <!-- Contenido Principal -->
+  <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-10">
+    
+    <!-- Estadísticas -->
     <app-student-stats
       [total]="totalStudents()"
       [active]="activeStudents()"
       [atRisk]="atRiskStudents()"
     />
 
-    <!-- Filtros y Búsqueda -->
-    <app-student-filter
-      [(searchTerm)]="searchTerm"
-      [(selectedCourse)]="selectedCourse"
-      [(selectedStatus)]="selectedStatus"
-      [courseOptions]="courseOptions()"
-      (onExport)="exportToCSV()"
-    />
+    <!-- Filtros -->
+    <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2rem]">
+      <app-student-filter
+        [searchTerm]="searchTerm()"
+        [selectedCourse]="selectedCourse()"
+        [selectedStatus]="selectedStatus()"
+        [courseOptions]="courseOptions()"
+        (searchChange)="searchTerm.set($event)"
+        (courseChange)="selectedCourse.set($event)"
+        (statusChange)="selectedStatus.set($event)"
+      />
+    </div>
 
-    <!-- Loading State -->
-    @if (studentsQuery.isLoading()) {
-      <div class="grid grid-cols-1 gap-4">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <app-skeleton-loader variant="rect" height="150px" />
-        }
-      </div>
-    }
-
-    <!-- Error State -->
-    @if (studentsQuery.isError() && !studentsQuery.isLoading()) {
-      <div class="gradient-border-card p-8 text-center bg-red-900/20 border-red-500/50">
-        <h3 class="text-lg font-semibold text-white mb-2">Error al cargar estudiantes</h3>
-        <p class="text-red-400 mb-4">{{ studentsQuery.error().message || 'Ocurrió un error inesperado' }}</p>
-        <button
-          (click)="studentsQuery.refetch()"
-          class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-medium transition-colors"
-        >
-          Reintentar
-        </button>
-      </div>
-    }
-
-    <!-- Lista de Estudiantes -->
-    @if (!studentsQuery.isLoading() && !studentsQuery.isError()) {
-      @if (filteredStudents().length === 0) {
-        <div class="gradient-border-card p-8 text-center">
-          <h3 class="text-lg font-semibold text-white mb-2">No se encontraron estudiantes</h3>
-          <p class="text-gray-400">Intenta ajustar los filtros de búsqueda</p>
-        </div>
-      }
-
-      @if (filteredStudents().length > 0) {
-        <div class="space-y-3">
-          <div class="flex items-center justify-between mb-4">
-            <p class="text-gray-400">
-              Mostrando {{ filteredStudents().length }} de {{ totalStudents() }} estudiantes
-            </p>
-          </div>
-
-          @for (student of filteredStudents(); track student.id) {
-            <app-student-card
-              [student]="student"
-              (onViewDetails)="viewStudentDetails($event)"
-            />
+    <!-- Resultados -->
+    <div class="space-y-6">
+      @if (studentsQuery.isPending()) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <app-skeleton-loader class="h-64 rounded-[2rem]"></app-skeleton-loader>
           }
         </div>
+      } @else if (studentsQuery.isError()) {
+        <div class="p-12 text-center bg-red-500/5 border border-red-500/10 rounded-[2.5rem]">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+          <p class="text-red-400 font-bold">Error al cargar la lista de estudiantes.</p>
+        </div>
+      } @else {
+        @if (filteredStudents().length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (student of filteredStudents(); track student.id) {
+              <app-student-card
+                [student]="student"
+                (onViewDetails)="viewStudentDetails($event)"
+              />
+            }
+          </div>
+        } @else {
+          <div class="py-20 text-center bg-white/5 rounded-[2.5rem] border border-dashed border-white/10">
+            <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-search text-3xl text-slate-700"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">No se encontraron estudiantes</h3>
+            <p class="text-slate-500 max-w-xs mx-auto">Prueba ajustando los filtros o el término de búsqueda.</p>
+          </div>
+        }
       }
-    }
+    </div>
   </main>
 </div>

@@ -12,6 +12,7 @@ import { GradesFilterBarComponent } from './components/filter-bar/filter-bar.com
 import { GradesStatsSummaryComponent } from './components/stats-summary/stats-summary.component';
 import { GradesTableComponent } from './components/grades-table/grades-table.component';
 import { EvaluationModalComponent } from './components/evaluation-modal/evaluation-modal.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-grades-management',
@@ -22,7 +23,8 @@ import { EvaluationModalComponent } from './components/evaluation-modal/evaluati
     GradesFilterBarComponent, 
     GradesStatsSummaryComponent, 
     GradesTableComponent, 
-    EvaluationModalComponent
+    EvaluationModalComponent,
+    SkeletonLoaderComponent
   ],
   templateUrl: './grades-management.component.html',
   styleUrl: './grades-management.component.css'

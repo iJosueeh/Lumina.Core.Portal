@@ -1,51 +1,83 @@
-<div class="bg-slate-800/40 border border-slate-700/50 rounded-3xl overflow-hidden animate-in fade-in duration-700">
-  <div class="overflow-x-auto">
-    <table class="w-full text-left">
-      <thead>
-        <tr class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black tracking-[0.2em]">
-          <th class="px-8 py-5">Estudiante</th>
-          <th class="px-8 py-5 text-center">Sesiones</th>
-          <th class="px-8 py-5 text-center text-teal-400">Presentes</th>
-          <th class="px-8 py-5 text-center text-red-400">Ausentes</th>
-          <th class="px-8 py-5 text-center text-orange-400">Tardanzas</th>
-          <th class="px-8 py-5 text-right">Porcentaje</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-700/30">
-        @for (r of resumen(); track r.estudianteId) {
-          <tr class="hover:bg-slate-800/60 transition-colors group">
-            <td class="px-8 py-5">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-slate-700/50 flex items-center justify-center text-teal-400 font-black border border-white/5">
-                  {{ r.estudianteNombre.charAt(0) }}
-                </div>
-                <p class="text-sm font-bold text-white tracking-tight">{{ r.estudianteNombre }}</p>
-              </div>
-            </td>
-            <td class="px-8 py-5 text-center text-sm font-medium text-slate-400">{{ r.totalSesiones }}</td>
-            <td class="px-8 py-5 text-center text-sm font-bold text-teal-500/80">{{ r.presentes }}</td>
-            <td class="px-8 py-5 text-center text-sm font-bold text-red-500/80">{{ r.ausentes }}</td>
-            <td class="px-8 py-5 text-center text-sm font-bold text-orange-500/80">{{ r.tardanzas }}</td>
-            <td class="px-8 py-5 text-right">
-              <div class="flex flex-col items-end gap-1.5">
-                <span class="text-base font-black tracking-tighter" [class]="getAsistenciaColor(r.porcentajeAsistencia)">
-                  {{ r.porcentajeAsistencia }}%
-                </span>
-                <app-status-badge
-                  [status]="getStatusColor(r.porcentajeAsistencia)"
-                  [label]="r.porcentajeAsistencia >= 90 ? 'Excelente' : (r.porcentajeAsistencia >= 75 ? 'Regular' : 'Riesgo')"
-                />
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="px-8 py-20 text-center text-slate-500 italic font-medium">
-              No hay registros de asistencia para los criterios seleccionados.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+<div class="relative">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-separate border-spacing-0">
+            <thead>
+                <tr>
+                    <!-- Estudiante (Sticky) -->
+                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 sticky left-0 bg-[#020617] z-30 border-b border-white/5">
+                        Nombre del Estudiante
+                    </th>
+                    
+                    <!-- Sesiones Dinámicas -->
+                    @for (sesion of sesiones(); track sesion.id) {
+                        <th class="px-6 py-6 text-center min-w-[120px] border-b border-white/5 bg-slate-950/20 backdrop-blur-md">
+                            <div class="flex flex-col items-center gap-1 group">
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ sesion.fecha | date:'dd MMM' }}</span>
+                                <span class="text-[10px] font-black text-slate-200 uppercase group-hover:text-cyan-400 transition-colors">{{ sesion.tema }}</span>
+                            </div>
+                        </th>
+                    }
+                    
+                    <!-- Promedio (Sticky) -->
+                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500 text-center border-b border-white/5 bg-cyan-500/5 backdrop-blur-md sticky right-0 z-30">
+                        % Asistencia
+                    </th>
+                </tr>
+            </thead>
+            
+            <tbody class="divide-y divide-white/5">
+                @for (resumen of resumenEstudiantes(); track resumen.estudianteId) {
+                    <tr class="hover:bg-white/5 transition-all group">
+                        <!-- Celda Estudiante (Sticky) -->
+                        <td class="px-8 py-5 sticky left-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors border-r border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                    <span class="text-[10px] font-black text-cyan-500">{{ resumen.estudianteNombre.charAt(0) }}</span>
+                                </div>
+                                <span class="text-sm font-black text-white group-hover:text-cyan-400 transition-colors">{{ resumen.estudianteNombre }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Estados de Asistencia por Sesión -->
+                        @for (sesion of sesiones(); track sesion.id) {
+                            <td class="px-6 py-5 text-center">
+                                @let asistencia = getAsistencia(resumen.estudianteId, sesion.id);
+                                <div class="flex justify-center">
+                                    @switch (asistencia) {
+                                        @case ('Presente') {
+                                            <div class="w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" title="Presente"></div>
+                                        }
+                                        @case ('Tardanza') {
+                                            <div class="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]" title="Tardanza"></div>
+                                        }
+                                        @case ('Ausente') {
+                                            <div class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" title="Ausente"></div>
+                                        }
+                                        @default {
+                                            <div class="w-3 h-3 rounded-full bg-slate-800" title="Sin registro"></div>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        }
+
+                        <!-- Celda Promedio (Sticky) -->
+                        <td class="px-8 py-5 text-center sticky right-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors border-l border-white/5">
+                            <span [class]="resumen.porcentajeAsistencia >= 80 ? 'text-white' : 'text-orange-500'" 
+                                class="text-sm font-black tracking-tighter">
+                                {{ resumen.porcentajeAsistencia }}%
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.1); }
+</style>

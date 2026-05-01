@@ -1,6 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Modulo, ModuloMaterial } from '@shared/models/course-management.models';
+import { Modulo, ModuloMaterial, Leccion } from '@shared/models/course-management.models';
 
 @Component({
   selector: 'app-course-curriculum',
@@ -14,6 +14,10 @@ export class CourseCurriculumComponent {
   
   onOpenMaterial = output<ModuloMaterial>();
   onDownloadMaterial = output<ModuloMaterial>();
+  onAddContent = output<string>();
+  onCreateModule = output<void>();
+  onPreviewLesson = output<string>(); // lessonId
+  onEditLesson = output<{moduloId: string, leccion: Leccion}>();
 
   expandedModules = signal<Set<string>>(new Set());
 

@@ -1,59 +1,85 @@
-<div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="border-b border-slate-100 bg-slate-50/50">
-                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Curso</th>
-                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Código</th>
-                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Docente</th>
-                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Estado</th>
-                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Acciones</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-50">
-            @if (isLoading) {
-                @for (i of [1,2,3,4,5]; track i) {
-                    <tr>
-                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="200px"></app-skeleton-loader></td>
-                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="80px"></app-skeleton-loader></td>
-                        <td class="px-6 py-4"><app-skeleton-loader height="20px" width="120px"></app-skeleton-loader></td>
-                        <td class="px-6 py-4"><app-skeleton-loader height="24px" width="70px"></app-skeleton-loader></td>
-                        <td class="px-6 py-4"><app-skeleton-loader height="32px" width="100px" class="ml-auto"></app-skeleton-loader></td>
-                    </tr>
-                }
-            } @else {
-                @for (course of courses; track course.id) {
-                    <tr class="hover:bg-slate-50/50 transition-all group">
-                        <td class="px-6 py-4">
-                            <span class="font-bold text-slate-700 block">{{ course.name }}</span>
-                            <span class="text-xs text-slate-400 font-medium">{{ course.ciclo }}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-mono text-slate-500">{{ course.code }}</td>
-                        <td class="px-6 py-4 text-sm text-slate-600 font-medium">{{ course.teacherName || 'Sin asignar' }}</td>
-                        <td class="px-6 py-4">
-                            <app-status-badge [status]="course.status"></app-status-badge>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <button (click)="edit.emit(course)" class="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button (click)="delete.emit(course)" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                } @empty {
-                    <tr>
-                        <td colspan="5" class="px-6 py-20 text-center">
-                            <div class="flex flex-col items-center gap-3 opacity-40">
-                                <i class="fas fa-book-open text-5xl text-slate-300"></i>
-                                <p class="text-xl font-bold tracking-tight text-slate-500">No se encontraron cursos</p>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+<div class="overflow-x-auto bg-[#020617]">
+  <table class="course-table">
+    <thead>
+      <tr>
+        <th class="text-left">Información del Curso</th>
+        <th class="text-center">Código</th>
+        <th class="text-left">Instructor</th>
+        <th class="text-center">Estado</th>
+        <th class="text-right">Operaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (course of courses(); track course.id) {
+        <tr class="animate-fade-in group">
+          <!-- Nombre e Imagen -->
+          <td>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-800 shrink-0 shadow-lg">
+                <img [src]="course.coverImage" class="w-full h-full object-cover" alt="Cover" (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100'">
+              </div>
+              <div class="min-w-0">
+                <span class="block font-black text-white truncate text-sm tracking-tight group-hover:text-cyan-400 transition-colors">{{ course.name }}</span>
+                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{{ course.modules }} Módulos</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Código -->
+          <td class="text-center">
+            <span class="px-2.5 py-1 rounded-md bg-slate-950 border border-slate-800 text-[10px] font-mono text-cyan-400 uppercase tracking-tighter">
+              {{ course.code }}
+            </span>
+          </td>
+
+          <!-- Instructor -->
+          <td class="text-slate-400 font-semibold text-xs">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-slate-500 border border-slate-700">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              {{ course.teacherName }}
+            </div>
+          </td>
+
+          <!-- Estado -->
+          <td class="text-center">
+            <app-status-badge 
+              [status]="course.status" 
+              [label]="course.status === 'PUBLISHED' ? 'Público' : 'Borrador'"
+            ></app-status-badge>
+          </td>
+
+          <!-- Acciones -->
+          <td>
+            <div class="flex items-center justify-end gap-2">
+              <button 
+                class="w-10 h-10 rounded-xl bg-slate-800/50 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center justify-center border border-slate-700/50"
+                (click)="editContent(course.id!)"
+                title="Editor Multimedia"
+              >
+                <i class="fas fa-clapperboard text-sm"></i>
+              </button>
+              
+              <button 
+                class="w-10 h-10 rounded-xl bg-slate-800/50 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all flex items-center justify-center border border-slate-700/50"
+                (click)="onEdit.emit(course)"
+                title="Ajustes"
+              >
+                <i class="fas fa-cog text-sm"></i>
+              </button>
+
+              <button 
+                class="w-10 h-10 rounded-xl bg-slate-800/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center justify-center border border-slate-700/50"
+                (click)="onDelete.emit(course)"
+                title="Eliminar"
+              >
+                <i class="fas fa-trash-alt text-sm"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
 </div>

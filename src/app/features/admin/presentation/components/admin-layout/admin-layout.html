@@ -60,8 +60,8 @@
                     {{ userName.charAt(0) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-white truncate">{{ userName }}</h3>
-                    <p class="text-sm text-slate-400 truncate">{{ userRole }}</p>
+                    <h3 class="font-semibold text-white truncate text-sm">{{ userName }}</h3>
+                    <p class="text-xs text-slate-400 truncate uppercase tracking-widest font-bold">{{ userRole }}</p>
                 </div>
             </div>
         </div>
@@ -73,34 +73,27 @@
                 <li>
                     <a [routerLink]="item.route"
                         (click)="closeSidebar()"
-                        routerLinkActive="bg-cyan-500/20 text-cyan-400"
-                        class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800/50 transition-colors relative group">
-                        <!-- Icon Placeholder -->
-                        <span class="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                            @if (item.icon === 'dashboard') {
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                            </svg>
-                            }
-                            @if (item.icon === 'bar-chart') {
-                            <i class="fas fa-chart-bar"></i>
-                            }
-                            @if (item.icon === 'building') {
-                            <i class="fas fa-building"></i>
-                            }
-                            @if (item.icon === 'user-graduate') {
-                            <i class="fas fa-user-graduate"></i>
-                            }
-                            @if (item.icon === 'archive') {
-                            <i class="fas fa-archive"></i>
-                            }
-                            @if (item.icon === 'file-alt') {
-                            <i class="fas fa-file-alt"></i>
+                        routerLinkActive="bg-cyan-500/20 text-cyan-400 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all duration-300 group relative">
+                        
+                        <span class="w-5 h-5 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                            @switch (item.icon) {
+                                @case ('dashboard') {
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-13.5 18v-2.25z" />
+                                    </svg>
+                                }
+                                @case ('book') { <i class="fas fa-book"></i> }
+                                @case ('chalkboard-user') { <i class="fas fa-chalkboard-user"></i> }
+                                @case ('user-graduate') { <i class="fas fa-user-graduate"></i> }
+                                @case ('settings') { <i class="fas fa-cog"></i> }
+                                @default { <i class="fas fa-circle text-[6px]"></i> }
                             }
                         </span>
-                        <span class="font-medium">{{ item.label }}</span>
+                        <span class="font-semibold text-sm tracking-wide">{{ item.label }}</span>
+
+                        <!-- Indicator for Active -->
+                        <div class="absolute right-2 w-1 h-1 rounded-full bg-cyan-400 opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
                     </a>
                 </li>
                 }
@@ -108,21 +101,18 @@
         </nav>
 
         <!-- Footer Actions -->
-        <div class="p-4 border-t border-slate-800/80 space-y-1">
+        <div class="p-4 border-t border-slate-800/80">
             <button (click)="logout()"
-                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5 flex-shrink-0">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                </svg>
-                <span class="font-medium">Cerrar Sesión</span>
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400/80 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300">
+                <i class="fas fa-sign-out-alt w-5 h-5 flex items-center justify-center"></i>
+                <span class="font-bold text-sm tracking-wide">Cerrar Sesión</span>
             </button>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+    <main class="flex-1 overflow-y-auto pt-14 md:pt-0 relative">
+        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none"></div>
         <router-outlet></router-outlet>
     </main>
 </div>

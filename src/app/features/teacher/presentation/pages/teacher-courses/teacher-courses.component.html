@@ -1,169 +1,182 @@
-<div class="p-4 md:p-6 space-y-4 md:space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Mis Cursos Asignados</h1>
-            <p class="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 md:line-clamp-none">
-                Gestiona tus asignaturas, sube contenido académico y evalúa el progreso de tus estudiantes desde un solo lugar.
-            </p>
+<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
+  
+    <!-- Efectos de Luces Ambientales -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
+  
+    <!-- Header Estilo Glassmorphism -->
+    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
+      <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2">
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Gestión Académica</span>
+            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
+            Mis Cursos <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Impartidos</span>
+          </h1>
+          <p class="text-slate-500 font-medium max-w-lg">
+            Administra tus asignaturas, sílabos y contenido educativo de este ciclo académico.
+          </p>
         </div>
-    </div>
-
-    <!-- Search and Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-        <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            <!-- Search -->
-            <div class="flex-1 relative w-full">
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input 
-                    type="text"
-                    [(ngModel)]="searchTerm"
-                    (ngModelChange)="onSearchChange()"
-                    placeholder="Buscar por nombre o código..."
-                    class="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg 
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm md:text-base">
-            </div>
-
-            <!-- Filter Buttons Container -->
-            <div class="flex gap-2 items-center overflow-x-auto pb-1 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                <div class="flex gap-2 flex-nowrap">
-                    <button 
-                        (click)="setFilter('Todos')"
-                        [class.bg-gray-900]="selectedFilter === 'Todos'"
-                        [class.text-white]="selectedFilter === 'Todos'"
-                        [class.bg-white]="selectedFilter !== 'Todos'"
-                        [class.text-gray-700]="selectedFilter !== 'Todos'"
-                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
-                        Todos
-                    </button>
-                    <button 
-                        (click)="setFilter('Activos')"
-                        [class.bg-gray-900]="selectedFilter === 'Activos'"
-                        [class.text-white]="selectedFilter === 'Activos'"
-                        [class.bg-white]="selectedFilter !== 'Activos'"
-                        [class.text-gray-700]="selectedFilter !== 'Activos'"
-                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
-                        Activos
-                    </button>
-                    <button 
-                        (click)="setFilter('Archivados')"
-                        [class.bg-gray-900]="selectedFilter === 'Archivados'"
-                        [class.text-white]="selectedFilter === 'Archivados'"
-                        [class.bg-white]="selectedFilter !== 'Archivados'"
-                        [class.text-gray-700]="selectedFilter !== 'Archivados'"
-                        class="px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 dark:border-gray-600
-                               hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap text-sm md:text-base">
-                        Archivados
-                    </button>
-                </div>
-            </div>
+  
+        <div class="flex gap-3">
+          <button class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] text-sm uppercase tracking-widest">
+            Crear Nuevo Curso
+          </button>
         </div>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && filteredCourses.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 md:p-12">
-        <div class="text-center">
-            <svg class="mx-auto h-12 w-12 md:h-16 md:w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No se encontraron cursos</h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'No tienes cursos asignados en este momento' }}
-            </p>
+      </div>
+    </header>
+  
+    <!-- Contenido Principal -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-12">
+      
+      <!-- Estadísticas Rápidas -->
+      <section>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          @if (isLoading()) {
+            @for (i of [1,2,3]; track i) {
+              <div class="h-32 bg-white/5 rounded-[2.5rem] p-7">
+                <app-skeleton-loader class="h-full w-full rounded-2xl"></app-skeleton-loader>
+              </div>
+            }
+          } @else {
+            <app-stat-card 
+              label="Cursos Totales" 
+              [value]="totalCoursesCount().toString()" 
+              icon="layer-group" 
+              description="Histórico asignado"
+              color="blue">
+            </app-stat-card>
+  
+            <app-stat-card 
+              label="Activos Ahora" 
+              [value]="activeCoursesCount().toString()" 
+              icon="broadcast-tower" 
+              description="Ciclo 2026-I"
+              color="teal">
+            </app-stat-card>
+  
+            <app-stat-card 
+              label="Finalizados" 
+              [value]="archivedCoursesCount().toString()" 
+              icon="archive" 
+              description="Registros guardados"
+              color="purple">
+            </app-stat-card>
+          }
         </div>
-    </div>
-
-    <!-- Courses Grid -->
-    <div *ngIf="!isLoading && filteredCourses.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <div 
-            *ngFor="let course of filteredCourses"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 
-                   overflow-hidden hover:shadow-lg transition-all group">
-            
-            <!-- Course Header with Status Badge -->
-            <div class="relative p-5 md:p-6 pb-4 bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-900/20 dark:to-blue-900/20">
-                <div class="flex items-start justify-between mb-3">
-                    <span 
-                        class="px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-xs font-medium"
-                        [ngClass]="getStatusColor(course.estadoCurso)">
-                        {{ course.estadoCurso }}
-                    </span>
-                    <span class="px-2.5 py-1 bg-white dark:bg-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300">
-                        {{ course.codigo }}
-                    </span>
-                </div>
+      </section>
+  
+      <!-- Barra de Filtros y Búsqueda -->
+      <section class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2.5rem] flex flex-col md:flex-row gap-6 items-center">
+        <!-- Input de Búsqueda -->
+        <div class="relative flex-1 group w-full">
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <i class="fas fa-search text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+          </div>
+          <input 
+            type="text" 
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+            placeholder="Buscar por nombre o código de curso..." 
+            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+        </div>
+  
+        <!-- Selectores de Filtro -->
+        <div class="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 w-full md:w-auto">
+          @for (filter of ['Todos', 'Activos', 'Archivados']; track filter) {
+            <button 
+              (click)="setFilter($any(filter))"
+              [class.bg-cyan-500]="selectedFilter() === filter"
+              [class.text-slate-950]="selectedFilter() === filter"
+              [class.text-slate-400]="selectedFilter() !== filter"
+              class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+              {{ filter }}
+            </button>
+          }
+        </div>
+      </section>
+  
+      <!-- Listado de Cursos -->
+      <section class="space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          @if (isLoading()) {
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="h-80 bg-white/5 rounded-[2.5rem] p-8">
+                <app-skeleton-loader class="h-full w-full rounded-3xl"></app-skeleton-loader>
+              </div>
+            }
+          } @else {
+            @for (course of filteredCourses(); track course.id) {
+              <div (click)="manageCourse(course.id)" 
+                class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all cursor-pointer relative overflow-hidden flex flex-col h-full shadow-2xl">
                 
-                <h3 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                    {{ course.titulo }}
-                </h3>
-                
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ course.ciclo }} • {{ course.creditos }} créditos
-                </p>
-            </div>
-
-            <!-- Course Stats -->
-            <div class="p-5 md:p-6 space-y-4">
-                <div class="flex items-center justify-between text-sm">
-                    <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span class="font-medium">{{ course.totalAlumnos }} Estudiantes</span>
+                <!-- Glow Effect -->
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 rounded-full blur-[80px] group-hover:bg-cyan-500/10 transition-all"></div>
+  
+                <div class="relative z-10 flex flex-col h-full">
+                  <div class="flex justify-between items-start mb-8">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500/10 transition-all duration-500 border border-white/5">
+                      <i class="fas fa-book-open text-xl"></i>
                     </div>
-                    <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        <span class="font-medium">12 Tareas</span>
+                    <app-status-badge [status]="course.estadoCurso"></app-status-badge>
+                  </div>
+  
+                  <div class="space-y-3 mb-8">
+                    <span class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">{{ course.codigo }}</span>
+                    <h3 class="text-xl font-black text-white leading-tight group-hover:text-cyan-400 transition-colors">
+                      {{ course.titulo }}
+                    </h3>
+                    <p class="text-sm text-slate-500 line-clamp-2 font-medium">
+                      {{ course.descripcion || 'Sin descripción disponible para este curso.' }}
+                    </p>
+                  </div>
+  
+                  <!-- Stats del curso -->
+                  <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Alumnos</p>
+                      <p class="text-lg font-black text-white">{{ course.totalAlumnos }}</p>
                     </div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Promedio</p>
+                      <p class="text-lg font-black text-white">{{ course.promedioGeneral | number:'1.1-1' }}</p>
+                    </div>
+                  </div>
+  
+                  <div class="mt-auto flex items-center justify-between gap-3">
+                    <div class="flex -space-x-3">
+                      @for (i of [1,2,3,4]; track i) {
+                        <img [src]="'https://i.pravatar.cc/100?u=' + course.id + i" 
+                          class="w-8 h-8 rounded-full border-2 border-[#020617] bg-slate-800" alt="Alumno">
+                      }
+                    </div>
+                    <div class="flex gap-2">
+                        <button [routerLink]="['/teacher/course', course.id, 'preview']" (click)="$event.stopPropagation()"
+                            class="px-4 py-2 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                            Previsualizar Aula
+                        </button>
+                        <button class="w-10 h-10 bg-white/5 hover:bg-cyan-500 text-slate-400 hover:text-slate-950 rounded-xl flex items-center justify-center transition-all">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                  </div>
                 </div>
-
-                <!-- Student Avatars -->
-                <div class="flex items-center gap-3">
-                    <div class="flex -space-x-2">
-                        <div 
-                            *ngFor="let avatar of getStudentAvatars(course.totalAlumnos); let i = index"
-                            class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 bg-gradient-to-br from-blue-400 to-teal-400 
-                                   flex items-center justify-center text-white text-xs font-bold"
-                            [style.z-index]="10 - i">
-                            {{ i + 1 }}
-                        </div>
-                        <div 
-                            *ngIf="course.totalAlumnos > 4"
-                            class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-700 
-                                   flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
-                            +{{ course.totalAlumnos - 4 }}
-                        </div>
-                    </div>
+              </div>
+            } @empty {
+              <div class="col-span-full py-24 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <i class="fas fa-folder-open text-3xl text-slate-700"></i>
                 </div>
-
-                <!-- Action Button -->
-                <button 
-                    (click)="manageCourse(course.id)"
-                    class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg 
-                           transition-colors flex items-center justify-center gap-2 group-hover:shadow-md">
-                    <span>Gestionar</span>
-                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </div>
+                <h3 class="text-2xl font-black text-white mb-2">No se encontraron cursos</h3>
+                <p class="text-slate-500 max-w-xs mx-auto">Prueba ajustando los filtros o el término de búsqueda.</p>
+              </div>
+            }
+          }
         </div>
-    </div>
-</div>
+      </section>
+  
+    </main>
+  </div>
+  

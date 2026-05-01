@@ -1,23 +1,23 @@
 import { Component, input, output, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { InputComponent } from '../../../../../../../shared/components/ui/input/input.component';
-import { SelectComponent } from '../../../../../../../shared/components/ui/select/select.component';
-import { ButtonComponent } from '../../../../../../../shared/components/ui/button/button.component';
 
 @Component({
   selector: 'app-student-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputComponent, SelectComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './student-filter.component.html',
-  styleUrl: './student-filter.component.css'
 })
 export class StudentFilterComponent {
-  searchTerm = model<string>('');
-  selectedCourse = model<string>('all');
-  selectedStatus = model<string>('all');
+  searchTerm = input<string>('');
+  selectedCourse = input<string>('all');
+  selectedStatus = input<string>('all');
   
   courseOptions = input<{ label: string; value: string }[]>([]);
+  
+  searchChange = output<string>();
+  courseChange = output<string>();
+  statusChange = output<string>();
   onExport = output<void>();
 
   statusOptions = [
