@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { AdminCourse } from '@shared/models/admin-course.models';
+import { AdminCourse, AdminDocente } from '@shared/models/admin-course.models';
 
 @Injectable({
   providedIn: 'root'
@@ -63,12 +63,12 @@ export class AdminCourseService {
     return this.http.put(`${this.cursosApiUrl}/cursos/${courseId}`, body);
   }
 
-  getDocentes(): Observable<any[]> {
+  getDocentes(): Observable<AdminDocente[]> {
     return this.http.get<any>(`${this.docentesApiUrl}/docente/system/all`).pipe(
       map(response => {
         const data = response?.value || response || [];
         return data.map((d: any) => ({
-          id: d.id || d.Id,
+          id: this.flattenId(d.id || d.Id),
           nombreCompleto: d.nombreRaw || d.nombre || 'Sin nombre',
           email: d.email || 'N/A'
         }));
@@ -91,21 +91,39 @@ export class AdminCourseService {
     );
   }
 
+  private flattenId(id: any): string {
+    if (!id) return '';
+    if (typeof id === 'string') return id;
+    if (typeof id === 'object' && id.value) return id.value;
+    return String(id);
+  }
+
   private mapCourse(c: any): AdminCourse {
+    let mappedStatus: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED' = 'DRAFT';
+    const rawStatus = (c.estadoCurso || c.EstadoCurso || '').toLowerCase();
+    
+    if (rawStatus === 'activo' || rawStatus === 'publicado' || rawStatus === 'published') {
+        mappedStatus = 'PUBLISHED';
+    } else if (rawStatus === 'borrador' || rawStatus === 'draft') {
+        mappedStatus = 'DRAFT';
+    } else if (rawStatus === 'archivado' || rawStatus === 'archived') {
+        mappedStatus = 'ARCHIVED';
+    }
+
     return {
-      id: c.id || c.Id || '',
+      id: this.flattenId(c.id || c.Id),
       name: c.titulo || c.Titulo || c.nombreRaw || c.NombreCurso || 'Curso sin título',
       code: c.codigo || c.Codigo || 'GEN-001',
-      instructorId: c.instructorId || c.InstructorId || null,
-      teacherName: 'Sin asignar', 
-      status: (c.estadoCurso || c.EstadoCurso || 'PUBLISHED') as any,
+      instructorId: this.flattenId(c.instructorId || c.InstructorId) || null,
+      teacherName: 'Cargando...', 
+      status: mappedStatus,
       description: c.descripcionRaw || c.descripcion || c.Descripcion || '',
       capacity: c.capacidadRaw || c.capacidad || c.Capacidad || 0,
       ciclo: c.ciclo || c.Ciclo || 'N/A',
       creditos: c.creditos || c.Creditos || 0,
       coverImage: c.imagenUrl || c.imagen || c.Imagen || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
       modules: Array.isArray(c.modulos || c.Modulos) ? (c.modulos || c.Modulos).map((m: any, i: number) => ({
-        id: m.id || m.Id,
+        id: this.flattenId(m.id || m.Id),
         titulo: m.titulo || m.Titulo || `Módulo ${i+1}`,
         orden: i + 1
       })) : [],

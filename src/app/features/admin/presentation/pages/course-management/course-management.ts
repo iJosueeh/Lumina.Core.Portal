@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AdminCourseService } from '../../../infrastructure/services/admin-course.service';
 import { AdminCourse, AdminDocente } from '@shared/models/admin-course.models';
 
@@ -77,21 +78,50 @@ export class CourseManagement implements OnInit {
 
   loadData(): void {
     this.isLoading.set(true);
-    this.adminService.getCourses().subscribe({
-      next: (courses) => {
-        console.log('✅ [ADMIN-COURSE-MGMT] Courses Received:', courses.length);
-        this.allCourses.set(courses);
+    
+    // Cargar Cursos y Docentes en paralelo para resolver nombres
+    forkJoin({
+      courses: this.adminService.getCourses(),
+      docentes: this.adminService.getDocentes()
+    }).subscribe({
+      next: ({ courses, docentes }: { courses: AdminCourse[], docentes: AdminDocente[] }) => {
+        console.log('✅ [ADMIN-COURSE-MGMT] Data Loaded:', { courses: courses.length, docentes: docentes.length });
+        
+        this.docentesList.set(docentes);
+        
+        // Resolver nombres de docentes
+        const resolvedCourses = courses.map((course: AdminCourse) => {
+            console.log(`🧐 [ADMIN-COURSE-MGMT] Checking course "${course.name}" with instructorId:`, course.instructorId);
+            
+            const docente = docentes.find((d: AdminDocente) => {
+                const courseInstId = typeof course.instructorId === 'object' ? (course.instructorId as any)?.value : course.instructorId;
+                const docenteId = typeof d.id === 'object' ? (d.id as any)?.value : d.id;
+                
+                return String(docenteId).toLowerCase() === String(courseInstId).toLowerCase();
+            });
+
+            if (docente) {
+                console.log(`✅ [ADMIN-COURSE-MGMT] Found match: ${docente.nombreCompleto}`);
+            }
+
+            return {
+                ...course,
+                teacherName: docente ? docente.nombreCompleto : 'Sin asignar'
+            };
+        });
+
+        this.allCourses.set(resolvedCourses);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err: any) => {
+        console.error('❌ [ADMIN-COURSE-MGMT] Error loading data:', err);
+        this.isLoading.set(false);
+      }
     });
   }
 
   loadDocentes(): void {
-    this.adminService.getDocentes().subscribe({
-      next: (docs) => this.docentesList.set(docs),
-      error: () => console.error('❌ Error cargando docentes')
-    });
+    // Ya se maneja en loadData con forkJoin para sincronía
   }
 
   setOption(value: any): void { this.selectedStatus.set(String(value)); }

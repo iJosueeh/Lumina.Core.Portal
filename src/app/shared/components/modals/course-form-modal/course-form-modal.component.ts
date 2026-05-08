@@ -150,7 +150,8 @@ export class CourseFormModalComponent implements OnInit {
           categoria: detail.categoriaRaw || detail.categoria?.value || detail.categoria || 'Programación',
           nivel: detail.nivelRaw || detail.nivel?.value || detail.nivel || 'Principiante',
           precio: detail.precio || 0,
-          duracion: detail.duracion || '20h'
+          duracion: detail.duracion || '20h',
+          estadoCurso: detail.estadoCurso || 'Borrador'
         }, { emitEvent: false });
 
         if (Array.isArray(detail.requisitos)) {
