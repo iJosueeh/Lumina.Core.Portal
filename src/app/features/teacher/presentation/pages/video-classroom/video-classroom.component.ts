@@ -7,13 +7,14 @@ import { lastValueFrom } from 'rxjs';
 
 // Services
 import { VideoClassroomService } from '@features/student/infrastructure/services/video-classroom.service';
+import { NotificationService } from '@shared/services/notification.service';
 
 // Shared Components
 import { ClassroomPlayerComponent } from '@shared/components/features/classroom/classroom-player/classroom-player.component';
 import { ClassroomPlaylistComponent } from '@shared/components/features/classroom/classroom-playlist/classroom-playlist.component';
 import { ClassroomResourcesComponent, ClassroomResource } from '@shared/components/features/classroom/classroom-resources/classroom-resources.component';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
-import { AddContentModalComponent } from '../course-management/components/add-content-modal/add-content-modal.component';
+import { AddContentModalComponent } from '@shared/components/modals/add-content-modal/add-content-modal.component';
 
 @Component({
   selector: 'app-teacher-video-classroom',
@@ -34,14 +35,16 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   activeTab = signal<'resources' | 'description'>('resources');
   materialScope = signal<'lesson' | 'section' | 'course'>('lesson');
   showEditModal = signal(false);
+  showMaterialsModal = signal(false);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private videoClassroomService = inject(VideoClassroomService);
+  private notificationService = inject(NotificationService);
 
   classroomQuery = injectQuery(() => ({
     queryKey: ['teacher-course-preview', this.courseId()],
-    queryFn: () => lastValueFrom(this.videoClassroomService.getCourseVideoClassroom(this.courseId())),
+    queryFn: () => lastValueFrom(this.videoClassroomService.getCourseVideoClassroom(this.courseId(), true)),
     enabled: !!this.courseId(),
     refetchOnWindowFocus: false,
   }));
@@ -84,6 +87,11 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
         return active.resources || [];
     }
   });
+
+  handleSaved(): void {
+    this.notificationService.show('success', 'Material actualizado correctamente.');
+    this.classroomQuery.refetch();
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {

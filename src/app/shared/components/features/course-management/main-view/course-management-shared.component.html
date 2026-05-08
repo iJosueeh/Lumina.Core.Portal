@@ -1,0 +1,147 @@
+<div class="min-h-screen bg-[#020617] text-slate-200 relative overflow-hidden flex flex-col">
+    <!-- Background Decor -->
+    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none"></div>
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="absolute top-1/2 -left-24 w-72 h-72 bg-cyan-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+    <!-- Header / Hero Section -->
+    @if (course(); as c) {
+        <app-course-hero 
+            [data]="$any(c)" 
+            [role]="role"
+            (onBack)="goBack()"
+        />
+    }
+
+    <!-- Content Area -->
+    <main class="flex-1 relative z-10 p-6 md:p-12 -mt-20">
+        <div class="max-w-7xl mx-auto space-y-12">
+            <!-- Stats Grid -->
+            @if (course(); as c) {
+                <app-course-stats 
+                    [course]="c"
+                    [totalLecciones]="totalLecciones()"
+                />
+            }
+
+            <!-- Navigation Tabs -->
+            <app-tab-nav
+                [tabs]="tabs()"
+                [activeTabId]="activeTab()"
+                (onTabChange)="handleTabChange($event)"
+            />
+
+            <!-- Tab Content -->
+            @if (isLoading()) {
+                <div class="space-y-8">
+                    <app-skeleton-loader height="400px" radius="2.5rem" />
+                </div>
+            } @else {
+                @switch (activeTab()) {
+                    @case ('overview') {
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                            <div class="lg:col-span-2 space-y-12">
+                                <section class="bg-white/5 rounded-[2.5rem] p-10 border border-white/5">
+                                    <h3 class="text-xl font-black text-white mb-6 uppercase tracking-widest">Descripción del Curso</h3>
+                                    <p class="text-slate-400 leading-relaxed text-lg">{{ course()?.descripcion }}</p>
+                                </section>
+                                
+                                <app-course-curriculum 
+                                    [modulos]="modulos()"
+                                    (onAddContent)="openAddContent($event)"
+                                    (onCreateModule)="openCreateModule()"
+                                    (onEditLesson)="openEditLesson($event)"
+                                    (onEditModule)="openEditModule($event)"
+                                    (onPreviewLesson)="previewLesson($event)"
+                                    (onOpenMaterial)="openMaterial($event)"
+                                />
+                            </div>
+                            
+                            <div class="space-y-12">
+                                <app-course-students 
+                                    [students]="students()"
+                                    (onAssignClick)="showAssignStudentModal.set(true)"
+                                />
+                            </div>
+                        </div>
+                    }
+
+                    @case ('evaluaciones') {
+                        <div class="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                            <div class="flex justify-between items-center px-4">
+                                <h2 class="text-2xl font-black text-white tracking-tight">Registro de Evaluaciones</h2>
+                                <button (click)="openEvaluacionModal()" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] text-xs uppercase tracking-widest flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> Crear Evaluación
+                                </button>
+                            </div>
+                            <app-course-evaluations 
+                                [evaluaciones]="courseEvaluaciones()"
+                                [isLoading]="isLoadingEvaluaciones()"
+                                (onEdit)="openQuestionEditor($any($event))"
+                                (onConfig)="openEvaluacionModal($any($event))"
+                            />
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </main>
+
+    <!-- Modales -->
+    @if (showMaterialPreview()) {
+        <app-file-preview-modal
+            [file]="$any(selectedMaterial())"
+            (onClose)="showMaterialPreview.set(false)"
+            (onDownload)="downloadMaterial($any($event))"
+        />
+    }
+
+    @if (showAssignStudentModal()) {
+        <app-assign-student-modal
+            [courseId]="courseId()"
+            [allTeacherStudents]="allTeacherStudents()"
+            [currentStudents]="students()"
+            (onClose)="closeAssignModal()"
+            (onAssigned)="loadCourseData()"
+        />
+    }
+
+    @if (showEvaluacionModal()) {
+        <app-evaluacion-modal
+            [courseId]="courseId()"
+            [docenteId]="currentDocenteId()"
+            [evaluacionToEdit]="editingEvaluacion()"
+            (onClose)="showEvaluacionModal.set(false)"
+            (onSaved)="onEvaluacionSaved($event)"
+        />
+    }
+
+    @if (showQuestionEditor()) {
+        <app-question-editor
+            [quizzId]="editingQuizzId()"
+            [quizzTitle]="editingQuizzTitle()"
+            (onClose)="showQuestionEditor.set(false)"
+            (onSaved)="loadEvaluaciones()"
+        />
+    }
+
+    @if (showAddModuleModal()) {
+        <app-add-module-modal
+            [moduleToEdit]="editingModulo()"
+            (onClose)="showAddModuleModal.set(false)"
+            (onCreated)="createModule($event)"
+            (onUpdate)="updateModule($event)"
+            (onDelete)="deleteModule($event)"
+        />
+    }
+
+    @if (showAddContentModal()) {
+        <app-add-content-modal
+            [courseId]="courseId()"
+            [moduloId]="activeModuloId()"
+            [leccionToEdit]="editingLeccion()"
+            (onClose)="showAddContentModal.set(false)"
+            (onSaved)="onContentSaved()"
+        />
+    }
+</div>

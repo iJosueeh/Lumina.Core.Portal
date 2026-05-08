@@ -1,0 +1,20 @@
+/* Estilos específicos para el modal de evaluación */
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+/* Forzar el color de fondo de las opciones para que sean visibles en Windows/Chrome dark mode */
+select option {
+    background-color: #0f172a; /* bg-slate-900 */
+    color: white;
+    padding: 10px;
+}
+
+select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+}

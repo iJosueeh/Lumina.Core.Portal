@@ -17,8 +17,8 @@ import { QuestionDraft } from '@shared/models/course-management.models';
 export class QuestionEditorComponent implements OnInit {
   @Input({ required: true }) quizzId!: string;
   @Input({ required: true }) quizzTitle!: string;
-  @Output() close = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<void>();
+  @Output() onClose = new EventEmitter<void>();
+  @Output() onSaved = new EventEmitter<void>();
 
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
@@ -128,7 +128,7 @@ export class QuestionEditorComponent implements OnInit {
     const newQuestionsWithOrder = this.questionsList.map((q, idx) => ({ q, orden: idx + 1 })).filter(({ q }) => !q.esExistente);
 
     if (existingQuestions.length === 0 && newQuestionsWithOrder.length === 0) {
-      this.close.emit();
+      this.onClose.emit();
       return;
     }
 
@@ -161,8 +161,8 @@ export class QuestionEditorComponent implements OnInit {
       }
 
       this.notificationService.show('success', 'Preguntas guardadas correctamente.');
-      this.saved.emit();
-      this.close.emit();
+      this.onSaved.emit();
+      this.onClose.emit();
     } catch (err) {
       console.error('❌ Error guardando preguntas:', err);
       this.notificationService.show('error', 'Ocurrió un error al guardar las preguntas.');

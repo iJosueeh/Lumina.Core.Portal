@@ -10,6 +10,9 @@ import { PaginationComponent } from '@shared/components/ui/pagination/pagination
 import { ButtonComponent } from '@shared/components/ui/button/button.component';
 import { SelectComponent } from '@shared/components/ui/select/select.component';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { EvaluacionModalComponent } from '@shared/components/modals/evaluacion-modal/evaluacion-modal.component';
+import { CourseFormModalComponent } from '@shared/components/modals/course-form-modal/course-form-modal.component';
+import { EvaluacionApi } from '@shared/models/course-management.models';
 
 @Component({
   selector: 'app-course-management',
@@ -22,7 +25,9 @@ import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/s
     PaginationComponent,
     ButtonComponent,
     SelectComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    EvaluacionModalComponent,
+    CourseFormModalComponent
   ],
   templateUrl: './course-management.html',
   styleUrl: './course-management.css',
@@ -36,7 +41,15 @@ export class CourseManagement implements OnInit {
   selectedStatus = signal('Estado: Todos');
   currentPage = signal(1);
   itemsPerPage = 10;
-  docentes = signal<AdminDocente[]>([]);
+  docentesList = signal<AdminDocente[]>([]);
+
+  // Modal State
+  showEvaluacionModal = signal(false);
+  showCourseFormModal = signal(false);
+  selectedCourseId = signal<string | null>(null);
+  selectedDocenteId = signal<string | null>(null);
+  editingEvaluacion = signal<EvaluacionApi | null>(null);
+  courseToEdit = signal<AdminCourse | null>(null);
 
   filteredCourses = computed(() => {
     let temp = [...this.allCourses()];
@@ -59,12 +72,14 @@ export class CourseManagement implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+    this.loadDocentes();
   }
 
   loadData(): void {
     this.isLoading.set(true);
     this.adminService.getCourses().subscribe({
       next: (courses) => {
+        console.log('✅ [ADMIN-COURSE-MGMT] Courses Received:', courses.length);
         this.allCourses.set(courses);
         this.isLoading.set(false);
       },
@@ -72,9 +87,36 @@ export class CourseManagement implements OnInit {
     });
   }
 
+  loadDocentes(): void {
+    this.adminService.getDocentes().subscribe({
+      next: (docs) => this.docentesList.set(docs),
+      error: () => console.error('❌ Error cargando docentes')
+    });
+  }
+
   setOption(value: any): void { this.selectedStatus.set(String(value)); }
   setPage(page: any): void { this.currentPage.set(Number(page)); }
-  openCreateModal(): void { alert('Crear curso'); }
-  openEditModal(course: AdminCourse): void { alert(`Editando ${course.name}`); }
-  deleteCourse(course: AdminCourse): void { console.log('Borrando', course.id); }
+  
+  openCreateModal(): void { 
+    this.courseToEdit.set(null);
+    this.showCourseFormModal.set(true); 
+  }
+  
+  openEvaluacionSettings(course: AdminCourse): void {
+    this.selectedCourseId.set(course.id || null);
+    this.selectedDocenteId.set(course.instructorId); 
+    this.editingEvaluacion.set(null); 
+    this.showEvaluacionModal.set(true);
+  }
+
+  openEditModal(course: AdminCourse): void { 
+    this.courseToEdit.set(course);
+    this.showCourseFormModal.set(true);
+  }
+
+  deleteCourse(course: AdminCourse): void { 
+    if (confirm(`¿Estás seguro de eliminar el curso "${course.name}"?`)) {
+        console.log('Borrando', course.id); 
+    }
+  }
 }

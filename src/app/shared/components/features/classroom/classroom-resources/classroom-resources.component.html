@@ -46,19 +46,27 @@
           </div>
         </div>
 
-        <button
-          (click)="isDownloadable(res.type) ? onDownload.emit(res) : onOpen.emit(res)"
-          class="p-2 text-slate-500 hover:text-teal-400 transition-colors"
-          [title]="isDownloadable(res.type) ? 'Descargar' : 'Abrir enlace'"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="flex items-center gap-2">
+            <button
+                (click)="openPreview(res)"
+                class="p-2 text-slate-500 hover:text-teal-400 transition-colors"
+                title="Visualizar"
+            >
+                <i class="fas fa-eye text-sm"></i>
+            </button>
+
             @if (isDownloadable(res.type)) {
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            } @else {
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <button
+                    (click)="downloadResource(res)"
+                    class="p-2 text-slate-500 hover:text-emerald-400 transition-colors"
+                    title="Descargar"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
             }
-          </svg>
-        </button>
+        </div>
       </div>
     } @empty {
       <div class="col-span-full py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
@@ -67,3 +75,41 @@
     }
   </div>
 </div>
+
+<!-- Modal de Previsualización PDF -->
+@if (previewUrl()) {
+    <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-10">
+        <!-- Backdrop con desenfoque -->
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" (click)="closePreview()"></div>
+        
+        <!-- Contenedor del Viewer -->
+        <div class="relative w-full h-full max-w-6xl bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
+            
+            <!-- Toolbar del Viewer -->
+            <div class="h-16 border-b border-white/5 bg-white/[0.02] flex items-center justify-between px-8 shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3 class="text-sm font-black text-white tracking-tight uppercase">{{ selectedResource()?.title }}</h3>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button (click)="downloadResource(selectedResource()!)" 
+                        class="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                        <i class="fas fa-download"></i> Descargar
+                    </button>
+                    <button (click)="closePreview()" 
+                        class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white transition-all flex items-center justify-center">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Iframe Viewer -->
+            <div class="flex-1 bg-slate-950/50 p-4">
+                <iframe [src]="previewUrl()!" class="w-full h-full rounded-2xl border-0 bg-white" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+}

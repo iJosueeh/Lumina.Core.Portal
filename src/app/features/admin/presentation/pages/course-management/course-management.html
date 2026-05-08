@@ -106,5 +106,23 @@
     </div>
   </main>
 
-  <!-- Modals (Temporalmene desactivados para build estable) -->
+  <!-- Modals -->
+  @if (showEvaluacionModal() && selectedCourseId()) {
+    <app-evaluacion-modal
+        [courseId]="selectedCourseId()!"
+        [docenteId]="selectedDocenteId()"
+        [evaluacionToEdit]="editingEvaluacion()"
+        (onClose)="showEvaluacionModal.set(false)"
+        (onSaved)="loadData()"
+    />
+  }
+
+  @if (showCourseFormModal()) {
+    <app-course-form-modal
+        [courseToEdit]="courseToEdit()"
+        [docentes]="docentesList()"
+        (onClose)="showCourseFormModal.set(false)"
+        (onSaved)="loadData()"
+    />
+  }
 </div>

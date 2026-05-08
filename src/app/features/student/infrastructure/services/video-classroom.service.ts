@@ -18,15 +18,19 @@ export class VideoClassroomService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getCourseVideoClassroom(courseId: string): Observable<VideoClassroomData> {
+  getCourseVideoClassroom(courseId: string, refresh: boolean = false): Observable<VideoClassroomData> {
     // Apuntamos al microservicio de CURSOS para obtener el contenido puro
+    let params: Record<string, string> = {};
+    if (refresh) params['refresh'] = 'true';
+
     return this.http
       .get<any>(
-        `${this.cursosApiUrl}/cursos/${courseId}/classroom`
+        `${this.cursosApiUrl}/cursos/${courseId}/classroom`,
+        { params }
       )
       .pipe(map((response) => {
         // Normalizamos la respuesta si viene envuelta en success/data
-        const data = response.data || response;
+        const data = response?.data || response;
         return mapVideoClassroomResponse(data);
       }));
   }

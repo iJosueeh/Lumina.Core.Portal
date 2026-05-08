@@ -16,8 +16,9 @@ export class CourseCurriculumComponent {
   onDownloadMaterial = output<ModuloMaterial>();
   onAddContent = output<string>();
   onCreateModule = output<void>();
-  onPreviewLesson = output<string>(); // lessonId
+  onPreviewLesson = output<string>();
   onEditLesson = output<{moduloId: string, leccion: Leccion}>();
+  onEditModule = output<Modulo>();
 
   expandedModules = signal<Set<string>>(new Set());
 

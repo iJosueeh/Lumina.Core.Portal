@@ -23,4 +23,8 @@ export class CourseTableComponent {
   editContent(courseId: string): void {
     this.router.navigate(['/admin/course', courseId, 'content']);
   }
+
+  manageCourse(courseId: string): void {
+    this.router.navigate(['/admin/course', courseId, 'manage']);
+  }
 }

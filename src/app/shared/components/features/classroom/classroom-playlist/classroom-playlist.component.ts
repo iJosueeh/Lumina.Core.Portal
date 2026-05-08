@@ -34,6 +34,7 @@ export class ClassroomPlaylistComponent {
   onToggleCompletion = output<ClassroomLesson>();
   
   // Eventos de edición para el Admin
+  onEditSection = output<string>(); // Recibe el título de la sección
   onEditLesson = output<ClassroomLesson>();
   onAddLesson = output<string>(); // Recibe el título de la sección
   onDeleteLesson = output<string>(); // Recibe el lessonId

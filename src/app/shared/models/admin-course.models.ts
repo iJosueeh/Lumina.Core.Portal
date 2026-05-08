@@ -10,6 +10,10 @@ export interface AdminCourse {
   ciclo: string;
   creditos: number;
   coverImage: string;
+  categoria?: string;
+  nivel?: string;
+  duracion?: string;
+  precio?: number;
   modules: AdminModule[];
   evaluaciones: AdminEvaluation[];
 }

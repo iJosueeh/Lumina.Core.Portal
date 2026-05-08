@@ -1,16 +1,17 @@
 import { Component, EventEmitter, Input, Output, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@environments/environment';
 import { Leccion } from '@shared/models/course-management.models';
 
 interface AdditionalFile {
-  file: File;
+  file?: File;
   name: string;
   type: string;
   isUploading: boolean;
   url?: string;
+  isExisting?: boolean;
 }
 
 @Component({
@@ -23,6 +24,7 @@ export class AddContentModalComponent implements OnInit {
   @Input({ required: true }) courseId!: string;
   @Input({ required: true }) moduloId!: string;
   @Input() leccionToEdit: Leccion | null = null;
+  @Input() mode: 'full' | 'materials' = 'full';
   
   @Output() onClose = new EventEmitter<void>();
   @Output() onSaved = new EventEmitter<void>();
@@ -54,15 +56,29 @@ export class AddContentModalComponent implements OnInit {
   ngOnInit(): void {
     if (this.leccionToEdit) {
       this.isEditMode.set(true);
-      this.contentType.set(this.leccionToEdit.tipo as any || 'video');
-      this.sourceType.set(this.leccionToEdit.videoUrl ? 'link' : 'file');
+      const lesson = this.leccionToEdit as any;
+      
+      this.contentType.set(lesson.tipo || 'video');
+      this.sourceType.set(lesson.videoUrl || lesson.url ? 'link' : 'file');
       
       this.contentForm.patchValue({
-        titulo: this.leccionToEdit.titulo,
-        descripcion: this.leccionToEdit.descripcion || '',
-        url: this.leccionToEdit.videoUrl || '',
-        duracion: this.leccionToEdit.duracion || '15:00',
+        titulo: lesson.titulo || lesson.title,
+        descripcion: lesson.descripcion || lesson.description || '',
+        url: lesson.videoUrl || lesson.url || '',
+        duracion: lesson.duracion || lesson.duration || '15:00',
       });
+
+      // Cargar recursos existentes
+      if (lesson.resources && Array.isArray(lesson.resources)) {
+        const existingResources = lesson.resources.map((r: any) => ({
+          name: r.title || r.name,
+          url: r.url,
+          type: r.type,
+          isUploading: false,
+          isExisting: true
+        }));
+        this.additionalFiles.set(existingResources);
+      }
     }
   }
 
@@ -93,12 +109,19 @@ export class AddContentModalComponent implements OnInit {
     this.additionalFiles.update(prev => prev.filter((_, i) => i !== index));
   }
 
+  handleClose(): void {
+    if (!this.isSaving()) {
+      this.onClose.emit();
+    }
+  }
+
   async submit(): Promise<void> {
     if (this.contentForm.invalid) return;
+    
     this.isSaving.set(true);
 
     try {
-      // 1. Subir Contenido Principal si es archivo
+      // 1. Subir Contenido Principal
       let finalUrl = this.contentForm.value.url;
       if (this.sourceType() === 'file' && this.selectedFile) {
         finalUrl = await this.uploadToMinio(this.selectedFile);
@@ -107,17 +130,22 @@ export class AddContentModalComponent implements OnInit {
       // 2. Subir Recursos Adicionales
       const materialesAdicionales = [];
       for (const item of this.additionalFiles()) {
-        const url = await this.uploadToMinio(item.file);
-        materialesAdicionales.push({
-          titulo: item.name,
-          url: url,
-          tipo: item.type
-        });
+        if (item.isExisting) {
+          materialesAdicionales.push({ titulo: item.name, url: item.url, tipo: item.type });
+          continue;
+        }
+        if (item.file) {
+          const url = await this.uploadToMinio(item.file);
+          materialesAdicionales.push({ titulo: item.name, url: url, tipo: item.type });
+        }
       }
 
+      const lesson = this.leccionToEdit as any;
+      const lessonId = lesson?.id || lesson?.lessonId;
+      
       const payload = {
         moduloId: this.moduloId,
-        leccionId: this.leccionToEdit?.id,
+        leccionId: lessonId,
         titulo: this.contentForm.value.titulo,
         tipo: this.contentType(),
         url: finalUrl,
@@ -126,17 +154,18 @@ export class AddContentModalComponent implements OnInit {
         materialesAdicionales
       };
 
-      const url = `${environment.cursosApiUrl}/cursos/${this.courseId}/contenido`;
+      const apiUrl = `${environment.cursosApiUrl}/cursos/${this.courseId}/contenido`;
+      
       if (this.isEditMode()) {
-        await this.http.put(url, payload).toPromise();
+        await this.http.put(apiUrl, payload).toPromise();
       } else {
-        await this.http.post(url, payload).toPromise();
+        await this.http.post(apiUrl, payload).toPromise();
       }
       
       this.onSaved.emit();
       this.onClose.emit();
     } catch (error) {
-      console.error('❌ [CONTENT-MODAL] Error saving content:', error);
+      console.error('❌ Error saving content:', error);
     } finally {
       this.isSaving.set(false);
     }

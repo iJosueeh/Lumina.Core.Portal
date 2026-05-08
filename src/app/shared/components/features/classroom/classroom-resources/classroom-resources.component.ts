@@ -1,5 +1,6 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import { Component, input, output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 export interface ClassroomResource {
   id: string;
@@ -23,6 +24,10 @@ export class ClassroomResourcesComponent {
   onOpen = output<ClassroomResource>();
   onScopeChange = output<'lesson' | 'section' | 'course'>();
 
+  private sanitizer = inject(DomSanitizer);
+  previewUrl = signal<SafeResourceUrl | null>(null);
+  selectedResource = signal<ClassroomResource | null>(null);
+
   getResourceIcon(type: string): string {
     const t = type.toLowerCase();
     if (t.includes('pdf')) return 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z';
@@ -33,5 +38,30 @@ export class ClassroomResourcesComponent {
   isDownloadable(type: string): boolean {
     const t = type.toLowerCase();
     return t.includes('pdf') || t.includes('zip') || t.includes('rar');
+  }
+
+  openPreview(resource: ClassroomResource): void {
+    if (resource.type.toLowerCase().includes('pdf')) {
+      this.selectedResource.set(resource);
+      this.previewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(resource.url));
+    } else {
+      window.open(resource.url, '_blank');
+    }
+  }
+
+  closePreview(): void {
+    this.previewUrl.set(null);
+    this.selectedResource.set(null);
+  }
+
+  downloadResource(resource: ClassroomResource): void {
+    const link = document.createElement('a');
+    link.href = resource.url;
+    link.download = resource.title;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.onDownload.emit(resource);
   }
 }

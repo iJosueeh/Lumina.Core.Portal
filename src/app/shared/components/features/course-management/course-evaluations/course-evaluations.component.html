@@ -25,14 +25,19 @@
                     </div>
 
                     <!-- Meta Info -->
-                    <div class="grid grid-cols-2 gap-4 mt-auto">
-                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                            <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Puntaje</p>
-                            <p class="text-sm font-black text-white">{{ ev.puntajeMaximo }} pts</p>
+                    <div class="grid grid-cols-3 gap-3 mt-auto">
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center">
+                            <p class="text-[7px] font-black text-slate-600 uppercase tracking-widest mb-1">Puntaje</p>
+                            <p class="text-xs font-black text-white">{{ ev.puntajeMaximo }} pts</p>
                         </div>
                         <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
-                            <button (click)="onEdit.emit(ev)" class="w-full h-full text-slate-400 hover:text-white transition-colors">
-                                <i class="fas fa-edit text-xs"></i>
+                            <button (click)="onConfig.emit(ev)" class="w-full h-full text-slate-400 hover:text-cyan-400 transition-colors" title="Configurar Evaluación">
+                                <i class="fas fa-cog text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <button (click)="onEdit.emit(ev)" class="w-full h-full text-slate-400 hover:text-purple-400 transition-colors" title="Editar Preguntas">
+                                <i class="fas fa-list-ul text-xs"></i>
                             </button>
                         </div>
                     </div>

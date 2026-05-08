@@ -163,9 +163,10 @@
                             [modulos]="modulos()" 
                             (onMaterialPreview)="openMaterial($any($event))"
                             (onAddContent)="openAddContent($event)"
-                            (onCreateModule)="createFirstModule()"
+                            (onCreateModule)="openCreateModule()"
                             (onPreviewLesson)="previewLesson($event)"
                             (onEditLesson)="openEditLesson($event)"
+                            (onEditModule)="openEditModule($event)"
                         />
                     </div>
                 }
@@ -187,7 +188,7 @@
                     <div class="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
                         <div class="flex justify-between items-center px-4">
                             <h2 class="text-2xl font-black text-white tracking-tight">Registro de Evaluaciones</h2>
-                            <button (click)="showCreateQuizzModal.set(true)" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] text-xs uppercase tracking-widest flex items-center gap-2">
+                            <button (click)="openEvaluacionModal()" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] text-xs uppercase tracking-widest flex items-center gap-2">
                                 <i class="fas fa-plus"></i> Crear Evaluación
                             </button>
                         </div>
@@ -195,6 +196,7 @@
                             [evaluaciones]="courseEvaluaciones()"
                             [isLoading]="isLoadingEvaluaciones()"
                             (onEdit)="openQuestionEditor($any($event))"
+                            (onConfig)="openEvaluacionModal($any($event))"
                         />
                     </div>
                 }
@@ -221,11 +223,13 @@
         />
     }
 
-    @if (showCreateQuizzModal()) {
-        <app-create-quizz-modal
+    @if (showEvaluacionModal()) {
+        <app-evaluacion-modal
             [courseId]="courseId()"
-            (onClose)="showCreateQuizzModal.set(false)"
-            (onCreated)="onQuizzCreated($any($event))"
+            [docenteId]="currentDocenteId()"
+            [evaluacionToEdit]="editingEvaluacion()"
+            (onClose)="showEvaluacionModal.set(false)"
+            (onSaved)="onEvaluacionSaved($event)"
         />
     }
 
@@ -234,6 +238,7 @@
             [quizzId]="editingQuizzId()"
             [quizzTitle]="editingQuizzTitle()"
             (onClose)="showQuestionEditor.set(false)"
+            (onSaved)="loadEvaluaciones()"
         />
     }
 
@@ -244,6 +249,16 @@
             [leccionToEdit]="editingLeccion()"
             (onClose)="showAddContentModal.set(false)"
             (onSaved)="onContentSaved()"
+        />
+    }
+
+    @if (showAddModuleModal()) {
+        <app-add-module-modal
+            [moduleToEdit]="editingModulo()"
+            (onClose)="showAddModuleModal.set(false)"
+            (onCreated)="createModule($event)"
+            (onUpdate)="updateModule($event)"
+            (onDelete)="deleteModule($event)"
         />
     }
 </div>

@@ -13,17 +13,29 @@
     @for (section of sections(); track section.title) {
       <div class="space-y-2">
         <!-- Section Header -->
-        <button 
-          (click)="toggleSection(section.title)"
-          class="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-800/30 hover:bg-slate-800/50 transition-all border border-slate-800/50 group"
-        >
-          <div class="flex items-center gap-3">
-            <i class="fas fa-chevron-right text-[10px] text-slate-500 transition-transform duration-300"
-               [class.rotate-90]="isSectionExpanded(section.title)"></i>
-            <span class="font-bold text-slate-300 text-sm tracking-wide">{{ section.title }}</span>
-          </div>
-          <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-900 text-slate-500 uppercase">{{ section.videos.length }} clases</span>
-        </button>
+        <div class="flex items-center gap-2 group/section">
+          <button 
+            (click)="toggleSection(section.title)"
+            class="flex-1 flex items-center justify-between p-4 rounded-2xl bg-slate-800/30 hover:bg-slate-800/50 transition-all border border-slate-800/50"
+          >
+            <div class="flex items-center gap-3">
+              <i class="fas fa-chevron-right text-[10px] text-slate-500 transition-transform duration-300"
+                 [class.rotate-90]="isSectionExpanded(section.title)"></i>
+              <span class="font-bold text-slate-300 text-sm tracking-wide">{{ section.title }}</span>
+            </div>
+            <span class="text-[10px] font-black px-2 py-1 rounded-md bg-slate-900 text-slate-500 uppercase">{{ section.videos.length }} clases</span>
+          </button>
+          
+          @if (isEditable()) {
+            <button 
+              (click)="onEditSection.emit(section.title)"
+              class="w-10 h-10 rounded-xl bg-slate-800/50 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all flex items-center justify-center border border-slate-800/50 opacity-0 group-hover/section:opacity-100"
+              title="Configurar sección"
+            >
+              <i class="fas fa-cog text-xs"></i>
+            </button>
+          }
+        </div>
 
         <!-- Lessons in Section -->
         @if (isSectionExpanded(section.title)) {

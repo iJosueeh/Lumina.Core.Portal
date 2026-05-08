@@ -134,6 +134,15 @@
                 
                 <div class="flex-1 animate-in fade-in duration-500">
                     @if (activeTab() === 'resources') {
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-sm font-black text-white uppercase tracking-widest">Recursos Disponibles</h3>
+                            <button (click)="showMaterialsModal.set(true)" 
+                                class="px-4 py-2 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Añadir Material
+                            </button>
+                        </div>
+
                         @if (currentResources().length > 0) {
                             <app-classroom-resources 
                                 [resources]="currentResources()"
@@ -143,6 +152,7 @@
                             <div class="py-20 text-center space-y-4 opacity-40">
                                 <i class="fas fa-box-open text-3xl"></i>
                                 <p class="text-[10px] font-black uppercase tracking-[0.2em]">No se encontraron recursos.</p>
+                                <button (click)="showMaterialsModal.set(true)" class="text-purple-400 hover:text-purple-300 text-[9px] font-bold underline decoration-dotted underline-offset-4">Subir primer recurso</button>
                             </div>
                         }
                     } @else {
@@ -195,7 +205,19 @@
             [moduloId]="$any(activeLesson()?.moduleId)"
             [leccionToEdit]="$any(activeLesson())"
             (onClose)="showEditModal.set(false)"
-            (onSaved)="classroomQuery.refetch()"
+            (onSaved)="handleSaved()"
+        />
+    }
+
+    <!-- Modal de Gestión de Materiales -->
+    @if (showMaterialsModal() && activeLesson()) {
+        <app-add-content-modal
+            [courseId]="courseId()"
+            [moduloId]="$any(activeLesson()?.moduleId)"
+            [leccionToEdit]="$any(activeLesson())"
+            mode="materials"
+            (onClose)="showMaterialsModal.set(false)"
+            (onSaved)="handleSaved()"
         />
     }
 </div>

@@ -42,10 +42,10 @@ export class CourseMapper {
       : [];
 
     return {
-      id: m.id || String(index + 1),
+      id: m.id ?? m.Id ?? String(index + 1),
       orden: index + 1,
-      titulo: m.titulo || `Módulo ${index + 1}`,
-      descripcion: m.descripcion || '',
+      titulo: m.titulo ?? m.Titulo ?? `Módulo ${index + 1}`,
+      descripcion: m.descripcion ?? m.Descripcion ?? '',
       duracion: `${Math.max(lecciones.length, 1) * 30} min`,
       materiales,
       completado: false,

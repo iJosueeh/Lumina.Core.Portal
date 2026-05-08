@@ -1,0 +1,95 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" (click)="onClose.emit()"></div>
+    
+    <div class="relative bg-slate-900 border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-10 space-y-8 relative">
+            <!-- Header -->
+            <div class="flex justify-between items-center relative z-10">
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight">
+                        {{ isEditMode() ? 'Configurar Evaluación' : 'Nueva Evaluación' }}
+                    </h2>
+                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                        {{ isEditMode() ? 'Modifica los parámetros de la evaluación seleccionada' : 'Define el título, fechas y puntaje del nuevo examen/quizz' }}
+                    </p>
+                </div>
+                <button (click)="onClose.emit()" [disabled]="isSaving()" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all disabled:opacity-30">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form [formGroup]="evaluacionForm" (ngSubmit)="submit()" class="space-y-6 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Titulo -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Título de la Evaluación</label>
+                        <input type="text" formControlName="titulo" placeholder="Ej: Examen Parcial de Algoritmos" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                    </div>
+
+                    <!-- Descripcion -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción / Instrucciones</label>
+                        <textarea formControlName="descripcion" rows="3" placeholder="Define el objetivo o instrucciones para el alumno..."
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none text-sm leading-relaxed"></textarea>
+                    </div>
+
+                    <!-- Tipo -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Evaluación</label>
+                        <select formControlName="tipoEvaluacion" class="w-full bg-white/10 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold appearance-none">
+                            <option [ngValue]="null" disabled>Seleccionar tipo...</option>
+                            <option [ngValue]="1">Examen</option>
+                            <option [ngValue]="2">Tarea</option>
+                            <option [ngValue]="3">Proyecto</option>
+                            <option [ngValue]="4">Quizz / Test</option>
+                        </select>
+                    </div>
+
+                    <!-- Puntaje -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Puntaje Máximo</label>
+                        <input type="number" formControlName="puntajeMaximo" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                    </div>
+
+                    <!-- Fecha Inicio -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fecha de Inicio</label>
+                        <input type="datetime-local" formControlName="fechaInicio" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                    </div>
+
+                    <!-- Fecha Fin -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Fecha de Cierre</label>
+                        <input type="datetime-local" formControlName="fechaFin" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                    </div>
+
+                    <!-- Intentos -->
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Intentos Permitidos</label>
+                        <input type="number" formControlName="intentosPermitidos" 
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" (click)="onClose.emit()" [disabled]="isSaving()" class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all uppercase tracking-widest text-[10px] disabled:opacity-30">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="evaluacionForm.invalid || isSaving()" 
+                        class="flex-[2] py-4 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
+                        @if (isSaving()) {
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Procesando...
+                        } @else {
+                            {{ isEditMode() ? 'Actualizar Evaluación' : 'Crear Evaluación' }}
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

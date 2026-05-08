@@ -90,4 +90,19 @@ Este archivo contiene los estándares arquitectónicos y el progreso de la moder
 3. **Refactorización**: Continuar con `CourseDetail` y `MyCourses` del Student Module.
 
 ---
-*Última actualización: 28 de abril de 2026 (Sesión de Refactorización Admin Dashboard + Regla de Mocks)*
+*Última actualización: 5 de mayo de 2026 (Fix Sincronización Microservicios + Visor Moderno)*
+
+### 🚀 Mejoras en Gestión de Materiales (Docente)
+Se ha implementado un sistema robusto para que los docentes suban recursos directamente desde el Aula de Video.
+
+#### 🛠 Solución a Fallos de Sincronización (Si vuelve a pasar)
+Si el material se guarda en el backend de Cursos pero no aparece en el Aula de Video (Estudiantes):
+1.  **Mismatch de PascalCase/camelCase**: MongoDB guarda como `materiales` (minúscula). Se forzó en los DTOs de Estudiantes mediante `[JsonPropertyName("materiales")]`. **Siempre usar este decorador en Estudiantes** para campos que vienen de Cursos.
+2.  **Mapeo en Application Layer**: Se debe verificar el `GetCourseByIdQueryHandler` en el servicio de Cursos. Asegurar que la lista de materiales se proyecte del modelo de dominio al DTO (`LessonDto` y `ModuleDto`).
+3.  **Caché Agresivo**: El microservicio de Estudiantes tiene caché. Se implementó el parámetro `?refresh=true` que el frontend envía tras cada guardado para invalidar el caché instantáneamente.
+
+#### 📄 Visor Moderno de Recursos
+- **Vista Previa**: Los PDFs se abren en un modal con desenfoque de fondo (backdrop-blur) y un iframe seguro (DomSanitizer).
+- **Descarga Directa**: Botón dedicado para descargar archivos a disco respetando el nombre original.
+- **Seguridad**: Uso de `bypassSecurityTrustResourceUrl` para prevenir bloqueos de XSS en la previsualización de archivos externos/MinIO.
+---

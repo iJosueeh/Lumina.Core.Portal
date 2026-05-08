@@ -13,4 +13,5 @@ export class CourseEvaluationsComponent {
   evaluaciones = input.required<EvaluacionApi[]>();
   isLoading = input<boolean>(false);
   onEdit = output<EvaluacionApi>();
+  onConfig = output<EvaluacionApi>();
 }
