@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { AdminCourse, AdminDocente } from '@shared/models/admin-course.models';
 import { NotificationService } from '@shared/services/notification.service';
+import { COURSE_CATEGORIES, COURSE_LEVELS } from '@shared/constants/course-categories.constants';
 
 @Component({
   selector: 'app-course-form-modal',
@@ -34,9 +35,9 @@ export class CourseFormModalComponent implements OnInit {
   requisitosList = signal<string[]>([]);
   newRequisito = signal('');
 
-  // Categorías que el dominio soporta (ver CategoriaCurso.cs)
-  categories = ['Programación', 'Diseño', 'Marketing', 'Negocios', 'Desarrollo Personal'];
-  levels = ['Principiante', 'Intermedio', 'Avanzado'];
+  // Categorías y Niveles
+  categories = signal<string[]>([]);
+  levels = [...COURSE_LEVELS];
 
   // Selected File
   selectedFile: File | null = null;
@@ -53,7 +54,7 @@ export class CourseFormModalComponent implements OnInit {
       capacidad: [30, [Validators.required, Validators.min(1)]],
       creditos: [4, [Validators.required, Validators.min(1)]],
       duracion: ['20h', [Validators.required]],
-      ciclo: ['2024-1', [Validators.required]],
+      ciclo: ['2026-1', [Validators.required]],
       precio: [0, [Validators.required]],
       imagenUrl: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'],
       estadoCurso: ['Borrador']
@@ -61,25 +62,79 @@ export class CourseFormModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
     if (this.courseToEdit) {
       this.isEditMode.set(true);
+      
+      const cat = this.courseToEdit.categoria || 'Programación';
+      const lvl = this.courseToEdit.nivel || 'Principiante';
+
       this.courseForm.patchValue({
         nombre: this.courseToEdit.name,
         codigo: this.courseToEdit.code,
         descripcion: this.courseToEdit.description,
         instructorId: this.courseToEdit.instructorId,
-        categoria: this.mapCategory(this.courseToEdit.categoria),
-        nivel: this.courseToEdit.nivel || 'Principiante',
+        categoria: cat,
+        nivel: lvl,
         capacidad: this.courseToEdit.capacity,
         creditos: this.courseToEdit.creditos,
         duracion: this.courseToEdit.duracion || '20h',
-        ciclo: this.courseToEdit.ciclo,
+        ciclo: (this.courseToEdit.ciclo === 'N/A' || !this.courseToEdit.ciclo) ? '2026-1' : this.courseToEdit.ciclo,
         precio: this.courseToEdit.precio || 0,
         imagenUrl: this.courseToEdit.coverImage,
-        estadoCurso: this.courseToEdit.status === 'PUBLISHED' ? 'Activo' : 'Borrador'
+        estadoCurso: this.mapStatus(this.courseToEdit.status)
       });
       
       this.loadFullDetail();
+    }
+  }
+
+  private async loadCategories() {
+    try {
+      const cats = await firstValueFrom(this.http.get<string[]>(`${environment.cursosApiUrl}/cursos/categorias`));
+      if (cats && cats.length > 0) {
+        this.categories.set(cats);
+      } else {
+        this.categories.set([...COURSE_CATEGORIES]);
+      }
+    } catch (e) {
+      this.categories.set([...COURSE_CATEGORIES]);
+    }
+  }
+
+  private mapStatus(status: string | undefined): string {
+    if (!status) return 'Borrador';
+    const s = status.toUpperCase();
+    if (s === 'PUBLISHED' || s === 'ACTIVO') return 'Activo';
+    if (s === 'ARCHIVED') return 'Archivado';
+    return 'Borrador';
+  }
+
+  private async loadFullDetail() {
+    if (!this.courseToEdit?.id) return;
+    try {
+      const detail = await firstValueFrom(this.http.get<any>(`${environment.cursosApiUrl}/cursos/${this.courseToEdit.id}`));
+      if (detail) {
+        // Asegurar que la categoría del curso esté en la lista para que se seleccione
+        const catValue = detail.categoriaRaw || detail.categoria?.value || detail.categoria;
+        if (catValue && !this.categories().includes(catValue)) {
+            this.categories.update(prev => [...prev, catValue]);
+        }
+
+        this.courseForm.patchValue({
+          categoria: catValue || 'Programación',
+          nivel: detail.nivelRaw || detail.nivel?.value || detail.nivel || 'Principiante',
+          precio: detail.precio || 0,
+          duracion: detail.duracion || '20h',
+          estadoCurso: detail.estadoCurso || 'Borrador'
+        }, { emitEvent: false });
+
+        if (Array.isArray(detail.requisitos)) {
+          this.requisitosList.set(detail.requisitos);
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ No se pudo cargar el detalle extra del curso');
     }
   }
 
@@ -106,7 +161,6 @@ export class CourseFormModalComponent implements OnInit {
 
   nextStep(): void {
     if (this.currentStep() === 1) {
-      // Validar campos de la fase 1
       const phase1Fields = ['nombre', 'codigo', 'instructorId', 'descripcion'];
       const isValid = phase1Fields.every(field => this.courseForm.get(field)?.valid);
       
@@ -135,34 +189,6 @@ export class CourseFormModalComponent implements OnInit {
     this.requisitosList.update(list => list.filter((_, i) => i !== index));
   }
 
-  private mapCategory(cat: any): string {
-    if (!cat) return 'Programación';
-    const val = typeof cat === 'string' ? cat : cat.value;
-    return this.categories.includes(val) ? val : 'Programación';
-  }
-
-  private async loadFullDetail() {
-    if (!this.courseToEdit?.id) return;
-    try {
-      const detail = await firstValueFrom(this.http.get<any>(`${environment.cursosApiUrl}/cursos/${this.courseToEdit.id}`));
-      if (detail) {
-        this.courseForm.patchValue({
-          categoria: detail.categoriaRaw || detail.categoria?.value || detail.categoria || 'Programación',
-          nivel: detail.nivelRaw || detail.nivel?.value || detail.nivel || 'Principiante',
-          precio: detail.precio || 0,
-          duracion: detail.duracion || '20h',
-          estadoCurso: detail.estadoCurso || 'Borrador'
-        }, { emitEvent: false });
-
-        if (Array.isArray(detail.requisitos)) {
-          this.requisitosList.set(detail.requisitos);
-        }
-      }
-    } catch (e) {
-      console.warn('⚠️ No se pudo cargar el detalle extra del curso');
-    }
-  }
-
   async submit(): Promise<void> {
     if (this.courseForm.invalid) {
         this.notificationService.show('error', 'El formulario contiene errores. Revisa todos los campos.');
@@ -172,13 +198,11 @@ export class CourseFormModalComponent implements OnInit {
     this.isSaving.set(true);
     const formValue = this.courseForm.value;
     
-    // EXTRAER EL GUID: Si es un objeto { value: '...' }, sacamos el string.
     let instructorIdStr = formValue.instructorId;
     if (instructorIdStr && typeof instructorIdStr === 'object' && instructorIdStr.value) {
       instructorIdStr = instructorIdStr.value;
     }
 
-    // Mapeo a camelCase para coincidir exactamente con el DTO en el backend (.NET)
     const payload = {
         nombre: formValue.nombre,
         descripcion: formValue.descripcion,
@@ -196,7 +220,7 @@ export class CourseFormModalComponent implements OnInit {
         estadoCurso: formValue.estadoCurso || 'Activo'
     };
 
-    console.log('📡 [COURSE-FORM] Final camelCase Payload (Clean GUID):', payload);
+    console.log('📡 [COURSE-FORM] Final Payload:', payload);
 
     try {
       if (this.isEditMode() && this.courseToEdit?.id) {
@@ -210,10 +234,8 @@ export class CourseFormModalComponent implements OnInit {
       this.onClose.emit();
     } catch (err: any) {
       console.error('❌ Error guardando curso:', err);
-      
       if (err.error?.errors) {
         const errorEntries = Object.entries(err.error.errors);
-        console.table(err.error.errors);
         const [field, messages]: [string, any] = errorEntries[0];
         const msg = Array.isArray(messages) ? messages[0] : messages;
         this.notificationService.show('error', `Error en ${field}: ${msg}`);

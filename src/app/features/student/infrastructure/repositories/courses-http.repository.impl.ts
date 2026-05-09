@@ -55,40 +55,16 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
                 }),
                 tap(() => console.timeEnd(`⏱️ Carga Cursos Estudiante ${studentId}`)),
                 catchError(error => {
-                    console.error('❌ Error cargando cursos:', error);
-                    return this.getCoursesFallback();
+                    console.error('❌ Error cargando cursos matriculados:', error);
+                    // Retornamos lista vacía en lugar de fallback masivo para evitar confusión de matrículas
+                    return of([]);
                 })
             );
     }
+
     private getCoursesFallback(): Observable<CourseProgress[]> {
-        // Fallback: cargar todos los cursos disponibles desde el API de Cursos
-        return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
-            map(cursos => cursos.map((curso, index) => {
-                const cursoId = curso.id || curso.Id || curso.idCurso || String(index);
-                const titulo = curso.titulo || curso.Titulo || curso.nombreCurso || curso.NombreCurso?.value || curso.NombreCurso || 'Curso sin título';
-                const categoria = curso.categoria || curso.Categoria || curso.Categoria?.value || 'General';
-                const nivel = curso.nivel || curso.Nivel || curso.Nivel?.value || 'Intermedio';
-                const imagenUrl = curso.imagenUrl || curso.ImagenUrl || curso.imagen || curso.imageUrl || curso.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
-                const seed = this.hashStr(String(cursoId));
-                return {
-                    id: cursoId,
-                    titulo,
-                    categoria,
-                    moduloActual: `M\u00f3dulo ${(seed % 5) + 1}`,
-                    progreso: 20 + (seed % 61), // 20–80%, determinista
-                    ultimoAcceso: new Date(Date.now() - ((seed % 7) + 1) * 24 * 60 * 60 * 1000),
-                    imagenUrl,
-                    colorCategoria: this.getCategoryColor(categoria),
-                    codigo: curso.codigo || curso.Codigo || 'ACAD-2026',
-                    modalidad: curso.modalidad || curso.Modalidad || 'Presencial/Virtual',
-                    nivel
-                };
-            })),
-            catchError(err => {
-                console.error('❌ Error al cargar cursos:', err);
-                return of([]); // Retornar array vacío en caso de error total
-            })
-        );
+        // Método mantenido pero ya no se usa automáticamente por el catchError anterior
+        return of([]);
     }
 
     private isUnsafeBrowserPort(baseUrl: string): boolean {
