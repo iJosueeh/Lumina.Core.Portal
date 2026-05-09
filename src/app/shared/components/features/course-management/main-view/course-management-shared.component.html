@@ -16,8 +16,8 @@
     <!-- Content Area -->
     <main class="flex-1 relative z-10 p-6 md:p-12 -mt-20">
         <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Stats Grid -->
-            @if (course(); as c) {
+            <!-- Stats Grid (Solo visible para Admin para evitar ruido visual al docente) -->
+            @if (role === 'admin' && course(); as c) {
                 <app-course-stats 
                     [course]="c"
                     [totalLecciones]="totalLecciones()"
@@ -42,7 +42,6 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-5 duration-500">
                             <div class="lg:col-span-2 space-y-12">
                                 <section class="bg-white/5 rounded-[2.5rem] p-10 border border-white/5">
-                                    <h3 class="text-xl font-black text-white mb-6 uppercase tracking-widest">Descripción del Curso</h3>
                                     <p class="text-slate-400 leading-relaxed text-lg">{{ course()?.descripcion }}</p>
                                 </section>
                                 
@@ -57,7 +56,7 @@
                                 />
                             </div>
                             
-                            <div class="space-y-12">
+                            <div class="space-y-12 student-list-container">
                                 <app-course-students 
                                     [students]="students()"
                                     (onAssignClick)="showAssignStudentModal.set(true)"

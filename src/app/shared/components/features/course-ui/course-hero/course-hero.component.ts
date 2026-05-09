@@ -10,6 +10,8 @@ export interface CourseHeroData {
   modalidad?: string;
   nivel?: string;
   progreso?: number;
+  totalAlumnos?: number;
+  promedioGeneral?: number;
   instructor?: {
     nombre: string;
     cargo: string;
