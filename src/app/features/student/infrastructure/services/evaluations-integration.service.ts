@@ -293,7 +293,18 @@ export class EvaluationsIntegrationService {
     respuestasCorrectas: number;
     totalPreguntas: number;
   }> {
-    console.log('📡 Enviando respuestas de evaluación:', { intentoId, respuestas: respuestas.length, puntajeMaximo });
+    console.log('📡 Enviando respuestas de evaluación:', { intentoId, respuestasCount: respuestas?.length, puntajeMaximo });
+    
+    // Soporte para ambos formatos de propiedad (Inglés/Español) y seguridad contra nulos
+    const safeRespuestas = (respuestas || []).map((r: any) => ({
+      preguntaId: r.preguntaId || r.questionId,
+      respuestaEstudiante: Array.isArray(r.respuestaEstudiante || r.answer) 
+        ? (r.respuestaEstudiante || r.answer).join(', ') 
+        : (r.respuestaEstudiante || r.answer || ''),
+      esCorrecta: r.esCorrecta ?? r.isCorrect ?? false,
+      puntosObtenidos: r.puntosObtenidos ?? r.pointsEarned ?? 0
+    }));
+
     return this.http.post<{
       intentoId: string;
       calificacion: number;
@@ -302,12 +313,7 @@ export class EvaluationsIntegrationService {
     }>(
       `${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/completar`,
       {
-        respuestas: respuestas.map(r => ({
-          preguntaId: r.preguntaId,
-          respuestaEstudiante: r.respuestaEstudiante,
-          esCorrecta: r.esCorrecta,
-          puntosObtenidos: r.puntosObtenidos
-        })),
+        respuestas: safeRespuestas,
         puntajeMaximo,
         tiempoEmpleadoMinutos
       }

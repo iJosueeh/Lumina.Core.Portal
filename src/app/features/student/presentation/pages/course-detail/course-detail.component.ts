@@ -98,6 +98,7 @@ export class CourseDetailComponent implements OnInit {
   loadingQuiz = signal(false);
   isQuizActive = signal(false);
   activeQuiz = signal<any>(null);
+  activeIntentoId = signal<string | null>(null);
   submittingQuiz = signal(false);
   isResultsActive = signal(false);
   activeResults = signal<any>(null);
@@ -189,21 +190,48 @@ export class CourseDetailComponent implements OnInit {
   async startQuiz(quiz: QuizSummary) {
     this.loadingQuiz.set(true);
     try {
+      const studentId = this.studentId();
+      if (!studentId) throw new Error('No student ID');
+
+      // 1. Crear el intento en el backend primero
+      const attemptRes = await lastValueFrom(this.evaluationsService.createQuizAttempt(quiz.id, studentId));
+      this.activeIntentoId.set(attemptRes.intentoId);
+
+      // 2. Cargar el quiz con preguntas
       const fullQuiz = await lastValueFrom(this.evaluationsService.getEvaluacionConPreguntas(quiz.id));
       this.activeQuiz.set(fullQuiz);
       this.isQuizActive.set(true);
+    } catch (error) {
+      console.error('❌ Error starting quiz:', error);
     } finally {
       this.loadingQuiz.set(false);
     }
   }
 
-  async onQuizSubmit(answers: any) {
+  async onQuizSubmit(attempt: any) {
     this.submittingQuiz.set(true);
     try {
-      const result = await lastValueFrom(this.evaluationsService.submitQuizAttempt(this.activeQuiz().id, answers, this.activeQuiz().totalPoints, this.studentId()));
+      const studentId = this.studentId();
+      const intentoId = this.activeIntentoId();
+      
+      if (!studentId || !intentoId) {
+        throw new Error('Missing studentId or intentoId');
+      }
+
+      const result = await lastValueFrom(
+        this.evaluationsService.submitQuizAttempt(
+          intentoId, 
+          attempt.answers, 
+          this.activeQuiz().totalPoints, 
+          studentId,
+          attempt.timeSpent
+        )
+      );
       this.activeResults.set({ quiz: this.activeQuiz(), attempt: result });
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
+    } catch (error) {
+      console.error('❌ Error submitting quiz:', error);
     } finally {
       this.submittingQuiz.set(false);
     }
