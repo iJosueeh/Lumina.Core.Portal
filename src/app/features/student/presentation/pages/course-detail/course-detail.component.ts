@@ -227,7 +227,17 @@ export class CourseDetailComponent implements OnInit {
           attempt.timeSpent
         )
       );
-      this.activeResults.set({ quiz: this.activeQuiz(), attempt: result });
+
+      // Combinar resultado del servidor con datos locales para la vista de resultados
+      const completedAttempt = {
+        ...attempt,
+        id: result.intentoId,
+        score: result.calificacion,
+        percentage: result.calificacion, // El backend envía escala 0-20
+        passed: result.calificacion >= 10.5
+      };
+
+      this.activeResults.set({ quiz: this.activeQuiz(), attempt: completedAttempt });
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
     } catch (error) {
