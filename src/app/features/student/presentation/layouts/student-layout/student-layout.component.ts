@@ -29,7 +29,7 @@ export class StudentLayoutComponent {
 
     menuItems: MenuItem[] = [
         { icon: 'th-large', label: 'Dashboard', route: '/student/dashboard' },
-        { icon: 'book', label: 'Mis Cursos', route: '/student/my-courses' },
+        { icon: 'book', label: 'Mis Cursos', route: '/student/courses' },
         { icon: 'calendar-alt', label: 'Horario', route: '/student/schedule' },
         { icon: 'chart-bar', label: 'Calificaciones', route: '/student/grades' },
         { icon: 'file-alt', label: 'Evaluaciones', route: '/student/evaluations' },

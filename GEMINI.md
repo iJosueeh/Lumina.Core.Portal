@@ -81,13 +81,14 @@ Este archivo contiene los estándares arquitectónicos y el progreso de la moder
 - **Portal (Front-End)**:
     - Agregada ruta `student/video-classroom/:id` en `app.routes.ts` para soporte de query params.
     - Actualizado `VideoClassroomService` para consumir el nuevo endpoint de Estudiantes.
+    - **Refactorización de Módulos Estudiante**: `MyCourses` y `CourseDetail` migrados a Signals y UI Atómica. ✅
 
-## 🚀 Próximos Pasos (Pendientes Críticos)
-1. **Depuración 404 Aula Video**: El endpoint `/estudiantes/api/estudiantes/aula-video/{id}` sigue fallando. 
-    - *Hipótesis 1*: Conflicto de ruta en `EstudiantesController` con `cursos/{id}`.
-    - *Hipótesis 2*: El Gateway (YARP) no está eliminando el prefijo correctamente tras la última actualización.
-2. **Integración MinIO**: Verificar que las URLs de video generadas en el seeder apunten correctamente al storage o al proxy.
-3. **Refactorización**: Continuar con `CourseDetail` y `MyCourses` del Student Module.
+## 🚀 Próximas Tareas y Mejoras
+1. **Integración MinIO**: Verificar que las URLs de video generadas en el seeder apunten correctamente al storage o al proxy.
+2. **Estabilización de Infraestructura**: 
+    - Se implementó lógica de reintentos en el Seeding de Usuarios para mitigar cold-starts de Neon DB. ✅
+    - Se habilitó el perfil `full` en Docker Compose para evitar errores 502 en servicios de Noticias y Evaluaciones. ✅
+    - Se corrigió la política de CORS en el Gateway para el puerto 4201. ✅
 
 ---
 *Última actualización: 5 de mayo de 2026 (Fix Sincronización Microservicios + Visor Moderno)*
