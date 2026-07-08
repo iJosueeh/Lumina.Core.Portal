@@ -1,19 +1,18 @@
-<header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
-    <div class="max-w-7xl mx-auto px-6 py-10 md:py-16 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<header class="border-b border-slate-200 bg-white z-20">
+    <div class="max-w-7xl mx-auto px-6 py-10 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div class="space-y-2">
             <div class="flex items-center gap-3">
-                <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Dashboard Estudiante</span>
-                <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-[10px] font-bold uppercase tracking-widest">Dashboard Estudiante</span>
             </div>
             
             @if (isLoading) {
                 <div class="space-y-3">
-                    <div class="h-12 w-64 bg-white/5 rounded-2xl animate-pulse"></div>
-                    <div class="h-4 w-96 bg-white/5 rounded-lg animate-pulse opacity-50"></div>
+                    <div class="h-10 w-64 bg-slate-100 rounded-lg animate-pulse"></div>
+                    <div class="h-4 w-80 bg-slate-100 rounded animate-pulse"></div>
                 </div>
             } @else {
-                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tighter">
-                    Hola, <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">{{ userName }}</span> 👋
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                    Hola, {{ userName }}
                 </h1>
                 <p class="text-slate-500 font-medium max-w-lg">
                     Bienvenido a tu centro de aprendizaje. Tienes contenido nuevo esperándote hoy.
@@ -22,10 +21,10 @@
         </div>
 
         <div class="flex gap-3">
-            <button (click)="onRefresh.emit()" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
-                <i class="fas fa-sync-alt text-white group-hover:rotate-180 transition-transform duration-500"></i>
+            <button (click)="onRefresh.emit()" class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all group shadow-sm">
+                <i class="fas fa-sync-alt text-slate-600 group-hover:rotate-180 transition-transform duration-500"></i>
             </button>
-            <button routerLink="/student/my-courses" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] text-sm uppercase tracking-widest">
+            <button routerLink="/student/my-courses" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm">
                 Continuar Aprendiendo
             </button>
         </div>

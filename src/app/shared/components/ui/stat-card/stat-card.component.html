@@ -1,17 +1,17 @@
-<div class="bg-slate-900/60 backdrop-blur-sm p-7 rounded-[2.5rem] border border-slate-800/80 shadow-xl hover:border-cyan-500/20 transition-all group">
-    <div class="flex items-start justify-between mb-6">
-        <span class="text-slate-500 font-black text-[10px] tracking-[0.2em] uppercase">{{label}}</span>
-        <div class="w-10 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110" [ngClass]="iconBgClass">
-            <i [class]="'fas fa-' + icon + ' text-sm'"></i>
+<div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+    <div class="flex items-start justify-between mb-4">
+        <span class="text-slate-500 font-bold text-[10px] tracking-widest uppercase">{{label}}</span>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105" [ngClass]="iconBgClass">
+            <i [class]="'fas fa-' + icon + ' text-xs'"></i>
         </div>
     </div>
-    <div class="flex items-baseline gap-3 mb-1">
-        <span class="text-4xl font-black text-white tracking-tighter">{{value}}</span>
+    <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-slate-900">{{value}}</span>
         @if (trend) {
-          <span [class]="trendType === 'positive' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'" class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+          <span [class]="trendType === 'positive' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'" class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest">
               {{trend}}
           </span>
         }
     </div>
-    <p class="text-xs font-medium text-slate-500 mt-2">{{description}}</p>
+    <p class="text-xs text-slate-500 mt-1">{{description}}</p>
 </div>

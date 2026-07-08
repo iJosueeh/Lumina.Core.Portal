@@ -86,7 +86,7 @@ export class AdminCourseService {
   uploadVideo(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{url: string}>(`${this.cursosApiUrl}/cursos/upload-video`, formData).pipe(
+    return this.http.post<{url: string}>(`${this.cursosApiUrl}/upload`, formData).pipe(
       map(res => res.url)
     );
   }

@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
-// Models
 import {
   Module,
   Lesson,
@@ -12,15 +11,14 @@ import {
   QuizAttempt,
   QuizSummary,
 } from '../../../domain/models/course-detail.model';
+import { QuizStatus } from '../../../domain/models/quiz.model';
 
-// Use Cases & Services
 import { GetCourseDetailUseCase } from '@features/student/application/use-cases/get-course-detail.usecase';
 import { MaterialsService } from '@features/student/infrastructure/services/materials.service';
 import { EvaluationsIntegrationService } from '@features/student/infrastructure/services/evaluations-integration.service';
 import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
 import { AuthService } from '@core/services/auth.service';
 
-// Components
 import { QuizTakeComponent } from '../../components/quiz-take/quiz-take.component';
 import { QuizResultsComponent } from '../../components/quiz-results/quiz-results.component';
 import { CourseHeroComponent } from '../../../../../shared/components/features/course-ui/course-hero/course-hero.component';
@@ -28,7 +26,6 @@ import { CourseDescriptionComponent } from './components/course-description/cour
 import { CourseContentComponent } from './components/course-content/course-content.component';
 import { CourseEvaluationsComponent } from './components/course-evaluations/course-evaluations.component';
 
-// Shared
 import { FilePreviewModalComponent, SharedFileResource } from '../../../../../shared/components/features/file-viewer/file-preview-modal/file-preview-modal.component';
 import { TabNavComponent } from '../../../../../shared/components/ui/tab-nav/tab-nav.component';
 import { TabType } from '../../../../../shared/models/course-management.models';
@@ -37,7 +34,7 @@ import { TabType } from '../../../../../shared/models/course-management.models';
   selector: 'app-course-detail',
   standalone: true,
   imports: [
-    QuizTakeComponent, 
+    QuizTakeComponent,
     QuizResultsComponent,
     CourseHeroComponent,
     CourseDescriptionComponent,
@@ -69,7 +66,6 @@ export class CourseDetailComponent implements OnInit {
     { id: 'evaluaciones' as TabType, label: 'Evaluaciones', icon: 'clipboard-document-check' },
   ];
 
-  // TanStack Queries
   courseQuery = injectQuery(() => ({
     queryKey: ['course-detail', this.courseId()],
     queryFn: () => lastValueFrom(this.getCourseDetailUseCase.execute(this.courseId())),
@@ -94,7 +90,6 @@ export class CourseDetailComponent implements OnInit {
     enabled: !!this.courseId() && !!this.studentId(),
   }));
 
-  // Quiz State
   loadingQuiz = signal(false);
   isQuizActive = signal(false);
   activeQuiz = signal<any>(null);
@@ -105,15 +100,15 @@ export class CourseDetailComponent implements OnInit {
 
   course = computed(() => this.courseQuery.data());
   materials = computed(() => this.materialsQuery.data() ?? []);
-  
+
   quizSummaries = computed<QuizSummary[]>(() => {
     const rawQuizzes = this.evaluationsQuery.data() ?? [];
     const attempts = this.attemptsQuery.data() ?? [];
-    
+
     return rawQuizzes.map(quiz => {
       const quizAttempts = attempts.filter(a => a.quizId === quiz.id);
       const bestAttempt = [...quizAttempts].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
-      
+
       return {
         id: quiz.id,
         title: quiz.title,
@@ -134,9 +129,9 @@ export class CourseDetailComponent implements OnInit {
       };
     });
   });
-  
-  private calculateQuizStatus(quiz: Quiz, attempts: QuizAttempt[]): any {
-    if (attempts.some(a => a.status === 'completed' && (a.passed || false))) return 'completed';
+
+  private calculateQuizStatus(quiz: Quiz, attempts: QuizAttempt[]): QuizStatus {
+    if (attempts.some(a => a.status === 'completed' && a.passed)) return 'completed';
     if (quiz.availableUntil && new Date() > quiz.availableUntil) return 'expired';
     if (attempts.length > 0) return 'in-progress';
     return 'not-started';
@@ -187,53 +182,50 @@ export class CourseDetailComponent implements OnInit {
     this.openLesson({ module: courseData.modules[0], lesson: courseData.modules[0].lessons[0] });
   }
 
-  async startQuiz(quiz: QuizSummary) {
+  async startQuiz(quiz: QuizSummary): Promise<void> {
     this.loadingQuiz.set(true);
     try {
       const studentId = this.studentId();
       if (!studentId) throw new Error('No student ID');
 
-      // 1. Crear el intento en el backend primero
       const attemptRes = await lastValueFrom(this.evaluationsService.createQuizAttempt(quiz.id, studentId));
       this.activeIntentoId.set(attemptRes.intentoId);
 
-      // 2. Cargar el quiz con preguntas
       const fullQuiz = await lastValueFrom(this.evaluationsService.getEvaluacionConPreguntas(quiz.id));
       this.activeQuiz.set(fullQuiz);
       this.isQuizActive.set(true);
     } catch (error) {
-      console.error('❌ Error starting quiz:', error);
+      console.error('Error starting quiz:', error);
     } finally {
       this.loadingQuiz.set(false);
     }
   }
 
-  async onQuizSubmit(attempt: any) {
+  async onQuizSubmit(attempt: any): Promise<void> {
     this.submittingQuiz.set(true);
     try {
       const studentId = this.studentId();
       const intentoId = this.activeIntentoId();
-      
+
       if (!studentId || !intentoId) {
         throw new Error('Missing studentId or intentoId');
       }
 
       const result = await lastValueFrom(
         this.evaluationsService.submitQuizAttempt(
-          intentoId, 
-          attempt.answers, 
-          this.activeQuiz().totalPoints, 
+          intentoId,
+          attempt.answers,
+          this.activeQuiz().totalPoints,
           studentId,
           attempt.timeSpent
         )
       );
 
-      // Combinar resultado del servidor con datos locales para la vista de resultados
       const completedAttempt = {
         ...attempt,
         id: result.intentoId,
         score: result.calificacion,
-        percentage: result.calificacion, // El backend envía escala 0-20
+        percentage: result.calificacion,
         passed: result.calificacion >= 10.5
       };
 
@@ -241,11 +233,13 @@ export class CourseDetailComponent implements OnInit {
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
     } catch (error) {
-      console.error('❌ Error submitting quiz:', error);
+      console.error('Error submitting quiz:', error);
     } finally {
       this.submittingQuiz.set(false);
     }
   }
 
-  viewQuizResults(_quiz: QuizSummary) { /* Logic to show results */ }
+  viewQuizResults(_quiz: QuizSummary): void {
+    // TODO: Implement view results logic
+  }
 }

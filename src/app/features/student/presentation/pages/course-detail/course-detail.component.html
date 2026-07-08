@@ -1,28 +1,31 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0f1e33] to-[#1a2942]">
+<div class="min-h-screen bg-gray-50">
   <!-- Loading & Error States -->
   @if (isLoadingCourse()) {
     <div class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
-        <p class="text-white text-lg">Cargando curso...</p>
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mb-4"></div>
+        <p class="text-slate-600 font-medium">Cargando curso...</p>
       </div>
     </div>
   }
 
   @if (hasError()) {
     <div class="flex items-center justify-center min-h-screen">
-      <div class="bg-red-900/20 border border-red-500 rounded-lg p-6 max-w-md">
-        <p class="text-red-400 text-lg font-semibold mb-2">Error al cargar el curso</p>
-        <button (click)="courseQuery.refetch()" class="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition">
+      <div class="bg-white border border-slate-200 rounded-xl p-8 max-w-md text-center shadow-sm">
+        <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle text-xl text-red-500"></i>
+        </div>
+        <p class="text-slate-900 font-semibold mb-2">Error al cargar el curso</p>
+        <button (click)="courseQuery.refetch()" class="mt-4 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition font-semibold text-sm">
           Reintentar
         </button>
       </div>
     </div>
   }
-  
+
   @if (course(); as courseData) {
     <!-- Hero Header -->
-    <app-course-hero 
+    <app-course-hero
       [data]="{
         id: courseData.id,
         titulo: courseData.title,
@@ -35,8 +38,8 @@
         }
       }"
       role="student"
-      (onBack)="goBack()" 
-      (onPrimaryAction)="continueCurrentLesson()" 
+      (onBack)="goBack()"
+      (onPrimaryAction)="continueCurrentLesson()"
     />
 
     <!-- Navigation Tabs -->
@@ -49,14 +52,14 @@
     </div>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-5 md:px-8 py-8">
       @switch (activeTab()) {
         @case ('description') {
           <app-course-description [course]="courseData" />
         }
         @case ('content') {
-          <app-course-content 
-            [course]="courseData" 
+          <app-course-content
+            [course]="courseData"
             [materials]="materials()"
             (onToggleLessonCompletion)="toggleLessonCompletion($event)"
             (onOpenLesson)="openLesson($event)"
@@ -65,7 +68,7 @@
           />
         }
         @case ('evaluaciones') {
-          <app-course-evaluations 
+          <app-course-evaluations
             [quizzes]="quizSummaries()"
             (onStartQuiz)="startQuiz($event)"
             (onViewResults)="viewQuizResults($event)"
@@ -77,14 +80,13 @@
 
   <!-- Modals -->
   @if (showMaterialPreview() && selectedMaterial(); as previewMaterial) {
-    <app-file-preview-modal 
+    <app-file-preview-modal
       [file]="{ id: previewMaterial.id, titulo: previewMaterial.title, url: previewMaterial.url }"
       (onClose)="closeMaterialPreview()"
       (onDownload)="downloadMaterial($event)"
     />
   }
 
-  <!-- Quiz & Results Modals (Existing Components) -->
   @if (isQuizActive() && activeQuiz()) {
     <app-quiz-take
       [quiz]="activeQuiz()"

@@ -1,16 +1,19 @@
 export const environment = {
   production: false,
   useMockData: false,
-  // API Gateway Base URL
-  gatewayUrl: 'http://localhost:5100',
   
-  // Microservicios via Gateway
-  usuariosApiUrl: 'http://localhost:5100/usuarios/api',
-  estudiantesApiUrl: 'http://localhost:5100/estudiantes/api',
-  cursosApiUrl: 'http://localhost:5100/cursos/api',
-  evaluacionesApiUrl: 'http://localhost:5100/evaluaciones/api',
-  noticiasEventosApiUrl: 'http://localhost:5100/noticias/api',
-  docentesApiUrl: 'http://localhost:5100/docentes/api',
-  carrerasApiUrl: 'http://localhost:5100/carreras/api',
-  apiUrl: 'http://localhost:5100/usuarios/api', // Legacy or default
+  // URLs directas a microservicios (desarrollo local)
+  usuariosApiUrl: 'http://localhost:7777/api',
+  estudiantesApiUrl: 'http://localhost:6601/api',
+  cursosApiUrl: 'http://localhost:9999/api',
+  evaluacionesApiUrl: 'http://localhost:5555/api',
+  noticiasEventosApiUrl: 'http://localhost:4444/api',
+  docentesApiUrl: 'http://localhost:8888/api',
+  carrerasApiUrl: 'http://localhost:5001/api',
+  
+  // Default API (para auth)
+  apiUrl: 'http://localhost:7777/api',
+  
+  // Gateway (para producción)
+  gatewayUrl: 'http://localhost:5100',
 };

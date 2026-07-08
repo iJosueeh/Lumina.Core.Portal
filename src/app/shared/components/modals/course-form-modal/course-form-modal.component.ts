@@ -146,7 +146,7 @@ export class CourseFormModalComponent implements OnInit {
         const formData = new FormData();
         formData.append('file', file);
         const response = await firstValueFrom(
-          this.http.post<any>(`${environment.cursosApiUrl}/cursos/upload`, formData)
+          this.http.post<any>(`${environment.cursosApiUrl}/upload`, formData)
         );
         this.courseForm.patchValue({ imagenUrl: response.url });
         this.notificationService.show('success', 'Imagen subida correctamente.');

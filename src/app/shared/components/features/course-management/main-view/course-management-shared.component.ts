@@ -176,12 +176,11 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
           evaluaciones: [],
         } as any);
 
-        if (courseData.modulos && courseData.modulos.length > 0) {
-          this.modulos.set(courseData.modulos.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
-        } else {
-          this.modulos.set([]);
-        }
-
+        // Actualizamos los módulos siempre, incluso si está vacío
+        const rawModulos = courseData.modulos || [];
+        console.log(`📦 [COURSE-MGMT] Procesando ${rawModulos.length} módulos.`);
+        this.modulos.set(rawModulos.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
+        
         this.students.set(this.allTeacherStudents().map((s: any) => this.courseMapper.mapTeacherStudentToCourseStudent(s)));
         this.isLoading.set(false);
         this.loadEvaluaciones();
@@ -232,41 +231,95 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
   }
 
   async createModule(data: {titulo: string, descripcion: string}): Promise<void> {
+    // Validación en frontend antes de enviar
+    if (!data.titulo || data.titulo.trim().length < 3) {
+      this.notificationService.show('error', 'El título debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    const courseId = this.courseId();
+    if (!courseId) {
+      this.notificationService.show('error', 'No se pudo identificar el curso. Intente recargar la página.');
+      console.error('❌ [COURSE-MGMT] courseId is empty');
+      return;
+    }
+
+    console.log('🚀 [COURSE-MGMT] Creating module:', data);
     try {
-        await firstValueFrom(this.http.post(`${environment.cursosApiUrl}/cursos/${this.courseId()}/modulos`, {
-            titulo: data.titulo,
-            descripcion: data.descripcion
-        }));
-        this.notificationService.show('success', `Módulo "${data.titulo}" creado exitosamente.`);
-        this.showAddModuleModal.set(false);
-        this.loadCourseData();
-    } catch (err) {
-        this.notificationService.show('error', 'No se pudo crear el módulo.');
+        const url = `${environment.cursosApiUrl}/cursos/${courseId}/modulos`;
+        const payload = {
+            titulo: data.titulo.trim(),
+            descripcion: data.descripcion?.trim() || ''
+        };
+        console.log(`📤 [COURSE-MGMT] POST ${url}`, payload);
+        
+        const response = await firstValueFrom(this.http.post<any>(url, payload));
+        console.log('✅ [COURSE-MGMT] Module created response:', response);
+        
+        if (response?.success) {
+          this.notificationService.show('success', `Módulo "${data.titulo}" creado exitosamente.`);
+          this.showAddModuleModal.set(false);
+          
+          console.log('🔄 [COURSE-MGMT] Refreshing course data...');
+          this.loadCourseData();
+        } else {
+          console.warn('⚠️ [COURSE-MGMT] Unexpected response:', response);
+          this.notificationService.show('info', 'Módulo creado. Actualizando vista...');
+          this.showAddModuleModal.set(false);
+          this.loadCourseData();
+        }
+    } catch (err: any) {
+        console.error('❌ [COURSE-MGMT] Error creating module:', err);
+        const errorMsg = err?.error?.error || err?.message || 'No se pudo crear el módulo.';
+        this.notificationService.show('error', `Error: ${errorMsg}`);
     }
   }
 
   async updateModule(data: {id: string, titulo: string, descripcion: string}): Promise<void> {
+    if (!data.titulo || data.titulo.trim().length < 3) {
+      this.notificationService.show('error', 'El título debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    const courseId = this.courseId();
+    if (!courseId) {
+      this.notificationService.show('error', 'No se pudo identificar el curso.');
+      return;
+    }
+
     try {
-        await firstValueFrom(this.http.put(`${environment.cursosApiUrl}/cursos/${this.courseId()}/modulos/${data.id}`, {
-            titulo: data.titulo,
-            descripcion: data.descripcion
+        console.log(`📤 [COURSE-MGMT] PUT ${environment.cursosApiUrl}/cursos/${courseId}/modulos/${data.id}`, data);
+        await firstValueFrom(this.http.put(`${environment.cursosApiUrl}/cursos/${courseId}/modulos/${data.id}`, {
+            titulo: data.titulo.trim(),
+            descripcion: data.descripcion?.trim() || ''
         }));
         this.notificationService.show('success', 'Módulo actualizado correctamente.');
         this.showAddModuleModal.set(false);
         this.loadCourseData();
-    } catch (err) {
-        this.notificationService.show('error', 'No se pudo actualizar el módulo.');
+    } catch (err: any) {
+        console.error('❌ [COURSE-MGMT] Error updating module:', err);
+        const errorMsg = err?.error?.error || 'No se pudo actualizar el módulo.';
+        this.notificationService.show('error', `Error: ${errorMsg}`);
     }
   }
 
   async deleteModule(moduloId: string): Promise<void> {
+    const courseId = this.courseId();
+    if (!courseId) {
+      this.notificationService.show('error', 'No se pudo identificar el curso.');
+      return;
+    }
+
     try {
-        await firstValueFrom(this.http.delete(`${environment.cursosApiUrl}/cursos/${this.courseId()}/modulos/${moduloId}`));
+        console.log(`🗑️ [COURSE-MGMT] DELETE ${environment.cursosApiUrl}/cursos/${courseId}/modulos/${moduloId}`);
+        await firstValueFrom(this.http.delete(`${environment.cursosApiUrl}/cursos/${courseId}/modulos/${moduloId}`));
         this.notificationService.show('success', 'Módulo eliminado correctamente.');
         this.showAddModuleModal.set(false);
         this.loadCourseData();
-    } catch (err) {
-        this.notificationService.show('error', 'No se pudo eliminar el módulo.');
+    } catch (err: any) {
+        console.error('❌ [COURSE-MGMT] Error deleting module:', err);
+        const errorMsg = err?.error?.error || 'No se pudo eliminar el módulo.';
+        this.notificationService.show('error', `Error: ${errorMsg}`);
     }
   }
 

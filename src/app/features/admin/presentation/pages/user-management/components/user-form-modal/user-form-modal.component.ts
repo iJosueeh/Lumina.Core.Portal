@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminService } from '../../../../../infrastructure/services/admin.service';
+import { AdminUserService } from '../../../../../infrastructure/services/admin-user.service';
 import { AdminUser } from '@shared/models/admin-user.models';
 import { ModalContainerComponent } from '../../../../../../../shared/components/ui/modal-container/modal-container.component';
 import { ButtonComponent } from '../../../../../../../shared/components/ui/button/button.component';
@@ -24,7 +24,7 @@ export class UserFormModalComponent implements OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
 
-  private adminService = inject(AdminService);
+  private adminUserService = inject(AdminUserService);
   
   isCheckingEmail = false;
   emailAvailability: 'unknown' | 'available' | 'taken' = 'unknown';
@@ -52,7 +52,7 @@ export class UserFormModalComponent implements OnDestroy {
     const requestId = ++this.emailCheckRequestId;
 
     this.emailCheckTimer = setTimeout(() => {
-      this.adminService.checkEmailExists(normalizedEmail).subscribe({
+      this.adminUserService.checkEmailExists(normalizedEmail).subscribe({
         next: (exists) => {
           if (requestId !== this.emailCheckRequestId) return;
           this.isCheckingEmail = false;

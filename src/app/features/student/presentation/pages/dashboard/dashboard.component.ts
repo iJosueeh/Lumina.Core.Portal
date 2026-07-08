@@ -22,13 +22,15 @@ import { WelcomeHeaderComponent } from './welcome-header/welcome-header.componen
 import { StudentStatsComponent } from './student-stats/student-stats.component';
 import { ActiveCoursesGridComponent } from './active-courses-grid/active-courses-grid.component';
 import { UpcomingAssignmentsComponent } from './upcoming-assignments/upcoming-assignments.component';
+import { RecentAnnouncementsComponent } from './recent-announcements/recent-announcements.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule, RouterModule, WelcomeHeaderComponent, 
-    StudentStatsComponent, ActiveCoursesGridComponent, UpcomingAssignmentsComponent
+    StudentStatsComponent, ActiveCoursesGridComponent, UpcomingAssignmentsComponent,
+    RecentAnnouncementsComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',

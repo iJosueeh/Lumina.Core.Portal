@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { forkJoin, of, catchError, finalize, Observable } from 'rxjs';
 
 // Services
-import { AdminDashboardService } from '../../../infrastructure/services/admin-dashboard.service';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
 

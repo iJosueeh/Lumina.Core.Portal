@@ -1,9 +1,11 @@
-import { Injectable } from '@angular/core';
-import { Observable, map, forkJoin, of, catchError, switchMap } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, forkJoin, of, catchError, switchMap, lastValueFrom } from 'rxjs';
 import { ProfileRepository } from '../../domain/repositories/profile.repository';
 import { StudentProfile, SocialLinks } from '../../domain/models/student-profile.model';
 import { UserProfileIntegrationService } from '../services/user-profile-integration.service';
 import { EstudiantesPerfilIntegrationService } from '../services/estudiantes-perfil-integration.service';
+import { environment } from '@environments/environment';
 
 /**
  * Implementación del ProfileRepository que combina datos de:
@@ -16,6 +18,8 @@ import { EstudiantesPerfilIntegrationService } from '../services/estudiantes-per
   providedIn: 'root',
 })
 export class ProfileApiRepositoryImpl extends ProfileRepository {
+  private http = inject(HttpClient);
+
   constructor(
     private userProfileService: UserProfileIntegrationService,
     private estudiantesPerfilService: EstudiantesPerfilIntegrationService
@@ -225,12 +229,45 @@ export class ProfileApiRepositoryImpl extends ProfileRepository {
   override uploadProfilePhoto(studentId: string, file: File): Observable<string> {
     console.log('📸 [PROFILE API] Subiendo foto de perfil:', studentId);
     
-    // TODO: Implementar subida de archivo a un servicio de storage (S3, Azure Blob, etc.)
-    // Por ahora simulamos la URL de la foto subida
-    const fotoUrl = `https://ui-avatars.com/api/?name=${studentId}&background=3b82f6&color=fff&size=256`;
-    
-    return this.estudiantesPerfilService.actualizarFotoPerfil(fotoUrl).pipe(
-      map(() => fotoUrl)
-    );
+    // Validar tamaño (máximo 5MB para fotos)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new Error('La imagen excede el tamaño máximo de 5MB');
+    }
+
+    // Validar tipo MIME
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Solo se permiten archivos de imagen');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // URL del endpoint de upload en el gateway
+    const uploadUrl = `${environment.cursosApiUrl}/upload`;
+
+    return new Observable<string>(subscriber => {
+      lastValueFrom(
+        this.http.post<{ url: string; fileName: string }>(uploadUrl, formData)
+      ).then(response => {
+        const fotoUrl = response.url;
+        console.log('✅ [PROFILE API] Foto subida:', fotoUrl);
+        
+        // Actualizar la URL de la foto en el perfil del estudiante
+        this.estudiantesPerfilService.actualizarFotoPerfil(fotoUrl).subscribe({
+          next: () => {
+            subscriber.next(fotoUrl);
+            subscriber.complete();
+          },
+          error: (err) => {
+            console.error('❌ [PROFILE API] Error actualizando foto en perfil:', err);
+            subscriber.error(err);
+          }
+        });
+      }).catch(error => {
+        console.error('❌ [PROFILE API] Error subiendo foto:', error);
+        subscriber.error(error);
+      });
+    });
   }
 }

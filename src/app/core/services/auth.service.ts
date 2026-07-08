@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CookieService } from './cookie.service';
+import { User } from '@features/auth/domain/models/user.model';
 
 interface DecodedToken {
   // Claims estándar de .NET
@@ -26,10 +27,13 @@ interface DecodedToken {
   [key: string]: any;
 }
 
+export type SystemRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private currentUser: User | null = null;
   
   constructor(private cookieService: CookieService) {}
 
@@ -158,8 +162,90 @@ export class AuthService {
    * Cierra sesión eliminando el token
    */
   logout(): void {
+    this.currentUser = null;
     this.cookieService.delete('auth_token', '/');
+    this.cookieService.delete('current_user', '/');
     localStorage.removeItem('token');
-    console.log('✅ [AUTH SERVICE] Sesión cerrada');
+    localStorage.removeItem('currentUser');
+  }
+
+  /**
+   * Establece la sesión del usuario (login exitoso)
+   */
+  setSession(user: User): void {
+    this.currentUser = user;
+    
+    // Guardar token en cookie segura
+    this.cookieService.set('auth_token', user.token, {
+      expires: 7,
+      path: '/',
+      sameSite: 'Lax',
+      secure: false
+    });
+    
+    // Guardar usuario en cookie (sin token por seguridad)
+    const userWithoutToken = { ...user, token: '' };
+    this.cookieService.set('current_user', JSON.stringify(userWithoutToken), {
+      expires: 7,
+      path: '/',
+      sameSite: 'Lax'
+    });
+    
+    // Limpiar localStorage legacy
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+  }
+
+  /**
+   * Obtiene el usuario actual desde cookies
+   */
+  getCurrentUser(): User | null {
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+    
+    // Intentar recuperar de cookies
+    const storedInCookie = this.cookieService.get('current_user');
+    if (storedInCookie) {
+      try {
+        const user = JSON.parse(storedInCookie) as User;
+        const token = this.cookieService.get('auth_token');
+        if (token) {
+          this.currentUser = { ...user, token };
+          return this.currentUser;
+        }
+      } catch {
+        // Invalid stored data
+      }
+    }
+    
+    // Fallback a localStorage (legacy)
+    const stored = localStorage.getItem('currentUser');
+    if (stored) {
+      try {
+        this.currentUser = JSON.parse(stored) as User;
+        return this.currentUser;
+      } catch {
+        // Invalid stored data
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Mapea un rol del backend a SystemRole
+   */
+  mapBackendRole(backendRole: string): SystemRole {
+    const roleMap: Record<string, SystemRole> = {
+      'ESTUDIANTE': 'STUDENT',
+      'STUDENT': 'STUDENT',
+      'PROFESOR': 'TEACHER',
+      'TEACHER': 'TEACHER',
+      'DOCENTE': 'TEACHER',
+      'ADMIN': 'ADMIN',
+      'ADMINISTRADOR': 'ADMIN'
+    };
+    return roleMap[backendRole?.toUpperCase()] || 'STUDENT';
   }
 }

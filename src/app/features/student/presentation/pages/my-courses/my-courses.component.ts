@@ -1,18 +1,16 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
-import { ButtonComponent } from '@shared/components/ui/button/button.component';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
-import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
 
-type FilterType = 'all' | 'in-progress' | 'completed' | 'semester';
+type FilterType = 'all' | 'in-progress' | 'completed';
 
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [ButtonComponent, SkeletonLoaderComponent, StatusBadgeComponent],
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-courses.component.html',
   styles: ``,
 })
@@ -21,17 +19,14 @@ export class MyCoursesComponent implements OnInit {
   private authRepository = inject(AuthRepository);
   private router = inject(Router);
 
-  // Signals para estado reactivo
   allCourses = signal<CourseProgress[]>([]);
   activeFilter = signal<FilterType>('all');
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
 
-  // Computed para filtrado eficiente
   filteredCourses = computed(() => {
     const courses = this.allCourses();
     const filter = this.activeFilter();
-
     if (filter === 'in-progress') return courses.filter(c => c.progreso > 0 && c.progreso < 100);
     if (filter === 'completed') return courses.filter(c => c.progreso === 100);
     return courses;
@@ -41,7 +36,6 @@ export class MyCoursesComponent implements OnInit {
     { id: 'all' as FilterType, label: 'Todos' },
     { id: 'in-progress' as FilterType, label: 'En Progreso' },
     { id: 'completed' as FilterType, label: 'Completados' },
-    { id: 'semester' as FilterType, label: 'Semestre 2026' },
   ];
 
   ngOnInit(): void {
@@ -64,8 +58,7 @@ export class MyCoursesComponent implements OnInit {
         this.allCourses.set(courses);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('❌ Error en MyCoursesComponent:', err);
+      error: () => {
         this.error.set('No se pudieron cargar los cursos. Por favor, reintenta.');
         this.isLoading.set(false);
       },
@@ -76,25 +69,7 @@ export class MyCoursesComponent implements OnInit {
     this.activeFilter.set(filter);
   }
 
-  getBadgeStatus(progreso: number): 'success' | 'warning' | 'info' | 'default' {
-    if (progreso === 100) return 'success';
-    if (progreso >= 50) return 'info';
-    if (progreso > 0) return 'warning';
-    return 'default';
-  }
-
-  getProgressBarClass(progreso: number): string {
-    if (progreso >= 70) return 'bg-cyan-400';
-    if (progreso >= 30) return 'bg-blue-400';
-    return 'bg-violet-400';
-  }
-
   viewCourse(courseId: string): void {
     this.router.navigate(['/student/course', courseId]);
-  }
-
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop';
   }
 }

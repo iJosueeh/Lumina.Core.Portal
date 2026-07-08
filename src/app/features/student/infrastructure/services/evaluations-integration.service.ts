@@ -174,24 +174,34 @@ export class EvaluationsIntegrationService {
 
   /**
    * Obtiene una evaluación con todas sus preguntas
+   * NOTA: No usa caché para garantizar que las preguntas y opciones se carguen correctamente
+   * cada vez que el estudiante inicia un quiz
    */
   getEvaluacionConPreguntas(evaluacionId: string): Observable<Quiz> {
-    const cacheKey = `evaluation-with-questions-${evaluacionId}`;
-
-    // Verificar si existe en caché
-    const cachedData = this.cacheService.get<Quiz>(cacheKey);
-    if (cachedData) {
-      console.log('✅ Evaluación con preguntas obtenida del caché:', cacheKey);
-      return of(cachedData);
-    }
+    // Siempre obtener datos frescos para evitar problemas de caché con preguntas/opciones
+    this.cacheService.invalidatePattern(`evaluation-with-questions-${evaluacionId}`);
 
     console.log('📡 Realizando petición HTTP para evaluación con preguntas:', evaluacionId);
     return this.http.get<EvaluacionConPreguntasResponse>(`${this.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`)
       .pipe(
-        map(response => this.mapToQuizWithQuestions(response)),
+        map(response => {
+          console.log('📋 Response del backend:', response);
+          console.log('❓ Preguntas recibidas:', response.preguntas?.length || 0);
+          response.preguntas?.forEach((p, i) => {
+            console.log(`  Pregunta ${i + 1}: "${p.texto}" - Tipo: ${p.tipo} - Opciones: ${p.opciones?.length || 0}`);
+          });
+          return this.mapToQuizWithQuestions(response);
+        }),
         tap(quiz => {
-          this.cacheService.set(cacheKey, quiz, this.CACHE_TTL);
-          console.log('💾 Evaluación con preguntas almacenada en caché:', cacheKey, quiz.questions.length, 'preguntas');
+          console.log('✅ Quiz mapeado:', {
+            id: quiz.id,
+            title: quiz.title,
+            totalQuestions: quiz.questions.length,
+            totalPoints: quiz.totalPoints
+          });
+          quiz.questions.forEach((q, i) => {
+            console.log(`  Q${i + 1}: "${q.text}" - Options: ${q.options?.length || 0}`);
+          });
         }),
         catchError(error => {
           console.error('❌ Error al cargar evaluación con preguntas:', error);

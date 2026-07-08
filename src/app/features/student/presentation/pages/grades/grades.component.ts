@@ -127,7 +127,7 @@ export class GradesComponent implements OnInit {
   getPromedioColor(promedio: number): string {
     if (promedio >= 17) return 'text-green-600 dark:text-green-400 font-bold';
     if (promedio >= 14) return 'text-blue-600 dark:text-blue-400 font-bold';
-    if (promedio >= 11) return 'text-yellow-600 dark:text-yellow-400 font-bold';
+    if (promedio >= 10.5) return 'text-yellow-600 dark:text-yellow-400 font-bold';
     return 'text-red-600 dark:text-red-400 font-bold';
   }
 

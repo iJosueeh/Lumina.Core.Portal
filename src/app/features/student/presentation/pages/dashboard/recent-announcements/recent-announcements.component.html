@@ -1,0 +1,35 @@
+<div class="space-y-3">
+    @if (isLoading) {
+        @for (i of [1,2,3]; track i) {
+            <div class="h-16 bg-white rounded-xl border border-slate-200 animate-pulse shadow-sm"></div>
+        }
+    } @else {
+        @for (announcement of announcements.slice(0, limit); track announcement.id) {
+            <div class="group bg-white border border-slate-200 p-4 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer shadow-sm">
+                <div class="flex gap-3 items-center">
+                    <div class="w-10 h-10 {{ getIconBg(announcement.tipo) }} rounded-xl flex items-center justify-center {{ getIconColor(announcement.tipo) }} flex-shrink-0">
+                        <i [class]="getIcon(announcement.icono)"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <h4 class="text-sm font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{{ announcement.titulo }}</h4>
+                            <span class="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full {{ getBadgeColor(announcement.tipo) }}">{{ announcement.tipo }}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 font-medium line-clamp-1">{{ announcement.descripcion }}</p>
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <i class="fas fa-clock text-[9px] text-slate-400"></i>
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ announcement.tiempoRelativo }}</span>
+                        </div>
+                    </div>
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
+        } @empty {
+            <div class="p-6 text-center bg-white rounded-xl border border-dashed border-slate-300">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Sin noticias recientes</p>
+            </div>
+        }
+    }
+</div>

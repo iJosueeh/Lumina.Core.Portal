@@ -1,35 +1,35 @@
-<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
-  
-    <!-- Efectos de Luces Ambientales (Consistente con Admin/Teacher) -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
-  
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans">
+
     <!-- Welcome Header Section -->
     <app-welcome-header
         [userName]="userName()"
         [isLoading]="isLoading()"
         (onRefresh)="handleRefresh()"
     />
-  
+
     <!-- Contenido Principal -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-12">
+    <main class="max-w-7xl mx-auto px-6 pt-8 pb-10">
       
       <!-- Stats Quick View -->
-      <app-student-stats
-        [coursesCount]="courses().length"
-        [pendingAssignments]="pendingCount()"
-        [isLoading]="isLoading()"
-      />
-  
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div class="mb-8">
+        <app-student-stats
+          [coursesCount]="courses().length"
+          [pendingAssignments]="pendingCount()"
+          [isLoading]="isLoading()"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Columna Izquierda: Cursos Activos -->
-        <section class="lg:col-span-2 space-y-8">
+        <section class="lg:col-span-2 space-y-6">
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                    <i class="fas fa-layer-group text-cyan-500"></i>
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                    <span class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-layer-group text-indigo-600 text-sm"></i>
+                    </span>
                     Mis Cursos Actuales
                 </h2>
-                <a routerLink="/student/my-courses" class="text-sm font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest">Ver todos</a>
+                <a routerLink="/student/my-courses" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">Ver todos</a>
             </div>
 
             <app-active-courses-grid
@@ -38,11 +38,13 @@
                 (onCourseSelect)="navigateToCourse($event)"
             />
         </section>
-  
+
         <!-- Columna Derecha: Tareas Próximas -->
         <section class="space-y-8">
-            <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                <i class="fas fa-clock text-purple-500"></i>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clock text-purple-600 text-sm"></i>
+                </span>
                 Próximas Entregas
             </h2>
 
@@ -51,21 +53,43 @@
                 [isLoading]="isLoading()"
             />
 
-            <!-- Card Informativa Adicional -->
-            <div class="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/10 p-8 rounded-[2.5rem] relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:rotate-12 transition-transform">
-                    <i class="fas fa-info-circle text-5xl"></i>
+            <!-- Sección de Noticias Recientes -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                        <span class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-newspaper text-amber-600 text-sm"></i>
+                        </span>
+                        Noticias Recientes
+                    </h2>
+                    <a routerLink="/student/announcements" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">Ver todas</a>
                 </div>
-                <h3 class="text-sm font-black text-white uppercase tracking-[0.2em] mb-4">¿Necesitas ayuda?</h3>
-                <p class="text-xs text-slate-400 font-medium leading-relaxed mb-6">
-                    Consulta los tutoriales del campus o contacta con el soporte técnico si tienes problemas con tus accesos.
-                </p>
-                <button class="text-xs font-black text-cyan-400 uppercase tracking-widest hover:text-white transition-colors">
-                    Ir al centro de ayuda →
-                </button>
+
+                <app-recent-announcements
+                    [announcements]="announcements()"
+                    [isLoading]="isLoading()"
+                    [limit]="3"
+                />
+            </div>
+
+            <!-- Card Informativa Adicional -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-info-circle text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-900 mb-1">¿Necesitas ayuda?</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-3">
+                            Consulta los tutoriales del campus o contacta con el soporte técnico.
+                        </p>
+                        <a href="#" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            Ir al centro de ayuda →
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
       </div>
     </main>
   </div>
-  

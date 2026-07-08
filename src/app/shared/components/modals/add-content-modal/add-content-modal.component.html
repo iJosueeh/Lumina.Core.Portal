@@ -94,7 +94,7 @@
                                     <div class="border-2 border-dashed border-white/10 rounded-3xl p-8 text-center hover:border-cyan-500/30 transition-all cursor-pointer group" (click)="fileInput.click()">
                                         <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)">
                                         <i class="fas fa-cloud-upload-alt text-2xl text-slate-600 group-hover:text-cyan-400 mb-3 transition-colors"></i>
-                                        <p class="text-xs font-bold text-slate-400 truncate">{{ selectedFile ? selectedFile.name : 'Sube el video o documento principal' }}</p>
+                                        <p class="text-xs font-bold text-slate-400 truncate">{{ selectedFile() ? selectedFile()!.name : 'Sube el video o documento principal' }}</p>
                                     </div>
                                 } @else {
                                     <input type="text" formControlName="url" placeholder="https://youtube.com/..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-xs">

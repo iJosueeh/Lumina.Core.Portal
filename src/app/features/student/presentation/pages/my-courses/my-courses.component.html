@@ -1,117 +1,114 @@
-<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
-  
-    <!-- Efectos de Luces Ambientales -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
-  
-    <!-- Header Estilo Glassmorphism -->
-    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans">
+
+    <!-- Header -->
+    <header class="border-b border-slate-200 bg-white z-20">
       <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div class="space-y-2">
           <div class="flex items-center gap-3">
-            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Académico</span>
-            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+            <span class="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-[10px] font-bold uppercase tracking-widest">Académico</span>
           </div>
-          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
-            Mis <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Asignaturas</span>
+          <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+            Mis Cursos
           </h1>
           <p class="text-slate-500 font-medium max-w-lg">
             Explora tus cursos matriculados y mantén el control de tu progreso académico.
           </p>
         </div>
-  
-        <div class="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 w-full md:w-auto">
+
+        <div class="flex bg-slate-100 p-1.5 rounded-xl w-full md:w-auto">
             @for (f of filters; track f.id) {
               <button 
                 (click)="setFilter(f.id)"
-                [class.bg-cyan-500]="activeFilter() === f.id"
-                [class.text-slate-950]="activeFilter() === f.id"
-                [class.text-slate-400]="activeFilter() !== f.id"
-                class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex-1 md:flex-none">
+                [class.bg-white]="activeFilter() === f.id"
+                [class.text-indigo-600]="activeFilter() === f.id"
+                [class.text-slate-500]="activeFilter() !== f.id"
+                [class.shadow-sm]="activeFilter() === f.id"
+                class="px-6 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all flex-1 md:flex-none">
                 {{ f.label }}
               </button>
             }
         </div>
       </div>
     </header>
-  
+
     <!-- Contenido Principal -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12">
-      
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
       @if (isLoading()) {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (i of [1,2,3,4,5,6]; track i) {
-            <div class="h-80 bg-white/5 rounded-[2.5rem] p-8">
-              <app-skeleton-loader class="h-full w-full rounded-3xl opacity-20"></app-skeleton-loader>
+            <div class="h-80 bg-white rounded-xl border border-slate-200 p-6 shadow-sm animate-pulse">
+              <div class="h-full bg-slate-100 rounded-lg"></div>
             </div>
           }
         </div>
       } @else if (error()) {
-        <div class="p-12 text-center bg-red-500/5 border border-red-500/10 rounded-[3rem]">
-          <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-          <h3 class="text-xl font-bold text-white mb-2">Error inesperado</h3>
-          <p class="text-red-400 font-medium mb-6">{{ error() }}</p>
-          <button (click)="refresh()" class="px-8 py-3 bg-red-500 text-white font-black rounded-xl text-xs uppercase tracking-widest">Reintentar</button>
+        <div class="p-12 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Error inesperado</h3>
+          <p class="text-slate-500 mb-6">{{ error() }}</p>
+          <button (click)="refresh()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all text-sm">
+            Reintentar
+          </button>
         </div>
       } @else {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (course of filteredCourses(); track course.id) {
                 <div (click)="viewCourse(course.id)" 
-                    class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all cursor-pointer relative overflow-hidden flex flex-col h-full shadow-2xl">
-                    
-                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 rounded-full blur-[80px] group-hover:bg-cyan-500/10 transition-all"></div>
+                    class="group bg-white border border-slate-200 p-6 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer flex flex-col h-full shadow-sm">
 
-                    <div class="relative z-10 flex flex-col h-full">
-                        <div class="flex justify-between items-start mb-8">
-                            <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500/10 transition-all duration-500 border border-white/5">
-                                <i class="fas fa-graduation-cap text-xl"></i>
-                            </div>
-                            <app-status-badge [status]="course.progreso === 100 ? 'COMPLETADO' : 'EN CURSO'"></app-status-badge>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-all">
+                            <i class="fas fa-book-open text-lg"></i>
                         </div>
+                        <span [class]="course.progreso === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'" class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border">
+                            {{ course.progreso === 100 ? 'Completado' : 'En Curso' }}
+                        </span>
+                    </div>
 
-                        <div class="space-y-2 mb-8">
-                            <span class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">{{ course.id.slice(0, 8) }}</span>
-                            <h3 class="text-xl font-black text-white leading-tight group-hover:text-cyan-400 transition-colors">
-                                {{ course.titulo }}
-                            </h3>
+                    <div class="space-y-1 mb-4 flex-1">
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">{{ course.id.slice(0, 8) }}</span>
+                        <h3 class="text-base font-semibold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                            {{ course.titulo }}
+                        </h3>
+                    </div>
+
+                    <!-- Stats del curso -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Periodo</p>
+                            <p class="text-sm font-bold text-slate-700">2026-I</p>
                         </div>
-
-                        <!-- Stats del curso -->
-                        <div class="grid grid-cols-2 gap-4 mb-8">
-                            <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Periodo</p>
-                                <p class="text-lg font-black text-white">2026-I</p>
-                            </div>
-                            <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Categoría</p>
-                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ course.categoria }}</p>
-                            </div>
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Categoría</p>
+                            <p class="text-xs font-bold text-slate-600 uppercase tracking-widest">{{ course.categoria }}</p>
                         </div>
+                    </div>
 
-                        <!-- Progreso -->
-                        <div class="mt-auto space-y-4">
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                                <span class="text-slate-500">Progreso completado</span>
-                                <span class="text-white">{{ course.progreso }}%</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-1000" 
-                                    [style.width.%]="course.progreso"></div>
-                            </div>
+                    <!-- Progreso -->
+                    <div class="mt-auto space-y-2">
+                        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
+                            <span class="text-slate-500">Progreso</span>
+                            <span class="text-slate-700">{{ course.progreso }}%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000" 
+                                [style.width.%]="course.progreso"></div>
                         </div>
                     </div>
                 </div>
             } @empty {
-                <div class="col-span-full py-24 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-folder-open text-3xl text-slate-700"></i>
+                <div class="col-span-full py-16 text-center bg-white rounded-xl border border-dashed border-slate-300">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-folder-open text-2xl text-slate-300"></i>
                     </div>
-                    <h3 class="text-2xl font-black text-white mb-2">No se encontraron cursos</h3>
-                    <p class="text-slate-500 max-w-xs mx-auto">Prueba ajustando los filtros o recarga la página.</p>
+                    <h3 class="text-base font-semibold text-slate-900 mb-1">No se encontraron cursos</h3>
+                    <p class="text-sm text-slate-500">Prueba ajustando los filtros o recarga la página.</p>
                 </div>
             }
         </div>
       }
     </main>
-  </div>
-  
+</div>

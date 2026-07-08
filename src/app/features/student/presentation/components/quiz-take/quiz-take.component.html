@@ -101,44 +101,56 @@
         <div class="space-y-3">
           @switch (currentQuestion()!.type) {
             @case ('multiple-choice') {
-              @for (option of currentQuestion()!.options; track option.id) {
-                <label
-                  class="flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
-                  [class.border-teal-500]="getCurrentAnswer() === option.id"
-                  [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
-                  [class.border-navy-600]="getCurrentAnswer() !== option.id"
-                >
-                  <input
-                    type="radio"
-                    [name]="'question-' + currentQuestion()!.id"
-                    [value]="option.id"
-                    [checked]="getCurrentAnswer() === option.id"
-                    (change)="onAnswerChange(currentQuestion()!.id, option.id)"
-                    class="mt-1 w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
-                  />
-                  <span class="flex-1 text-gray-200">{{ option.text }}</span>
-                </label>
+              @if (currentQuestion()!.options && currentQuestion()!.options!.length > 0) {
+                @for (option of currentQuestion()!.options; track option.id) {
+                  <label
+                    class="flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
+                    [class.border-teal-500]="getCurrentAnswer() === option.id"
+                    [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
+                    [class.border-navy-600]="getCurrentAnswer() !== option.id"
+                  >
+                    <input
+                      type="radio"
+                      [name]="'question-' + currentQuestion()!.id"
+                      [value]="option.id"
+                      [checked]="getCurrentAnswer() === option.id"
+                      (change)="onAnswerChange(currentQuestion()!.id, option.id)"
+                      class="mt-1 w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
+                    />
+                    <span class="flex-1 text-gray-200">{{ option.text }}</span>
+                  </label>
+                }
+              } @else {
+                <div class="p-4 rounded-lg border-2 border-yellow-500/30 bg-yellow-500/10">
+                  <p class="text-yellow-400 text-sm font-semibold">⚠️ Esta pregunta no tiene opciones configuradas. Contacta al docente.</p>
+                </div>
               }
             }
 
             @case ('true-false') {
-              @for (option of currentQuestion()!.options; track option.id) {
-                <label
-                  class="flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
-                  [class.border-teal-500]="getCurrentAnswer() === option.id"
-                  [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
-                  [class.border-navy-600]="getCurrentAnswer() !== option.id"
-                >
-                  <input
-                    type="radio"
-                    [name]="'question-' + currentQuestion()!.id"
-                    [value]="option.id"
-                    [checked]="getCurrentAnswer() === option.id"
-                    (change)="onAnswerChange(currentQuestion()!.id, option.id)"
-                    class="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
-                  />
-                  <span class="flex-1 text-gray-200 font-medium">{{ option.text }}</span>
-                </label>
+              @if (currentQuestion()!.options && currentQuestion()!.options!.length > 0) {
+                @for (option of currentQuestion()!.options; track option.id) {
+                  <label
+                    class="flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:bg-white/5"
+                    [class.border-teal-500]="getCurrentAnswer() === option.id"
+                    [class.bg-teal-500/10]="getCurrentAnswer() === option.id"
+                    [class.border-navy-600]="getCurrentAnswer() !== option.id"
+                  >
+                    <input
+                      type="radio"
+                      [name]="'question-' + currentQuestion()!.id"
+                      [value]="option.id"
+                      [checked]="getCurrentAnswer() === option.id"
+                      (change)="onAnswerChange(currentQuestion()!.id, option.id)"
+                      class="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-offset-navy-900"
+                    />
+                    <span class="flex-1 text-gray-200 font-medium">{{ option.text }}</span>
+                  </label>
+                }
+              } @else {
+                <div class="p-4 rounded-lg border-2 border-yellow-500/30 bg-yellow-500/10">
+                  <p class="text-yellow-400 text-sm font-semibold">⚠️ Esta pregunta no tiene opciones configuradas. Contacta al docente.</p>
+                </div>
               }
             }
 

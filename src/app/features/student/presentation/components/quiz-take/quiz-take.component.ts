@@ -68,6 +68,25 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    // Logging de diagnóstico
+    console.log('📋 [QUIZ-TAKE] Quiz recibido:', {
+      id: this.quiz?.id,
+      title: this.quiz?.title,
+      questionsCount: this.quiz?.questions?.length || 0,
+      totalPoints: this.quiz?.totalPoints
+    });
+    
+    // Verificar preguntas con opciones faltantes
+    if (this.quiz?.questions) {
+      this.quiz.questions.forEach((q, i) => {
+        const needsOptions = q.type === 'multiple-choice' || q.type === 'true-false';
+        const hasOptions = q.options && q.options.length > 0;
+        if (needsOptions && !hasOptions) {
+          console.warn(`⚠️ [QUIZ-TAKE] Pregunta ${i + 1} (${q.type}) "${q.text}" NO tiene opciones configuradas`);
+        }
+      });
+    }
+
     // Si hay un attempt previo, cargar respuestas
     if (this.attempt) {
       const answersMap = new Map<string, string | string[]>();
