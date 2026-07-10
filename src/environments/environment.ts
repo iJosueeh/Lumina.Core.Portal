@@ -4,7 +4,7 @@ export const environment = {
   
   // URLs directas a microservicios (desarrollo local)
   usuariosApiUrl: 'http://localhost:7777/api',
-  estudiantesApiUrl: 'http://localhost:6601/api',
+  estudiantesApiUrl: 'http://localhost:8080/api',
   cursosApiUrl: 'http://localhost:9999/api',
   evaluacionesApiUrl: 'http://localhost:5555/api',
   noticiasEventosApiUrl: 'http://localhost:4444/api',

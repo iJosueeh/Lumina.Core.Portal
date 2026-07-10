@@ -14,23 +14,19 @@ export class DateUtils {
   }
 
   /**
-   * Gets the next date for a specific day of the week.
-   * @param targetDayOfWeek 0=Monday, ..., 6=Sunday
+   * Gets the date for a specific day of the week within the current week (Mon-Sat).
+   * @param targetDayOfWeek 0=Monday, ..., 5=Saturday
    */
-  static getNextDateForDay(targetDayOfWeek: number): Date {
+  static getDateInCurrentWeek(targetDayOfWeek: number): Date {
     const today = new Date();
     const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
     
     // Convert our index (0=Monday) to JS index (1=Monday, 0=Sunday)
     const jsTargetDay = targetDayOfWeek === 6 ? 0 : targetDayOfWeek + 1;
     
-    let daysUntilTarget = jsTargetDay - currentDay;
-    if (daysUntilTarget <= 0) {
-      daysUntilTarget += 7;
-    }
-    
+    const diff = jsTargetDay - currentDay;
     const targetDate = new Date(today);
-    targetDate.setDate(today.getDate() + daysUntilTarget);
+    targetDate.setDate(today.getDate() + diff);
     targetDate.setHours(0, 0, 0, 0);
     return targetDate;
   }

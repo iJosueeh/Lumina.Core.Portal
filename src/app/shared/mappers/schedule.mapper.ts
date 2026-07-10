@@ -22,7 +22,7 @@ export class ScheduleMapper {
 
       curso.horarios.forEach((horario: Horario) => {
         const dayOfWeek = daysMap[horario.diaSemana] ?? 0;
-        const eventDate = DateUtils.getNextDateForDay(dayOfWeek);
+        const eventDate = DateUtils.getDateInCurrentWeek(dayOfWeek);
 
         events.push({
           id: `${curso.id}-${horario.id}`,

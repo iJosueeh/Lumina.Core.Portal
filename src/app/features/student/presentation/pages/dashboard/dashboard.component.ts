@@ -7,6 +7,7 @@ import { forkJoin, of, catchError, finalize } from 'rxjs';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { Assignment } from '@features/student/domain/models/assignment.model';
 import { Announcement } from '@features/student/domain/models/announcement.model';
+import { CursoConHorarios } from '@features/student/domain/models/horario.model';
 
 // Use Cases
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
@@ -16,6 +17,7 @@ import { GetRecentAnnouncementsUseCase } from '@features/student/application/use
 // Services
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
+import { CoursesService } from '@features/student/infrastructure/services/courses.service';
 
 // Sub-components
 import { WelcomeHeaderComponent } from './welcome-header/welcome-header.component';
@@ -23,6 +25,7 @@ import { StudentStatsComponent } from './student-stats/student-stats.component';
 import { ActiveCoursesGridComponent } from './active-courses-grid/active-courses-grid.component';
 import { UpcomingAssignmentsComponent } from './upcoming-assignments/upcoming-assignments.component';
 import { RecentAnnouncementsComponent } from './recent-announcements/recent-announcements.component';
+import { TodayClassesComponent } from './today-classes/today-classes.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,7 +33,7 @@ import { RecentAnnouncementsComponent } from './recent-announcements/recent-anno
   imports: [
     CommonModule, RouterModule, WelcomeHeaderComponent, 
     StudentStatsComponent, ActiveCoursesGridComponent, UpcomingAssignmentsComponent,
-    RecentAnnouncementsComponent
+    RecentAnnouncementsComponent, TodayClassesComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -42,12 +45,14 @@ export class DashboardComponent {
   private authRepository = inject(AuthRepository);
   public router = inject(Router);
   private cacheService = inject(CacheService);
+  private coursesService = inject(CoursesService);
 
   // Signals de Estado
   userName = signal('Estudiante');
   courses = signal<CourseProgress[]>([]);
   assignments = signal<Assignment[]>([]);
   announcements = signal<Announcement[]>([]);
+  todayCourses = signal<CursoConHorarios[]>([]);
   isLoading = signal(true);
   
   pendingCount = computed(() => this.assignments().length);
@@ -66,6 +71,16 @@ export class DashboardComponent {
   loadData(studentId: string): void {
     this.cacheService.invalidate(`student-courses-${studentId}`);
     this.isLoading.set(true);
+
+    // Fetch courses with horarios from Cursos API
+    this.coursesService.getAllCoursesWithSchedules().pipe(
+      catchError((error) => {
+        console.error('❌ [DASHBOARD] Error cargando cursos con horarios:', error);
+        return of([] as CursoConHorarios[]);
+      })
+    ).subscribe((coursesWithSchedules) => {
+      this.todayCourses.set(coursesWithSchedules);
+    });
 
     forkJoin({
       courses: this.getCoursesUseCase.execute(studentId).pipe(

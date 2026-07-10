@@ -39,19 +39,42 @@
             />
         </section>
 
-        <!-- Columna Derecha: Tareas Próximas -->
+        <!-- Columna Derecha: Clases de Hoy + Tareas -->
         <section class="space-y-8">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
-                <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clock text-purple-600 text-sm"></i>
-                </span>
-                Próximas Entregas
-            </h2>
+            <!-- Clases de Hoy -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                        <span class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-day text-indigo-600 text-sm"></i>
+                        </span>
+                        Clases de Hoy
+                    </h2>
+                    <a routerLink="/student/schedule" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">Ver horario</a>
+                </div>
 
-            <app-upcoming-assignments
-                [assignments]="assignments()"
-                [isLoading]="isLoading()"
-            />
+                <app-today-classes
+                    [courses]="todayCourses()"
+                    [isLoading]="isLoading()"
+                />
+            </div>
+
+            <!-- Tareas Próximas -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-purple-600 text-sm"></i>
+                        </span>
+                        Próximas Entregas
+                    </h2>
+                </div>
+
+                <app-upcoming-assignments
+                    [assignments]="assignments()"
+                    [isLoading]="isLoading()"
+                />
+            </div>
 
             <!-- Sección de Noticias Recientes -->
             <div class="mt-6">
