@@ -1,24 +1,21 @@
-<div (click)="onViewDetails.emit(student().id)" 
-  class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2rem] hover:border-cyan-500/30 transition-all cursor-pointer relative overflow-hidden">
-  
-  <!-- Overlay de Hover -->
-  <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div (click)="onViewDetails.emit(student().id)"
+  class="group bg-white border border-slate-200 p-6 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer relative overflow-hidden">
 
-  <div class="relative z-10 space-y-6">
+  <div class="space-y-5">
     <!-- Header: Avatar + Nombre + Estado -->
     <div class="flex items-start justify-between gap-4">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <div class="relative">
-          <img [src]="student().avatar" [alt]="student().nombre" 
-            class="w-16 h-16 rounded-2xl object-cover border-2 border-white/10 group-hover:border-cyan-500/50 transition-all duration-500">
-          <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#020617]"
+          <img [src]="student().avatar" [alt]="student().nombre"
+            class="w-14 h-14 rounded-xl object-cover border-2 border-slate-100 group-hover:border-indigo-200 transition-all">
+          <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white"
             [ngClass]="student().estado === 'Activo' ? 'bg-green-500' : 'bg-orange-500'"></div>
         </div>
         <div class="min-w-0">
-          <h3 class="text-lg font-black text-white group-hover:text-cyan-400 transition-colors truncate">
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
             {{ student().nombre }} {{ student().apellidos }}
           </h3>
-          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest truncate">{{ student().codigo }}</p>
+          <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest truncate">{{ student().codigo }}</p>
         </div>
       </div>
       <app-status-badge [status]="student().estado"></app-status-badge>
@@ -26,34 +23,34 @@
 
     <!-- Info del Curso -->
     @if (student().courseName) {
-      <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl border border-white/5">
-        <i class="fas fa-book text-[10px] text-cyan-400"></i>
-        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{{ student().courseName }}</span>
+      <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
+        <i class="fas fa-book text-[10px] text-indigo-500"></i>
+        <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest truncate">{{ student().courseName }}</span>
       </div>
     }
 
     <!-- Grid de Métricas -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:bg-white/10 transition-all">
-        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Promedio</p>
-        <p class="text-2xl font-black" [ngClass]="student().promedio >= 14 ? 'text-white' : 'text-orange-400'">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Promedio</p>
+        <p class="text-xl font-bold" [ngClass]="student().promedio >= 14 ? 'text-slate-900' : 'text-orange-500'">
           {{ student().promedio | number: '1.1-1' }}
         </p>
       </div>
-      <div class="bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:bg-white/10 transition-all">
-        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Asistencia</p>
-        <p class="text-2xl font-black text-white">{{ student().asistencia | number: '1.0-0' }}%</p>
+      <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Asistencia</p>
+        <p class="text-xl font-bold text-slate-900">{{ student().asistencia | number: '1.0-0' }}%</p>
       </div>
     </div>
 
     <!-- Footer: Actividad + Botón -->
-    <div class="flex items-center justify-between pt-4 border-t border-white/5">
+    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
       <div class="flex flex-col">
-        <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Último acceso</span>
-        <span class="text-[10px] text-slate-400 font-bold">{{ getTimeAgo(student().ultimoAcceso) }}</span>
+        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Último acceso</span>
+        <span class="text-[10px] text-slate-500 font-semibold">{{ getTimeAgo(student().ultimoAcceso) }}</span>
       </div>
-      <button (click)="onViewDetails.emit(student().id); $event.stopPropagation()" 
-        class="w-10 h-10 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 rounded-xl flex items-center justify-center transition-all">
+      <button (click)="onViewDetails.emit(student().id); $event.stopPropagation()"
+        class="w-9 h-9 bg-indigo-50 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-lg flex items-center justify-center transition-all">
         <i class="fas fa-arrow-right text-xs"></i>
       </button>
     </div>

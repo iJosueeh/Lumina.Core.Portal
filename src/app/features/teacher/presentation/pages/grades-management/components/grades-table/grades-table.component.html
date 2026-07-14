@@ -1,59 +1,59 @@
 <div class="relative">
-    <div class="overflow-x-auto custom-scrollbar">
+    <div class="overflow-x-auto">
         <table class="w-full text-left border-separate border-spacing-0">
             <thead>
                 <tr>
                     <!-- Header Estudiante (Sticky) -->
-                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 sticky left-0 bg-[#020617] z-30 border-b border-white/5">
+                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest sticky left-0 bg-white z-30 border-b border-slate-100">
                         Estudiante
                     </th>
-                    
+
                     <!-- Headers Evaluaciones -->
                     @for (evaluacion of evaluaciones; track evaluaciones.indexOf(evaluacion)) {
-                        <th class="px-6 py-6 text-center min-w-[140px] border-b border-white/5 bg-slate-950/20 backdrop-blur-md">
-                            <div class="flex flex-col items-center gap-2 group">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-300 group-hover:text-cyan-400 transition-colors">{{ evaluacion.titulo }}</span>
+                        <th class="px-4 py-4 text-center min-w-[120px] border-b border-slate-100 bg-slate-50">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ evaluacion.titulo }}</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-black text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">{{ evaluacion.peso }}%</span>
-                                    <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-600 hover:text-white transition-colors">
+                                    <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">{{ evaluacion.peso }}%</span>
+                                    <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-400 hover:text-indigo-500 transition-colors">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                 </div>
                             </div>
                         </th>
                     }
-                    
+
                     <!-- Header Promedio -->
-                    <th class="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-500 text-center border-b border-white/5 bg-cyan-500/5 backdrop-blur-md sticky right-0 z-30">
-                        Promedio Final
+                    <th class="px-6 py-4 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50 sticky right-0 z-30">
+                        Promedio
                     </th>
                 </tr>
             </thead>
-            
-            <tbody class="divide-y divide-white/5">
+
+            <tbody class="divide-y divide-slate-100">
                 @for (calif of calificaciones; track calif.estudianteId) {
-                    <tr class="hover:bg-white/5 transition-all group">
+                    <tr class="hover:bg-slate-50 transition-all group">
                         <!-- Celda Estudiante (Sticky) -->
-                        <td class="px-8 py-5 sticky left-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors">
+                        <td class="px-6 py-4 sticky left-0 bg-white z-20 group-hover:bg-slate-50 transition-colors">
                             <div class="flex flex-col">
-                                <span class="text-sm font-black text-white group-hover:text-cyan-400 transition-colors">{{ calif.estudianteNombre }}</span>
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{{ calif.estudianteCodigo }}</span>
+                                <span class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{{ calif.estudianteNombre }}</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ calif.estudianteCodigo }}</span>
                             </div>
                         </td>
 
                         <!-- Celdas de Notas -->
                         @for (nota of calif.notas; track nota.evaluacionId) {
-                            <td class="px-6 py-5 text-center">
-                                <input type="number" [(ngModel)]="nota.valor" 
-                                    class="w-16 mx-auto block text-center bg-white/5 border border-white/10 rounded-xl py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all hover:bg-white/10"
+                            <td class="px-4 py-4 text-center">
+                                <input type="number" [(ngModel)]="nota.valor"
+                                    class="w-14 mx-auto block text-center bg-slate-50 border border-slate-200 rounded-xl py-2 font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all hover:border-indigo-300"
                                     min="0" max="20" step="0.5">
                             </td>
                         }
 
                         <!-- Celda Promedio (Sticky) -->
-                        <td class="px-8 py-5 text-center sticky right-0 bg-[#020617] z-20 group-hover:bg-slate-900/80 transition-colors">
-                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
-                                <span [class]="calif.promedio >= 10.5 ? 'text-white' : 'text-orange-500'" class="font-black text-lg tracking-tighter">
+                        <td class="px-6 py-4 text-center sticky right-0 bg-white z-20 group-hover:bg-slate-50 transition-colors">
+                            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-200">
+                                <span [class]="calif.promedio >= 10.5 ? 'text-slate-900' : 'text-orange-500'" class="font-bold text-base">
                                     {{ calif.promedio }}
                                 </span>
                             </div>
@@ -61,13 +61,13 @@
                     </tr>
                 } @empty {
                     <tr>
-                        <td [attr.colspan]="evaluaciones.length + 2" class="px-8 py-32 text-center">
-                            <div class="flex flex-col items-center gap-4">
-                                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-dashed border-white/10">
-                                    <i class="fas fa-user-graduate text-3xl text-slate-700"></i>
+                        <td [attr.colspan]="evaluaciones.length + 2" class="px-8 py-24 text-center">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center border border-dashed border-slate-300">
+                                    <i class="fas fa-user-graduate text-2xl text-slate-400"></i>
                                 </div>
-                                <h3 class="text-xl font-bold text-slate-500">No se encontraron registros académicos</h3>
-                                <p class="text-sm text-slate-600 max-w-xs mx-auto">Selecciona otro curso o ajusta los criterios de búsqueda.</p>
+                                <h3 class="text-base font-bold text-slate-600">No se encontraron registros académicos</h3>
+                                <p class="text-sm text-slate-400 max-w-xs mx-auto">Selecciona otro curso o ajusta los criterios de búsqueda.</p>
                             </div>
                         </td>
                     </tr>
@@ -76,20 +76,3 @@
         </table>
     </div>
 </div>
-
-<style>
-    .custom-scrollbar::-webkit-scrollbar {
-        height: 8px;
-        width: 8px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-</style>

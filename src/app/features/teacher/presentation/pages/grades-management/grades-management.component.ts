@@ -12,19 +12,19 @@ import { GradesFilterBarComponent } from './components/filter-bar/filter-bar.com
 import { GradesStatsSummaryComponent } from './components/stats-summary/stats-summary.component';
 import { GradesTableComponent } from './components/grades-table/grades-table.component';
 import { EvaluationModalComponent } from './components/evaluation-modal/evaluation-modal.component';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
 
 @Component({
   selector: 'app-grades-management',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    GradesFilterBarComponent, 
-    GradesStatsSummaryComponent, 
-    GradesTableComponent, 
-    EvaluationModalComponent,
-    SkeletonLoaderComponent
+    CommonModule,
+    ReactiveFormsModule,
+    PageHeaderComponent,
+    GradesFilterBarComponent,
+    GradesStatsSummaryComponent,
+    GradesTableComponent,
+    EvaluationModalComponent
   ],
   templateUrl: './grades-management.component.html',
   styleUrl: './grades-management.component.css'

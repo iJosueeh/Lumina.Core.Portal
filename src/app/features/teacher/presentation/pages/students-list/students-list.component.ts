@@ -16,7 +16,8 @@ import { EstudianteMetricasCompletas } from '@features/teacher/domain/models/est
 import { TeacherStudentMapper, CourseStudentUI } from '../../../infrastructure/mappers/teacher-student.mapper';
 
 // Components
-import { SkeletonLoaderComponent } from '../../../../../shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
+import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 import { StudentStatsComponent } from './components/student-stats/student-stats.component';
 import { StudentFilterComponent } from './components/student-filter/student-filter.component';
 import { StudentCardComponent } from './components/student-card/student-card.component';
@@ -25,9 +26,10 @@ import { StudentCardComponent } from './components/student-card/student-card.com
   selector: 'app-students-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PageHeaderComponent,
     SkeletonLoaderComponent,
     StudentStatsComponent,
     StudentFilterComponent,

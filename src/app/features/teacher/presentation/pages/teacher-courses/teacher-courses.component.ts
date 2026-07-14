@@ -6,21 +6,21 @@ import { GetTeacherCoursesUseCase } from '@features/teacher/application/use-case
 import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
-// Atomic UI
+// UI Components
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
 import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
 import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
     selector: 'app-teacher-courses',
     standalone: true,
     imports: [
-        CommonModule, 
-        RouterModule, 
+        CommonModule,
+        RouterModule,
         FormsModule,
+        PageHeaderComponent,
         StatCardComponent,
-        StatusBadgeComponent,
-        SkeletonLoaderComponent
+        StatusBadgeComponent
     ],
     templateUrl: './teacher-courses.component.html',
 })

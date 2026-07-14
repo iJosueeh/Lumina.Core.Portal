@@ -1,60 +1,60 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
   <!-- Búsqueda -->
   <div class="lg:col-span-2 relative group">
-    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Buscar Estudiante</label>
+    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Buscar Estudiante</label>
     <div class="relative">
       <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-        <i class="fas fa-search text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+        <i class="fas fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
       </div>
-      <input 
-        type="text" 
+      <input
+        type="text"
         [ngModel]="searchTerm()"
         (ngModelChange)="searchChange.emit($event)"
-        placeholder="Nombre, código o email..." 
-        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
+        placeholder="Nombre, código o email..."
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium">
     </div>
   </div>
 
   <!-- Filtro por Curso -->
   <div class="group">
-    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Filtrar por Curso</label>
+    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Filtrar por Curso</label>
     <div class="relative">
       <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-        <i class="fas fa-filter text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+        <i class="fas fa-filter text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
       </div>
-      <select 
+      <select
         [ngModel]="selectedCourse()"
         (ngModelChange)="courseChange.emit($event)"
-        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
-        <option value="all" class="bg-slate-900 text-white">Todos los cursos</option>
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium">
+        <option value="all">Todos los cursos</option>
         @for (opt of courseOptions(); track opt.value) {
-          <option [value]="opt.value" class="bg-slate-900 text-white">{{ opt.label }}</option>
+          <option [value]="opt.value">{{ opt.label }}</option>
         }
       </select>
       <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-        <i class="fas fa-chevron-down text-[10px] text-slate-500"></i>
+        <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
       </div>
     </div>
   </div>
 
   <!-- Filtro por Estado -->
   <div class="group">
-    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Estado Académico</label>
+    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Estado Académico</label>
     <div class="relative">
       <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-        <i class="fas fa-user-tag text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
+        <i class="fas fa-user-tag text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
       </div>
-      <select 
+      <select
         [ngModel]="selectedStatus()"
         (ngModelChange)="statusChange.emit($event)"
-        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
-        <option value="all" class="bg-slate-900 text-white">Todos los estados</option>
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium">
+        <option value="all">Todos los estados</option>
         @for (opt of statusOptions; track opt.value) {
-          <option [value]="opt.value" class="bg-slate-900 text-white">{{ opt.label }}</option>
+          <option [value]="opt.value">{{ opt.label }}</option>
         }
       </select>
       <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-        <i class="fas fa-chevron-down text-[10px] text-slate-500"></i>
+        <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
       </div>
     </div>
   </div>

@@ -14,22 +14,18 @@ import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.mo
 import { EvaluationMapper } from '../../../infrastructure/mappers/evaluation.mapper';
 
 // Shared Components
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
 import { EvaluationFilterComponent } from './components/evaluation-filter/evaluation-filter.component';
-import { EvaluationCardComponent } from '../../../../../shared/components/features/evaluations/evaluation-card/evaluation-card.component';
-import { SkeletonLoaderComponent } from '../../../../../shared/components/ui/skeleton-loader/skeleton-loader.component';
-import { EmptyStateComponent } from '../../../../../shared/components/ui/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-evaluations-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule, 
-    EvaluationFilterComponent, 
-    EvaluationCardComponent,
-    SkeletonLoaderComponent,
-    EmptyStateComponent
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    PageHeaderComponent,
+    EvaluationFilterComponent
   ],
   templateUrl: './evaluations-list.component.html',
 })

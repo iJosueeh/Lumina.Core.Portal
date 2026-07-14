@@ -1,122 +1,98 @@
-<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
-  
-    <!-- Efectos de Luces Ambientales -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
-  
-    <!-- Header Estilo Glassmorphism -->
-    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
-      <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="space-y-2">
-          <div class="flex items-center gap-3">
-            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Banco de Evaluaciones</span>
-            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-          </div>
-          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
-            Mis <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Evaluaciones</span>
-          </h1>
-          <p class="text-slate-500 font-medium max-w-lg">
-            Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos.
-          </p>
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans">
+
+  <!-- Header -->
+  <app-page-header
+    badge="Banco de Evaluaciones"
+    title="Mis Evaluaciones"
+    subtitle="Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos">
+    <button routerLink="/teacher/grades" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
+      <i class="fas fa-plus-circle"></i>
+      Nueva Evaluación
+    </button>
+  </app-page-header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Filtros -->
+    <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+      <app-evaluation-filter
+        [courses]="courses()"
+        [selectedCourseId]="selectedCourseId()"
+        [searchTerm]="searchTerm()"
+        (courseChange)="selectedCourseId.set($any($event))"
+        (searchChange)="searchTerm.set($any($event))"
+      />
+    </div>
+
+    <!-- Listado -->
+    <div class="space-y-6">
+      @if (isLoading()) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="h-64 bg-white rounded-xl border border-slate-200 p-6 animate-pulse shadow-sm">
+              <div class="h-full w-full rounded-xl bg-slate-100"></div>
+            </div>
+          }
         </div>
-  
-        <div class="flex gap-3">
-          <button routerLink="/teacher/grades" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] text-sm uppercase tracking-widest flex items-center gap-2">
-            <i class="fas fa-plus-circle"></i>
-            Nueva Evaluación
-          </button>
-        </div>
-      </div>
-    </header>
-  
-    <!-- Contenido Principal -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-10">
-      
-      <!-- Filtros -->
-      <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2.5rem]">
-        <app-evaluation-filter
-          [courses]="courses()"
-          [selectedCourseId]="selectedCourseId()"
-          [searchTerm]="searchTerm()"
-          (courseChange)="selectedCourseId.set($any($event))"
-          (searchChange)="searchTerm.set($any($event))"
-        />
-      </div>
-  
-      <!-- Listado -->
-      <div class="space-y-6">
-        @if (isLoading()) {
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <div class="h-64 bg-white/5 rounded-[2.5rem] p-8">
-                <app-skeleton-loader class="h-full w-full rounded-3xl opacity-20"></app-skeleton-loader>
+      } @else {
+        @if (filteredEvaluaciones().length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (ev of filteredEvaluaciones(); track ev.id) {
+              <div class="group bg-white border border-slate-200 p-6 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all relative overflow-hidden flex flex-col h-full">
+
+                <div class="flex justify-between items-start mb-5">
+                  <div class="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                    <i [class]="ev.tipoEvaluacion === 'Examen' ? 'fas fa-file-invoice' : 'fas fa-tasks'"></i>
+                  </div>
+                  <span class="px-2.5 py-1 bg-slate-100 text-[9px] font-bold text-slate-500 uppercase tracking-widest rounded-lg border border-slate-200">{{ ev.estado }}</span>
+                </div>
+
+                <div class="space-y-1.5 mb-5">
+                  <h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors truncate">
+                    {{ ev.titulo }}
+                  </h3>
+                  <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">{{ ev.cursoNombre }}</p>
+                  <p class="text-xs text-slate-500 line-clamp-2">
+                    {{ ev.descripcion || 'Sin descripción detallada.' }}
+                  </p>
+                </div>
+
+                <!-- Meta Info -->
+                <div class="grid grid-cols-2 gap-3 mb-5 mt-auto">
+                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha Límite</p>
+                    <p class="text-[10px] font-semibold text-slate-600">{{ ev.fechaFin | date:'dd MMM, yyyy' }}</p>
+                  </div>
+                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Peso</p>
+                    <p class="text-[10px] font-bold text-slate-900">{{ ev.peso }}%</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                  <button (click)="viewDetails(ev.id)"
+                    class="flex-1 px-4 py-2 bg-indigo-50 hover:bg-indigo-500 text-indigo-600 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all">
+                    Ver Notas
+                  </button>
+                  <button (click)="deleteEvaluation({id: ev.id, event: $event})"
+                    class="w-9 h-9 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                  </button>
+                </div>
               </div>
             }
           </div>
         } @else {
-          @if (filteredEvaluaciones().length > 0) {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              @for (ev of filteredEvaluaciones(); track ev.id) {
-                <div class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all relative overflow-hidden flex flex-col h-full shadow-2xl">
-                    
-                    <!-- Glow Effect -->
-                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 rounded-full blur-[80px] group-hover:bg-cyan-500/10 transition-all"></div>
-      
-                    <div class="relative z-10 flex flex-col h-full">
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 border border-white/5">
-                                <i [class]="ev.tipoEvaluacion === 'Examen' ? 'fas fa-file-invoice' : 'fas fa-tasks'"></i>
-                            </div>
-                            <span class="px-3 py-1 bg-white/5 text-[9px] font-black uppercase tracking-widest rounded-full border border-white/10">{{ ev.estado }}</span>
-                        </div>
-        
-                        <div class="space-y-2 mb-6">
-                            <h3 class="text-xl font-black text-white leading-tight group-hover:text-cyan-400 transition-colors truncate">
-                                {{ ev.titulo }}
-                            </h3>
-                            <p class="text-[10px] text-cyan-500 font-black uppercase tracking-widest">{{ ev.cursoNombre }}</p>
-                            <p class="text-xs text-slate-500 line-clamp-2 font-medium">
-                                {{ ev.descripcion || 'Sin descripción detallada.' }}
-                            </p>
-                        </div>
-        
-                        <!-- Meta Info -->
-                        <div class="grid grid-cols-2 gap-3 mb-8 mt-auto">
-                            <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                                <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Fecha Límite</p>
-                                <p class="text-[10px] font-bold text-slate-300">{{ ev.fechaFin | date:'dd MMM, yyyy' }}</p>
-                            </div>
-                            <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                                <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Peso</p>
-                                <p class="text-[10px] font-black text-white">{{ ev.peso }}%</p>
-                            </div>
-                        </div>
-        
-                        <div class="flex items-center justify-between gap-3 border-t border-white/5 pt-4">
-                            <button (click)="viewDetails(ev.id)" 
-                                class="flex-1 px-4 py-2.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">
-                                Ver Notas
-                            </button>
-                            <button (click)="deleteEvaluation({id: ev.id, event: $event})" 
-                                class="w-10 h-10 bg-white/5 hover:bg-red-500/20 text-slate-500 hover:text-red-500 rounded-xl flex items-center justify-center transition-all">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-              }
+          <div class="py-24 text-center bg-white rounded-xl border border-dashed border-slate-300">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-clipboard-list text-2xl text-slate-400"></i>
             </div>
-          } @else {
-            <div class="py-32 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-              <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-clipboard-list text-3xl text-slate-700"></i>
-              </div>
-              <h3 class="text-2xl font-black text-white mb-2">No se encontraron evaluaciones</h3>
-              <p class="text-slate-500 max-w-xs mx-auto">Crea una nueva evaluación o ajusta los filtros de búsqueda.</p>
-            </div>
-          }
+            <h3 class="text-xl font-bold text-slate-900 mb-2">No se encontraron evaluaciones</h3>
+            <p class="text-slate-500 max-w-xs mx-auto text-sm">Crea una nueva evaluación o ajusta los filtros de búsqueda.</p>
+          </div>
         }
-      </div>
-    </main>
-  </div>
-  
+      }
+    </div>
+  </main>
+</div>

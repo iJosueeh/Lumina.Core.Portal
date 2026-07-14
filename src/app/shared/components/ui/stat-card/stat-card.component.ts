@@ -15,7 +15,7 @@ export class StatCardComponent {
   @Input() description = '';
   @Input() trend = '';
   @Input() trendType: 'positive' | 'negative' = 'positive';
-  @Input() color: 'blue' | 'purple' | 'teal' | 'orange' | 'green' = 'blue';
+  @Input() color: 'blue' | 'purple' | 'teal' | 'orange' | 'green' | 'indigo' = 'blue';
 
   get iconBgClass() {
     const map = {
@@ -23,7 +23,8 @@ export class StatCardComponent {
       purple: 'bg-purple-50 text-purple-600',
       teal: 'bg-teal-50 text-teal-600',
       orange: 'bg-orange-50 text-orange-600',
-      green: 'bg-green-50 text-green-600'
+      green: 'bg-green-50 text-green-600',
+      indigo: 'bg-indigo-50 text-indigo-600'
     };
     return map[this.color || 'blue'];
   }

@@ -1,15 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SelectComponent } from '../../../../../../../shared/components/ui/select/select.component';
-import { InputComponent } from '../../../../../../../shared/components/ui/input/input.component';
-import { ButtonComponent } from '../../../../../../../shared/components/ui/button/button.component';
 import { TeacherCourseGrades } from '@shared/models/grades-management.models';
 
 @Component({
   selector: 'app-grades-filter-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectComponent, InputComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './filter-bar.component.html',
   styleUrl: './filter-bar.component.css'
 })

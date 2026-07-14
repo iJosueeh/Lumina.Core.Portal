@@ -1,178 +1,158 @@
-<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
-  
-    <!-- Efectos de Luces Ambientales -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
-  
-    <!-- Header Estilo Glassmorphism -->
-    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
-      <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="space-y-2">
-          <div class="flex items-center gap-3">
-            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Gestión Académica</span>
-            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-          </div>
-          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
-            Mis Cursos <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Impartidos</span>
-          </h1>
-          <p class="text-slate-500 font-medium max-w-lg">
-            Administra tus asignaturas, sílabos y contenido educativo de este ciclo académico.
-          </p>
-        </div>
-  
-        <!-- Course creation removed for teachers: Admin task only -->
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans">
+
+  <!-- Header -->
+  <app-page-header
+    badge="Gestión Académica"
+    title="Mis Cursos Impartidos"
+    subtitle="Administra tus asignaturas, sílabos y contenido educativo de este ciclo académico">
+  </app-page-header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Estadísticas Rápidas -->
+    <section>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @if (isLoading()) {
+          @for (i of [1,2,3]; track i) {
+            <div class="h-32 bg-white rounded-xl border border-slate-200 p-6 flex flex-col justify-between animate-pulse shadow-sm">
+              <div class="h-4 w-20 bg-slate-100 rounded-full"></div>
+              <div class="h-8 w-16 bg-slate-100 rounded-lg mt-3"></div>
+              <div class="h-3 w-28 bg-slate-100 rounded-full mt-3"></div>
+            </div>
+          }
+        } @else {
+          <app-stat-card
+            label="Cursos Totales"
+            [value]="totalCoursesCount().toString()"
+            icon="layer-group"
+            description="Histórico asignado"
+            color="blue">
+          </app-stat-card>
+
+          <app-stat-card
+            label="Activos Ahora"
+            [value]="activeCoursesCount().toString()"
+            icon="broadcast-tower"
+            description="Ciclo 2026-I"
+            color="indigo">
+          </app-stat-card>
+
+          <app-stat-card
+            label="Finalizados"
+            [value]="archivedCoursesCount().toString()"
+            icon="archive"
+            description="Registros guardados"
+            color="purple">
+          </app-stat-card>
+        }
       </div>
-    </header>
-  
-    <!-- Contenido Principal -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-12">
-      
-      <!-- Estadísticas Rápidas -->
-      <section>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          @if (isLoading()) {
-            @for (i of [1,2,3]; track i) {
-              <div class="h-32 bg-white/5 rounded-[2.5rem] p-7">
-                <app-skeleton-loader class="h-full w-full rounded-2xl"></app-skeleton-loader>
-              </div>
-            }
-          } @else {
-            <app-stat-card 
-              label="Cursos Totales" 
-              [value]="totalCoursesCount().toString()" 
-              icon="layer-group" 
-              description="Histórico asignado"
-              color="blue">
-            </app-stat-card>
-  
-            <app-stat-card 
-              label="Activos Ahora" 
-              [value]="activeCoursesCount().toString()" 
-              icon="broadcast-tower" 
-              description="Ciclo 2026-I"
-              color="teal">
-            </app-stat-card>
-  
-            <app-stat-card 
-              label="Finalizados" 
-              [value]="archivedCoursesCount().toString()" 
-              icon="archive" 
-              description="Registros guardados"
-              color="purple">
-            </app-stat-card>
+    </section>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <section class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
+      <!-- Input de Búsqueda -->
+      <div class="relative flex-1 group w-full">
+        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <i class="fas fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+        </div>
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          placeholder="Buscar por nombre o código de curso..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium">
+      </div>
+
+      <!-- Selectores de Filtro -->
+      <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 w-full md:w-auto">
+        @for (filter of ['Todos', 'Activos', 'Archivados']; track filter) {
+          <button
+            (click)="setFilter($any(filter))"
+            [class.bg-white]="selectedFilter() === filter"
+            [class.text-indigo-600]="selectedFilter() === filter"
+            [class.shadow-sm]="selectedFilter() === filter"
+            [class.text-slate-500]="selectedFilter() !== filter"
+            class="px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all">
+            {{ filter }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- Listado de Cursos -->
+    <section class="space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (isLoading()) {
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="h-80 bg-white rounded-xl border border-slate-200 p-8 animate-pulse shadow-sm">
+              <div class="h-full w-full rounded-xl bg-slate-100"></div>
+            </div>
           }
-        </div>
-      </section>
-  
-      <!-- Barra de Filtros y Búsqueda -->
-      <section class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-6 rounded-[2.5rem] flex flex-col md:flex-row gap-6 items-center">
-        <!-- Input de Búsqueda -->
-        <div class="relative flex-1 group w-full">
-          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <i class="fas fa-search text-slate-500 group-focus-within:text-cyan-400 transition-colors"></i>
-          </div>
-          <input 
-            type="text" 
-            [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event)"
-            placeholder="Buscar por nombre o código de curso..." 
-            class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-medium">
-        </div>
-  
-        <!-- Selectores de Filtro -->
-        <div class="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 w-full md:w-auto">
-          @for (filter of ['Todos', 'Activos', 'Archivados']; track filter) {
-            <button 
-              (click)="setFilter($any(filter))"
-              [class.bg-cyan-500]="selectedFilter() === filter"
-              [class.text-slate-950]="selectedFilter() === filter"
-              [class.text-slate-400]="selectedFilter() !== filter"
-              class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
-              {{ filter }}
-            </button>
-          }
-        </div>
-      </section>
-  
-      <!-- Listado de Cursos -->
-      <section class="space-y-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          @if (isLoading()) {
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <div class="h-80 bg-white/5 rounded-[2.5rem] p-8">
-                <app-skeleton-loader class="h-full w-full rounded-3xl"></app-skeleton-loader>
+        } @else {
+          @for (course of filteredCourses(); track course.id) {
+            <div (click)="manageCourse(course.id)"
+              class="group bg-white border border-slate-200 p-7 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer relative overflow-hidden flex flex-col h-full">
+
+              <div class="flex justify-between items-start mb-6">
+                <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-all">
+                  <i class="fas fa-book-open text-lg"></i>
+                </div>
+                <app-status-badge [status]="course.estadoCurso"></app-status-badge>
               </div>
-            }
-          } @else {
-            @for (course of filteredCourses(); track course.id) {
-              <div (click)="manageCourse(course.id)" 
-                class="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all cursor-pointer relative overflow-hidden flex flex-col h-full shadow-2xl">
-                
-                <!-- Glow Effect -->
-                <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 rounded-full blur-[80px] group-hover:bg-cyan-500/10 transition-all"></div>
-  
-                <div class="relative z-10 flex flex-col h-full">
-                  <div class="flex justify-between items-start mb-8">
-                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500/10 transition-all duration-500 border border-white/5">
-                      <i class="fas fa-book-open text-xl"></i>
-                    </div>
-                    <app-status-badge [status]="course.estadoCurso"></app-status-badge>
-                  </div>
-  
-                  <div class="space-y-3 mb-8">
-                    <span class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">{{ course.codigo }}</span>
-                    <h3 class="text-xl font-black text-white leading-tight group-hover:text-cyan-400 transition-colors">
-                      {{ course.titulo }}
-                    </h3>
-                    <p class="text-sm text-slate-500 line-clamp-2 font-medium">
-                      {{ course.descripcion || 'Sin descripción disponible para este curso.' }}
-                    </p>
-                  </div>
-  
-                  <!-- Stats del curso -->
-                  <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                      <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Alumnos</p>
-                      <p class="text-lg font-black text-white">{{ course.totalAlumnos }}</p>
-                    </div>
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                      <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Promedio</p>
-                      <p class="text-lg font-black text-white">{{ course.promedioGeneral | number:'1.1-1' }}</p>
-                    </div>
-                  </div>
-  
-                  <div class="mt-auto flex items-center justify-between gap-3">
-                    <div class="flex -space-x-3">
-                      @for (i of [1,2,3,4]; track i) {
-                        <img [src]="'https://i.pravatar.cc/100?u=' + course.id + i" 
-                          class="w-8 h-8 rounded-full border-2 border-[#020617] bg-slate-800" alt="Alumno">
-                      }
-                    </div>
-                    <div class="flex gap-2">
-                        <button [routerLink]="['/teacher/course', course.id, 'preview']" (click)="$event.stopPropagation()"
-                            class="px-4 py-2 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                            Previsualizar Aula
-                        </button>
-                        <button class="w-10 h-10 bg-white/5 hover:bg-cyan-500 text-slate-400 hover:text-slate-950 rounded-xl flex items-center justify-center transition-all">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                  </div>
+
+              <div class="space-y-2 mb-6">
+                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">{{ course.codigo }}</span>
+                <h3 class="text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                  {{ course.titulo }}
+                </h3>
+                <p class="text-sm text-slate-500 line-clamp-2">
+                  {{ course.descripcion || 'Sin descripción disponible para este curso.' }}
+                </p>
+              </div>
+
+              <!-- Stats del curso -->
+              <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Alumnos</p>
+                  <p class="text-lg font-bold text-slate-900">{{ course.totalAlumnos }}</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Promedio</p>
+                  <p class="text-lg font-bold text-slate-900">{{ course.promedioGeneral | number:'1.1-1' }}</p>
                 </div>
               </div>
-            } @empty {
-              <div class="col-span-full py-24 text-center bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <i class="fas fa-folder-open text-3xl text-slate-700"></i>
+
+              <div class="mt-auto flex items-center justify-between gap-3">
+                <div class="flex -space-x-2">
+                  @for (i of [1,2,3,4]; track i) {
+                    <img [src]="'https://i.pravatar.cc/100?u=' + course.id + i"
+                      class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" alt="Alumno">
+                  }
                 </div>
-                <h3 class="text-2xl font-black text-white mb-2">No se encontraron cursos</h3>
-                <p class="text-slate-500 max-w-xs mx-auto">Prueba ajustando los filtros o el término de búsqueda.</p>
+                <div class="flex gap-2">
+                  <button [routerLink]="['/teacher/course', course.id, 'preview']" (click)="$event.stopPropagation()"
+                    class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">
+                    Previsualizar Aula
+                  </button>
+                  <button class="w-9 h-9 bg-slate-100 hover:bg-indigo-500 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition-all">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                  </button>
+                </div>
               </div>
-            }
+            </div>
+          } @empty {
+            <div class="col-span-full py-24 text-center bg-white rounded-xl border border-dashed border-slate-300">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-folder-open text-2xl text-slate-400"></i>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">No se encontraron cursos</h3>
+              <p class="text-slate-500 max-w-xs mx-auto text-sm">Prueba ajustando los filtros o el término de búsqueda.</p>
+            </div>
           }
-        </div>
-      </section>
-  
-    </main>
-  </div>
-  
+        }
+      </div>
+    </section>
+
+  </main>
+</div>

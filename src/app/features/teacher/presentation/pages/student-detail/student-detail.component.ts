@@ -69,9 +69,9 @@ export class StudentDetailComponent implements OnInit {
 
   promedioColor = computed(() => {
     const p = this.promedioData()?.promedioGeneral ?? 0;
-    if (p >= 14) return 'text-green-400';
-    if (p >= 10.5) return 'text-orange-400';
-    return p > 0 ? 'text-red-400' : 'text-gray-400';
+    if (p >= 14) return 'text-green-600';
+    if (p >= 10.5) return 'text-orange-500';
+    return p > 0 ? 'text-red-500' : 'text-slate-400';
   });
 
   ngOnInit(): void {
@@ -177,12 +177,12 @@ export class StudentDetailComponent implements OnInit {
 
   getEstadoColor(estado: string): string {
     const c: Record<string, string> = {
-      Completado: 'bg-green-900/30 text-green-400 border border-green-500/30',
-      Pendiente: 'bg-gray-800/60 text-gray-400 border border-gray-600/30',
-      'En Calificación': 'bg-orange-900/30 text-orange-400 border border-orange-500/30',
-      Activo: 'bg-blue-900/30 text-blue-400 border border-blue-500/30',
+      Completado: 'bg-green-50 text-green-600 border border-green-200',
+      Pendiente: 'bg-slate-100 text-slate-500 border border-slate-200',
+      'En Calificación': 'bg-orange-50 text-orange-600 border border-orange-200',
+      Activo: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
     };
-    return c[estado] || 'bg-gray-800/60 text-gray-400 border border-gray-600/30';
+    return c[estado] || 'bg-slate-100 text-slate-500 border border-slate-200';
   }
 
   getTipoLabel(tipo: string): string {
