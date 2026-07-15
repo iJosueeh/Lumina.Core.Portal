@@ -86,7 +86,11 @@ export class AssignStudentModalComponent implements OnInit {
             if (this.normalizeGuid(u.id) === this.normalizeGuid(this.authService.getUserId() || '')) return false;
             if (enrolledUsuarioIds.has(this.normalizeGuid(u.id))) return false;
             return u.rolNombre.toLowerCase() === 'student';
-          });
+          })
+          .reduce((acc: any[], u: any) => {
+            if (!acc.some((x: any) => x.email.toLowerCase() === u.email.toLowerCase())) acc.push(u);
+            return acc;
+          }, []);
 
         this.assignableUsers.set(users);
         if (users.length > 0) this.selectedUserId.set(users[0].id);

@@ -27,6 +27,7 @@
         [searchTerm]="searchTerm()"
         (courseChange)="selectedCourseId.set($event); loadGrades()"
         (searchChange)="searchTerm.set($event)"
+        (createEvaluation)="openEvaluationModal()"
       />
     </div>
 

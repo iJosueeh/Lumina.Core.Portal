@@ -6,7 +6,7 @@ import { TeacherQueryService } from '@features/teacher/infrastructure/queries/te
 import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { NotificationService } from '@shared/services/notification.service';
 import { GradesMapper } from '@shared/mappers/grades.mapper';
-import { CourseGradesData, TeacherCourseGrades } from '@shared/models/grades-management.models';
+import { CourseGradesData, TeacherCourseGrades, EvaluacionGrades } from '@shared/models/grades-management.models';
 
 import { GradesFilterBarComponent } from './components/filter-bar/filter-bar.component';
 import { GradesStatsSummaryComponent } from './components/stats-summary/stats-summary.component';
@@ -100,11 +100,15 @@ export class GradesManagementComponent implements OnInit {
   }
 
   saveAll() {
+    const data = this.courseGradesData();
+    if (!data) return;
     this.isSaving.set(true);
+    // Persist local state (no backend endpoint for grades yet)
+    this.courseGradesData.set({ ...data });
     setTimeout(() => {
       this.isSaving.set(false);
-      this.notificationService.show('success', 'Cambios guardados correctamente');
-    }, 1000);
+      this.notificationService.show('success', 'Calificaciones guardadas correctamente');
+    }, 800);
   }
 
   openEvaluationModal(evaluacion?: any) {
@@ -115,7 +119,23 @@ export class GradesManagementComponent implements OnInit {
   }
 
   saveEvaluation() {
-    this.notificationService.show('success', `Evaluación ${this.isEditMode() ? 'actualizada' : 'creada'}`);
+    if (this.evaluationForm.invalid) return;
+    const formVal = this.evaluationForm.value;
+    const newEval: EvaluacionGrades = {
+      id: crypto.randomUUID(),
+      nombre: formVal.titulo,
+      peso: formVal.peso,
+      tipo: 'Tarea'
+    };
+    const current = this.courseGradesData();
+    if (current) {
+      this.courseGradesData.set({
+        ...current,
+        evaluaciones: [...current.evaluaciones, newEval]
+      });
+    }
+    this.notificationService.show('success', `Evaluación "${formVal.titulo}" creada correctamente`);
     this.showModal.set(false);
+    this.evaluationForm.reset({ peso: 10 });
   }
 }

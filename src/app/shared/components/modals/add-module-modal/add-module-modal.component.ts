@@ -8,47 +8,50 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" (click)="handleClose()"></div>
-        
-        <div class="relative bg-slate-900 border border-white/10 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div class="p-10 space-y-8 relative">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="handleClose()"></div>
+
+        <div class="relative bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 space-y-6">
+
                 <!-- Header -->
-                <div class="flex justify-between items-center relative z-10">
+                <div class="flex justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-black text-white tracking-tight">
+                        <h2 class="text-xl font-bold text-slate-900">
                             {{ isEditMode() ? 'Configurar Sección' : 'Nueva Sección' }}
                         </h2>
-                        <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">
-                            {{ isEditMode() ? 'Modifica o elimina esta sección del curso' : 'Define el título y objetivo del nuevo módulo' }}
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-0.5">
+                            {{ isEditMode() ? 'Modifica o elimina esta sección' : 'Define el título y objetivo del módulo' }}
                         </p>
                     </div>
-                    <button (click)="handleClose()" [disabled]="isSaving()" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all disabled:opacity-30">
-                        <i class="fas fa-times text-xl"></i>
+                    <button (click)="handleClose()" [disabled]="isSaving()"
+                        class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all disabled:opacity-30">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
 
-                <form [formGroup]="moduleForm" (ngSubmit)="submit()" class="space-y-6 relative z-10">
+                <form [formGroup]="moduleForm" (ngSubmit)="submit()" class="space-y-5">
                     <div class="space-y-4">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Título del Módulo</label>
-                            <input type="text" formControlName="titulo" placeholder="Ej: Fundamentos de..." 
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-bold">
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Título del Módulo</label>
+                            <input type="text" formControlName="titulo" placeholder="Ej: Fundamentos de..."
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción corta</label>
-                            <textarea formControlName="descripcion" rows="3" placeholder="¿Qué aprenderán en este módulo?..."
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none text-sm leading-relaxed"></textarea>
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción corta</label>
+                            <textarea formControlName="descripcion" rows="2" placeholder="¿Qué aprenderán en este módulo?"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed placeholder:text-slate-300"></textarea>
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-3 pt-4">
-                        <div class="flex gap-4">
-                            <button type="button" (click)="handleClose()" [disabled]="isSaving()" class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all uppercase tracking-widest text-[10px] disabled:opacity-30">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex gap-3">
+                            <button type="button" (click)="handleClose()" [disabled]="isSaving()"
+                                class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm disabled:opacity-30">
                                 Cancelar
                             </button>
-                            <button type="submit" [disabled]="moduleForm.invalid || isSaving()" 
-                                class="flex-[2] py-4 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
+                            <button type="submit" [disabled]="moduleForm.invalid || isSaving()"
+                                class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
                                 @if (isSaving()) {
                                     <i class="fas fa-spinner fa-spin"></i>
                                     Procesando...
@@ -59,8 +62,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                         </div>
 
                         @if (isEditMode()) {
-                            <button type="button" (click)="confirmDelete()" [disabled]="isSaving()" 
-                                class="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-black rounded-2xl transition-all uppercase tracking-[0.2em] text-[9px] flex items-center justify-center gap-2 mt-2">
+                            <button type="button" (click)="confirmDelete()" [disabled]="isSaving()"
+                                class="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold rounded-xl transition-all text-xs flex items-center justify-center gap-2">
                                 <i class="fas fa-trash-alt"></i> Eliminar Módulo Definitivamente
                             </button>
                         }

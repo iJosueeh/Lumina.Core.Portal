@@ -1,104 +1,98 @@
 <div class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-    <!-- Overlay de Cristal -->
-    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" (click)="onClose.emit()"></div>
-    
-    <!-- Contenido del Modal -->
-    <div class="relative bg-slate-900 border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        <!-- Glow Decorativo -->
-        <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-[80px]"></div>
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="onClose.emit()"></div>
 
-        <div class="p-10 space-y-8 relative z-10">
+    <div class="relative bg-white border border-slate-200 w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-8 space-y-6">
+
             <!-- Header -->
             <div class="flex justify-between items-center">
-                <div class="space-y-1">
-                    <h2 class="text-2xl font-black text-white tracking-tight">Matricular Estudiante</h2>
-                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Asignar alumno a la programación actual</p>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Matricular Estudiante</h2>
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-0.5">Asignar alumno a la programación actual</p>
                 </div>
-                <button (click)="onClose.emit()" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all">
-                    <i class="fas fa-times text-xl"></i>
+                <button (click)="onClose.emit()"
+                    class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <!-- Selectores de Modo -->
-            <div class="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
-                <button 
+            <div class="flex bg-slate-100 p-1 rounded-lg gap-1">
+                <button
                     (click)="assignMode.set('student')"
-                    [class.bg-cyan-500]="assignMode() === 'student'"
-                    [class.text-slate-950]="assignMode() === 'student'"
-                    [class.text-slate-400]="assignMode() !== 'student'"
-                    class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    [class.bg-white]="assignMode() === 'student'"
+                    [class.shadow-sm]="assignMode() === 'student'"
+                    [class.text-slate-800]="assignMode() === 'student'"
+                    [class.text-slate-500]="assignMode() !== 'student'"
+                    class="flex-1 py-2.5 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all">
                     Alumno Existente
                 </button>
-                <button 
+                <button
                     (click)="assignMode.set('usuario')"
-                    [class.bg-cyan-500]="assignMode() === 'usuario'"
-                    [class.text-slate-950]="assignMode() === 'usuario'"
-                    [class.text-slate-400]="assignMode() !== 'usuario'"
-                    class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                    [class.bg-white]="assignMode() === 'usuario'"
+                    [class.shadow-sm]="assignMode() === 'usuario'"
+                    [class.text-slate-800]="assignMode() === 'usuario'"
+                    [class.text-slate-500]="assignMode() !== 'usuario'"
+                    class="flex-1 py-2.5 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all">
                     Desde Usuarios
                 </button>
             </div>
 
             <!-- Formulario Dinámico -->
-            <div class="space-y-6 min-h-[200px]">
+            <div class="space-y-5 min-h-[180px]">
                 @if (assignMode() === 'student') {
-                    <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Seleccionar Alumno</label>
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Seleccionar Alumno</label>
                         @if (assignableStudents().length > 0) {
-                            <div class="relative group">
-                                <select [(ngModel)]="selectedStudentId" 
-                                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all font-medium">
-                                    @for (s of assignableStudents(); track s.id) {
-                                        <option [value]="s.id" class="bg-slate-900">{{ s.nombreCompleto }} ({{ s.email }})</option>
-                                    }
-                                </select>
-                                <div class="absolute inset-y-0 right-6 flex items-center pointer-events-none">
-                                    <i class="fas fa-chevron-down text-slate-600"></i>
-                                </div>
-                            </div>
+                            <select [(ngModel)]="selectedStudentId"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                                @for (s of assignableStudents(); track s.id) {
+                                    <option [value]="s.id">{{ s.nombreCompleto }} ({{ s.email }})</option>
+                                }
+                            </select>
                         } @else {
-                            <div class="p-8 text-center bg-white/5 rounded-2xl border border-dashed border-white/10">
-                                <p class="text-xs text-slate-500 font-bold italic">No hay más alumnos disponibles para este curso.</p>
+                            <div class="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                <p class="text-xs text-slate-400 font-medium">No hay más alumnos disponibles para este curso.</p>
                             </div>
                         }
                     </div>
                 } @else {
-                    <div class="space-y-6 animate-in fade-in duration-300">
-                        <div class="space-y-3">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Buscar Usuario (Estudiante)</label>
+                    <div class="space-y-5">
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Buscar Usuario (Estudiante)</label>
                             <div class="relative">
-                                <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-600"></i>
-                                <input type="text" [(ngModel)]="userSearchTerm" 
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" [(ngModel)]="userSearchTerm"
                                     placeholder="Nombre o correo del usuario..."
-                                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all">
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm placeholder:text-slate-400">
                             </div>
                         </div>
 
-                        <div class="space-y-3">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Resultados de búsqueda</label>
-                            <div class="bg-slate-950/40 border border-white/5 rounded-2xl max-h-48 overflow-y-auto custom-scrollbar">
+                        <div class="space-y-1.5">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Resultados de búsqueda</label>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl max-h-44 overflow-y-auto">
                                 @if (loadingAssignableUsers()) {
-                                    <div class="p-8 text-center space-y-4">
-                                        <i class="fas fa-spinner fa-spin text-cyan-500"></i>
-                                        <p class="text-[10px] text-slate-600 font-black uppercase">Buscando usuarios...</p>
+                                    <div class="p-6 text-center">
+                                        <i class="fas fa-spinner fa-spin text-indigo-500"></i>
+                                        <p class="text-[10px] text-slate-400 font-semibold uppercase mt-2">Buscando usuarios...</p>
                                     </div>
                                 } @else {
                                     @for (u of filteredAssignableUsers(); track u.id) {
-                                        <div 
+                                        <div
                                             (click)="selectedUserId.set(u.id)"
-                                            [class.bg-cyan-500/10]="selectedUserId() === u.id"
-                                            [class.border-cyan-500/30]="selectedUserId() === u.id"
-                                            class="p-4 border-b border-white/5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all">
+                                            [class.bg-indigo-50]="selectedUserId() === u.id"
+                                            [class.border-indigo-300]="selectedUserId() === u.id"
+                                            class="p-3 border-b border-slate-100 last:border-0 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-all">
                                             <div class="min-w-0">
-                                                <p class="text-sm font-black text-white truncate">{{ u.nombreCompleto }}</p>
-                                                <p class="text-[10px] text-slate-500 font-bold truncate">{{ u.email }}</p>
+                                                <p class="text-sm font-medium text-slate-800 truncate">{{ u.nombreCompleto }}</p>
+                                                <p class="text-[10px] text-slate-400 truncate">{{ u.email }}</p>
                                             </div>
                                             @if (selectedUserId() === u.id) {
-                                                <i class="fas fa-check-circle text-cyan-500"></i>
+                                                <i class="fas fa-check-circle text-indigo-500"></i>
                                             }
                                         </div>
                                     } @empty {
-                                        <div class="p-8 text-center text-slate-600 text-xs font-bold italic">No se encontraron usuarios student disponibles.</div>
+                                        <div class="p-6 text-center text-slate-400 text-xs">No se encontraron usuarios disponibles.</div>
                                     }
                                 }
                             </div>
@@ -108,15 +102,15 @@
             </div>
 
             <!-- Footer -->
-            <div class="flex gap-4 pt-4 border-t border-white/5">
-                <button type="button" (click)="onClose.emit()" 
-                    class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all uppercase tracking-widest text-xs">
+            <div class="flex gap-3 pt-3 border-t border-slate-100">
+                <button type="button" (click)="onClose.emit()"
+                    class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
                     Cancelar
                 </button>
-                <button 
+                <button
                     (click)="submitAssign()"
                     [disabled]="!canSubmit() || isAssigning()"
-                    class="flex-[2] py-4 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                    class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
                     @if (isAssigning()) {
                         <i class="fas fa-spinner fa-spin"></i>
                         Matriculando...
@@ -128,8 +122,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-</style>
