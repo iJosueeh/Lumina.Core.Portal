@@ -1,28 +1,16 @@
-<div class="min-h-screen bg-[#020617] text-slate-200 relative overflow-hidden flex flex-col">
-    <!-- Background Decor -->
-    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none"></div>
-    <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-    <div class="absolute top-1/2 -left-24 w-72 h-72 bg-cyan-500/5 blur-[100px] rounded-full pointer-events-none"></div>
-
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans flex flex-col">
     <!-- Header / Hero Section -->
     @if (course(); as c) {
-        <app-course-hero 
-            [data]="$any(c)" 
+        <app-course-hero
+            [data]="$any(c)"
             [role]="role"
             (onBack)="goBack()"
         />
     }
 
     <!-- Content Area -->
-    <main class="flex-1 relative z-10 p-6 md:p-12 -mt-20">
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Stats Grid (Solo visible para Admin para evitar ruido visual al docente) -->
-            @if (role === 'admin' && course(); as c) {
-                <app-course-stats 
-                    [course]="c"
-                    [totalLecciones]="totalLecciones()"
-                />
-            }
+    <main class="flex-1 p-6 md:p-12 -mt-8">
+        <div class="max-w-7xl mx-auto space-y-10">
 
             <!-- Navigation Tabs -->
             <app-tab-nav
@@ -33,19 +21,21 @@
 
             <!-- Tab Content -->
             @if (isLoading()) {
-                <div class="space-y-8">
-                    <app-skeleton-loader height="400px" radius="2.5rem" />
+                <div class="space-y-6">
+                    <div class="h-40 bg-white rounded-xl border border-slate-200 animate-pulse"></div>
                 </div>
             } @else {
                 @switch (activeTab()) {
                     @case ('overview') {
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-5 duration-500">
-                            <div class="lg:col-span-2 space-y-12">
-                                <section class="bg-white/5 rounded-[2.5rem] p-10 border border-white/5">
-                                    <p class="text-slate-400 leading-relaxed text-lg">{{ course()?.descripcion }}</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <div class="lg:col-span-2 space-y-10">
+                                <section class="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+                                    <p class="text-slate-600 leading-relaxed text-base">
+                                        {{ course()?.descripcion || 'Sin descripción disponible.' }}
+                                    </p>
                                 </section>
-                                
-                                <app-course-curriculum 
+
+                                <app-course-curriculum
                                     [modulos]="modulos()"
                                     (onAddContent)="openAddContent($event)"
                                     (onCreateModule)="openCreateModule()"
@@ -55,9 +45,9 @@
                                     (onOpenMaterial)="openMaterial($event)"
                                 />
                             </div>
-                            
-                            <div class="space-y-12 student-list-container">
-                                <app-course-students 
+
+                            <div class="space-y-10">
+                                <app-course-students
                                     [students]="students()"
                                     (onAssignClick)="showAssignStudentModal.set(true)"
                                 />
@@ -66,14 +56,14 @@
                     }
 
                     @case ('evaluaciones') {
-                        <div class="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
-                            <div class="flex justify-between items-center px-4">
-                                <h2 class="text-2xl font-black text-white tracking-tight">Registro de Evaluaciones</h2>
-                                <button (click)="openEvaluacionModal()" class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] text-xs uppercase tracking-widest flex items-center gap-2">
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center px-2">
+                                <h2 class="text-xl font-bold text-slate-900">Registro de Evaluaciones</h2>
+                                <button (click)="openEvaluacionModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
                                     <i class="fas fa-plus"></i> Crear Evaluación
                                 </button>
                             </div>
-                            <app-course-evaluations 
+                            <app-course-evaluations
                                 [evaluaciones]="courseEvaluaciones()"
                                 [isLoading]="isLoadingEvaluaciones()"
                                 (onEdit)="openQuestionEditor($any($event))"
