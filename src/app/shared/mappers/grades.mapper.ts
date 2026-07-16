@@ -28,7 +28,8 @@ export class GradesMapper {
         aprobados: apiData.stats?.aprobados || 0,
         reprobados: apiData.stats?.reprobados || 0,
         enRiesgo: apiData.stats?.enRiesgo || 0,
-        totalEstudiantes: (apiData.estudiantes || []).length
+        totalEstudiantes: (apiData.estudiantes || []).length,
+        porcentajeAprobados: apiData.stats?.aprobados || 0
       }
     };
   }

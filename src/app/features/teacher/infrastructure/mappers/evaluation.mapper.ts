@@ -4,12 +4,14 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class EvaluationMapper {
-  mapTipoEnum(tipo: number): string {
+  mapTipoEnum(tipo: number | string): string {
+    if (typeof tipo === 'string') return tipo;
     const tipos = ['Examen', 'Práctica', 'Quiz', 'Parcial', 'Final', 'Tarea'];
     return tipos[tipo] || 'Desconocido';
   }
 
-  mapEstadoEnum(estado: number): string {
+  mapEstadoEnum(estado: number | string): string {
+    if (typeof estado === 'string') return estado;
     const estados = ['Borrador', 'Publicada', 'Cerrada'];
     return estados[estado] || 'Desconocido';
   }

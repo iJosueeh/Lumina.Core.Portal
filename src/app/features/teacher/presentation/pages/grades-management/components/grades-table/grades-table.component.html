@@ -1,67 +1,121 @@
 <div class="relative">
-    <div class="overflow-x-auto">
+    <div class="overflow-hidden">
         <table class="w-full text-left border-separate border-spacing-0">
             <thead>
                 <tr>
-                    <!-- Header Estudiante (Sticky) -->
-                    <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest sticky left-0 bg-white z-30 border-b border-slate-100">
+                    <th class="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 sm:w-64">
                         Estudiante
                     </th>
-
-                    <!-- Headers Evaluaciones -->
-                    @for (evaluacion of evaluaciones; track evaluaciones.indexOf(evaluacion)) {
-                        <th class="px-4 py-4 text-center min-w-[120px] border-b border-slate-100 bg-slate-50">
-                            <div class="flex flex-col items-center gap-2">
-                                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ evaluacion.titulo }}</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">{{ evaluacion.peso }}%</span>
-                                    <button (click)="editEvaluation.emit(evaluacion)" class="text-[10px] text-slate-400 hover:text-indigo-500 transition-colors">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </th>
-                    }
-
-                    <!-- Header Promedio -->
-                    <th class="px-6 py-4 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50 sticky right-0 z-30">
+                    <th class="px-4 sm:px-6 py-4 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50 w-20 sm:w-24">
                         Promedio
+                    </th>
+                    <th class="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-12 sm:w-16">
+                        Detalle
                     </th>
                 </tr>
             </thead>
 
             <tbody class="divide-y divide-slate-100">
-                @for (calif of calificaciones; track calif.estudianteId) {
-                    <tr class="hover:bg-slate-50 transition-all group">
-                        <!-- Celda Estudiante (Sticky) -->
-                        <td class="px-6 py-4 sticky left-0 bg-white z-20 group-hover:bg-slate-50 transition-colors">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{{ calif.estudianteNombre }}</span>
-                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ calif.estudianteCodigo }}</span>
+                @for (calif of paginatedCalificaciones(); track calif.estudianteId) {
+                    <!-- Fila Principal -->
+                    <tr class="hover:bg-slate-50 transition-all cursor-pointer"
+                        (click)="toggleStudent(calif.estudianteId)">
+                        <td class="px-4 sm:px-6 py-4">
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user-graduate text-[10px] sm:text-xs text-indigo-400"></i>
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-xs sm:text-sm font-semibold text-slate-900 truncate">{{ calif.estudianteNombre }}</span>
+                                    <span class="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ calif.estudianteCodigo }}</span>
+                                </div>
                             </div>
                         </td>
-
-                        <!-- Celdas de Notas -->
-                        @for (nota of calif.notas; track nota.evaluacionId) {
-                            <td class="px-4 py-4 text-center">
-                                <input type="number" [(ngModel)]="nota.valor"
-                                    class="w-14 mx-auto block text-center bg-slate-50 border border-slate-200 rounded-xl py-2 font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all hover:border-indigo-300"
-                                    min="0" max="20" step="0.5">
-                            </td>
-                        }
-
-                        <!-- Celda Promedio (Sticky) -->
-                        <td class="px-6 py-4 text-center sticky right-0 bg-white z-20 group-hover:bg-slate-50 transition-colors">
-                            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-200">
-                                <span [class]="calif.promedio >= 10.5 ? 'text-slate-900' : 'text-orange-500'" class="font-bold text-base">
-                                    {{ calif.promedio }}
+                        <td class="px-4 sm:px-6 py-4 text-center">
+                            <div class="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl"
+                                 [class]="calif.promedio >= 10.5 ? 'bg-emerald-50 border border-emerald-200' : calif.promedio > 0 ? 'bg-red-50 border border-red-200' : 'bg-slate-50 border border-slate-200'">
+                                <span [class]="calif.promedio >= 10.5 ? 'text-emerald-700' : calif.promedio > 0 ? 'text-red-600' : 'text-slate-400'" class="font-bold text-sm sm:text-base">
+                                    {{ calif.promedio || '—' }}
                                 </span>
                             </div>
                         </td>
+                        <td class="px-4 py-4 text-center">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mx-auto transition-all duration-200"
+                                 [class]="expandedStudents.has(calif.estudianteId) ? 'bg-indigo-50' : 'bg-slate-50'">
+                                <i class="fas fa-chevron-down text-[10px] sm:text-xs transition-transform duration-200"
+                                   [class]="expandedStudents.has(calif.estudianteId) ? 'text-indigo-500 rotate-180' : 'text-slate-400'"></i>
+                            </div>
+                        </td>
                     </tr>
+
+                    <!-- Fila Expandida: Evaluaciones -->
+                    @if (expandedStudents.has(calif.estudianteId)) {
+                        <tr>
+                            <td colspan="3" class="p-0">
+                                <div class="bg-slate-50/80 border-l-4 border-indigo-300 mx-2 sm:mx-4 my-2 rounded-r-xl">
+                                    @for (eval of evaluaciones; track eval.id) {
+                                        <!-- Desktop: fila horizontal -->
+                                        <div class="hidden sm:flex items-center gap-4 px-5 py-3 border-b border-slate-100 last:border-b-0">
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-medium text-slate-700 truncate">{{ eval.nombre }}</span>
+                                                    <span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200 flex-shrink-0">{{ eval.peso }}%</span>
+                                                </div>
+                                                <span class="text-[10px] text-slate-400 font-medium">{{ eval.tipo }}</span>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <input type="number"
+                                                    [(ngModel)]="calif.notas[eval.id]"
+                                                    (ngModelChange)="onNotaChange(calif.estudianteId, eval.id, clamp($event))"
+                                                    (click)="$event.stopPropagation()"
+                                                    placeholder="—"
+                                                    class="w-20 text-center bg-white border border-slate-200 rounded-xl py-2.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all hover:border-indigo-300"
+                                                    min="0" max="20" step="0.5">
+                                            </div>
+                                            <div class="w-16 flex-shrink-0 text-center">
+                                                @if (calif.notas[eval.id] != null) {
+                                                    <span class="inline-flex items-center justify-center w-10 h-7 rounded-lg text-xs font-bold"
+                                                          [class]="calif.notas[eval.id] >= 10.5 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'">
+                                                        {{ calif.notas[eval.id] }}
+                                                    </span>
+                                                } @else {
+                                                    <span class="text-[10px] text-slate-300 font-medium">Sin nota</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Mobile: card vertical -->
+                                        <div class="sm:hidden px-4 py-3 border-b border-slate-100 last:border-b-0">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <div class="min-w-0">
+                                                    <span class="text-xs font-medium text-slate-700 block truncate">{{ eval.nombre }}</span>
+                                                    <span class="text-[9px] text-slate-400">{{ eval.tipo }} · {{ eval.peso }}%</span>
+                                                </div>
+                                                @if (calif.notas[eval.id] != null) {
+                                                    <span class="inline-flex items-center justify-center w-9 h-6 rounded-md text-[10px] font-bold flex-shrink-0 ml-2"
+                                                          [class]="calif.notas[eval.id] >= 10.5 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'">
+                                                        {{ calif.notas[eval.id] }}
+                                                    </span>
+                                                }
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <input type="number"
+                                                    [(ngModel)]="calif.notas[eval.id]"
+                                                    (ngModelChange)="onNotaChange(calif.estudianteId, eval.id, clamp($event))"
+                                                    (click)="$event.stopPropagation()"
+                                                    placeholder="Nota"
+                                                    class="flex-1 text-center bg-white border border-slate-200 rounded-lg py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                                    min="0" max="20" step="0.5">
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 } @empty {
                     <tr>
-                        <td [attr.colspan]="evaluaciones.length + 2" class="px-8 py-24 text-center">
+                        <td colspan="3" class="px-8 py-24 text-center">
                             <div class="flex flex-col items-center gap-3">
                                 <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center border border-dashed border-slate-300">
                                     <i class="fas fa-user-graduate text-2xl text-slate-400"></i>
@@ -75,4 +129,32 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Paginación -->
+    @if (calificaciones.length > pageSize) {
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-slate-100 bg-white">
+            <span class="text-[10px] sm:text-xs text-slate-400 font-medium">
+                {{ (currentPage() - 1) * pageSize + 1 }}–{{ mathMin(currentPage() * pageSize, calificaciones.length) }} de {{ calificaciones.length }}
+            </span>
+            <div class="flex items-center gap-1">
+                <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all"
+                    [class]="currentPage() === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                @for (p of pageNumbers(); track p) {
+                    <button (click)="goToPage(p)"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all"
+                        [class]="p === currentPage() ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'">
+                        {{ p }}
+                    </button>
+                }
+                <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium transition-all"
+                    [class]="currentPage() === totalPages() ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:bg-slate-100'">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    }
 </div>

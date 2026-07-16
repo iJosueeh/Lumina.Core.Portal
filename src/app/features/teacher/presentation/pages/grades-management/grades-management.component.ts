@@ -1,17 +1,15 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
-import { TeacherCourseRepository } from '@features/teacher/domain/repositories/teacher-course.repository';
 import { NotificationService } from '@shared/services/notification.service';
-import { GradesMapper } from '@shared/mappers/grades.mapper';
-import { CourseGradesData, TeacherCourseGrades, EvaluacionGrades } from '@shared/models/grades-management.models';
+import { TeacherGradesService } from '@features/teacher/infrastructure/services/teacher-grades.service';
+import { CourseGradesData, TeacherCourseGrades } from '@shared/models/grades-management.models';
 
 import { GradesFilterBarComponent } from './components/filter-bar/filter-bar.component';
 import { GradesStatsSummaryComponent } from './components/stats-summary/stats-summary.component';
 import { GradesTableComponent } from './components/grades-table/grades-table.component';
-import { EvaluationModalComponent } from './components/evaluation-modal/evaluation-modal.component';
 import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
 
 @Component({
@@ -19,12 +17,10 @@ import { PageHeaderComponent } from '@shared/components/ui/page-header/page-head
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     PageHeaderComponent,
     GradesFilterBarComponent,
     GradesStatsSummaryComponent,
     GradesTableComponent,
-    EvaluationModalComponent
   ],
   templateUrl: './grades-management.component.html',
   styleUrl: './grades-management.component.css'
@@ -32,10 +28,9 @@ import { PageHeaderComponent } from '@shared/components/ui/page-header/page-head
 export class GradesManagementComponent implements OnInit {
   private authRepository = inject(AuthRepository);
   private teacherQueryService = inject(TeacherQueryService);
-  private courseRepository = inject(TeacherCourseRepository);
-  private fb = inject(FormBuilder);
+  private gradesService = inject(TeacherGradesService);
+  private route = inject(ActivatedRoute);
   public notificationService = inject(NotificationService);
-  private gradesMapper = inject(GradesMapper);
 
   courses = signal<TeacherCourseGrades[]>([]);
   selectedCourseId = signal<string>('');
@@ -43,11 +38,9 @@ export class GradesManagementComponent implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
   searchTerm = signal('');
-  showModal = signal(false);
-  isEditMode = signal(false);
-  evaluationForm!: FormGroup;
 
   evaluaciones = computed(() => this.courseGradesData()?.evaluaciones || []);
+  evaluacionIds = computed(() => this.evaluaciones().map(e => e.id));
   calificaciones = computed(() => {
     const term = this.searchTerm().toLowerCase();
     const califs = this.courseGradesData()?.calificaciones || [];
@@ -58,26 +51,20 @@ export class GradesManagementComponent implements OnInit {
   stats = computed(() => this.courseGradesData()?.estadisticas || null);
 
   ngOnInit() {
-    this.initForm();
     this.loadInitialData();
-  }
-
-  private initForm() {
-    this.evaluationForm = this.fb.group({
-      titulo: ['', Validators.required],
-      descripcion: [''],
-      peso: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
-      fechaFin: ['', Validators.required]
-    });
   }
 
   async loadInitialData() {
     const userId = this.authRepository.getCurrentUser()?.id || '';
+    const cursoIdFromQuery = this.route.snapshot.queryParams['cursoId'];
     try {
       const data = await this.teacherQueryService.getTeacherCourses(userId);
       this.courses.set(data.map(c => ({ id: c.id, codigo: c.codigo, titulo: c.titulo })));
       if (data.length) {
-        this.selectedCourseId.set(data[0].id);
+        const targetId = cursoIdFromQuery && data.some(c => c.id === cursoIdFromQuery)
+          ? cursoIdFromQuery
+          : data[0].id;
+        this.selectedCourseId.set(targetId);
         this.loadGrades();
       } else this.isLoading.set(false);
     } catch { this.isLoading.set(false); }
@@ -87,9 +74,9 @@ export class GradesManagementComponent implements OnInit {
     const id = this.selectedCourseId();
     if (!id) return;
     this.isLoading.set(true);
-    this.courseRepository.getCourseById(id).subscribe({
+    this.gradesService.getCourseGrades(id).subscribe({
       next: (data) => {
-        this.courseGradesData.set(this.gradesMapper.mapApiToGradesData(data));
+        this.courseGradesData.set(data);
         this.isLoading.set(false);
       },
       error: () => {
@@ -103,39 +90,64 @@ export class GradesManagementComponent implements OnInit {
     const data = this.courseGradesData();
     if (!data) return;
     this.isSaving.set(true);
-    // Persist local state (no backend endpoint for grades yet)
-    this.courseGradesData.set({ ...data });
-    setTimeout(() => {
+
+    // Agrupar calificaciones por evaluacionId → [{ estudianteId, nota }]
+    const porEvaluacion = new Map<string, { estudianteId: string; nota: number }[]>();
+    for (const calif of data.calificaciones) {
+      for (const [evalId, nota] of Object.entries(calif.notas)) {
+        if (nota == null) continue;
+        if (!porEvaluacion.has(evalId)) porEvaluacion.set(evalId, []);
+        porEvaluacion.get(evalId)!.push({ estudianteId: calif.estudianteId, nota });
+      }
+    }
+
+    if (porEvaluacion.size === 0) {
       this.isSaving.set(false);
-      this.notificationService.show('success', 'Calificaciones guardadas correctamente');
-    }, 800);
-  }
+      this.notificationService.show('info', 'No hay calificaciones para guardar');
+      return;
+    }
 
-  openEvaluationModal(evaluacion?: any) {
-    this.isEditMode.set(!!evaluacion);
-    if (evaluacion) this.evaluationForm.patchValue(evaluacion);
-    else this.evaluationForm.reset({ peso: 10 });
-    this.showModal.set(true);
-  }
+    // POST por cada evaluación
+    const requests = Array.from(porEvaluacion.entries()).map(([evalId, califs]) =>
+      this.gradesService.guardarCalificaciones(evalId, califs)
+    );
 
-  saveEvaluation() {
-    if (this.evaluationForm.invalid) return;
-    const formVal = this.evaluationForm.value;
-    const newEval: EvaluacionGrades = {
-      id: crypto.randomUUID(),
-      nombre: formVal.titulo,
-      peso: formVal.peso,
-      tipo: 'Tarea'
-    };
-    const current = this.courseGradesData();
-    if (current) {
-      this.courseGradesData.set({
-        ...current,
-        evaluaciones: [...current.evaluaciones, newEval]
+    // Esperar a que todas terminen
+    let completados = 0;
+    let errores = 0;
+    for (const req of requests) {
+      req.subscribe({
+        next: () => {
+          completados++;
+          if (completados + errores === requests.length) this.finalizarGuardado(completados, errores);
+        },
+        error: () => {
+          errores++;
+          if (completados + errores === requests.length) this.finalizarGuardado(completados, errores);
+        }
       });
     }
-    this.notificationService.show('success', `Evaluación "${formVal.titulo}" creada correctamente`);
-    this.showModal.set(false);
-    this.evaluationForm.reset({ peso: 10 });
+  }
+
+  private finalizarGuardado(completados: number, errores: number) {
+    this.isSaving.set(false);
+    if (errores === 0) {
+      this.notificationService.show('success', `Calificaciones guardadas (${completados} evaluación(es))`);
+    } else {
+      this.notificationService.show('error', `Error al guardar (${errores} fallaron)`);
+    }
+  }
+
+  onGradeChange(event: { estudianteId: string; evaluacionId: string; nota: number | null }) {
+    const data = this.courseGradesData();
+    if (!data) return;
+    const calif = data.calificaciones.find(c => c.estudianteId === event.estudianteId);
+    if (calif) {
+      calif.notas[event.evaluacionId] = event.nota;
+      const notasArr = Object.values(calif.notas).filter((n): n is number => n != null);
+      calif.promedio = notasArr.length
+        ? Number((notasArr.reduce((a, b) => a + b, 0) / notasArr.length).toFixed(2))
+        : 0;
+    }
   }
 }

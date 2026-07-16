@@ -48,6 +48,7 @@ export interface CourseGradesData {
     reprobados: number;
     enRiesgo: number;
     totalEstudiantes: number;
+    porcentajeAprobados: number;
   };
 }
 

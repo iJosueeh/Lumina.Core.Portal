@@ -3,8 +3,8 @@
   <!-- Header -->
   <app-page-header
     badge="Gestión de Notas"
-    title="Calificaciones y Evaluaciones"
-    subtitle="Registra y gestiona el rendimiento académico de tus estudiantes con precisión">
+    title="Calificaciones"
+    subtitle="Registra y gestiona las calificaciones de tus estudiantes por evaluación">
     <button (click)="saveAll()" [disabled]="isSaving()" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:scale-100 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
       @if (isSaving()) {
         <i class="fas fa-spinner fa-spin"></i>
@@ -27,7 +27,6 @@
         [searchTerm]="searchTerm()"
         (courseChange)="selectedCourseId.set($event); loadGrades()"
         (searchChange)="searchTerm.set($event)"
-        (createEvaluation)="openEvaluationModal()"
       />
     </div>
 
@@ -45,21 +44,11 @@
       } @else {
         <app-grades-table
           [evaluaciones]="evaluaciones()"
+          [evaluacionIds]="evaluacionIds()"
           [calificaciones]="calificaciones()"
-          (onEditEvaluation)="openEvaluationModal($event)"
-          (onAddEvaluation)="openEvaluationModal()"
+          (gradeChange)="onGradeChange($event)"
         />
       }
     </div>
   </main>
-
-  <!-- Modal para Nueva Evaluación -->
-  @if (showModal()) {
-    <app-evaluation-modal
-      [form]="evaluationForm"
-      [isEdit]="isEditMode()"
-      (onClose)="showModal.set(false)"
-      (onSave)="saveEvaluation()"
-    />
-  }
 </div>

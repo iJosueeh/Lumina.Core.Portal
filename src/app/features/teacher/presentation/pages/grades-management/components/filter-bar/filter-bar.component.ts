@@ -20,5 +20,4 @@ export class GradesFilterBarComponent {
   @Output() searchChange = new EventEmitter<string>();
   @Output() save = new EventEmitter<void>();
   @Output() export = new EventEmitter<void>();
-  @Output() createEvaluation = new EventEmitter<void>();
 }

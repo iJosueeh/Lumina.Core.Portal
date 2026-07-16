@@ -17,7 +17,10 @@ export class EvaluationModalComponent {
   @Input({ required: true }) form!: FormGroup;
   @Input() isEdit = false;
   @Input() isSaving = false;
+  @Input() courses: { id: string; codigo: string; titulo: string }[] = [];
+  @Input() selectedCourseId = '';
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
+  @Output() courseChange = new EventEmitter<string>();
 }

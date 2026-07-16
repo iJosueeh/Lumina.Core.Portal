@@ -4,12 +4,35 @@
     [showFooter]="true">
     
     <form [formGroup]="form" class="space-y-4">
+        <!-- Selector de Curso -->
+        @if (courses.length > 0) {
+            <app-form-field label="Curso" [required]="true">
+                <select [value]="selectedCourseId"
+                    (change)="courseChange.emit($any($event.target).value)"
+                    class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all hover:border-indigo-300 appearance-none cursor-pointer">
+                    @for (course of courses; track course.id) {
+                        <option [value]="course.id">{{ course.codigo }} - {{ course.titulo }}</option>
+                    }
+                </select>
+            </app-form-field>
+        }
+
         <app-form-field label="Título de la Evaluación" [required]="true" [error]="form.get('titulo')?.invalid && form.get('titulo')?.touched ? 'El título es requerido' : null">
             <app-input formControlName="titulo" placeholder="Ej: Examen Parcial I"></app-input>
         </app-form-field>
 
         <app-form-field label="Descripción">
             <app-input formControlName="descripcion" placeholder="Opcional..."></app-input>
+        </app-form-field>
+
+        <app-form-field label="Tipo de Evaluación" [required]="true">
+            <select formControlName="tipo"
+                class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all hover:border-indigo-300 appearance-none cursor-pointer">
+                <option value="Examen">📝 Examen</option>
+                <option value="Tarea">📋 Tarea</option>
+                <option value="Proyecto">🔧 Proyecto</option>
+                <option value="Quizz">❓ Quizz</option>
+            </select>
         </app-form-field>
 
         <div class="grid grid-cols-2 gap-4">
