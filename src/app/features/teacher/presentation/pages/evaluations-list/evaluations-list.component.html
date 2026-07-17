@@ -4,13 +4,7 @@
   <app-page-header
     badge="Banco de Evaluaciones"
     title="Mis Evaluaciones"
-    subtitle="Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos">
-    <button (click)="openEvaluationModal()" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
-      <i class="fas fa-plus-circle"></i>
-      Nueva Evaluación
-    </button>
-  </app-page-header>
-
+    subtitle="Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos" />
 
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
@@ -40,48 +34,13 @@
         @if (filteredEvaluaciones().length > 0) {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (ev of filteredEvaluaciones(); track ev.id) {
-              <div class="group bg-white border border-slate-200 p-6 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all relative overflow-hidden flex flex-col h-full">
-
-                <div class="flex justify-between items-start mb-5">
-                  <div class="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-                    <i [class]="ev.tipoEvaluacion === 'Examen' ? 'fas fa-file-invoice' : 'fas fa-tasks'"></i>
-                  </div>
-                  <span class="px-2.5 py-1 bg-slate-100 text-[9px] font-bold text-slate-500 uppercase tracking-widest rounded-lg border border-slate-200">{{ ev.estado }}</span>
-                </div>
-
-                <div class="space-y-1.5 mb-5">
-                  <h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors truncate">
-                    {{ ev.titulo }}
-                  </h3>
-                  <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">{{ ev.cursoNombre }}</p>
-                  <p class="text-xs text-slate-500 line-clamp-2">
-                    {{ ev.descripcion || 'Sin descripción detallada.' }}
-                  </p>
-                </div>
-
-                <!-- Meta Info -->
-                <div class="grid grid-cols-2 gap-3 mb-5 mt-auto">
-                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha Límite</p>
-                    <p class="text-[10px] font-semibold text-slate-600">{{ ev.fechaFin | date:'dd MMM, yyyy' }}</p>
-                  </div>
-                  <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Peso</p>
-                    <p class="text-[10px] font-bold text-slate-900">{{ ev.peso }}%</p>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                  <button (click)="viewDetails(ev.id, ev.cursoId)"
-                    class="flex-1 px-4 py-2 bg-indigo-50 hover:bg-indigo-500 text-indigo-600 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all">
-                    Ver Notas
-                  </button>
-                  <button (click)="deleteEvaluation({id: ev.id, titulo: ev.titulo, event: $event})"
-                    class="w-9 h-9 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg flex items-center justify-center transition-all">
-                    <i class="fas fa-trash-alt text-xs"></i>
-                  </button>
-                </div>
-              </div>
+              <app-evaluation-card
+                [evaluation]="ev"
+                (onViewDetails)="viewDetails($event)"
+                (onEdit)="openEditModal($event)"
+                (onEditQuestions)="openQuestionEditor($event)"
+                (onDelete)="deleteEvaluation($event)"
+              />
             }
           </div>
         } @else {
@@ -97,32 +56,36 @@
     </div>
   </main>
 
-  <!-- Modal Nueva Evaluación -->
-  @if (showModal()) {
-    <app-evaluation-modal
-      [form]="evaluationForm"
-      [isSaving]="isSaving()"
-      [courses]="courses()"
-      [selectedCourseId]="selectedCourseId()"
-      (close)="showModal.set(false)"
-      (save)="saveEvaluation()"
-      (courseChange)="selectedCourseId.set($event)"
+  <!-- Modal: Editar Evaluación -->
+  @if (showEditModal() && selectedEvalToEdit()) {
+    <app-evaluacion-modal
+      [courseId]="selectedCourseIdForEval()"
+      [evaluacionToEdit]="selectedEvalToEdit()!"
+      (onClose)="showEditModal.set(false)"
+      (onSaved)="onEditSaved()"
     />
   }
 
-  <!-- Modal Confirmar Eliminación -->
+  <!-- Modal: Editor de Preguntas -->
+  @if (showQuestionEditor() && selectedEvalForQuestions()) {
+    <app-question-editor
+      [quizzId]="selectedEvalForQuestions()!.id"
+      [quizzTitle]="selectedEvalForQuestions()!.titulo"
+      (onClose)="showQuestionEditor.set(false)"
+      (onSaved)="onQuestionsSaved()"
+    />
+  }
+
+  <!-- Modal: Confirmar Eliminación -->
   @if (showDeleteModal() && evaluacionToDelete()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="cancelDelete()"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
-        <!-- Icono de advertencia -->
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
         <div class="flex justify-center">
           <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center border border-red-200">
             <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
           </div>
         </div>
-
-        <!-- Contenido -->
         <div class="text-center space-y-2">
           <h3 class="text-lg font-bold text-slate-900">Eliminar Evaluación</h3>
           <p class="text-sm text-slate-500">
@@ -130,8 +93,6 @@
             Esta acción no se puede deshacer.
           </p>
         </div>
-
-        <!-- Botones -->
         <div class="flex gap-3">
           <button (click)="cancelDelete()"
             class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all">

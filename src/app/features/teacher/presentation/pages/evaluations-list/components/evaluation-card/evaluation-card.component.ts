@@ -14,9 +14,11 @@ import { EvaluacionUI } from '@features/teacher/domain/models/evaluation.model';
 })
 export class EvaluationCardComponent {
   evaluation = input.required<EvaluacionUI>();
-  
+
   onViewDetails = output<string>();
-  onDelete = output<{ id: string, event: Event }>();
+  onDelete = output<{ id: string; event: Event }>();
+  onEdit = output<string>();
+  onEditQuestions = output<string>();
 
   private mapper = inject(EvaluationMapper);
 

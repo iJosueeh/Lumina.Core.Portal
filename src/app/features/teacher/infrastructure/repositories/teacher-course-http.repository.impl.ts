@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, switchMap, forkJoin, of, catchError } from 'rxjs';
+import { Observable, map, switchMap, of, catchError } from 'rxjs';
 import { TeacherCourseRepository } from '../../domain/repositories/teacher-course.repository';
 import { TeacherCourse, CourseStats } from '../../domain/models/teacher-course.model';
 import { environment } from '../../../../../environments/environment';
@@ -18,36 +18,22 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
     }
 
     override getCoursesByTeacher(usuarioId: string): Observable<TeacherCourse[]> {
-        console.log('🔍 [TEACHER-COURSES-HTTP] Fetching courses for usuarioId:', usuarioId);
-        
         // Step 1: Get docente from usuarioId
         return this.http.get<any>(`${this.docentesApiUrl}/docente/by-usuario/${usuarioId}`).pipe(
             switchMap(docenteResponse => {
                 const docenteId = docenteResponse.id?.value || docenteResponse.id;
-                console.log('✅ [TEACHER-COURSES-HTTP] DocenteId obtenido:', docenteId);
-                
-                // Step 2: Get all courses and filter by instructorId
-                return this.http.get<any[]>(`${this.cursosApiUrl}/cursos`).pipe(
-                    map(allCursos => {
-                        console.log('📚 [TEACHER-COURSES-HTTP] Total de cursos:', allCursos.length);
-                        
-                        // Filter courses where instructorId matches docenteId
-                        const teacherCourses = allCursos.filter((curso: any) => {
-                            const instructorId = curso.instructorId || curso.InstructorId;
-                            return instructorId === docenteId;
-                        });
-                        
-                        console.log('📚 [TEACHER-COURSES-HTTP] Cursos del docente:', teacherCourses.length);
-                        return teacherCourses.map(curso => this.mapToTeacherCourse(curso));
-                    }),
+
+                // Step 2: Use the instructor endpoint to get only this teacher's courses
+                return this.http.get<any[]>(`${this.cursosApiUrl}/cursos/instructor/${docenteId}`).pipe(
+                    map(cursos => cursos.map(curso => this.mapToTeacherCourse(curso))),
                     catchError(error => {
-                        console.error('❌ [TEACHER-COURSES-HTTP] Error fetching courses:', error);
+                        console.error('Error fetching courses:', error);
                         return of([]);
                     })
                 );
             }),
             catchError(error => {
-                console.error('❌ [TEACHER-COURSES-HTTP] Error fetching docente:', error);
+                console.error('Error fetching docente:', error);
                 return of([]);
             })
         );
