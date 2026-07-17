@@ -22,21 +22,19 @@ export class TeacherGradesService {
 
   /**
    * Carga evaluaciones y calificaciones para un curso.
-   * - GET /api/evaluaciones?cursoId={courseId} → lista de evaluaciones
-   * - GET /api/evaluaciones/cursos/{courseId}/calificaciones → notas por estudiante
-   * - GET /api/estudiantes?cursoId={courseId} → estudiantes del curso
+   * - GET /api/evaluaciones/cursos/{courseId}/calificaciones → evaluaciones + notas por estudiante
+   * - GET /api/estudiantes/por-curso/{courseId} → estudiantes del curso
    */
   getCourseGrades(courseId: string): Observable<CourseGradesData> {
-    console.log('🔍 [GRADES-SERVICE] getCourseGrades called with courseId:', courseId, 'type:', typeof courseId);
+    console.log('🔍 [GRADES-SERVICE] getCourseGrades called with courseId:', courseId);
     const courseIdGuid = courseId;
 
     return forkJoin({
-      evaluaciones: this.getEvaluaciones(courseIdGuid),
       calificaciones: this.getCalificaciones(courseIdGuid),
       estudiantes: this.getEstudiantesPorCurso(courseIdGuid)
     }).pipe(
-      map(({ evaluaciones, calificaciones, estudiantes }) =>
-        this.mapToCourseGradesData(courseId, evaluaciones, calificaciones, estudiantes)
+      map(({ calificaciones, estudiantes }) =>
+        this.mapToCourseGradesData(courseId, calificaciones, estudiantes)
       )
     );
   }
@@ -61,18 +59,6 @@ export class TeacherGradesService {
     return this.http.post(`${this.evalUrl}/evaluaciones/${evaluacionId}/calificaciones`, calificaciones);
   }
 
-  private getEvaluaciones(cursoId: string): Observable<any[]> {
-    const url = `${this.evalUrl}/evaluaciones?cursoId=${cursoId}`;
-    console.log('🔍 [GRADES-SERVICE] getEvaluaciones URL:', url);
-    return this.http.get<any>(url).pipe(
-      map(res => res.evaluaciones ?? []),
-      catchError(err => {
-        console.error('❌ [GRADES] Error al cargar evaluaciones:', err.status, err.statusText, err.error);
-        return of([]);
-      })
-    );
-  }
-
   private getCalificaciones(cursoId: string): Observable<any> {
     return this.http.get<any>(`${this.evalUrl}/evaluaciones/cursos/${cursoId}/calificaciones`).pipe(
       catchError(() => of({ calificaciones: [] }))
@@ -87,18 +73,16 @@ export class TeacherGradesService {
 
   private mapToCourseGradesData(
     courseId: string,
-    evaluaciones: any[],
     califResp: any,
     estudiantes: any[]
   ): CourseGradesData {
-    // Mapear evaluaciones del endpoint (peso = distribución equitativa: 100/N)
-    const totalEvals = evaluaciones?.length || 1;
-    const pesoUnitario = Math.round(100 / totalEvals);
-    const evalMapped: EvaluacionGrades[] = (evaluaciones || []).map((e: any) => ({
+    // Las evaluaciones vienen incluidas en la respuesta de calificaciones
+    const evaluacionesApi = califResp?.evaluaciones ?? [];
+    const evalMapped: EvaluacionGrades[] = (evaluacionesApi || []).map((e: any) => ({
       id: e.id,
       nombre: e.titulo,
-      peso: pesoUnitario,
-      tipo: e.tipo || 'Tarea'
+      peso: e.puntajeMaximo || 0,
+      tipo: e.tipoEvaluacion?.toString() || 'Tarea'
     }));
 
     // Mapear estudiantes + notas

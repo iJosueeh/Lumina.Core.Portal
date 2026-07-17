@@ -53,7 +53,7 @@ export class EvaluationsListComponent implements OnInit {
 
   // Question editor
   showQuestionEditor = signal(false);
-  selectedEvalForQuestions = signal<{ id: string; titulo: string } | null>(null);
+  selectedEvalForQuestions = signal<{ id: string; titulo: string; puntajeMaximo: number } | null>(null);
 
   // Delete
   showDeleteModal = signal(false);
@@ -162,7 +162,7 @@ export class EvaluationsListComponent implements OnInit {
   openQuestionEditor(evalId: string): void {
     const ev = this.evaluaciones().find((e) => e.id === evalId);
     if (!ev) return;
-    this.selectedEvalForQuestions.set({ id: ev.id, titulo: ev.titulo });
+    this.selectedEvalForQuestions.set({ id: ev.id, titulo: ev.titulo, puntajeMaximo: ev.puntajeMaximo });
     this.showQuestionEditor.set(true);
   }
 

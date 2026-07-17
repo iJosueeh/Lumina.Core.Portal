@@ -17,8 +17,11 @@ import { QuestionDraft } from '@shared/models/course-management.models';
 export class QuestionEditorComponent implements OnInit {
   @Input({ required: true }) quizzId!: string;
   @Input({ required: true }) quizzTitle!: string;
+  @Input() puntajeMaximo: number = 0;
   @Output() onClose = new EventEmitter<void>();
   @Output() onSaved = new EventEmitter<void>();
+
+  Math = Math;
 
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
@@ -26,6 +29,24 @@ export class QuestionEditorComponent implements OnInit {
   questionsList: QuestionDraft[] = [];
   isLoading = signal(false);
   isSaving = signal(false);
+
+  totalPoints(): number {
+    return this.questionsList.reduce((sum, q) => sum + (q.puntos || 0), 0);
+  }
+
+  get remainingPoints(): number {
+    return Math.max(0, this.puntajeMaximo - this.totalPoints());
+  }
+
+  get isOverBudget(): boolean {
+    return this.puntajeMaximo > 0 && this.totalPoints() > this.puntajeMaximo;
+  }
+
+  maxPtsForQuestion(qIdx: number): number {
+    const currentPts = this.questionsList[qIdx]?.puntos || 0;
+    if (this.puntajeMaximo <= 0) return 100;
+    return this.remainingPoints + currentPts;
+  }
 
   ngOnInit(): void {
     if (this.quizzId) {

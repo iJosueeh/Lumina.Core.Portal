@@ -71,6 +71,7 @@
     <app-question-editor
       [quizzId]="selectedEvalForQuestions()!.id"
       [quizzTitle]="selectedEvalForQuestions()!.titulo"
+      [puntajeMaximo]="selectedEvalForQuestions()!.puntajeMaximo"
       (onClose)="showQuestionEditor.set(false)"
       (onSaved)="onQuestionsSaved()"
     />
