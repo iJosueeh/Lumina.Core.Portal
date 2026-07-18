@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
-import { AdminDashboardData, SystemStatus, RecentActivity } from '../mocks';
+import { AdminDashboardData, ChartData, SystemStatus, RecentActivity } from '../mocks';
 import { AdminDashboardStatsService } from './admin-dashboard-stats.service';
 import { AdminDashboardHealthService } from './admin-dashboard-health.service';
 
@@ -23,12 +23,13 @@ export class AdminDashboardApiService {
       usuarios: this.getUsuariosCount(),
       systemStatus: this.getSystemStatus(),
       recentActivity: this.getRecentActivity(),
+      chartData: this.getChartData(),
     }).pipe(
-      map(({ estudiantes, docentes, cursos, usuarios, systemStatus, recentActivity }) => ({
+      map(({ estudiantes, docentes, cursos, usuarios, systemStatus, recentActivity, chartData }) => ({
         stats: this.statsService.buildStats(estudiantes, docentes, cursos, usuarios),
         systemStatus: systemStatus,
         recentActivity: recentActivity,
-        chartData: this.statsService.buildChartData(),
+        chartData,
       })),
       catchError((error) => {
         console.error('Error cargando datos del dashboard:', error);
@@ -84,6 +85,17 @@ export class AdminDashboardApiService {
       map(data => this.healthService.buildRecentActivityFromData(data)),
       catchError(() => of(this.healthService.buildRecentActivityTodo()))
     );
+  }
+
+  private getChartData(): Observable<ChartData> {
+    const period = this.getChartPeriodFromDate();
+    return this.http.get<ChartData>(`${environment.evaluacionesApiUrl}/admin/dashboard/chart-data?period=${period}`).pipe(
+      catchError(() => of(this.statsService.buildChartData()))
+    );
+  }
+
+  private getChartPeriodFromDate(): string {
+    return 'month';
   }
 
   private checkApiStatus(): Observable<boolean> {

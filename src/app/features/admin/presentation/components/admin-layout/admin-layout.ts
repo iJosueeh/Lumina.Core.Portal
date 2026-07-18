@@ -16,7 +16,7 @@ import { SidebarComponent, SidebarConfig } from '@shared/components/ui/sidebar/s
             (logoutEvent)="handleLogout()">
         </app-sidebar>
 
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative lg:ml-72">
             <header class="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center px-6">
                 <button (click)="sidebar.toggle()" class="p-2 text-slate-600">
                     <i class="fas fa-bars"></i>
