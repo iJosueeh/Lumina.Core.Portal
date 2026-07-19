@@ -23,7 +23,7 @@ export class AdminDashboardApiService {
       usuarios: this.getUsuariosCount(),
       systemStatus: this.getSystemStatus(),
       recentActivity: this.getRecentActivity(),
-      chartData: this.getChartData(),
+      chartData: this.getChartData('month'),
     }).pipe(
       map(({ estudiantes, docentes, cursos, usuarios, systemStatus, recentActivity, chartData }) => ({
         stats: this.statsService.buildStats(estudiantes, docentes, cursos, usuarios),
@@ -40,6 +40,12 @@ export class AdminDashboardApiService {
           chartData: undefined,
         });
       })
+    );
+  }
+
+  getChartData(period: string = 'month'): Observable<ChartData> {
+    return this.http.get<ChartData>(`${environment.evaluacionesApiUrl}/admin/dashboard/chart-data?period=${period}`).pipe(
+      catchError(() => of(this.statsService.buildChartData()))
     );
   }
 
@@ -81,21 +87,20 @@ export class AdminDashboardApiService {
   }
 
   private getRecentActivity(): Observable<RecentActivity[]> {
-    return this.http.get<any[]>(`${environment.usuariosApiUrl}/usuarios/system/recent`).pipe(
-      map(data => this.healthService.buildRecentActivityFromData(data)),
+    return this.http.get<any[]>(`${environment.evaluacionesApiUrl}/admin/dashboard/recent-activity?limit=8`).pipe(
+      map(data => this.mapRecentActivity(data)),
       catchError(() => of(this.healthService.buildRecentActivityTodo()))
     );
   }
 
-  private getChartData(): Observable<ChartData> {
-    const period = this.getChartPeriodFromDate();
-    return this.http.get<ChartData>(`${environment.evaluacionesApiUrl}/admin/dashboard/chart-data?period=${period}`).pipe(
-      catchError(() => of(this.statsService.buildChartData()))
-    );
-  }
-
-  private getChartPeriodFromDate(): string {
-    return 'month';
+  private mapRecentActivity(data: any[]): RecentActivity[] {
+    if (!data || !Array.isArray(data)) return this.healthService.buildRecentActivityTodo();
+    return data.map(item => ({
+      title: item.title,
+      description: item.description,
+      time: item.timeAgo,
+      type: item.type
+    }));
   }
 
   private checkApiStatus(): Observable<boolean> {

@@ -6,23 +6,26 @@ import { forkJoin, of, catchError, finalize, Observable } from 'rxjs';
 // Services
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
+import { AdminDashboardApiService } from '../../../infrastructure/services/admin-dashboard-api.service';
 
 // Mocks & Types
-import { 
-  AdminDashboardData, 
-  ADMIN_DASHBOARD_MOCK_DATA,
+import {
+  AdminDashboardData,
   ChartData
 } from '../../../infrastructure/mocks';
 
 /**
  * Token de inyección para los datos del dashboard
- * Permite cambiar entre datos mock y servicio real sin modificar el componente
+ * Usa el servicio real que conecta a los microservices
  */
 export const ADMIN_DASHBOARD_DATA = new InjectionToken<Observable<AdminDashboardData>>(
   'admin-dashboard-data',
   {
     providedIn: 'root',
-    factory: () => of(ADMIN_DASHBOARD_MOCK_DATA)
+    factory: () => {
+      const apiService = inject(AdminDashboardApiService);
+      return apiService.getDashboardData();
+    }
   }
 );
 
@@ -42,6 +45,7 @@ export class AdminDashboard {
   public router = inject(Router);
   private cacheService = inject(CacheService);
   private dashboardData$ = inject(ADMIN_DASHBOARD_DATA);
+  private apiService = inject(AdminDashboardApiService);
 
   // Signals de Estado
   adminName = signal('Administrador');
@@ -49,8 +53,15 @@ export class AdminDashboard {
   systemStatus = signal<any[]>([]);
   recentActivity = signal<any[]>([]);
   chartData = signal<ChartData | undefined>(undefined);
+  chartPeriod = signal<'month' | 'year'>('month');
   isLoading = signal(true);
+  isChartLoading = signal(false);
   currentYear = computed(() => new Date().getFullYear().toString());
+  hasChartData = computed(() => {
+    const d = this.chartData()?.data;
+    if (!d || d.length === 0) return false;
+    return d.some(p => p.newRegistrations > 0 || p.activeCompletion > 0);
+  });
 
   constructor() {
     effect(() => {
@@ -87,6 +98,22 @@ export class AdminDashboard {
   handleRefresh(): void {
     this.cacheService.clear();
     this.loadData();
+  }
+
+  switchPeriod(period: 'month' | 'year'): void {
+    if (this.chartPeriod() === period) return;
+    this.chartPeriod.set(period);
+    this.loadChartData();
+  }
+
+  private loadChartData(): void {
+    this.isChartLoading.set(true);
+    this.apiService.getChartData(this.chartPeriod()).pipe(
+      catchError(() => of(undefined))
+    ).subscribe({
+      next: (data) => this.chartData.set(data || undefined),
+      complete: () => this.isChartLoading.set(false),
+    });
   }
 
   /**

@@ -53,18 +53,26 @@
                         </div>
                         @if (!isLoading()) {
                             <div class="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
-                                <button class="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition rounded-md">Año</button>
-                                <button class="px-3 py-1.5 text-xs font-bold text-indigo-600 bg-white rounded-md shadow-sm">Mes</button>
+                                <button (click)="switchPeriod('year')"
+                                    class="px-3 py-1.5 text-xs font-bold transition rounded-md"
+                                    [ngClass]="chartPeriod() === 'year'
+                                        ? 'text-indigo-600 bg-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'">Año</button>
+                                <button (click)="switchPeriod('month')"
+                                    class="px-3 py-1.5 text-xs font-bold transition rounded-md"
+                                    [ngClass]="chartPeriod() === 'month'
+                                        ? 'text-indigo-600 bg-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'">Mes</button>
                             </div>
                         }
                     </div>
 
                     <!-- Chart -->
-                    @if (isLoading()) {
+                    @if (isLoading() || isChartLoading()) {
                         <div class="h-64 bg-slate-50 rounded-xl border border-slate-200 p-6 flex flex-col justify-end space-y-4">
                             <app-skeleton-loader width="100%" height="180px"></app-skeleton-loader>
                         </div>
-                    } @else if (chartData()?.data && chartData()!.data.length > 0) {
+                    } @else if (hasChartData()) {
                         <div class="h-64 bg-slate-50 rounded-xl border border-slate-100 p-6 relative overflow-hidden">
                             <svg viewBox="0 0 1200 250" class="w-full h-full" preserveAspectRatio="none">
                                 <!-- Grid Lines -->
