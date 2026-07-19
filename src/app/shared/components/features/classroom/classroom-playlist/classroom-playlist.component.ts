@@ -6,6 +6,7 @@ import { ButtonComponent } from '@shared/components/ui/button/button.component';
 export interface ClassroomLesson {
   lessonId: string;
   title: string;
+  tipo?: string;
   duration: string;
   isCompleted: boolean;
   isLocked: boolean;

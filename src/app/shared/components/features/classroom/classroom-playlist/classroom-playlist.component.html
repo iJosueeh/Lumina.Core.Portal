@@ -43,7 +43,9 @@
                     : 'bg-slate-100 text-slate-400 border-slate-200'"
                   [attr.aria-label]="lesson.isCompleted ? 'Marcar como pendiente' : 'Marcar como completada'"
                 >
-                  <i class="fas text-xs" [class]="lesson.isCompleted ? 'fa-check-circle' : 'fa-play-circle'"></i>
+                  <i class="fas text-xs" [class]="lesson.isCompleted
+                    ? 'fa-check-circle'
+                    : lesson.tipo === 'recurso' ? 'fa-archive' : lesson.tipo === 'lectura' ? 'fa-file-alt' : 'fa-play-circle'"></i>
                 </button>
 
                 <div class="flex-1 min-w-0">

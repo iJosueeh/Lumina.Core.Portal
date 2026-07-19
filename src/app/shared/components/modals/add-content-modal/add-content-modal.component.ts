@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal, inject, OnInit, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, computed, inject, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -32,25 +32,32 @@ export class AddContentModalComponent implements OnInit, OnChanges {
 
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
-
   contentForm: FormGroup;
   isSaving = signal(false);
   isEditMode = signal(false);
   
-  // Multimedia Principal
   selectedFile = signal<File | null>(null);
   contentType = signal<'video' | 'lectura' | 'recurso'>('video');
   sourceType = signal<'file' | 'link'>('file');
 
-  // Recursos Adicionales
   additionalFiles = signal<AdditionalFile[]>([]);
+
+  // Duration as separate min/sec
+  duracionMinutos = signal<number>(0);
+  duracionSegundos = signal<number>(0);
+
+  /** Computed duration string "MM:SS" for the payload */
+  duracionFormato = computed(() => {
+    const min = this.duracionMinutos();
+    const sec = this.duracionSegundos();
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  });
 
   constructor() {
     this.contentForm = this.fb.group({
       titulo: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: [''],
       url: [''],
-      duracion: ['15:00'],
     });
   }
 
@@ -58,14 +65,12 @@ export class AddContentModalComponent implements OnInit, OnChanges {
     this.initializeComponent();
   }
 
-  // Usamos ngOnChanges para asegurar que si los inputs cambian (por ejemplo leccionToEdit), el componente reaccione
   ngOnChanges(): void {
     this.initializeComponent();
   }
 
   private initializeComponent(): void {
     if (this.leccionToEdit) {
-      console.log('📝 [AddContentModal] Inicializando en modo edición:', this.leccionToEdit);
       this.isEditMode.set(true);
       const lesson = this.leccionToEdit as any;
       
@@ -78,23 +83,105 @@ export class AddContentModalComponent implements OnInit, OnChanges {
         titulo: lesson.titulo || lesson.title || '',
         descripcion: lesson.descripcion || lesson.description || '',
         url: lesson.videoUrl || lesson.url || '',
-        duracion: lesson.duracion || lesson.duration || '15:00',
       });
 
-      // Cargar recursos existentes
+      // Parse duration "MM:SS" → min + sec
+      this.parseDuration(lesson.duracion || lesson.duration || '00:00');
+
       const resources = lesson.resources || lesson.materiales || [];
       if (Array.isArray(resources)) {
-        const existingResources = resources.map((r: any) => ({
+        this.additionalFiles.set(resources.map((r: any) => ({
           name: r.title || r.name || r.titulo,
           url: r.url,
           type: r.type || r.tipo || 'pdf',
           isUploading: false,
           isExisting: true
-        }));
-        this.additionalFiles.set(existingResources);
+        })));
       }
     } else {
       this.isEditMode.set(false);
+      this.contentType.set('video');
+      this.sourceType.set('file');
+      this.duracionMinutos.set(0);
+      this.duracionSegundos.set(0);
+    }
+  }
+
+  /** Parse "MM:SS" or "HH:MM:SS" string into minutes and seconds signals */
+  private parseDuration(raw: string): void {
+    if (!raw) { this.duracionMinutos.set(0); this.duracionSegundos.set(0); return; }
+    const parts = raw.split(':').map(Number);
+    if (parts.length === 3) {
+      // HH:MM:SS
+      this.duracionMinutos.set(parts[0] * 60 + parts[1]);
+      this.duracionSegundos.set(parts[2] || 0);
+    } else if (parts.length === 2) {
+      // MM:SS
+      this.duracionMinutos.set(parts[0] || 0);
+      this.duracionSegundos.set(parts[1] || 0);
+    } else {
+      // Just minutes
+      this.duracionMinutos.set(parts[0] || 0);
+      this.duracionSegundos.set(0);
+    }
+  }
+
+  /** Clamp seconds to 0-59 */
+  onSecondsInput(event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10) || 0;
+    this.duracionSegundos.set(Math.min(59, Math.max(0, val)));
+  }
+
+  /** Clamp minutes to 0-999 */
+  onMinutesInput(event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10) || 0;
+    this.duracionMinutos.set(Math.min(999, Math.max(0, val)));
+  }
+
+  get showDuration(): boolean {
+    return this.contentType() === 'video';
+  }
+
+  get showMultimediaSource(): boolean {
+    return this.contentType() === 'video' || this.contentType() === 'recurso';
+  }
+
+  get fileAccept(): string {
+    switch (this.contentType()) {
+      case 'video': return 'video/mp4,video/webm';
+      case 'lectura': return 'application/pdf,.txt,.md,.doc,.docx';
+      case 'recurso': return '.pdf,.zip,.rar,.doc,.docx,.pptx,.xlsx';
+      default: return '*';
+    }
+  }
+
+  get filePlaceholder(): string {
+    switch (this.contentType()) {
+      case 'video': return 'Sube el video principal (MP4, WebM)';
+      case 'lectura': return 'Sube el documento de lectura (PDF, DOC)';
+      case 'recurso': return 'Sube el recurso descargable (PDF, ZIP)';
+      default: return 'Selecciona un archivo';
+    }
+  }
+
+  get fileIcon(): string {
+    switch (this.contentType()) {
+      case 'video': return 'fa-video';
+      case 'lectura': return 'fa-file-alt';
+      case 'recurso': return 'fa-archive';
+      default: return 'fa-file';
+    }
+  }
+
+  onTypeChange(newType: string): void {
+    this.contentType.set(newType as any);
+    if (newType === 'lectura') {
+      this.sourceType.set('file');
+      this.selectedFile.set(null);
+      this.contentForm.patchValue({ url: '' });
+    }
+    if (this.selectedFile()) {
+      this.selectedFile.set(null);
     }
   }
 
@@ -134,23 +221,21 @@ export class AddContentModalComponent implements OnInit, OnChanges {
   async submit(): Promise<void> {
     if (this.contentForm.invalid) return;
     
-    // Validar ModuloId
     if (!this.moduloId) {
-      console.error('❌ Error: moduloId es requerido');
+      console.error('moduloId es requerido');
       return;
     }
 
     this.isSaving.set(true);
 
     try {
-      // 1. Subir Contenido Principal
       let finalUrl = this.contentForm.value.url;
       const fileToUpload = this.selectedFile();
-      if (this.sourceType() === 'file' && fileToUpload) {
+
+      if (this.showMultimediaSource && this.sourceType() === 'file' && fileToUpload) {
         finalUrl = await this.uploadToMinio(fileToUpload);
       }
 
-      // 2. Subir Recursos Adicionales
       const materialesAdicionales = [];
       for (const item of this.additionalFiles()) {
         if (item.isExisting) {
@@ -159,30 +244,23 @@ export class AddContentModalComponent implements OnInit, OnChanges {
         }
         if (item.file) {
           const url = await this.uploadToMinio(item.file);
-          materialesAdicionales.push({ titulo: item.name, url: url, tipo: item.type });
+          materialesAdicionales.push({ titulo: item.name, url, tipo: item.type });
         }
       }
 
       const lesson = this.leccionToEdit as any;
       const lessonId = lesson?.id || lesson?.lessonId || null;
       
-      // Construir payload exacto como lo espera el backend (AddContentRequest)
       const payload = {
         moduloId: this.moduloId,
         leccionId: lessonId,
         titulo: this.contentForm.value.titulo,
         tipo: this.contentType(),
-        url: finalUrl,
-        duracion: this.contentForm.value.duracion,
+        url: finalUrl || '',
+        duracion: this.showDuration ? this.duracionFormato() : '',
         descripcion: this.contentForm.value.descripcion,
-        materialesAdicionales: materialesAdicionales
+        materialesAdicionales
       };
-
-      console.log('🚀 [AddContentModal] Enviando payload:', {
-        method: this.isEditMode() ? 'PUT' : 'POST',
-        apiUrl: `${environment.cursosApiUrl}/cursos/${this.courseId}/contenido`,
-        payload
-      });
 
       const apiUrl = `${environment.cursosApiUrl}/cursos/${this.courseId}/contenido`;
       
@@ -195,7 +273,7 @@ export class AddContentModalComponent implements OnInit, OnChanges {
       this.onSaved.emit();
       this.onClose.emit();
     } catch (error) {
-      console.error('❌ Error saving content:', error);
+      console.error('Error saving content:', error);
       if (error instanceof HttpErrorResponse) {
         console.error('Detalles del error:', error.error);
       }
@@ -204,31 +282,16 @@ export class AddContentModalComponent implements OnInit, OnChanges {
     }
   }
 
-
   private async uploadToMinio(file: File): Promise<string> {
-    // Validar tamaño del archivo (máximo 100MB)
     const maxSize = 100 * 1024 * 1024;
     if (file.size > maxSize) {
       throw new Error('El archivo excede el tamaño máximo de 100MB');
     }
 
-    // Validar tipo MIME
-    const allowedTypes = [
-      'video/mp4', 'video/webm', 'video/avi', 'video/quicktime',
-      'application/pdf', 'application/zip',
-      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
-      throw new Error(`Tipo de archivo no permitido: ${file.type}`);
-    }
-
     const formData = new FormData();
     formData.append('file', file);
 
-    // URL correcta: cursosApiUrl = 'http://localhost:5100/cursos/api'
-    // Endpoint real: POST /api/cursos/upload -> /cursos/api/upload
-    const uploadUrl = `${environment.cursosApiUrl}/upload`;
-
+    const uploadUrl = `${environment.cursosApiUrl}/cursos/upload`;
     const response = await lastValueFrom(
       this.http.post<{ url: string; fileName: string }>(uploadUrl, formData)
     );

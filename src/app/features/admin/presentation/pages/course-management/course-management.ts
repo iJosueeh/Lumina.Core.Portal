@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -8,9 +8,8 @@ import { AdminCourse, AdminDocente } from '@shared/models/admin-course.models';
 // Sub-components
 import { CourseTableComponent } from './components/course-table/course-table.component';
 import { PaginationComponent } from '@shared/components/ui/pagination/pagination.component';
-import { ButtonComponent } from '@shared/components/ui/button/button.component';
-import { SelectComponent } from '@shared/components/ui/select/select.component';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+import { SelectComponent } from '@shared/components/ui/select/select.component';
 import { EvaluacionModalComponent } from '@shared/components/modals/evaluacion-modal/evaluacion-modal.component';
 import { CourseFormModalComponent } from '@shared/components/modals/course-form-modal/course-form-modal.component';
 import { EvaluacionApi } from '@shared/models/course-management.models';
@@ -18,15 +17,12 @@ import { EvaluacionApi } from '@shared/models/course-management.models';
 @Component({
   selector: 'app-course-management',
   standalone: true,
-  encapsulation: ViewEncapsulation.None, // Forzar estilos globales
   imports: [
     CommonModule, 
-    FormsModule, 
     CourseTableComponent, 
     PaginationComponent,
-    ButtonComponent,
-    SelectComponent,
     SkeletonLoaderComponent,
+    SelectComponent,
     EvaluacionModalComponent,
     CourseFormModalComponent
   ],
@@ -41,7 +37,7 @@ export class CourseManagement implements OnInit {
   searchTerm = signal('');
   selectedStatus = signal('Estado: Todos');
   currentPage = signal(1);
-  itemsPerPage = 10;
+  itemsPerPage = 5;
   docentesList = signal<AdminDocente[]>([]);
 
   // Modal State
@@ -58,8 +54,21 @@ export class CourseManagement implements OnInit {
     if (term) {
       temp = temp.filter(c => 
         c.name.toLowerCase().includes(term) || 
-        (c.code && c.code.toLowerCase().includes(term))
+        (c.code && c.code.toLowerCase().includes(term)) ||
+        (c.teacherName && c.teacherName.toLowerCase().includes(term))
       );
+    }
+    const status = this.selectedStatus();
+    if (status && !status.includes('Todos')) {
+      const statusMap: Record<string, string> = {
+        'Publicado': 'PUBLISHED',
+        'Borrador': 'DRAFT',
+        'Archivado': 'ARCHIVED'
+      };
+      const targetStatus = statusMap[status];
+      if (targetStatus) {
+        temp = temp.filter(c => c.status === targetStatus);
+      }
     }
     return temp;
   });
@@ -73,36 +82,24 @@ export class CourseManagement implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-    this.loadDocentes();
   }
 
   loadData(): void {
     this.isLoading.set(true);
     
-    // Cargar Cursos y Docentes en paralelo para resolver nombres
     forkJoin({
       courses: this.adminService.getCourses(),
       docentes: this.adminService.getDocentes()
     }).subscribe({
-      next: ({ courses, docentes }: { courses: AdminCourse[], docentes: AdminDocente[] }) => {
-        console.log('✅ [ADMIN-COURSE-MGMT] Data Loaded:', { courses: courses.length, docentes: docentes.length });
-        
+      next: ({ courses, docentes }) => {
         this.docentesList.set(docentes);
         
-        // Resolver nombres de docentes
-        const resolvedCourses = courses.map((course: AdminCourse) => {
-            console.log(`🧐 [ADMIN-COURSE-MGMT] Checking course "${course.name}" with instructorId:`, course.instructorId);
-            
-            const docente = docentes.find((d: AdminDocente) => {
+        const resolvedCourses = courses.map((course) => {
+            const docente = docentes.find((d) => {
                 const courseInstId = typeof course.instructorId === 'object' ? (course.instructorId as any)?.value : course.instructorId;
                 const docenteId = typeof d.id === 'object' ? (d.id as any)?.value : d.id;
-                
                 return String(docenteId).toLowerCase() === String(courseInstId).toLowerCase();
             });
-
-            if (docente) {
-                console.log(`✅ [ADMIN-COURSE-MGMT] Found match: ${docente.nombreCompleto}`);
-            }
 
             return {
                 ...course,
@@ -113,32 +110,21 @@ export class CourseManagement implements OnInit {
         this.allCourses.set(resolvedCourses);
         this.isLoading.set(false);
       },
-      error: (err: any) => {
-        console.error('❌ [ADMIN-COURSE-MGMT] Error loading data:', err);
+      error: () => {
         this.isLoading.set(false);
       }
     });
   }
 
-  loadDocentes(): void {
-    // Ya se maneja en loadData con forkJoin para sincronía
-  }
-
-  setOption(value: any): void { this.selectedStatus.set(String(value)); }
+  setOption(value: any): void { this.selectedStatus.set(String(value)); this.currentPage.set(1); }
   setPage(page: any): void { this.currentPage.set(Number(page)); }
+  onSearch(value: string): void { this.searchTerm.set(value); this.currentPage.set(1); }
   
   openCreateModal(): void { 
     this.courseToEdit.set(null);
     this.showCourseFormModal.set(true); 
   }
   
-  openEvaluacionSettings(course: AdminCourse): void {
-    this.selectedCourseId.set(course.id || null);
-    this.selectedDocenteId.set(course.instructorId); 
-    this.editingEvaluacion.set(null); 
-    this.showEvaluacionModal.set(true);
-  }
-
   openEditModal(course: AdminCourse): void { 
     this.courseToEdit.set(course);
     this.showCourseFormModal.set(true);

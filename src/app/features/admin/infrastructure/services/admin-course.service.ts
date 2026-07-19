@@ -31,37 +31,20 @@ export class AdminCourseService {
   getAdminClassroom(courseId: string): Observable<any> {
     return this.http.get<any>(`${this.cursosApiUrl}/cursos/${courseId}/classroom`);
   }
-
-  saveClassroom(courseId: string, sections: any[]): Observable<any> {
-    const body = {
-        nombre: null, 
-        descripcion: null,
-        capacidad: null,
-        nivel: null,
-        duracion: null,
-        precio: null,
-        imagenUrl: null,
-        categoria: null,
-        instructorId: null,
-        modulos: sections.map(s => ({
-            id: s.id, 
-            titulo: s.title,
-            descripcion: s.description || '',
-            lecciones: s.videos.map((v: any) => ({
-                id: v.lessonId, 
-                titulo: v.title,
-                duracion: v.duration || '10:00',
-                videoUrl: v.videoUrl || ''
-            }))
-        })),
-        requisitos: null,
-        codigo: null,
-        creditos: null,
-        ciclo: null,
-        estadoCurso: null
-    };
-    return this.http.put(`${this.cursosApiUrl}/cursos/${courseId}`, body);
+  createModule(courseId: string, titulo: string, descripcion: string): Observable<{moduloId: string, titulo: string, descripcion: string}> {
+    return this.http.post<any>(`${this.cursosApiUrl}/cursos/${courseId}/modulos`, { titulo, descripcion });
   }
+
+  updateModule(courseId: string, moduloId: string, titulo: string, descripcion: string): Observable<any> {
+    return this.http.put(`${this.cursosApiUrl}/cursos/${courseId}/modulos/${moduloId}`, { titulo, descripcion });
+  }
+
+  deleteModule(courseId: string, moduloId: string): Observable<any> {
+    return this.http.delete(`${this.cursosApiUrl}/cursos/${courseId}/modulos/${moduloId}`);
+  }
+
+
+  // saveClassroom removed — modules/lessons are managed via dedicated endpoints
 
   getDocentes(): Observable<AdminDocente[]> {
     return this.http.get<any>(`${this.docentesApiUrl}/docente/system/all`).pipe(
@@ -86,9 +69,21 @@ export class AdminCourseService {
   uploadVideo(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{url: string}>(`${this.cursosApiUrl}/upload`, formData).pipe(
+    return this.http.post<{url: string}>(`${this.cursosApiUrl}/cursos/upload`, formData).pipe(
       map(res => res.url)
     );
+  }
+
+  uploadCourseImage(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{url: string}>(`${this.cursosApiUrl}/cursos/upload`, formData).pipe(
+      map(res => res.url)
+    );
+  }
+
+  updateCourseImage(courseId: string, imageUrl: string): Observable<any> {
+    return this.http.put(`${this.cursosApiUrl}/cursos/${courseId}`, { imagenUrl: imageUrl });
   }
 
   private flattenId(id: any): string {

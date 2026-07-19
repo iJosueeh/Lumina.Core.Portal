@@ -21,7 +21,7 @@ export class FilePreviewModalComponent {
 
   file = input.required<SharedFileResource>();
   subtitle = input<string>('Vista previa del archivo');
-  
+
   onClose = output<void>();
   onDownload = output<SharedFileResource>();
 

@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, output } from '@angular/core';
+import { Component, Input, forwardRef, output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
 
@@ -16,7 +16,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/f
   templateUrl: './select.component.html',
   styleUrl: './select.component.css'
 })
-export class SelectComponent implements ControlValueAccessor {
+export class SelectComponent implements ControlValueAccessor, OnChanges {
   @Input() options: string[] = [];
   @Input() selectedOption: string = '';
   @Input() disabled: boolean = false;
@@ -32,7 +32,12 @@ export class SelectComponent implements ControlValueAccessor {
     if (v !== this._value) {
       this._value = v;
       this.onChange(v);
-      this.onOptionChange.emit(v);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedOption'] && !this._value) {
+      this._value = changes['selectedOption'].currentValue;
     }
   }
 
