@@ -44,6 +44,14 @@ export const routes: Routes = [
         title: 'Mis Cursos - Portal Estudiante',
       },
       {
+        path: 'catalog',
+        loadComponent: () =>
+          import('@features/student/presentation/pages/course-catalog/course-catalog.component').then(
+            m => m.CourseCatalogComponent
+          ),
+        title: 'Catálogo de Cursos - Portal Estudiante',
+      },
+      {
         path: 'course/:id',
         loadComponent: () =>
           import('@features/student/presentation/pages/course-detail/course-detail.component').then(

@@ -29,6 +29,8 @@ export interface CourseHeroData {
 export class CourseHeroComponent {
   data = input.required<CourseHeroData>();
   role = input<'student' | 'teacher' | 'admin'>('student');
+  primaryButtonLabel = input<string>('Continuar');
+  primaryButtonLoading = input<boolean>(false);
   
   onBack = output<void>();
   onPrimaryAction = output<void>();

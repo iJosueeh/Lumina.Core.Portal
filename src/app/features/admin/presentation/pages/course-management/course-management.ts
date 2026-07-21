@@ -130,9 +130,9 @@ export class CourseManagement implements OnInit {
     this.showCourseFormModal.set(true);
   }
 
-  deleteCourse(course: AdminCourse): void { 
+  deleteCourse(course: AdminCourse): void {
     if (confirm(`¿Estás seguro de eliminar el curso "${course.name}"?`)) {
-        console.log('Borrando', course.id); 
+        // TODO: implementar eliminar
     }
   }
 }

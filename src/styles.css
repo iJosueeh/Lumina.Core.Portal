@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Global cursor for interactive elements */
+button, a, [role="button"], label[for], select, [onclick] {
+  cursor: pointer;
+}
+
 :root {
   /* === DARK THEME COLORS === */
   --navy-900: #0a1628;

@@ -29,6 +29,10 @@ const routes: Routes = [
         loadComponent: () => import('./presentation/pages/course-content-editor/course-content-editor').then(m => m.CourseContentEditorComponent)
       },
       {
+        path: 'course/:id/settings',
+        loadComponent: () => import('./presentation/pages/course-settings/course-settings.component').then(m => m.CourseSettingsComponent)
+      },
+      {
         path: 'users',
         loadComponent: () => import('./presentation/pages/user-management/user-management').then(m => m.UserManagement)
       }

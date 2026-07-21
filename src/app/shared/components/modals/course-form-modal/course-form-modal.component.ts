@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, signal, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +18,7 @@ import { COURSE_CATEGORIES, COURSE_LEVELS } from '@shared/constants/course-categ
 export class CourseFormModalComponent implements OnInit {
   @Input() courseToEdit: AdminCourse | null = null;
   @Input() docentes: AdminDocente[] = [];
-  
+
   @Output() onClose = new EventEmitter<void>();
   @Output() onSaved = new EventEmitter<void>();
 
@@ -29,17 +29,14 @@ export class CourseFormModalComponent implements OnInit {
   courseForm: FormGroup;
   currentStep = signal(1);
   isSaving = signal(false);
-  isEditMode = signal(false);
-  
-  // Requisitos dinámicos
+  isEditMode = computed(() => !!this.courseToEdit);
+
   requisitosList = signal<string[]>([]);
   newRequisito = signal('');
 
-  // Categorías y Niveles
   categories = signal<string[]>([]);
   levels = [...COURSE_LEVELS];
 
-  // Selected File
   selectedFile: File | null = null;
   isUploading = signal(false);
 
@@ -64,40 +61,40 @@ export class CourseFormModalComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     if (this.courseToEdit) {
-      this.isEditMode.set(true);
-      
-      const cat = this.courseToEdit.categoria || 'Programación';
-      const lvl = this.courseToEdit.nivel || 'Principiante';
-
-      this.courseForm.patchValue({
-        nombre: this.courseToEdit.name,
-        codigo: this.courseToEdit.code,
-        descripcion: this.courseToEdit.description,
-        instructorId: this.courseToEdit.instructorId,
-        categoria: cat,
-        nivel: lvl,
-        capacidad: this.courseToEdit.capacity,
-        creditos: this.courseToEdit.creditos,
-        duracion: this.courseToEdit.duracion || '20h',
-        ciclo: (this.courseToEdit.ciclo === 'N/A' || !this.courseToEdit.ciclo) ? '2026-1' : this.courseToEdit.ciclo,
-        precio: this.courseToEdit.precio || 0,
-        imagenUrl: this.courseToEdit.coverImage,
-        estadoCurso: this.mapStatus(this.courseToEdit.status)
-      });
-      
+      this.patchCourseForm();
       this.loadFullDetail();
     }
+  }
+
+  /** Parchea el form y fuerza re-validación para que el botón se habilite */
+  private patchCourseForm(): void {
+    if (!this.courseToEdit) return;
+
+    this.courseForm.patchValue({
+      nombre: this.courseToEdit.name,
+      codigo: this.courseToEdit.code,
+      descripcion: this.courseToEdit.description,
+      instructorId: this.courseToEdit.instructorId,
+      categoria: this.courseToEdit.categoria || 'Programación',
+      nivel: this.courseToEdit.nivel || 'Principiante',
+      capacidad: this.courseToEdit.capacity,
+      creditos: this.courseToEdit.creditos,
+      duracion: this.courseToEdit.duracion || '20h',
+      ciclo: (this.courseToEdit.ciclo === 'N/A' || !this.courseToEdit.ciclo) ? '2026-1' : this.courseToEdit.ciclo,
+      precio: this.courseToEdit.precio || 0,
+      imagenUrl: this.courseToEdit.coverImage,
+      estadoCurso: this.mapStatus(this.courseToEdit.status)
+    });
+
+    // Forzar re-validación después de patchValue
+    this.courseForm.updateValueAndValidity();
   }
 
   private async loadCategories() {
     try {
       const cats = await firstValueFrom(this.http.get<string[]>(`${environment.cursosApiUrl}/cursos/categorias`));
-      if (cats && cats.length > 0) {
-        this.categories.set(cats);
-      } else {
-        this.categories.set([...COURSE_CATEGORIES]);
-      }
-    } catch (e) {
+      this.categories.set(cats?.length ? cats : [...COURSE_CATEGORIES]);
+    } catch {
       this.categories.set([...COURSE_CATEGORIES]);
     }
   }
@@ -115,10 +112,9 @@ export class CourseFormModalComponent implements OnInit {
     try {
       const detail = await firstValueFrom(this.http.get<any>(`${environment.cursosApiUrl}/cursos/${this.courseToEdit.id}`));
       if (detail) {
-        // Asegurar que la categoría del curso esté en la lista para que se seleccione
         const catValue = detail.categoriaRaw || detail.categoria?.value || detail.categoria;
         if (catValue && !this.categories().includes(catValue)) {
-            this.categories.update(prev => [...prev, catValue]);
+          this.categories.update(prev => [...prev, catValue]);
         }
 
         this.courseForm.patchValue({
@@ -132,9 +128,12 @@ export class CourseFormModalComponent implements OnInit {
         if (Array.isArray(detail.requisitos)) {
           this.requisitosList.set(detail.requisitos);
         }
+
+        // Re-validar después de datos del backend
+        this.courseForm.updateValueAndValidity();
       }
-    } catch (e) {
-      console.warn('⚠️ No se pudo cargar el detalle extra del curso');
+    } catch {
+      // Detail optional — form works with base data
     }
   }
 
@@ -146,12 +145,11 @@ export class CourseFormModalComponent implements OnInit {
         const formData = new FormData();
         formData.append('file', file);
         const response = await firstValueFrom(
-          this.http.post<any>(`${environment.cursosApiUrl}/upload`, formData)
+          this.http.post<any>(`${environment.cursosApiUrl}/cursos/upload`, formData)
         );
         this.courseForm.patchValue({ imagenUrl: response.url });
         this.notificationService.show('success', 'Imagen subida correctamente.');
-      } catch (err) {
-        console.error('❌ Error subiendo imagen:', err);
+      } catch {
         this.notificationService.show('error', 'No se pudo subir la imagen.');
       } finally {
         this.isUploading.set(false);
@@ -160,16 +158,14 @@ export class CourseFormModalComponent implements OnInit {
   }
 
   nextStep(): void {
-    if (this.currentStep() === 1) {
-      const phase1Fields = ['nombre', 'codigo', 'instructorId', 'descripcion'];
-      const isValid = phase1Fields.every(field => this.courseForm.get(field)?.valid);
-      
-      if (isValid) {
-        this.currentStep.set(2);
-      } else {
-        this.notificationService.show('error', 'Por favor completa los campos esenciales antes de continuar.');
-        phase1Fields.forEach(f => this.courseForm.get(f)?.markAsTouched());
-      }
+    const phase1Fields = ['nombre', 'codigo', 'instructorId', 'descripcion'];
+    const isValid = phase1Fields.every(field => this.courseForm.get(field)?.valid);
+
+    if (isValid) {
+      this.currentStep.set(2);
+    } else {
+      this.notificationService.show('error', 'Por favor completa los campos esenciales antes de continuar.');
+      phase1Fields.forEach(f => this.courseForm.get(f)?.markAsTouched());
     }
   }
 
@@ -191,36 +187,35 @@ export class CourseFormModalComponent implements OnInit {
 
   async submit(): Promise<void> {
     if (this.courseForm.invalid) {
-        this.notificationService.show('error', 'El formulario contiene errores. Revisa todos los campos.');
-        return;
+      this.courseForm.markAllAsTouched();
+      this.notificationService.show('error', 'El formulario contiene errores. Revisa todos los campos.');
+      return;
     }
 
     this.isSaving.set(true);
     const formValue = this.courseForm.value;
-    
+
     let instructorIdStr = formValue.instructorId;
     if (instructorIdStr && typeof instructorIdStr === 'object' && instructorIdStr.value) {
       instructorIdStr = instructorIdStr.value;
     }
 
     const payload = {
-        nombre: formValue.nombre,
-        descripcion: formValue.descripcion,
-        capacidad: Number(formValue.capacidad),
-        nivel: formValue.nivel,
-        duracion: formValue.duracion,
-        precio: Number(formValue.precio),
-        imagenUrl: formValue.imagenUrl,
-        categoria: formValue.categoria,
-        instructorId: instructorIdStr || null,
-        requisitos: this.requisitosList(),
-        codigo: formValue.codigo,
-        creditos: Number(formValue.creditos),
-        ciclo: formValue.ciclo,
-        estadoCurso: formValue.estadoCurso || 'Activo'
+      nombre: formValue.nombre,
+      descripcion: formValue.descripcion,
+      capacidad: Number(formValue.capacidad),
+      nivel: formValue.nivel,
+      duracion: formValue.duracion,
+      precio: Number(formValue.precio),
+      imagenUrl: formValue.imagenUrl,
+      categoria: formValue.categoria,
+      instructorId: instructorIdStr || null,
+      requisitos: this.requisitosList(),
+      codigo: formValue.codigo,
+      creditos: Number(formValue.creditos),
+      ciclo: formValue.ciclo,
+      estadoCurso: formValue.estadoCurso || 'Activo'
     };
-
-    console.log('📡 [COURSE-FORM] Final Payload:', payload);
 
     try {
       if (this.isEditMode() && this.courseToEdit?.id) {
@@ -233,7 +228,6 @@ export class CourseFormModalComponent implements OnInit {
       this.onSaved.emit();
       this.onClose.emit();
     } catch (err: any) {
-      console.error('❌ Error guardando curso:', err);
       if (err.error?.errors) {
         const errorEntries = Object.entries(err.error.errors);
         const [field, messages]: [string, any] = errorEntries[0];

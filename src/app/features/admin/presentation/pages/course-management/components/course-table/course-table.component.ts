@@ -14,9 +14,9 @@ import { ButtonComponent } from '@shared/components/ui/button/button.component';
 })
 export class CourseTableComponent {
   private router = inject(Router);
-  
+
   courses = input.required<AdminCourse[]>();
-  
+
   onEdit = output<AdminCourse>();
   onDelete = output<AdminCourse>();
 
@@ -26,5 +26,9 @@ export class CourseTableComponent {
 
   manageCourse(courseId: string): void {
     this.router.navigate(['/admin/course', courseId, 'manage']);
+  }
+
+  openSettings(courseId: string): void {
+    this.router.navigate(['/admin/course', courseId, 'settings']);
   }
 }

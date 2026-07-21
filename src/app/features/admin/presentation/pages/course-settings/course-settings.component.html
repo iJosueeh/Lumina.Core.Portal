@@ -1,0 +1,246 @@
+<div class="min-h-screen bg-gray-50 text-slate-900 relative flex flex-col">
+
+  <!-- Header -->
+  <header class="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between z-30">
+    <div class="flex items-center gap-4">
+      <button (click)="goBack()"
+        class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition-all flex items-center justify-center border border-slate-200">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <div>
+        <h2 class="text-sm font-black text-slate-900 tracking-widest uppercase">Configuración del Curso</h2>
+        @if (!isLoading()) {
+          <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-tighter">{{ preview().name }}</p>
+        }
+      </div>
+    </div>
+    <button (click)="saveAll()" [disabled]="isSaving()"
+      class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl transition-all shadow-sm flex items-center gap-2">
+      @if (isSaving()) { <i class="fas fa-spinner fa-spin"></i> } @else { <i class="fas fa-check"></i> }
+      Guardar Cambios
+    </button>
+  </header>
+
+  <!-- Main Content: 2 Column Layout -->
+  <main class="flex-1 flex overflow-hidden relative z-10">
+
+    @if (isLoading()) {
+      <div class="flex-1 flex items-center justify-center">
+        <div class="text-center space-y-6">
+          <div class="relative w-24 h-24 mx-auto">
+            <div class="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
+          </div>
+          <p class="text-slate-400 font-medium animate-pulse uppercase tracking-[0.2em] text-xs">Cargando configuración...</p>
+        </div>
+      </div>
+    } @else {
+
+      <!-- LEFT COLUMN: Formularios -->
+      <section class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div class="max-w-3xl mx-auto space-y-6">
+
+          <!-- Sección: Info General -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight">Información General</h3>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Datos básicos del curso</p>
+                </div>
+                </div>
+            <form [formGroup]="generalForm" class="space-y-4">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
+                <input type="text" formControlName="nombre"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Código</label>
+                  <input type="text" formControlName="codigo"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Docente</label>
+                  @if (loadingDocentes()) {
+                    <div class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-400 text-sm animate-pulse">Cargando docentes...</div>
+                  } @else {
+                  <select formControlName="instructorId"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                    <option [ngValue]="null" disabled>Seleccionar...</option>
+                    @for (d of docentes(); track d.id) {
+                      <option [ngValue]="d.id">{{ d.nombreCompleto }}</option>
+                    }
+                  </select>
+                  }
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
+                <textarea formControlName="descripcion" rows="3"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <!-- Sección: Configuración Académica -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight">Configuración Académica</h3>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Parámetros y visibilidad</p>
+                </div>
+                </div>
+            <form [formGroup]="academicForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
+                <select formControlName="categoria"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  @for (cat of categories; track cat) { <option [value]="cat">{{ cat }}</option> }
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nivel</label>
+                <select formControlName="nivel"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  @for (lvl of levels; track lvl) { <option [value]="lvl">{{ lvl }}</option> }
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Estado</label>
+                <select formControlName="estadoCurso"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  <option value="Activo">Activo / Público</option>
+                  <option value="Borrador">Borrador / Privado</option>
+                  <option value="Archivado">Archivado</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Capacidad</label>
+                <input type="number" formControlName="capacidad"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Duración</label>
+                <input type="text" formControlName="duracion" placeholder="40h"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Créditos</label>
+                <input type="number" formControlName="creditos"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo</label>
+                <input type="text" formControlName="ciclo" placeholder="2026-1"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Sección: Imagen de Portada -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight">Imagen de Portada</h3>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Vista previa del curso</p>
+                </div>
+                </div>
+            <div class="flex gap-4 items-center">
+              <form [formGroup]="imageForm" class="flex-1 flex gap-4 items-center">
+              <input type="text" formControlName="imagenUrl" placeholder="URL de la imagen..."
+                class="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-300">
+              <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl w-12 h-12 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shrink-0"
+                [class.opacity-50]="isUploading()">
+                @if (isUploading()) { <i class="fas fa-spinner fa-spin"></i> } @else { <i class="fas fa-cloud-upload-alt text-lg"></i> }
+                <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*" [disabled]="isUploading()">
+              </label>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Vista Previa (sticky) -->
+      <aside class="w-[380px] border-l border-slate-200 bg-white p-6 overflow-y-auto hidden lg:block">
+        <div class="sticky top-0 space-y-5">
+          <div>
+            <h3 class="text-sm font-black text-slate-900 tracking-tight mb-0.5">Vista Previa</h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Así se ve el curso</p>
+          </div>
+
+          <!-- Preview Card -->
+          <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <!-- Cover -->
+            <div class="aspect-video bg-slate-100 relative overflow-hidden">
+              <img [src]="previewImageUrl()"
+                class="w-full h-full object-cover"
+                alt="Portada"
+                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'">
+              <div class="absolute top-3 left-3">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border"
+                  [ngClass]="statusClass()">
+                  {{ statusLabel() }}
+                </span>
+              </div>
+              @if (pendingImageFile()) {
+                <div class="absolute top-3 right-3">
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wider">
+                    Pendiente
+                  </span>
+                </div>
+              }
+            </div>
+
+            <!-- Info -->
+            <div class="p-4 space-y-3">
+              <div>
+                <h4 class="text-sm font-black text-slate-900 leading-tight">{{ preview().name }}</h4>
+                <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ preview().code }}</p>
+              </div>
+
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] text-slate-400 border border-slate-200">
+                  <i class="fas fa-user-tie"></i>
+                </div>
+                <span class="font-medium">{{ preview().teacher }}</span>
+              </div>
+
+              <div class="h-px bg-slate-100"></div>
+
+              <!-- Stats -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-layer-group text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().category }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-signal text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().level }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-graduation-cap text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().creditos }} Créditos</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-users text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().capacidad }} Alumnos</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-clock text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().duracion }}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <i class="fas fa-calendar text-indigo-400"></i>
+                  <span class="font-semibold">{{ preview().ciclo }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    }
+  </main>
+</div>

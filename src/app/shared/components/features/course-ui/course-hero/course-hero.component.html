@@ -70,9 +70,13 @@
           @if (role() === 'student') {
             <button
               (click)="onPrimaryAction.emit()"
-              class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all"
+              [disabled]="primaryButtonLoading()"
+              class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all flex items-center gap-2"
             >
-              Continuar Aprendiendo
+              @if (primaryButtonLoading()) {
+                <i class="fas fa-spinner fa-spin text-xs"></i>
+              }
+              {{ primaryButtonLabel() }}
             </button>
           }
         </div>

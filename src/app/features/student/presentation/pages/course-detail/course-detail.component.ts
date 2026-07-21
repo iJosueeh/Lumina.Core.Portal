@@ -17,7 +17,9 @@ import { GetCourseDetailUseCase } from '@features/student/application/use-cases/
 import { MaterialsService } from '@features/student/infrastructure/services/materials.service';
 import { EvaluationsIntegrationService } from '@features/student/infrastructure/services/evaluations-integration.service';
 import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { AuthService } from '@core/services/auth.service';
+import { NotificationService } from '@shared/services/notification.service';
 
 import { QuizTakeComponent } from '../../components/quiz-take/quiz-take.component';
 import { QuizResultsComponent } from '../../components/quiz-results/quiz-results.component';
@@ -52,13 +54,20 @@ export class CourseDetailComponent implements OnInit {
   private materialsService = inject(MaterialsService);
   private evaluationsService = inject(EvaluationsIntegrationService);
   private progressStorage = inject(ProgressStorageService);
+  private enrollmentService = inject(EnrollmentService);
   private authService = inject(AuthService);
+  private notificationService = inject(NotificationService);
 
   activeTab = signal<TabType>('description');
   courseId = signal<string>('');
   studentId = signal<string>('');
   selectedMaterial = signal<CourseMaterial | null>(null);
   showMaterialPreview = signal(false);
+
+  // Enrollment state
+  isEnrolled = signal(false);
+  isEnrolling = signal(false);
+  enrollmentChecked = signal(false);
 
   tabs = [
     { id: 'description' as TabType, label: 'Descripción', icon: 'document' },
@@ -143,6 +152,47 @@ export class CourseDetailComponent implements OnInit {
   ngOnInit(): void {
     this.courseId.set(this.route.snapshot.params['id'] || '1');
     this.studentId.set(this.authService.getUserId() || '');
+
+    // Check enrollment status
+    if (this.studentId() && this.courseId()) {
+      this.checkEnrollment();
+    }
+  }
+
+  private checkEnrollment(): void {
+    this.enrollmentService.isEnrolled(this.studentId(), this.courseId()).subscribe({
+      next: (enrolled) => {
+        this.isEnrolled.set(enrolled);
+        this.enrollmentChecked.set(true);
+      },
+      error: () => {
+        this.isEnrolled.set(false);
+        this.enrollmentChecked.set(true);
+      }
+    });
+  }
+
+  async enrollInCourse(): Promise<void> {
+    if (!this.studentId() || !this.courseId()) return;
+
+    this.isEnrolling.set(true);
+    try {
+      await lastValueFrom(this.enrollmentService.enroll(this.studentId(), this.courseId()));
+      this.isEnrolled.set(true);
+      this.notificationService.show('success', '¡Te has matriculado exitosamente!');
+    } catch (error) {
+      this.notificationService.show('error', 'No se pudo completar la matrícula. Intenta de nuevo.');
+    } finally {
+      this.isEnrolling.set(false);
+    }
+  }
+
+  handlePrimaryAction(): void {
+    if (this.isEnrolled()) {
+      this.continueCurrentLesson();
+    } else {
+      this.enrollInCourse();
+    }
   }
 
   setTab(tab: TabType): void { this.activeTab.set(tab); }
@@ -170,9 +220,13 @@ export class CourseDetailComponent implements OnInit {
   }
 
   openLesson(data: { module: Module, lesson: Lesson }): void {
+    if (!this.isEnrolled()) {
+      this.notificationService.show('info', 'Debes matricularte primero para acceder al contenido.');
+      return;
+    }
     if (data.lesson.isLocked) return;
-    this.router.navigate(['/student/video-classroom', this.courseId()], {
-      queryParams: { moduleId: data.module.id, lessonId: data.lesson.id }
+    this.router.navigate(['/student/course', this.courseId(), 'learn', data.lesson.id], {
+      queryParams: { moduleId: data.module.id }
     });
   }
 

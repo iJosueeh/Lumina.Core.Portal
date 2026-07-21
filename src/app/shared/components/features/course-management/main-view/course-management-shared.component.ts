@@ -12,6 +12,7 @@ import { environment } from '@environments/environment';
 
 // Shared
 import { NotificationService } from '@shared/services/notification.service';
+
 import { CourseMapper } from '@shared/mappers/course.mapper';
 import { 
   EvaluacionApi, 
@@ -62,7 +63,7 @@ import { TeacherQueryService } from '@features/teacher/infrastructure/queries/te
     TabNavComponent,
     SkeletonLoaderComponent,
     AddContentModalComponent,
-    AddModuleModalComponent
+    AddModuleModalComponent,
   ],
   templateUrl: './course-management-shared.component.html',
   styleUrl: './course-management-shared.component.css',
@@ -80,6 +81,7 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
   private courseMapper = inject(CourseMapper);
   private teacherQuery = inject(TeacherQueryService);
 
+
   // State
   courseId = signal<string>('');
   course = signal<TeacherCourseDetail | null>(null);
@@ -91,7 +93,7 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
   tabs = signal([
     { id: 'overview', label: 'Contenido y Alumnos', icon: 'book' },
     { id: 'evaluaciones', label: 'Evaluaciones', icon: 'clipboard-list' }
-  ]);
+  ] as any[]);
   
   // Modal States
   showAssignStudentModal = signal(false);
@@ -119,7 +121,6 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
   totalLecciones = computed(() => this.modulos().reduce((acc, m) => acc + (m.lecciones?.length || 0), 0));
 
   ngOnInit(): void {
-    console.log(`🚀 [COURSE-MGMT-SHARED] Component Initialized (Role: ${this.role})`);
     this.route.params.subscribe((params) => {
       this.courseId.set(params['id']);
       this.loadCourseData();
@@ -128,6 +129,7 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
       }
     });
   }
+
 
   async loadDocenteInfo(): Promise<void> {
     const usuarioId = this.authService.getUserId();

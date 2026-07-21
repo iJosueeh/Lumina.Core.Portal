@@ -38,8 +38,10 @@
         }
       }"
       role="student"
+      [primaryButtonLabel]="isEnrolled() ? 'Continuar Aprendiendo' : 'Unirse al Curso'"
+      [primaryButtonLoading]="isEnrolling()"
       (onBack)="goBack()"
-      (onPrimaryAction)="continueCurrentLesson()"
+      (onPrimaryAction)="handlePrimaryAction()"
     />
 
     <!-- Navigation Tabs -->
