@@ -7,12 +7,11 @@ import { ModalContainerComponent } from '../../../../../../../shared/components/
 import { ButtonComponent } from '../../../../../../../shared/components/ui/button/button.component';
 import { FormFieldComponent } from '../../../../../../../shared/components/ui/form-field/form-field.component';
 import { InputComponent } from '../../../../../../../shared/components/ui/input/input.component';
-import { SelectComponent } from '../../../../../../../shared/components/ui/select/select.component';
 
 @Component({
   selector: 'app-admin-user-form-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalContainerComponent, ButtonComponent, FormFieldComponent, InputComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, ModalContainerComponent, ButtonComponent, FormFieldComponent, InputComponent],
   templateUrl: './user-form-modal.component.html',
   styleUrl: './user-form-modal.component.css'
 })

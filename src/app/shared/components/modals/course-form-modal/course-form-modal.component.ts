@@ -27,18 +27,15 @@ export class CourseFormModalComponent implements OnInit {
   private notificationService = inject(NotificationService);
 
   courseForm: FormGroup;
-  currentStep = signal(1);
   isSaving = signal(false);
-  isEditMode = computed(() => !!this.courseToEdit);
+  isUploading = signal(false);
+  loadingDocentes = signal(false);
 
   requisitosList = signal<string[]>([]);
   newRequisito = signal('');
 
   categories = signal<string[]>([]);
   levels = [...COURSE_LEVELS];
-
-  selectedFile: File | null = null;
-  isUploading = signal(false);
 
   constructor() {
     this.courseForm = this.fb.group({
@@ -66,7 +63,6 @@ export class CourseFormModalComponent implements OnInit {
     }
   }
 
-  /** Parchea el form y fuerza re-validación para que el botón se habilite */
   private patchCourseForm(): void {
     if (!this.courseToEdit) return;
 
@@ -86,8 +82,15 @@ export class CourseFormModalComponent implements OnInit {
       estadoCurso: this.mapStatus(this.courseToEdit.status)
     });
 
-    // Forzar re-validación después de patchValue
     this.courseForm.updateValueAndValidity();
+  }
+
+  private mapStatus(status: string | undefined): string {
+    if (!status) return 'Borrador';
+    const s = status.toUpperCase();
+    if (s === 'PUBLISHED' || s === 'ACTIVO') return 'Activo';
+    if (s === 'ARCHIVED') return 'Archivado';
+    return 'Borrador';
   }
 
   private async loadCategories() {
@@ -97,14 +100,6 @@ export class CourseFormModalComponent implements OnInit {
     } catch {
       this.categories.set([...COURSE_CATEGORIES]);
     }
-  }
-
-  private mapStatus(status: string | undefined): string {
-    if (!status) return 'Borrador';
-    const s = status.toUpperCase();
-    if (s === 'PUBLISHED' || s === 'ACTIVO') return 'Activo';
-    if (s === 'ARCHIVED') return 'Archivado';
-    return 'Borrador';
   }
 
   private async loadFullDetail() {
@@ -129,12 +124,9 @@ export class CourseFormModalComponent implements OnInit {
           this.requisitosList.set(detail.requisitos);
         }
 
-        // Re-validar después de datos del backend
         this.courseForm.updateValueAndValidity();
       }
-    } catch {
-      // Detail optional — form works with base data
-    }
+    } catch { /* optional */ }
   }
 
   async onFileSelected(event: any): Promise<void> {
@@ -151,26 +143,9 @@ export class CourseFormModalComponent implements OnInit {
         this.notificationService.show('success', 'Imagen subida correctamente.');
       } catch {
         this.notificationService.show('error', 'No se pudo subir la imagen.');
-      } finally {
-        this.isUploading.set(false);
       }
+      this.isUploading.set(false);
     }
-  }
-
-  nextStep(): void {
-    const phase1Fields = ['nombre', 'codigo', 'instructorId', 'descripcion'];
-    const isValid = phase1Fields.every(field => this.courseForm.get(field)?.valid);
-
-    if (isValid) {
-      this.currentStep.set(2);
-    } else {
-      this.notificationService.show('error', 'Por favor completa los campos esenciales antes de continuar.');
-      phase1Fields.forEach(f => this.courseForm.get(f)?.markAsTouched());
-    }
-  }
-
-  prevStep(): void {
-    this.currentStep.set(1);
   }
 
   addRequisito(): void {
@@ -186,58 +161,50 @@ export class CourseFormModalComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
-    if (this.courseForm.invalid) {
+    if (this.courseForm.invalid || !this.courseToEdit?.id) {
       this.courseForm.markAllAsTouched();
-      this.notificationService.show('error', 'El formulario contiene errores. Revisa todos los campos.');
+      this.notificationService.show('error', 'El formulario contiene errores.');
       return;
     }
 
     this.isSaving.set(true);
-    const formValue = this.courseForm.value;
+    const v = this.courseForm.value;
 
-    let instructorIdStr = formValue.instructorId;
+    let instructorIdStr = v.instructorId;
     if (instructorIdStr && typeof instructorIdStr === 'object' && instructorIdStr.value) {
       instructorIdStr = instructorIdStr.value;
     }
 
     const payload = {
-      nombre: formValue.nombre,
-      descripcion: formValue.descripcion,
-      capacidad: Number(formValue.capacidad),
-      nivel: formValue.nivel,
-      duracion: formValue.duracion,
-      precio: Number(formValue.precio),
-      imagenUrl: formValue.imagenUrl,
-      categoria: formValue.categoria,
+      nombre: v.nombre,
+      descripcion: v.descripcion,
+      capacidad: Number(v.capacidad),
+      nivel: v.nivel,
+      duracion: v.duracion,
+      precio: Number(v.precio),
+      imagenUrl: v.imagenUrl,
+      categoria: v.categoria,
       instructorId: instructorIdStr || null,
       requisitos: this.requisitosList(),
-      codigo: formValue.codigo,
-      creditos: Number(formValue.creditos),
-      ciclo: formValue.ciclo,
-      estadoCurso: formValue.estadoCurso || 'Activo'
+      codigo: v.codigo,
+      creditos: Number(v.creditos),
+      ciclo: v.ciclo,
+      estadoCurso: v.estadoCurso || 'Borrador'
     };
 
     try {
-      if (this.isEditMode() && this.courseToEdit?.id) {
-        await firstValueFrom(this.http.put(`${environment.cursosApiUrl}/cursos/${this.courseToEdit.id}`, payload));
-        this.notificationService.show('success', 'Curso actualizado correctamente.');
-      } else {
-        await firstValueFrom(this.http.post(`${environment.cursosApiUrl}/cursos`, payload));
-        this.notificationService.show('success', 'Curso creado exitosamente.');
-      }
+      await firstValueFrom(this.http.put(`${environment.cursosApiUrl}/cursos/${this.courseToEdit.id}`, payload));
+      this.notificationService.show('success', 'Curso actualizado correctamente.');
       this.onSaved.emit();
       this.onClose.emit();
     } catch (err: any) {
       if (err.error?.errors) {
-        const errorEntries = Object.entries(err.error.errors);
-        const [field, messages]: [string, any] = errorEntries[0];
-        const msg = Array.isArray(messages) ? messages[0] : messages;
-        this.notificationService.show('error', `Error en ${field}: ${msg}`);
+        const [field, messages] = Object.entries(err.error.errors)[0] as [string, any];
+        this.notificationService.show('error', `Error en ${field}: ${Array.isArray(messages) ? messages[0] : messages}`);
       } else {
         this.notificationService.show('error', 'Error del servidor. Verifica los datos.');
       }
-    } finally {
-      this.isSaving.set(false);
     }
+    this.isSaving.set(false);
   }
 }

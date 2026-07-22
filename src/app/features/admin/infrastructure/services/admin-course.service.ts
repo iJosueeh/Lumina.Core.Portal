@@ -42,6 +42,10 @@ export class AdminCourseService {
   deleteModule(courseId: string, moduloId: string): Observable<any> {
     return this.http.delete(`${this.cursosApiUrl}/cursos/${courseId}/modulos/${moduloId}`);
   }
+  deleteCourse(courseId: string): Observable<any> {
+    return this.http.delete(`${this.cursosApiUrl}/cursos/${courseId}`);
+  }
+
 
 
   // saveClassroom removed — modules/lessons are managed via dedicated endpoints

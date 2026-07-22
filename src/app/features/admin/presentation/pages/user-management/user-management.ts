@@ -27,7 +27,7 @@ export class UserManagement implements OnInit {
 
     // Pagination
     currentPage = signal(1);
-    itemsPerPage = 10;
+    itemsPerPage = 5;
 
     // Modals State
     isModalOpen = signal(false);

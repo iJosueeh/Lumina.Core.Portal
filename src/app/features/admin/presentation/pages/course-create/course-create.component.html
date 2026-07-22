@@ -1,0 +1,304 @@
+<div class="min-h-screen bg-gray-50 text-slate-900 relative flex flex-col">
+
+  <!-- Header -->
+  <header class="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between z-30">
+    <div class="flex items-center gap-4">
+      <button (click)="goBack()"
+        class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition-all flex items-center justify-center border border-slate-200">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <div>
+        <h2 class="text-sm font-black text-slate-900 tracking-widest uppercase">Nuevo Curso</h2>
+        <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-tighter">
+          @if (currentStep() === 1) { Paso 1 de 3: Información Esencial }
+          @else if (currentStep() === 2) { Paso 2 de 3: Configuración Académica }
+          @else { Paso 3 de 3: Portada y Requisitos }
+        </p>
+      </div>
+    </div>
+
+    <!-- Stepper visual -->
+    <div class="flex items-center gap-3">
+      @for (step of [1, 2, 3]; track step) {
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all"
+               [class.bg-indigo-600]="currentStep() >= step"
+               [class.text-white]="currentStep() >= step"
+               [class.bg-slate-100]="currentStep() < step"
+               [class.text-slate-400]="currentStep() < step">
+            {{ step }}
+          </div>
+          @if (step < 3) {
+            <div class="w-8 h-px"
+                 [class.bg-indigo-300]="currentStep() > step"
+                 [class.bg-slate-200]="currentStep() <= step"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <div></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex overflow-hidden relative z-10">
+
+    <!-- LEFT: Forms -->
+    <section class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+      <div class="max-w-3xl mx-auto space-y-6">
+
+        <!-- ===== PASO 1: Información Esencial ===== -->
+        @if (currentStep() === 1) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="mb-5">
+              <h3 class="text-base font-black text-slate-900 tracking-tight">Información Esencial</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Datos básicos del curso</p>
+            </div>
+            <form [formGroup]="form" class="space-y-4">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso *</label>
+                <input type="text" formControlName="nombre" placeholder="Ej: Especialización en Arquitectura .NET"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Código *</label>
+                  <input type="text" formControlName="codigo" placeholder="Ej: DOTNET-101"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Docente *</label>
+                  @if (loadingDocentes()) {
+                    <div class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-400 text-sm animate-pulse">Cargando docentes...</div>
+                  } @else {
+                    <select formControlName="instructorId"
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                      <option [ngValue]="null" disabled>Seleccionar docente...</option>
+                      @for (d of docentes(); track d.id) {
+                        <option [ngValue]="d.id">{{ d.nombreCompleto }}</option>
+                      }
+                    </select>
+                  }
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción *</label>
+                <textarea formControlName="descripcion" rows="4" placeholder="Describe los objetivos del curso..."
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed placeholder:text-slate-300"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="goBack()"
+              class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
+              Cancelar
+            </button>
+            <button (click)="nextStep()"
+              class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
+              Siguiente Paso <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        }
+
+        <!-- ===== PASO 2: Configuración Académica ===== -->
+        @if (currentStep() === 2) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="mb-5">
+              <h3 class="text-base font-black text-slate-900 tracking-tight">Configuración Académica</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Parámetros y visibilidad</p>
+            </div>
+            <form [formGroup]="form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
+                <select formControlName="categoria"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  @for (cat of categories(); track cat) { <option [value]="cat">{{ cat }}</option> }
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nivel</label>
+                <select formControlName="nivel"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  @for (lvl of levels; track lvl) { <option [value]="lvl">{{ lvl }}</option> }
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Estado</label>
+                <select formControlName="estadoCurso"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                  <option value="Borrador">Borrador / Privado</option>
+                  <option value="Activo">Activo / Público</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Capacidad</label>
+                <input type="number" formControlName="capacidad"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Duración</label>
+                <input type="text" formControlName="duracion" placeholder="40h"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Créditos</label>
+                <input type="number" formControlName="creditos"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo</label>
+                <input type="text" formControlName="ciclo" placeholder="2026-1"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+              </div>
+            </form>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="prevStep()"
+              class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
+              <i class="fas fa-arrow-left mr-2"></i> Anterior
+            </button>
+            <button (click)="nextStep()"
+              class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
+              Siguiente Paso <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        }
+
+        <!-- ===== PASO 3: Portada & Requisitos ===== -->
+        @if (currentStep() === 3) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="mb-5">
+              <h3 class="text-base font-black text-slate-900 tracking-tight">Imagen de Portada</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Vista previa del curso</p>
+            </div>
+            @if (previewImageUrl()) {
+              <div class="w-full h-40 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 mb-4">
+                <img [src]="previewImageUrl()" class="w-full h-full object-cover" alt="Preview">
+              </div>
+            }
+            <form [formGroup]="form" class="flex gap-4 items-center">
+              <input type="text" formControlName="imagenUrl" placeholder="URL de la imagen..."
+                class="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-300">
+              <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl w-12 h-12 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shrink-0">
+                <i class="fas fa-cloud-upload-alt text-lg"></i>
+                <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*">
+              </label>
+            </form>
+            @if (selectedFile()) {
+              <p class="mt-2 text-[10px] text-indigo-600 font-semibold"><i class="fas fa-check-circle"></i> Archivo seleccionado: {{ selectedFile()!.name }} — se subirá al crear el curso</p>
+            }
+          </div>
+
+          <!-- Requisitos -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="mb-5">
+              <h3 class="text-base font-black text-slate-900 tracking-tight">Requisitos del Curso</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">¿Qué necesitan los estudiantes?</p>
+            </div>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <input type="text" [value]="newRequisito()" (input)="newRequisito.set($any($event.target).value)"
+                  (keyup.enter)="addRequisito()"
+                  placeholder="Ej: Conocimientos de SQL..."
+                  class="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 text-sm focus:outline-none focus:border-indigo-400 transition-all placeholder:text-slate-300">
+                <button type="button" (click)="addRequisito()"
+                  class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-sm shrink-0">
+                  <i class="fas fa-plus text-xs"></i>
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                @for (req of requisitosList(); track $index) {
+                  <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600">
+                    <span>{{ req }}</span>
+                    <button type="button" (click)="removeRequisito($index)" class="text-slate-400 hover:text-red-500 transition-colors">
+                      <i class="fas fa-times text-[10px]"></i>
+                    </button>
+                  </div>
+                } @empty {
+                  <p class="text-[10px] text-slate-400 italic">No hay requisitos agregados.</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="prevStep()"
+              class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
+              <i class="fas fa-arrow-left mr-2"></i> Anterior
+            </button>
+            <button (click)="submit()" [disabled]="isSaving()"
+              class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
+              @if (isSaving()) { <i class="fas fa-spinner fa-spin"></i> Procesando... }
+              @else { <i class="fas fa-plus"></i> Crear Curso }
+            </button>
+          </div>
+        }
+
+      </div>
+    </section>
+
+    <!-- RIGHT: Vista Previa -->
+    <aside class="w-[380px] border-l border-slate-200 bg-white p-6 overflow-y-auto hidden lg:block">
+      <div class="sticky top-0 space-y-5">
+        <div>
+          <h3 class="text-sm font-black text-slate-900 tracking-tight mb-0.5">Vista Previa</h3>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Así se ve el curso</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="aspect-video bg-slate-100 relative overflow-hidden">
+            @if (previewImageUrl()) {
+              <img [src]="previewImageUrl()" class="w-full h-full object-cover" alt="Portada"
+                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'">
+            } @else {
+              <div class="w-full h-full flex items-center justify-center">
+                <i class="fas fa-image text-4xl text-slate-200"></i>
+              </div>
+            }
+            <div class="absolute top-3 left-3">
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-800/80 text-white uppercase tracking-wider backdrop-blur-sm">
+                {{ form.get('estadoCurso')?.value || 'Borrador' }}
+              </span>
+            </div>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <h4 class="text-sm font-black text-slate-900 leading-tight">{{ form.get('nombre')?.value || 'Nombre del curso' }}</h4>
+              <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ form.get('codigo')?.value || 'CÓDIGO' }}</p>
+            </div>
+            <div class="h-px bg-slate-100"></div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-layer-group text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('categoria')?.value }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-signal text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('nivel')?.value }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-graduation-cap text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('creditos')?.value }} Créditos</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-users text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('capacidad')?.value }} Alumnos</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-clock text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('duracion')?.value }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                <i class="fas fa-calendar text-indigo-400"></i>
+                <span class="font-semibold">{{ form.get('ciclo')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+</div>

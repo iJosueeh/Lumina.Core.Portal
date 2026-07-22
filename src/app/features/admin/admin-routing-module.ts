@@ -33,6 +33,10 @@ const routes: Routes = [
         loadComponent: () => import('./presentation/pages/course-settings/course-settings.component').then(m => m.CourseSettingsComponent)
       },
       {
+        path: 'course/create',
+        loadComponent: () => import('./presentation/pages/course-create/course-create.component').then(m => m.CourseCreateComponent)
+      },
+      {
         path: 'users',
         loadComponent: () => import('./presentation/pages/user-management/user-management').then(m => m.UserManagement)
       }

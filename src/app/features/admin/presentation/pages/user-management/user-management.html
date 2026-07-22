@@ -1,33 +1,38 @@
-<div class="min-h-screen bg-slate-950 p-6 md:p-8">
-    <!-- Top Header -->
+<div class="min-h-screen bg-gray-50 text-slate-900 p-6 md:p-8">
+
+    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
-            <h1 class="text-4xl font-extrabold text-white tracking-tight">Gestión de Usuarios</h1>
-            <p class="text-slate-400 mt-2 text-lg">Directorio central de estudiantes, docentes y personal administrativo.</p>
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Usuarios</h1>
+            </div>
+            <p class="text-slate-500 text-sm ml-[52px]">Directorio central de estudiantes, docentes y personal administrativo.</p>
         </div>
-        <button (click)="openAddUserModal()" 
-            class="flex items-center justify-center gap-3 px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl font-bold shadow-2xl shadow-teal-500/20 transition-all active:scale-95">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Registrar Usuario
+        <button (click)="openAddUserModal()"
+            class="flex items-center justify-center gap-3 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-sm transition-all active:scale-[0.98]">
+            <i class="fas fa-plus"></i> Registrar Usuario
         </button>
     </div>
 
-    <!-- Filters Bar -->
+    <!-- Filters -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
         <div class="lg:col-span-2 relative">
-            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" 
-                placeholder="Buscar por nombre, email o ID..." 
-                class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-4 text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all">
-            <svg class="absolute left-4 top-4.5 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2"/></svg>
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                placeholder="Buscar por nombre, email o ID..."
+                class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
         </div>
         <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
-            class="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-teal-500/20 outline-none transition-all">
+            class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all appearance-none">
             @for (r of ['Rol: Todos', 'Estudiante', 'Docente', 'Admin']; track r) {
                 <option [value]="r">{{ r }}</option>
             }
         </select>
         <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)"
-            class="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-teal-500/20 outline-none transition-all">
+            class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all appearance-none">
             @for (s of ['Estado: Todos', 'Activo', 'Suspendido']; track s) {
                 <option [value]="s">{{ s }}</option>
             }
@@ -35,16 +40,16 @@
     </div>
 
     <!-- Content Table -->
-    <div class="bg-slate-900/50 border border-slate-800 rounded-3xl overflow-hidden backdrop-blur-sm">
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         @if (isLoading()) {
             <div class="py-40 flex flex-col items-center gap-4">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500/20 border-t-teal-500"></div>
-                <p class="text-slate-500 font-bold tracking-widest uppercase text-xs">Cargando directorio...</p>
+                <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-100 border-t-indigo-600"></div>
+                <p class="text-slate-400 font-semibold tracking-widest uppercase text-xs">Cargando directorio...</p>
             </div>
         } @else {
-            <app-admin-user-table 
-                [users]="paginatedUsers()" 
-                (edit)="openEditUserModal($event)" 
+            <app-admin-user-table
+                [users]="paginatedUsers()"
+                (edit)="openEditUserModal($event)"
                 (delete)="deleteUser($event)">
             </app-admin-user-table>
         }
@@ -52,21 +57,21 @@
 
     <!-- Pagination -->
     @if (!isLoading() && totalPages() > 1) {
-        <div class="mt-8 flex items-center justify-between px-2">
+        <div class="mt-6 flex items-center justify-between px-2">
             <p class="text-slate-500 text-sm font-medium">Página {{ currentPage() }} de {{ totalPages() }}</p>
             <div class="flex gap-2">
                 <button (click)="currentPage.set(currentPage() - 1)" [disabled]="currentPage() === 1"
-                    class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-white disabled:opacity-30 transition-all">Anterior</button>
+                    class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 disabled:opacity-30 transition-all">Anterior</button>
                 <button (click)="currentPage.set(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
-                    class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-white disabled:opacity-30 transition-all">Siguiente</button>
+                    class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 disabled:opacity-30 transition-all">Siguiente</button>
             </div>
         </div>
     }
 
-    <!-- Modales -->
+    <!-- Modal -->
     @if (isModalOpen()) {
-        <app-admin-user-form-modal 
-            [user]="currentUser" 
+        <app-admin-user-form-modal
+            [user]="currentUser"
             [isEditing]="isEditing()"
             [isSaving]="isSaving()"
             [saveError]="saveError()"

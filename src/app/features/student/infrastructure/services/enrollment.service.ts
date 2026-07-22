@@ -46,12 +46,19 @@ export class EnrollmentService {
     );
   }
 
-  /** Obtener todos los cursos disponibles (catálogo público) */
+  /** Obtener cursos disponibles (catálogo público — solo Activo) */
   getAllCourses(): Observable<any[]> {
-    return this.http.get<any>(`${environment.cursosApiUrl}/cursos/system/all`).pipe(
+    return this.http.get<any>(`${environment.cursosApiUrl}/cursos/public`).pipe(
       map(response => {
         const data = response?.value || response || [];
-        return Array.isArray(data) ? data : [];
+        // Defense-in-depth: filter client-side in case backend returns non-active
+        const active = Array.isArray(data)
+          ? data.filter((c: any) => {
+              const status = (c.estadoCurso || c.EstadoCurso || '').toLowerCase();
+              return status === 'activo' || status === 'publicado' || status === 'published';
+            })
+          : [];
+        return active;
       }),
       catchError(() => of([]))
     );

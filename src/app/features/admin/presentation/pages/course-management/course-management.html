@@ -17,7 +17,7 @@
         
         <div class="flex gap-3">
           <button
-            (click)="openCreateModal()"
+            (click)="openCreate()"
             class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2">
             <i class="fas fa-plus"></i> Crear Nuevo Curso
           </button>
@@ -103,16 +103,6 @@
   </main>
 
   <!-- Modals -->
-  @if (showEvaluacionModal() && selectedCourseId()) {
-    <app-evaluacion-modal
-        [courseId]="selectedCourseId()!"
-        [docenteId]="selectedDocenteId()"
-        [evaluacionToEdit]="editingEvaluacion()"
-        (onClose)="showEvaluacionModal.set(false)"
-        (onSaved)="loadData()"
-    />
-  }
-
   @if (showCourseFormModal()) {
     <app-course-form-modal
         [courseToEdit]="courseToEdit()"
@@ -121,4 +111,13 @@
         (onSaved)="loadData()"
     />
   }
+
+  <app-confirm-delete-modal
+      [isOpen]="showDeleteModal()"
+      title="Eliminar curso"
+      [message]="deleteMessage()"
+      [confirmText]="courseToDelete()?.name || ''"
+      (onConfirm)="confirmDelete()"
+      (onCancel)="cancelDelete()"
+  />
 </div>

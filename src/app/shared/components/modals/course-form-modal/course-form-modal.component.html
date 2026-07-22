@@ -4,47 +4,12 @@
     <div class="relative bg-white border border-slate-200 w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden">
         <div class="p-8 space-y-6">
 
-            <!-- Stepper (solo en modo creación) -->
-            @if (!isEditMode()) {
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <div [class.bg-indigo-600]="currentStep() >= 1" [class.text-white]="currentStep() >= 1"
-                            [class.bg-slate-100]="currentStep() < 1" [class.text-slate-400]="currentStep() < 1"
-                            class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all">
-                            1
-                        </div>
-                        <span class="text-[10px] font-bold uppercase tracking-widest"
-                            [class.text-slate-900]="currentStep() >= 1"
-                            [class.text-slate-400]="currentStep() < 1">Esencial</span>
-                    </div>
-                    <div class="h-px flex-1 bg-slate-200"></div>
-                    <div class="flex items-center gap-2">
-                        <div [class.bg-indigo-600]="currentStep() >= 2" [class.text-white]="currentStep() >= 2"
-                            [class.bg-slate-100]="currentStep() < 2" [class.text-slate-400]="currentStep() < 2"
-                            class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all">
-                            2
-                        </div>
-                        <span class="text-[10px] font-bold uppercase tracking-widest"
-                            [class.text-slate-900]="currentStep() >= 2"
-                            [class.text-slate-400]="currentStep() < 2">Detalles</span>
-                    </div>
-                </div>
-            }
-
             <!-- Header -->
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900">
-                        {{ isEditMode() ? 'Ajustes del Curso' : 'Nuevo Curso' }}
-                    </h2>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Editar Curso</h2>
                     <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-0.5">
-                        @if (isEditMode()) {
-                            Modifica los campos que necesites y guarda
-                        } @else if (currentStep() === 1) {
-                            Paso 1: Información básica y académica
-                        } @else {
-                            Paso 2: Parámetros técnicos y requisitos
-                        }
+                        Modifica los campos que necesites y guarda
                     </p>
                 </div>
                 <button type="button" (click)="onClose.emit()" [disabled]="isSaving()"
@@ -54,309 +19,134 @@
             </div>
 
             <form [formGroup]="courseForm" (ngSubmit)="submit()" class="space-y-5">
-
-                <!-- ========== MODO EDICIÓN: Formulario directo sin stepper ========== -->
-                @if (isEditMode()) {
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-h-[55vh] overflow-y-auto pr-2">
-                        <div class="md:col-span-2 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
-                            <input type="text" formControlName="nombre" placeholder="Ej: Especialización en Arquitectura .NET"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Código</label>
-                            <input type="text" formControlName="codigo" placeholder="Ej: DOTNET-101"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Docente Asignado</label>
-                            <select formControlName="instructorId" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                <option [ngValue]="null" disabled>Seleccionar docente...</option>
-                                @for (d of docentes; track d.id) {
-                                    <option [ngValue]="d.id">{{ d.nombreCompleto }}</option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="md:col-span-2 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
-                            <textarea formControlName="descripcion" rows="3" placeholder="Describe los objetivos del curso..."
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed placeholder:text-slate-300"></textarea>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
-                            <select formControlName="categoria" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                @for (cat of categories(); track cat) {
-                                    <option [value]="cat">{{ cat }}</option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nivel</label>
-                            <select formControlName="nivel" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                @for (lvl of levels; track lvl) {
-                                    <option [value]="lvl">{{ lvl }}</option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Capacidad</label>
-                            <input type="number" formControlName="capacidad"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Duración</label>
-                            <input type="text" formControlName="duracion" placeholder="Ej: 40h"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Créditos</label>
-                            <input type="number" formControlName="creditos"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo</label>
-                            <input type="text" formControlName="ciclo" placeholder="2024-1"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Estado</label>
-                            <select formControlName="estadoCurso" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                <option value="Activo">Activo / Público</option>
-                                <option value="Borrador">Borrador / Privado</option>
-                                <option value="Archivado">Archivado</option>
-                            </select>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Precio (S/)</label>
-                            <input type="number" formControlName="precio" min="0"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
-                        </div>
-
-                        <!-- Imagen -->
-                        <div class="md:col-span-2 space-y-1.5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Imagen de Portada</label>
-                            <div class="flex gap-4 items-center">
-                                <div class="relative flex-1">
-                                    <input type="text" formControlName="imagenUrl"
-                                        placeholder="URL de la imagen o sube un archivo..."
-                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-300">
-                                </div>
-                                <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl w-12 h-12 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all relative overflow-hidden"
-                                       [class.opacity-50]="isUploading()">
-                                    @if (isUploading()) {
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                    } @else {
-                                        <i class="fas fa-cloud-upload-alt text-lg"></i>
-                                    }
-                                    <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*" [disabled]="isUploading()">
-                                </label>
-                                @if (courseForm.get('imagenUrl')?.value) {
-                                    <div class="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
-                                        <img [src]="courseForm.get('imagenUrl')?.value" class="w-full h-full object-cover" alt="Preview">
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-h-[55vh] overflow-y-auto pr-2">
+                    <div class="md:col-span-2 space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
+                        <input type="text" formControlName="nombre" placeholder="Ej: Especialización en Arquitectura .NET"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
                     </div>
 
-                    <!-- Acciones edición: directo a guardar -->
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" (click)="onClose.emit()"
-                            class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
-                            Cancelar
-                        </button>
-                        <button type="submit" [disabled]="courseForm.invalid || isSaving()"
-                            class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
-                            @if (isSaving()) {
-                                <i class="fas fa-spinner fa-spin"></i> Guardando...
-                            } @else {
-                                <i class="fas fa-check"></i> Guardar Cambios
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Código</label>
+                        <input type="text" formControlName="codigo" placeholder="Ej: DOTNET-101"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Docente Asignado</label>
+                        <select formControlName="instructorId" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                            <option [ngValue]="null" disabled>Seleccionar docente...</option>
+                            @for (d of docentes; track d.id) {
+                                <option [ngValue]="d.id">{{ d.nombreCompleto }}</option>
                             }
-                        </button>
+                        </select>
                     </div>
-                }
 
-                <!-- ========== MODO CREACIÓN: Stepper de 2 pasos ========== -->
-                @if (!isEditMode()) {
-                    <!-- PHASE 1 -->
-                    @if (currentStep() === 1) {
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="md:col-span-2 space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
-                                <input type="text" formControlName="nombre" placeholder="Ej: Especialización en Arquitectura .NET"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+                    <div class="md:col-span-2 space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
+                        <textarea formControlName="descripcion" rows="3" placeholder="Describe los objetivos del curso..."
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed placeholder:text-slate-300"></textarea>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
+                        <select formControlName="categoria" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                            @for (cat of categories(); track cat) {
+                                <option [value]="cat">{{ cat }}</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nivel</label>
+                        <select formControlName="nivel" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                            @for (lvl of levels; track lvl) {
+                                <option [value]="lvl">{{ lvl }}</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Capacidad</label>
+                        <input type="number" formControlName="capacidad"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Duración</label>
+                        <input type="text" formControlName="duracion" placeholder="Ej: 40h"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Créditos</label>
+                        <input type="number" formControlName="creditos"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo</label>
+                        <input type="text" formControlName="ciclo" placeholder="2024-1"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Estado</label>
+                        <select formControlName="estadoCurso" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
+                            <option value="Activo">Activo / Público</option>
+                            <option value="Borrador">Borrador / Privado</option>
+                            <option value="Archivado">Archivado</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Precio (S/)</label>
+                        <input type="number" formControlName="precio" min="0"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
+                    </div>
+
+                    <!-- Imagen -->
+                    <div class="md:col-span-2 space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Imagen de Portada</label>
+                        <div class="flex gap-4 items-center">
+                            <div class="relative flex-1">
+                                <input type="text" formControlName="imagenUrl"
+                                    placeholder="URL de la imagen o sube un archivo..."
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-300">
                             </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Código</label>
-                                <input type="text" formControlName="codigo" placeholder="Ej: DOTNET-101"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Docente Asignado</label>
-                                <select formControlName="instructorId" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                    <option [ngValue]="null" disabled>Seleccionar docente...</option>
-                                    @for (d of docentes; track d.id) {
-                                        <option [ngValue]="d.id">{{ d.nombreCompleto }}</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2 space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
-                                <textarea formControlName="descripcion" rows="3" placeholder="Describe los objetivos del curso..."
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all resize-none text-sm leading-relaxed placeholder:text-slate-300"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3 pt-2">
-                            <button type="button" (click)="onClose.emit()"
-                                class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
-                                Cancelar
-                            </button>
-                            <button type="button" (click)="nextStep()"
-                                class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
-                                Siguiente Paso <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    }
-
-                    <!-- PHASE 2 -->
-                    @if (currentStep() === 2) {
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-h-[50vh] overflow-y-auto pr-2">
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
-                                <select formControlName="categoria" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                    @for (cat of categories(); track cat) {
-                                        <option [value]="cat">{{ cat }}</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nivel</label>
-                                <select formControlName="nivel" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                    @for (lvl of levels; track lvl) {
-                                        <option [value]="lvl">{{ lvl }}</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Capacidad</label>
-                                <input type="number" formControlName="capacidad"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Duración</label>
-                                <input type="text" formControlName="duracion" placeholder="Ej: 40h"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Créditos</label>
-                                <input type="number" formControlName="creditos"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium">
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo</label>
-                                <input type="text" formControlName="ciclo" placeholder="2024-1"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium placeholder:text-slate-300">
-                            </div>
-
-                            <div class="space-y-1.5">
-                                <label class="block text-[10px] font-bold text-indigo-600 uppercase tracking-widest ml-1">Visibilidad / Estado</label>
-                                <select formControlName="estadoCurso" class="w-full bg-slate-50 border border-indigo-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                                    <option value="Activo">Activo / Público</option>
-                                    <option value="Borrador">Borrador / Privado</option>
-                                    <option value="Archivado">Archivado</option>
-                                </select>
-                            </div>
-
-                            <!-- Requisitos -->
-                            <div class="md:col-span-3 space-y-3 bg-slate-50 p-5 rounded-xl border border-slate-200 mt-2">
-                                <label class="block text-[10px] font-bold text-indigo-600 uppercase tracking-widest ml-1">Requisitos del Curso</label>
-                                <div class="flex gap-2">
-                                    <input type="text" [value]="newRequisito()" (input)="newRequisito.set($any($event.target).value)"
-                                        (keyup.enter)="addRequisito()"
-                                        placeholder="Ej: Conocimientos de SQL..."
-                                        class="flex-1 bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 text-sm focus:outline-none focus:border-indigo-400 transition-all placeholder:text-slate-300">
-                                    <button type="button" (click)="addRequisito()"
-                                        class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shadow-sm">
-                                        <i class="fas fa-plus text-xs"></i>
-                                    </button>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    @for (req of requisitosList(); track $index) {
-                                        <div class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600">
-                                            <span>{{ req }}</span>
-                                            <button type="button" (click)="removeRequisito($index)" class="text-slate-400 hover:text-red-500 transition-colors">
-                                                <i class="fas fa-times text-[10px]"></i>
-                                            </button>
-                                        </div>
-                                    } @empty {
-                                        <p class="text-[10px] text-slate-400 italic">No hay requisitos agregados.</p>
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Imagen -->
-                            <div class="md:col-span-3 space-y-1.5">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Imagen de Portada</label>
-                                <div class="flex gap-4 items-center">
-                                    <div class="relative flex-1">
-                                        <input type="text" formControlName="imagenUrl"
-                                            placeholder="URL de la imagen o sube un archivo..."
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all placeholder:text-slate-300">
-                                    </div>
-                                    <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl w-12 h-12 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all relative overflow-hidden"
-                                           [class.opacity-50]="isUploading()">
-                                        @if (isUploading()) {
-                                            <i class="fas fa-spinner fa-spin"></i>
-                                        } @else {
-                                            <i class="fas fa-cloud-upload-alt text-lg"></i>
-                                        }
-                                        <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*" [disabled]="isUploading()">
-                                    </label>
-                                    @if (courseForm.get('imagenUrl')?.value) {
-                                        <div class="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
-                                            <img [src]="courseForm.get('imagenUrl')?.value" class="w-full h-full object-cover" alt="Preview">
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3 pt-2">
-                            <button type="button" (click)="prevStep()" [disabled]="isSaving()"
-                                class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm disabled:opacity-30">
-                                <i class="fas fa-arrow-left mr-2"></i> Anterior
-                            </button>
-                            <button type="submit" [disabled]="courseForm.invalid || isSaving()"
-                                class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
-                                @if (isSaving()) {
-                                    <i class="fas fa-spinner fa-spin"></i> Procesando...
+                            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl w-12 h-12 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all relative overflow-hidden"
+                                   [class.opacity-50]="isUploading()">
+                                @if (isUploading()) {
+                                    <i class="fas fa-spinner fa-spin"></i>
                                 } @else {
-                                    <i class="fas fa-plus"></i> Crear Curso
+                                    <i class="fas fa-cloud-upload-alt text-lg"></i>
                                 }
-                            </button>
+                                <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*" [disabled]="isUploading()">
+                            </label>
+                            @if (courseForm.get('imagenUrl')?.value) {
+                                <div class="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
+                                    <img [src]="courseForm.get('imagenUrl')?.value" class="w-full h-full object-cover" alt="Preview">
+                                </div>
+                            }
                         </div>
-                    }
-                }
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" (click)="onClose.emit()"
+                        class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-all text-sm">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="courseForm.invalid || isSaving()"
+                        class="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2">
+                        @if (isSaving()) {
+                            <i class="fas fa-spinner fa-spin"></i> Guardando...
+                        } @else {
+                            <i class="fas fa-check"></i> Guardar Cambios
+                        }
+                    </button>
+                </div>
             </form>
         </div>
     </div>
