@@ -1,37 +1,34 @@
-@if (notificationService.notification(); as note) {
+@if (notification(); as note) {
   <div class="fixed top-6 right-6 left-6 md:left-auto md:w-96 z-[9999] pointer-events-none">
-    <div [class]="getTypeClass(note.type)"
-         [class.animate-toast-in]="!notificationService.notificationClosing()"
-         [class.animate-toast-out]="notificationService.notificationClosing()"
-         class="pointer-events-auto flex items-center gap-4 p-4 rounded-3xl border backdrop-blur-xl shadow-2xl relative overflow-hidden">
-      
-      <!-- Progress Bar Background -->
-      <div class="absolute bottom-0 left-0 h-1 bg-white/10 w-full"></div>
-      <!-- Animated Progress Bar -->
-      <div class="absolute bottom-0 left-0 h-1 bg-current transition-all linear"
-           [style.width.%]="notificationService.notificationClosing() ? 0 : 100"
-           [style.transition-duration.ms]="notificationService.notificationDuration()">
-      </div>
+    <div [class]="getStyle(note.type)"
+         [class.animate-toast-in]="!isClosing()"
+         [class.animate-toast-out]="isClosing()"
+         class="pointer-events-auto flex items-center gap-3 p-4 rounded-xl border-l-4 border bg-white shadow-lg">
 
       <!-- Icon -->
-      <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
-        <i class="fas" [ngClass]="getIcon(note.type) + ' text-xl'"></i>
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+           [ngClass]="{
+             'bg-emerald-100 text-emerald-600': note.type === 'success',
+             'bg-red-100 text-red-600': note.type === 'error',
+             'bg-blue-100 text-blue-600': note.type === 'info'
+           }">
+        <i class="fas" [ngClass]="getIcon(note.type)"></i>
       </div>
 
       <!-- Content -->
-      <div class="flex-1 min-w-0 py-1">
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 mb-0.5">
-          {{ note.type === 'success' ? 'Éxito' : note.type === 'error' ? 'Atención' : 'Información' }}
+      <div class="flex-1 min-w-0">
+        <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-0.5">
+          {{ getLabel(note.type) }}
         </p>
-        <p class="text-sm font-bold text-white leading-tight truncate-multiline">
+        <p class="text-sm font-semibold leading-tight truncate-multiline">
           {{ note.message }}
         </p>
       </div>
 
-      <!-- Close Button -->
-      <button (click)="notificationService.close()" 
-              class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center transition-colors group">
-        <i class="fas fa-times text-xs opacity-30 group-hover:opacity-100 transition-opacity"></i>
+      <!-- Close -->
+      <button (click)="close()"
+              class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-400 hover:text-slate-600 shrink-0">
+        <i class="fas fa-times text-xs"></i>
       </button>
     </div>
   </div>

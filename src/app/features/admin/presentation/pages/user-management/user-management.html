@@ -23,7 +23,12 @@
             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
             <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
                 placeholder="Buscar por nombre, email o ID..."
-                class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
+                class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
+            @if (searchTerm()) {
+                <button (click)="clearFilter()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            }
         </div>
         <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
             class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all appearance-none">
@@ -50,7 +55,8 @@
             <app-admin-user-table
                 [users]="paginatedUsers()"
                 (edit)="openEditUserModal($event)"
-                (delete)="deleteUser($event)">
+                (delete)="deleteUser($event)"
+                (resetPassword)="openResetModal($event)">
             </app-admin-user-table>
         }
     </div>
@@ -68,7 +74,7 @@
         </div>
     }
 
-    <!-- Modal -->
+    <!-- Modal Editar -->
     @if (isModalOpen()) {
         <app-admin-user-form-modal
             [user]="currentUser"
@@ -79,4 +85,106 @@
             (save)="saveUser($event)">
         </app-admin-user-form-modal>
     }
+
+    <!-- Modal Reset Password -->
+    @if (showResetModal()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div (click)="closeResetModal()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+            <div class="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl flex flex-col">
+                <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Resetear Contraseña</h3>
+                    </div>
+                    <button (click)="closeResetModal()" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Usuario</label>
+                        <p class="text-sm font-semibold text-slate-900">{{ userToReset()?.fullName }}</p>
+                        <p class="text-xs text-slate-500 font-mono">{{ userToReset()?.email }}</p>
+                    </div>
+
+                    @if (resetError()) {
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-sm">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ resetError() }}
+                        </div>
+                    }
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nueva Contraseña</label>
+                        <div class="relative">
+                            <input [type]="showPassword() ? 'text' : 'password'"
+                                [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)"
+                                placeholder="Mínimo 6 caracteres"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400">
+                            <button type="button" (click)="showPassword.set(!showPassword())"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Confirmar Contraseña</label>
+                        <div class="relative">
+                            <input [type]="showConfirmPassword() ? 'text' : 'password'"
+                                [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)"
+                                placeholder="Repite la contraseña"
+                                class="w-full bg-slate-50 border rounded-xl pl-4 pr-12 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400"
+                                [class.border-red-400]="confirmPassword().length > 0 && !passwordsMatch()"
+                                [class.border-green-400]="passwordsMatch()"
+                                [class.border-slate-200]="confirmPassword().length === 0 || passwordsMatch()">
+                            <button type="button" (click)="showConfirmPassword.set(!showConfirmPassword())"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                <i [class]="showConfirmPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-sm"></i>
+                            </button>
+                            @if (confirmPassword().length > 0) {
+                                <span class="absolute right-10 top-1/2 -translate-y-1/2">
+                                    @if (passwordsMatch()) {
+                                        <i class="fas fa-check text-green-500 text-sm"></i>
+                                    } @else {
+                                        <i class="fas fa-times text-red-500 text-sm"></i>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
+                    <button (click)="closeResetModal()"
+                        class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100 transition-all">
+                        Cancelar
+                    </button>
+                    <button (click)="confirmReset()" [disabled]="isResetting() || !newPassword() || !confirmPassword() || !passwordsMatch()"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm transition-all flex items-center gap-2">
+                        @if (isResetting()) {
+                            <div class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        } @else {
+                            <i class="fas fa-key text-xs"></i>
+                        }
+                        Resetear
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Modal Eliminar Usuario -->
+    <app-confirm-delete-modal
+        [isOpen]="showDeleteModal()"
+        title="Eliminar Usuario"
+        [message]="'¿Estás seguro de eliminar a ' + (userToDelete()?.fullName || '') + '? Esta acción no se puede deshacer.'"
+        [confirmText]="userToDelete()?.fullName || ''"
+        [isDeleting]="isDeleting()"
+        (onConfirm)="confirmDelete()"
+        (onCancel)="closeDeleteModal()">
+    </app-confirm-delete-modal>
 </div>

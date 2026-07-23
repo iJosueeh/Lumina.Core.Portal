@@ -2,16 +2,12 @@ import { Component, EventEmitter, Input, Output, signal, inject, OnDestroy } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminUserService } from '../../../../../infrastructure/services/admin-user.service';
-import { AdminUser } from '@shared/models/admin-user.models';
 import { ModalContainerComponent } from '../../../../../../../shared/components/ui/modal-container/modal-container.component';
-import { ButtonComponent } from '../../../../../../../shared/components/ui/button/button.component';
-import { FormFieldComponent } from '../../../../../../../shared/components/ui/form-field/form-field.component';
-import { InputComponent } from '../../../../../../../shared/components/ui/input/input.component';
 
 @Component({
   selector: 'app-admin-user-form-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalContainerComponent, ButtonComponent, FormFieldComponent, InputComponent],
+  imports: [CommonModule, FormsModule, ModalContainerComponent],
   templateUrl: './user-form-modal.component.html',
   styleUrl: './user-form-modal.component.css'
 })
@@ -24,7 +20,8 @@ export class UserFormModalComponent implements OnDestroy {
   @Output() save = new EventEmitter<any>();
 
   private adminUserService = inject(AdminUserService);
-  
+
+  showPassword = signal(false);
   isCheckingEmail = false;
   emailAvailability: 'unknown' | 'available' | 'taken' = 'unknown';
   emailCheckMessage = '';
@@ -41,17 +38,17 @@ export class UserFormModalComponent implements OnDestroy {
 
     if (this.emailCheckTimer) clearTimeout(this.emailCheckTimer);
 
-    const normalizedEmail = (value ?? '').trim();
+    const normalized = (value ?? '').trim();
     this.emailAvailability = 'unknown';
     this.emailCheckMessage = '';
-    
-    if (!normalizedEmail || !normalizedEmail.includes('@lumina.edu')) return;
+
+    if (!normalized || !normalized.includes('@lumina.edu')) return;
 
     this.isCheckingEmail = true;
     const requestId = ++this.emailCheckRequestId;
 
     this.emailCheckTimer = setTimeout(() => {
-      this.adminUserService.checkEmailExists(normalizedEmail).subscribe({
+      this.adminUserService.checkEmailExists(normalized).subscribe({
         next: (exists) => {
           if (requestId !== this.emailCheckRequestId) return;
           this.isCheckingEmail = false;
@@ -67,7 +64,16 @@ export class UserFormModalComponent implements OnDestroy {
     }, 450);
   }
 
+  isFormValid(): boolean {
+    if (!this.user.email?.trim()) return false;
+    if (!this.isEditing && (!this.user.password || this.user.password.length < 6)) return false;
+    if (!this.user.nombresPersona?.trim()) return false;
+    if (!this.user.apellidoPaterno?.trim()) return false;
+    return true;
+  }
+
   submit(): void {
+    if (!this.isFormValid()) return;
     this.save.emit(this.user);
   }
 }

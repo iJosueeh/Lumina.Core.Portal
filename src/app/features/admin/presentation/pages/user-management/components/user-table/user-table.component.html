@@ -31,10 +31,16 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-1">
-                            <button (click)="edit.emit(user)" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                            <button (click)="edit.emit(user)" title="Editar usuario"
+                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
                                 <i class="fas fa-pen text-sm"></i>
                             </button>
-                            <button (click)="delete.emit(user)" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                            <button (click)="resetPassword.emit(user)" title="Resetear contraseña"
+                                class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all">
+                                <i class="fas fa-key text-sm"></i>
+                            </button>
+                            <button (click)="delete.emit(user)" title="Eliminar usuario"
+                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                                 <i class="fas fa-trash text-sm"></i>
                             </button>
                         </div>

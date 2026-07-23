@@ -38,4 +38,8 @@ export class AdminUserService {
       map(users => users.some(u => (u.email || u.Email || '').toLowerCase() === normalized))
     );
   }
+
+  resetPassword(email: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/admin/reset-password`, { email, newPassword });
+  }
 }

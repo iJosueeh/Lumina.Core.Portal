@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, computed, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,40 +7,56 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    @if (isOpen()) {
+    @if (isOpen) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="cancel()"></div>
-        <div class="relative bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
-          <div class="px-6 pt-6 pb-4">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
-                <i class="fas fa-exclamation-triangle text-red-500"></i>
+        <div (click)="onCancel.emit()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl flex flex-col">
+          <!-- Header -->
+          <div class="flex items-center justify-between p-6 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+                <i class="fas fa-trash"></i>
               </div>
-              <div>
-                <h3 class="text-sm font-black text-slate-900 tracking-tight">{{ title() }}</h3>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Esta acción es irreversible</p>
-              </div>
+              <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
             </div>
-            <p class="text-sm text-slate-600 leading-relaxed">{{ message() }}</p>
+            <button (click)="onCancel.emit()"
+              class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+              <i class="fas fa-times text-sm"></i>
+            </button>
           </div>
-          <div class="px-6 pb-4">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-              Escribe <span class="text-red-500 font-black">{{ confirmText() }}</span> para confirmar
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="userInput"
-              [placeholder]="confirmText()"
-              class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-300 transition-all placeholder:text-slate-300">
+
+          <!-- Body -->
+          <div class="p-6 space-y-4">
+            <p class="text-sm text-slate-600">{{ message }}</p>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                Escribe <span class="text-red-500">{{ confirmText }}</span> para confirmar
+              </label>
+              <input type="text"
+                [ngModel]="typedText()"
+                (ngModelChange)="typedText.set($event)"
+                [placeholder]="confirmText"
+                class="w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
+                [class.border-red-400]="typedText().length > 0 && !isValid()"
+                [class.border-green-400]="isValid()"
+                [class.border-slate-200]="typedText().length === 0 || isValid()">
+            </div>
           </div>
-          <div class="px-6 pb-6 flex gap-3">
-            <button (click)="cancel()"
-              class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all border border-slate-200">
+
+          <!-- Footer -->
+          <div class="p-6 border-t border-slate-100 flex justify-end gap-3">
+            <button (click)="onCancel.emit()"
+              class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100 transition-all">
               Cancelar
             </button>
-            <button (click)="confirm()"
-              [disabled]="!canConfirm()"
-              class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold text-xs rounded-xl transition-all shadow-sm">
+            <button (click)="onConfirm.emit()" [disabled]="!isValid() || isDeleting"
+              class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm transition-all flex items-center gap-2">
+              @if (isDeleting) {
+                <div class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+              } @else {
+                <i class="fas fa-trash text-xs"></i>
+              }
               Eliminar
             </button>
           </div>
@@ -49,26 +65,21 @@ import { FormsModule } from '@angular/forms';
     }
   `
 })
-export class ConfirmDeleteModalComponent {
-  isOpen = input.required<boolean>();
-  title = input<string>('Eliminar');
-  message = input<string>('¿Estás seguro?');
-  confirmText = input.required<string>();
+export class ConfirmDeleteModalComponent implements OnChanges {
+  @Input() isOpen = false;
+  @Input() title = 'Confirmar eliminación';
+  @Input() message = 'Esta acción no se puede deshacer.';
+  @Input() confirmText = '';
+  @Input() isDeleting = false;
+  @Output() onConfirm = new EventEmitter<void>();
+  @Output() onCancel = new EventEmitter<void>();
 
-  onConfirm = output<void>();
-  onCancel = output<void>();
+  typedText = signal('');
+  isValid = computed(() => this.typedText() === this.confirmText);
 
-  userInput = '';
-
-  canConfirm = computed(() => this.userInput.trim() === this.confirmText());
-
-  confirm(): void {
-    this.userInput = '';
-    this.onConfirm.emit();
-  }
-
-  cancel(): void {
-    this.userInput = '';
-    this.onCancel.emit();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen']?.currentValue) {
+      this.typedText.set('');
+    }
   }
 }

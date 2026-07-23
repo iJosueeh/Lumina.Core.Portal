@@ -14,4 +14,5 @@ export class UserTableComponent {
   @Input({ required: true }) users: AdminUser[] = [];
   @Output() edit = new EventEmitter<AdminUser>();
   @Output() delete = new EventEmitter<AdminUser>();
+  @Output() resetPassword = new EventEmitter<AdminUser>();
 }
