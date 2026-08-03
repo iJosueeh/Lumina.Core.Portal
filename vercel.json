@@ -18,6 +18,10 @@
       "destination": "https://lumina-carreras.onrender.com/api/carreras/:path*"
     },
     {
+      "source": "/api/auth/:path*",
+      "destination": "https://lumina-usuarios.onrender.com/api/auth/:path*"
+    },
+    {
       "source": "/api/usuarios/:path*",
       "destination": "https://lumina-usuarios.onrender.com/api/:path*"
     },
