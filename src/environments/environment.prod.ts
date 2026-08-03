@@ -12,7 +12,10 @@ export const environment = {
     docentesApiUrl: 'https://docentes.lumina.edu/api',
     carrerasApiUrl: 'https://carreras.lumina.edu/api',
     pedidosApiUrl: 'https://pedidos.lumina.edu/api',
-    
+
+    // System Settings (integrated into Usuarios microservice)
+    systemSettingsApiUrl: 'https://usuarios.lumina.edu/api/system-settings',
+
     // Default API (para auth)
     apiUrl: 'https://usuarios.lumina.edu/api',
 };

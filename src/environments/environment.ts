@@ -1,3 +1,4 @@
+// Path: Lumina.Core.Portal/src/environments/environment.ts
 export const environment = {
   production: false,
   useMockData: false,
@@ -10,6 +11,9 @@ export const environment = {
   noticiasEventosApiUrl: 'http://localhost:4444/api',
   docentesApiUrl: 'http://localhost:8888/api',
   carrerasApiUrl: 'http://localhost:5000/api',
+  
+  // System Settings (integrated into Usuarios microservice)
+  systemSettingsApiUrl: 'http://localhost:7777/api/system-settings',
   
   // Default API (para auth)
   apiUrl: 'http://localhost:7777/api',

@@ -23,17 +23,17 @@ export interface SidebarConfig {
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <aside 
-        class="fixed inset-y-0 left-0 z-50 w-72 h-screen bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col"
+        class="fixed inset-y-0 left-0 z-50 w-72 h-screen bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)] transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col"
         [class.-translate-x-full]="!isOpen()">
         
         <!-- Logo / Brand -->
         <div class="flex items-center gap-3 px-6 pt-6 pb-8 flex-shrink-0">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+            <div class="w-10 h-10 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-xl flex items-center justify-center shadow-sm">
               <i class="fas fa-graduation-cap text-white font-black text-xl"></i>
             </div>
             <div>
-              <h1 class="text-xl font-bold text-slate-900 tracking-tight">LUMINA<span class="text-indigo-600">.CORE</span></h1>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ config.panelTitle }}</p>
+              <h1 class="text-xl font-bold text-[var(--text-primary)] tracking-tight">LUMINA<span class="text-[var(--accent-primary)]">.CORE</span></h1>
+              <p class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{{ config.panelTitle }}</p>
             </div>
         </div>
 
@@ -41,14 +41,14 @@ export interface SidebarConfig {
         <nav class="flex-1 space-y-6 overflow-y-auto custom-scrollbar px-6 min-h-0">
             @for (category of categories(); track category) {
                 <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-4">{{ category }}</p>
+                    <p class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2 px-4">{{ category }}</p>
                     <div class="space-y-1">
                         @for (item of getCategoryItems(category); track item.route) {
                             <a 
                                 [routerLink]="item.route" 
                                 routerLinkActive="active-link"
                                 (click)="close()"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 hover:text-indigo-600 transition-all text-sm">
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text-secondary)] font-semibold hover:bg-[var(--sidebar-hover)] hover:text-[var(--accent-primary)] transition-all text-sm">
                                 <i [class]="'fas fa-' + item.icon + ' w-5 text-center text-sm'"></i>
                                 <span>{{ item.label }}</span>
                             </a>
@@ -59,14 +59,14 @@ export interface SidebarConfig {
         </nav>
 
         <!-- Perfil del Usuario (Bottom) -->
-        <div class="flex-shrink-0 border-t border-slate-100 px-6 py-4 mt-auto">
+        <div class="flex-shrink-0 border-t border-[var(--border-primary)] px-6 py-4 mt-auto">
             <div class="flex items-center gap-3">
-                <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-slate-200" alt="Avatar">
+                <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-[var(--border-primary)]" alt="Avatar">
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-slate-900 truncate">{{ userName() }}</p>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ config.roleLabel }}</p>
+                    <p class="text-sm font-semibold text-[var(--text-primary)] truncate">{{ userName() }}</p>
+                    <p class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">{{ config.roleLabel }}</p>
                 </div>
-                <button (click)="onLogout()" class="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-50">
+                <button (click)="onLogout()" class="text-[var(--text-muted)] hover:text-[var(--status-error)] transition-colors p-2 rounded-lg hover:bg-[var(--status-error-bg)]">
                     <i class="fas fa-sign-out-alt text-sm"></i>
                 </button>
             </div>
@@ -75,12 +75,12 @@ export interface SidebarConfig {
   `,
   styles: `
     .active-link {
-      background: #eef2ff;
-      color: #4f46e5 !important;
+      background: var(--sidebar-active-bg);
+      color: var(--sidebar-active-text) !important;
       font-weight: 600;
     }
     .active-link i {
-      color: #4f46e5;
+      color: var(--sidebar-active-text);
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
@@ -89,7 +89,7 @@ export interface SidebarConfig {
       background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
+      background: var(--border-secondary);
       border-radius: 10px;
     }
   `

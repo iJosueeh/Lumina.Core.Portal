@@ -1,0 +1,103 @@
+/* Path: Lumina.Core.Portal/src/app/features/admin/presentation/pages/admin-settings/admin-settings.component.css */
+
+/* Active tab styling */
+button.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+  font-weight: 600;
+}
+
+button.active i {
+  color: var(--sidebar-active-text);
+}
+
+/* Theme option buttons */
+.theme-option {
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.theme-option:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
+}
+
+.theme-option.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-muted);
+  color: var(--accent-primary);
+}
+
+.theme-option.active i {
+  color: var(--accent-primary);
+}
+
+/* Accent color buttons */
+.accent-color-btn {
+  border-color: transparent;
+}
+
+.accent-color-btn:hover {
+  transform: scale(1.1);
+}
+
+.accent-color-btn.active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-primary);
+}
+
+/* Toggle switch styling */
+input[type="checkbox"] {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background: var(--border-primary);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent-primary);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* Custom scrollbar for this component */
+:host ::ng-deep .custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+:host ::ng-deep .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:host ::ng-deep .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 10px;
+}
+
+:host ::ng-deep .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Smooth transitions for theme changes */
+:host {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

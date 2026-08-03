@@ -39,6 +39,10 @@ const routes: Routes = [
       {
         path: 'users',
         loadComponent: () => import('./presentation/pages/user-management/user-management').then(m => m.UserManagement)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./presentation/pages/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
       }
     ]
   }

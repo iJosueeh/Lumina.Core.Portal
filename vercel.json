@@ -1,0 +1,75 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "angular",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist/lumina-core-portal/browser",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    {
+      "source": "/api/cursos/public",
+      "destination": "https://lumina-cursos.onrender.com/api/cursos/public"
+    },
+    {
+      "source": "/api/cursos/:path*",
+      "destination": "https://lumina-cursos.onrender.com/api/cursos/:path*"
+    },
+    {
+      "source": "/api/carreras/:path*",
+      "destination": "https://lumina-carreras.onrender.com/api/carreras/:path*"
+    },
+    {
+      "source": "/api/usuarios/:path*",
+      "destination": "https://lumina-usuarios.onrender.com/api/:path*"
+    },
+    {
+      "source": "/api/system-settings/:path*",
+      "destination": "https://lumina-usuarios.onrender.com/api/system-settings/:path*"
+    },
+    {
+      "source": "/api/estudiantes/:path*",
+      "destination": "https://lumina-estudiantes.onrender.com/api/:path*"
+    },
+    {
+      "source": "/api/docentes/:path*",
+      "destination": "https://lumina-docentes.onrender.com/api/:path*"
+    },
+    {
+      "source": "/api/evaluaciones/:path*",
+      "destination": "https://lumina-evaluaciones.onrender.com/api/:path*"
+    },
+    {
+      "source": "/api/noticias/:path*",
+      "destination": "https://lumina-noticiaseventos.onrender.com/api/noticias/:path*"
+    },
+    {
+      "source": "/api/eventos/:path*",
+      "destination": "https://lumina-noticiaseventos.onrender.com/api/eventos/:path*"
+    },
+    {
+      "source": "/api/recursos/:path*",
+      "destination": "https://lumina-noticiaseventos.onrender.com/api/recursos/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type,Authorization,X-Requested-With,Accept"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "NG_BUILD_CONFIGURATION": "production"
+  }
+}
