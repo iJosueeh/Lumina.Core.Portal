@@ -2,26 +2,28 @@
 /**
  * Environment configuration for Vercel deployment.
  * 
- * Uses relative URLs that will be proxied through Vercel rewrites
- * to the actual microservices backend.
+ * Uses /api as base — Vercel rewrites route to the correct Render service.
+ * Service code appends /xxx/... (e.g. /api/cursos/system/all).
  */
 export const environment = {
   production: true,
   useMockData: false,
   
-  // Relative URLs - proxied via vercel.json rewrites
-  usuariosApiUrl: '/api/usuarios',
-  estudiantesApiUrl: '/api/estudiantes',
-  cursosApiUrl: '/api/cursos',
-  evaluacionesApiUrl: '/api/evaluaciones',
-  noticiasEventosApiUrl: '/api/noticias',
-  docentesApiUrl: '/api/docentes',
-  carrerasApiUrl: '/api/carreras',
-  pedidosApiUrl: '/api/pedidos',
+  // Base API — Vercel rewrites route /api/xxx to the correct Render service
+  usuariosApiUrl: '/api',
+  estudiantesApiUrl: '/api',
+  cursosApiUrl: '/api',
+  evaluacionesApiUrl: '/api',
+  noticiasEventosApiUrl: '/api',
+  docentesApiUrl: '/api',
+  carrerasApiUrl: '/api',
+  pedidosApiUrl: '/api',
+  
+  // System Settings
   systemSettingsApiUrl: '/api/system-settings',
   
   // Default API (for auth)
-  apiUrl: '/api/usuarios',
+  apiUrl: '/api',
   
   // Feature flags
   enableAnimations: true,
