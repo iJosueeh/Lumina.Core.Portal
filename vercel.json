@@ -31,7 +31,7 @@
     },
     {
       "source": "/api/estudiantes/:path*",
-      "destination": "https://lumina-estudiantes.onrender.com/api/:path*"
+      "destination": "https://lumina-estudiantes.onrender.com/api/estudiantes/:path*"
     },
     {
       "source": "/api/docentes/:path*",
@@ -39,7 +39,7 @@
     },
     {
       "source": "/api/evaluaciones/:path*",
-      "destination": "https://lumina-evaluaciones.onrender.com/api/:path*"
+      "destination": "https://lumina-evaluaciones.onrender.com/api/evaluaciones/:path*"
     },
     {
       "source": "/api/noticias/:path*",
