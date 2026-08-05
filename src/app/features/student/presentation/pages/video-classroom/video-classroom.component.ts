@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
 import { AuthService } from '@core/services/auth.service';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { LayoutService } from '@features/student/domain/services/layout.service';
 import { VideoClassroomService } from '@features/student/infrastructure/services/video-classroom.service';
 
@@ -36,6 +37,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   private queryClient = injectQueryClient();
   private progressStorage = inject(ProgressStorageService);
   private authService = inject(AuthService);
+  private enrollmentService = inject(EnrollmentService);
   private layoutService = inject(LayoutService);
   private videoClassroomService = inject(VideoClassroomService);
 
@@ -89,7 +91,15 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.layoutService.hideSidebar();
-    this.studentId.set(this.authService.getUserId() || '');
+
+    // Resolve studentId from userId
+    const userId = this.authService.getUserId() || '';
+    if (userId) {
+      this.enrollmentService.getStudentIdByUserId(userId).subscribe(studentId => {
+        this.studentId.set(studentId || '');
+      });
+    }
+
     this.route.params.subscribe(params => {
       this.courseId.set(params['id'] || '');
       this.selectedLessonId.set(params['lessonId'] || null);

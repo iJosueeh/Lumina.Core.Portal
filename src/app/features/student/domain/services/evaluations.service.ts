@@ -5,6 +5,7 @@ import { Quiz, QuizAttempt } from '../models/quiz.model';
 import { EvaluationsIntegrationService } from '../../infrastructure/services/evaluations-integration.service';
 import { CoursesRepository } from '../repositories/courses.repository';
 import { AuthService } from '@core/services/auth.service';
+import { EnrollmentService } from '../../infrastructure/services/enrollment.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,23 +14,31 @@ export class EvaluationsService {
   constructor(
     private evaluationsIntegrationService: EvaluationsIntegrationService,
     private coursesRepository: CoursesRepository,
-    private authService: AuthService
+    private authService: AuthService,
+    private enrollmentService: EnrollmentService
   ) {}
 
   /**
    * Obtiene todas las evaluaciones de todos los cursos del estudiante
    */
   getAllEvaluations(): Observable<GlobalQuizSummary[]> {
-    const studentId = this.authService.getUserId();
+    const userId = this.authService.getUserId();
     
-    if (!studentId) {
-      console.error('❌ No se encontró el ID del estudiante');
+    if (!userId) {
+      console.error('❌ No se encontró el ID del usuario');
       return of([]);
     }
 
-    console.log('📚 Obteniendo cursos del estudiante:', studentId);
-    
-    return this.coursesRepository.getStudentCourses(studentId).pipe(
+    return this.enrollmentService.getStudentIdByUserId(userId).pipe(
+      switchMap(studentId => {
+        if (!studentId) {
+          console.error('❌ No se encontró el estudiante para el usuario');
+          return of([]);
+        }
+
+        console.log('📚 Obteniendo cursos del estudiante:', studentId);
+        
+        return this.coursesRepository.getStudentCourses(studentId).pipe(
       switchMap(courses => {
         console.log('✅ Cursos obtenidos:', courses.length);
         

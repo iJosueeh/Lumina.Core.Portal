@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Quiz, QuizAttempt, Question, QuestionAnswer } from '@features/student/domain/models/quiz.model';
 import { AuthService } from '@core/services/auth.service';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 
 @Component({
   selector: 'app-quiz-take',
@@ -17,7 +18,10 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
   @Output() onSubmit = new EventEmitter<QuizAttempt>();
   @Output() onCancel = new EventEmitter<void>();
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private enrollmentService: EnrollmentService
+  ) {}
 
   // Signals para gestión de estado
   currentQuestionIndex = signal(0);
@@ -242,38 +246,47 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     console.log(`📊 Resumen: ${correctCount} correctas, ${incorrectCount} incorrectas de ${this.quiz.questions.length} preguntas`);
     console.log(`🎯 Nota: ${grade}/20 (${totalPoints}/${this.quiz.totalPoints} puntos) - ${passed ? '✅ APROBADO' : '❌ DESAPROBADO'}`);
 
-    const studentId = this.authService.getUserId();
-    if (!studentId) {
-      console.error('❌ No se pudo obtener el ID del estudiante. No se puede enviar la evaluación.');
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      console.error('❌ No se pudo obtener el ID del usuario. No se puede enviar la evaluación.');
       this.isSubmitting.set(false);
       return;
     }
 
-    const attempt: QuizAttempt = {
-      id: `attempt-${Date.now()}`,
-      quizId: this.quiz.id,
-      studentId: studentId,
-      attemptNumber: (this.attempt?.attemptNumber || 0) + 1,
-      status: 'completed',
-      answers: questionAnswers,
-      startedAt: this.startTime,
-      completedAt: endTime,
-      timeSpent,
-      score: totalPoints,
-      percentage,
-      passed,
-    };
+    // Resolver studentId desde userId
+    this.enrollmentService.getStudentIdByUserId(userId).subscribe(studentId => {
+      if (!studentId) {
+        console.error('❌ No se encontró el estudiante para el usuario.');
+        this.isSubmitting.set(false);
+        return;
+      }
 
-    console.log('📦 Attempt creado para enviar:', attempt);
-    console.log('📋 Número de respuestas en attempt:', attempt.answers.length);
-    console.log('🔍 Verificando estructura del attempt:', {
-      hasId: !!attempt.id,
-      hasAnswers: !!attempt.answers,
+      const attempt: QuizAttempt = {
+        id: `attempt-${Date.now()}`,
+        quizId: this.quiz.id,
+        studentId: studentId,
+        attemptNumber: (this.attempt?.attemptNumber || 0) + 1,
+        status: 'completed',
+        answers: questionAnswers,
+        startedAt: this.startTime,
+        completedAt: endTime,
+        timeSpent,
+        score: totalPoints,
+        percentage,
+        passed,
+      };
+
+      console.log('📦 Attempt creado para enviar:', attempt);
+      console.log('📋 Número de respuestas en attempt:', attempt.answers.length);
+      console.log('🔍 Verificando estructura del attempt:', {
+        hasId: !!attempt.id,
+        hasAnswers: !!attempt.answers,
       answersLength: attempt.answers?.length,
       firstAnswer: attempt.answers[0]
     });
 
-    this.onSubmit.emit(attempt);
+      this.onSubmit.emit(attempt);
+    }); // end subscribe getStudentIdByUserId
   }
 
   private checkAnswer(question: Question, answer: string | string[] | undefined): boolean {
