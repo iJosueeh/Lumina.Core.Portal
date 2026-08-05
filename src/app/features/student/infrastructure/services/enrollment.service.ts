@@ -26,7 +26,7 @@ export class EnrollmentService {
   getStudentIdByUserId(usuarioId: string): Observable<string | null> {
     // Verificar cache
     if (this.studentIdCache.has(usuarioId)) {
-      return of(this.studentIdCache.get(usuarioId));
+      return of(this.studentIdCache.get(usuarioId) ?? null);
     }
 
     return this.http.get<{ id: string }>(
