@@ -18,6 +18,7 @@ import { GetRecentAnnouncementsUseCase } from '@features/student/application/use
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
 import { CoursesService } from '@features/student/infrastructure/services/courses.service';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { StudentStatsService, StudentDashboardStats } from '@features/student/infrastructure/services/student-stats.service';
 
 // Sub-components
@@ -47,6 +48,7 @@ export class DashboardComponent {
   public router = inject(Router);
   private cacheService = inject(CacheService);
   private coursesService = inject(CoursesService);
+  private enrollmentService = inject(EnrollmentService);
   private studentStatsService = inject(StudentStatsService);
 
   // Signals de Estado
@@ -70,7 +72,12 @@ export class DashboardComponent {
       const user = this.authRepository.getCurrentUser();
       if (user) {
         this.userName.set(user.fullName.split(' ')[0]);
-        this.loadData(user.id);
+        // Resolver studentId desde userId
+        this.enrollmentService.getStudentIdByUserId(user.id).subscribe(studentId => {
+          if (studentId) {
+            this.loadData(studentId);
+          }
+        });
       }
     });
   }
@@ -128,7 +135,11 @@ export class DashboardComponent {
     const user = this.authRepository.getCurrentUser();
     if (user) {
       this.cacheService.clear();
-      this.loadData(user.id);
+      this.enrollmentService.getStudentIdByUserId(user.id).subscribe(studentId => {
+        if (studentId) {
+          this.loadData(studentId);
+        }
+      });
     }
   }
 
