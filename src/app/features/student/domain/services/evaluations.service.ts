@@ -23,7 +23,7 @@ export class EvaluationsService {
    */
   getAllEvaluations(): Observable<GlobalQuizSummary[]> {
     const userId = this.authService.getUserId();
-    
+
     if (!userId) {
       console.error('❌ No se encontró el ID del usuario');
       return of([]);
@@ -37,48 +37,50 @@ export class EvaluationsService {
         }
 
         console.log('📚 Obteniendo cursos del estudiante:', studentId);
-        
+
         return this.coursesRepository.getStudentCourses(studentId).pipe(
-      switchMap(courses => {
-        console.log('✅ Cursos obtenidos:', courses.length);
-        
-        if (courses.length === 0) {
-          return of([]);
-        }
+          switchMap(courses => {
+            console.log('✅ Cursos obtenidos:', courses.length);
 
-        // Para cada curso, obtener sus evaluaciones y intentos
-        const evaluationRequests = courses.map(course => 
-          forkJoin({
-            course: of(course),
-            evaluations: this.evaluationsIntegrationService.getEvaluationsByCourse(course.id).pipe(
-              catchError(error => {
-                console.warn(`⚠️  Error al obtener evaluaciones del curso ${course.id}:`, error);
-                return of([]);
+            if (courses.length === 0) {
+              return of([]);
+            }
+
+            // Para cada curso, obtener sus evaluaciones y intentos
+            const evaluationRequests = courses.map(course =>
+              forkJoin({
+                course: of(course),
+                evaluations: this.evaluationsIntegrationService.getEvaluationsByCourse(course.id).pipe(
+                  catchError(error => {
+                    console.warn(`⚠️  Error al obtener evaluaciones del curso ${course.id}:`, error);
+                    return of([]);
+                  })
+                ),
+                attempts: this.evaluationsIntegrationService.getQuizAttempts(studentId, course.id).pipe(
+                  catchError(error => {
+                    console.warn(`⚠️  Error al obtener intentos del curso ${course.id}:`, error);
+                    return of([]);
+                  })
+                )
               })
-            ),
-            attempts: this.evaluationsIntegrationService.getQuizAttempts(studentId, course.id).pipe(
-              catchError(error => {
-                console.warn(`⚠️  Error al obtener intentos del curso ${course.id}:`, error);
-                return of([]);
+            );
+
+            return forkJoin(evaluationRequests).pipe(
+              map(results => {
+                // Aplanar todas las evaluaciones de todos los cursos
+                const allEvaluations: GlobalQuizSummary[] = [];
+
+                results.forEach(({ course, evaluations, attempts }) => {
+                  evaluations.forEach(quiz => {
+                    const summary = this.mapToGlobalSummary(quiz, attempts, course.titulo, course.id);
+                    allEvaluations.push(summary);
+                  });
+                });
+
+                console.log('✅ Total de evaluaciones obtenidas:', allEvaluations.length);
+                return allEvaluations;
               })
-            )
-          })
-        );
-
-        return forkJoin(evaluationRequests).pipe(
-          map(results => {
-            // Aplanar todas las evaluaciones de todos los cursos
-            const allEvaluations: GlobalQuizSummary[] = [];
-            
-            results.forEach(({ course, evaluations, attempts }) => {
-              evaluations.forEach(quiz => {
-                const summary = this.mapToGlobalSummary(quiz, attempts, course.titulo, course.id);
-                allEvaluations.push(summary);
-              });
-            });
-
-            console.log('✅ Total de evaluaciones obtenidas:', allEvaluations.length);
-            return allEvaluations;
+            );
           })
         );
       }),
@@ -99,7 +101,7 @@ export class EvaluationsService {
         const pending = evaluations
           .filter(e => e.status === 'urgent' || e.status === 'upcoming')
           .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-        
+
         return pending.slice(0, limit);
       })
     );
@@ -144,7 +146,7 @@ export class EvaluationsService {
    */
   private mapToGlobalSummary(quiz: Quiz, attempts: QuizAttempt[], courseName: string, courseId: string): GlobalQuizSummary {
     const quizAttempts = attempts.filter(a => a.quizId === quiz.id && a.status === 'completed');
-    const bestAttempt = quizAttempts.reduce((best, current) => 
+    const bestAttempt = quizAttempts.reduce((best, current) =>
       !best || (current.percentage || 0) > (best.percentage || 0) ? current : best
     , null as QuizAttempt | null);
 
@@ -191,7 +193,7 @@ export class EvaluationsService {
       'bg-emerald-500',
       'bg-amber-500'
     ];
-    
+
     // Usar el primer carácter del ID para determinar el color
     const hash = courseId.charCodeAt(0) % colors.length;
     return colors[hash];
@@ -201,14 +203,14 @@ export class EvaluationsService {
    * Calcula el estado de la evaluación
    */
   private calculateStatus(
-    dueDate: Date, 
-    now: Date, 
+    dueDate: Date,
+    now: Date,
     isCompleted: boolean
   ): 'urgent' | 'upcoming' | 'available' | 'completed' {
     if (isCompleted) return 'completed';
 
     const hoursUntilDue = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
+
     if (hoursUntilDue < 24) return 'urgent';
     if (hoursUntilDue < 168) return 'upcoming'; // 7 días
     return 'available';
@@ -225,7 +227,7 @@ export class EvaluationsService {
     if (hours < 1) return 'Menos de 1 hora';
     if (hours < 24) return `${hours} hora${hours > 1 ? 's' : ''}`;
     if (days < 7) return `${days} día${days > 1 ? 's' : ''}`;
-    
+
     const weeks = Math.floor(days / 7);
     return `${weeks} semana${weeks > 1 ? 's' : ''}`;
   }
