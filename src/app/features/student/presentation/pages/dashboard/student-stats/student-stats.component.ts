@@ -11,5 +11,13 @@ import { StatCardComponent } from '../../../../../../shared/components/ui/stat-c
 export class StudentStatsComponent {
   @Input() coursesCount: number = 0;
   @Input() pendingAssignments: number = 0;
+  @Input() promedioGeneral: number = 0;
+  @Input() asistenciaTotal: number = 0;
   @Input() isLoading: boolean = false;
+
+  get trendAverage(): string {
+    if (this.promedioGeneral >= 14) return `+${(this.promedioGeneral - 14).toFixed(1)}`;
+    if (this.promedioGeneral >= 10) return `${(this.promedioGeneral - 14).toFixed(1)}`;
+    return 'Sin datos';
+  }
 }

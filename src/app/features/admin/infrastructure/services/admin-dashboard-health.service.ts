@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { SystemStatus, RecentActivity } from '../mocks';
+import { SystemStatus, RecentActivity } from '../mocks/admin-dashboard.types';
 
 @Injectable({
   providedIn: 'root'

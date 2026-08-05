@@ -23,7 +23,11 @@
     },
     {
       "source": "/api/usuarios/:path*",
-      "destination": "https://lumina-usuarios.onrender.com/api/:path*"
+      "destination": "https://lumina-usuarios.onrender.com/api/usuarios/:path*"
+    },
+    {
+      "source": "/api/users/:path*",
+      "destination": "https://lumina-usuarios.onrender.com/api/users/:path*"
     },
     {
       "source": "/api/system-settings/:path*",
@@ -34,12 +38,20 @@
       "destination": "https://lumina-estudiantes.onrender.com/api/estudiantes/:path*"
     },
     {
+      "source": "/api/docente/:path*",
+      "destination": "https://lumina-docentes.onrender.com/api/docente/:path*"
+    },
+    {
       "source": "/api/docentes/:path*",
-      "destination": "https://lumina-docentes.onrender.com/api/:path*"
+      "destination": "https://lumina-docentes.onrender.com/api/docentes/:path*"
     },
     {
       "source": "/api/evaluaciones/:path*",
       "destination": "https://lumina-evaluaciones.onrender.com/api/evaluaciones/:path*"
+    },
+    {
+      "source": "/api/admin/:path*",
+      "destination": "https://lumina-evaluaciones.onrender.com/api/admin/:path*"
     },
     {
       "source": "/api/noticias/:path*",

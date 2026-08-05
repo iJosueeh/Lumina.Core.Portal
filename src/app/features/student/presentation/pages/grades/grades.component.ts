@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GradeStats, CourseGrade } from '@features/student/domain/models/grade.model';
 import { GetStudentGradesUseCase } from '@features/student/application/use-cases/get-student-grades.usecase';
@@ -14,18 +14,16 @@ type SemesterFilter = '2026' | '2025' | 'all';
   templateUrl: './grades.component.html',
   styles: ``,
 })
-export class GradesComponent implements OnInit {
-  activeSemester: SemesterFilter = '2026';
-  isLoading = true;
-  errorMessage = '';
+export class GradesComponent {
+  private getStudentGradesUseCase = inject(GetStudentGradesUseCase);
+  private getGradeStatsUseCase = inject(GetGradeStatsUseCase);
+  private authRepository = inject(AuthRepository);
 
-  semesters = [
-    { id: '2026' as SemesterFilter, label: '2026' },
-    { id: '2025' as SemesterFilter, label: '2025' },
-    { id: 'all' as SemesterFilter, label: 'Todos' },
-  ];
+  activeSemester = signal<SemesterFilter>('2026');
+  isLoading = signal(true);
+  errorMessage = signal('');
 
-  stats: GradeStats = {
+  stats = signal<GradeStats>({
     promedioGeneral: 0,
     creditosAprobados: 0,
     totalCreditos: 0,
@@ -33,127 +31,113 @@ export class GradesComponent implements OnInit {
     rankingClase: 'Cargando...',
     percentilRanking: 0,
     ultimaActualizacion: new Date(),
-  };
+  });
 
-  courses: CourseGrade[] = [];
-  allCourses: CourseGrade[] = [];
+  allCourses = signal<CourseGrade[]>([]);
+  courses = signal<CourseGrade[]>([]);
 
-  constructor(
-    private getStudentGradesUseCase: GetStudentGradesUseCase,
-    private getGradeStatsUseCase: GetGradeStatsUseCase,
-    private authRepository: AuthRepository,
-  ) {}
+  semesters = [
+    { id: '2026' as SemesterFilter, label: '2026' },
+    { id: '2025' as SemesterFilter, label: '2025' },
+    { id: 'all' as SemesterFilter, label: 'Todos' },
+  ];
 
-  ngOnInit(): void {
+  totalCredits = computed(() => this.courses().reduce((sum, c) => sum + c.creditos, 0));
+
+  constructor() {
     this.loadGrades();
   }
 
-  private loadGrades(): void {
+  loadGrades(): void {
     const currentUser = this.authRepository.getCurrentUser();
     if (!currentUser) {
-      this.errorMessage = 'No se pudo obtener la información del usuario';
-      this.isLoading = false;
+      this.errorMessage.set('No se pudo obtener la información del usuario');
+      this.isLoading.set(false);
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
-    // Cargar calificaciones
     this.getStudentGradesUseCase.execute(currentUser.id).subscribe({
       next: (grades) => {
-        console.log('✅ Calificaciones cargadas:', grades);
-        this.allCourses = grades;
-        this.courses = grades;
-        this.isLoading = false;
+        this.allCourses.set(grades);
+        this.courses.set(grades);
+        this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ Error cargando calificaciones:', err);
-        this.errorMessage = 'Error al cargar las calificaciones. Intenta nuevamente.';
-        this.isLoading = false;
+        console.error('Error cargando calificaciones:', err);
+        this.errorMessage.set('Error al cargar las calificaciones. Intenta nuevamente.');
+        this.isLoading.set(false);
       },
     });
 
-    // Cargar estadísticas
     this.getGradeStatsUseCase.execute(currentUser.id).subscribe({
-      next: (stats) => {
-        this.stats = stats;
-      },
-      error: (err) => {
-        console.error('❌ Error cargando estadísticas:', err);
-      },
+      next: (stats) => this.stats.set(stats),
+      error: (err) => console.error('Error cargando estadísticas:', err),
     });
   }
 
   setSemester(semester: SemesterFilter): void {
-    this.activeSemester = semester;
-
+    this.activeSemester.set(semester);
     if (semester === 'all') {
-      this.courses = this.allCourses;
+      this.courses.set(this.allCourses());
     } else {
-      // Filtrar cursos por semestre
-      this.courses = this.allCourses.filter((course) => {
-        // Asumir que los cursos tienen una propiedad semester o usar lógica de fecha
-        // Por ahora, filtrar por los primeros cursos para cada semestre
-        const index = this.allCourses.indexOf(course);
+      const filtered = this.allCourses().filter((_, index) => {
         if (semester === '2026') return index < 3;
         if (semester === '2025') return index >= 3 && index < 5;
         return true;
       });
+      this.courses.set(filtered);
     }
   }
 
-  toggleCourse(course: CourseGrade): void {
-    course.isExpanded = !course.isExpanded;
+  toggleCourse(courseId: string): void {
+    this.courses.update(courses =>
+      courses.map(c => c.id === courseId ? { ...c, isExpanded: !c.isExpanded } : c)
+    );
   }
 
   getEstadoColor(estado: string): string {
     const colors: Record<string, string> = {
-      Aprobado: 'text-green-600 dark:text-green-400',
-      'En Curso': 'text-blue-600 dark:text-blue-400',
-      'En Riesgo': 'text-red-600 dark:text-red-400',
+      Aprobado: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+      'En Curso': 'text-blue-700 bg-blue-50 border-blue-200',
+      'En Riesgo': 'text-red-700 bg-red-50 border-red-200',
     };
-    return colors[estado] || 'text-gray-600';
+    return colors[estado] || 'text-slate-700 bg-slate-50 border-slate-200';
+  }
+
+  getPromedioColor(promedio: number): string {
+    if (promedio >= 17) return 'text-emerald-700 font-bold';
+    if (promedio >= 14) return 'text-blue-700 font-bold';
+    if (promedio >= 10.5) return 'text-amber-700 font-bold';
+    return 'text-red-700 font-bold';
   }
 
   getEstadoBadge(estado: string): string {
     const badges: Record<string, string> = {
-      Completado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      Pendiente: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      Completado: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+      Pendiente: 'bg-amber-50 text-amber-700 border border-amber-200',
     };
-    return badges[estado] || 'bg-gray-100 text-gray-700';
-  }
-
-  getPromedioColor(promedio: number): string {
-    if (promedio >= 17) return 'text-green-600 dark:text-green-400 font-bold';
-    if (promedio >= 14) return 'text-blue-600 dark:text-blue-400 font-bold';
-    if (promedio >= 10.5) return 'text-yellow-600 dark:text-yellow-400 font-bold';
-    return 'text-red-600 dark:text-red-400 font-bold';
+    return badges[estado] || 'bg-slate-50 text-slate-700 border border-slate-200';
   }
 
   exportGrades(): void {
-    // Crear CSV con las calificaciones
     const headers = ['Curso', 'Código', 'Créditos', 'Promedio', 'Estado'];
-    const rows = this.courses.map(course => [
+    const rows = this.courses().map(course => [
       course.nombre,
       course.codigo,
       course.creditos.toString(),
       course.promedio.toFixed(2),
-      course.estado
+      course.estado,
     ]);
 
-    // Construir CSV
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-
-    // Descargar archivo
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `calificaciones_${this.activeSemester}.csv`);
+    link.setAttribute('download', `calificaciones_${this.activeSemester()}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -161,7 +145,6 @@ export class GradesComponent implements OnInit {
   }
 
   printGrades(): void {
-    // Abrir diálogo de impresión del navegador
     window.print();
   }
 }

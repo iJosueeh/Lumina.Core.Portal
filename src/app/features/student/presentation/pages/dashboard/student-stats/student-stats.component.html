@@ -25,20 +25,20 @@
             [trendType]="pendingAssignments > 0 ? 'negative' : 'positive'">
         </app-stat-card>
 
-        <app-stat-card 
-            label="Promedio General" 
-            value="16.5" 
-            icon="star" 
+        <app-stat-card
+            label="Promedio General"
+            [value]="promedioGeneral.toFixed(1)"
+            icon="star"
             description="Rendimiento actual"
             color="teal"
-            trend="+0.5"
-            trendType="positive">
+            [trend]="trendAverage"
+            [trendType]="trendAverage.startsWith('+') ? 'positive' : 'neutral'">
         </app-stat-card>
 
-        <app-stat-card 
-            label="Asistencia Total" 
-            value="94%" 
-            icon="calendar-check" 
+        <app-stat-card
+            label="Asistencia Total"
+            [value]="asistenciaTotal + '%'"
+            icon="calendar-check"
             description="Registro histórico"
             color="purple">
         </app-stat-card>

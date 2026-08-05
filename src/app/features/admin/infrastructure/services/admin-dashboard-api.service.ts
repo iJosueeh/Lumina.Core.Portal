@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
-import { AdminDashboardData, ChartData, SystemStatus, RecentActivity } from '../mocks';
+import { AdminDashboardData, ChartData, SystemStatus, RecentActivity } from '../mocks/admin-dashboard.types';
 import { AdminDashboardStatsService } from './admin-dashboard-stats.service';
 import { AdminDashboardHealthService } from './admin-dashboard-health.service';
 

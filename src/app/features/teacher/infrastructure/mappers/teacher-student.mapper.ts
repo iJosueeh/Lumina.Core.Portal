@@ -19,12 +19,11 @@ export interface CourseStudentUI {
   courseName?: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class TeacherStudentMapper {
   /**
-   * Transforms a backend student to UI format
+   * Transforms a backend student to UI format.
+   * Falls back to "Sin datos" defaults when backend data is missing.
    */
   toUIModel(
     student: TeacherStudent,
@@ -48,11 +47,11 @@ export class TeacherStudentMapper {
       promedio: metricas?.promedioGeneral ?? 0,
       tareasEntregadas: metricas?.tareasEntregadas ?? 0,
       tareasPendientes: metricas?.tareasPendientes ?? 0,
-      asistencia: metricas?.asistencia ?? this.generateMockAttendance(student.id),
+      asistencia: metricas?.asistencia ?? 0,
       estado: this.calculateEstudianteStatus(metricas),
-      ultimoAcceso: ultimoAcceso ?? this.generateMockLastAccess(student.id),
+      ultimoAcceso: ultimoAcceso ?? '',
       courseId: courseId,
-      courseName: courseName ?? 'Cargando...',
+      courseName: courseName ?? 'Sin datos',
     };
   }
 
@@ -77,31 +76,11 @@ export class TeacherStudentMapper {
   }
 
   /**
-   * Deterministic mock data generation
-   */
-  private hashCode(str: string): number {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-    }
-    return Math.abs(h);
-  }
-
-  private generateMockAttendance(id: string): number {
-    return 70 + (this.hashCode(id + 'att') % 31);
-  }
-
-  private generateMockLastAccess(id: string): string {
-    const now = new Date();
-    const hoursAgo = this.hashCode(id + 'acc') % 48;
-    now.setHours(now.getHours() - hoursAgo);
-    return now.toISOString();
-  }
-
-  /**
    * Formats "time ago" string
    */
   getTimeAgo(timestamp: string): string {
+    if (!timestamp) return 'Sin datos';
+    
     const now = new Date();
     const date = new Date(timestamp);
     const diff = now.getTime() - date.getTime();
@@ -118,14 +97,10 @@ export class TeacherStudentMapper {
    */
   getStatusType(estado: string): 'success' | 'warning' | 'error' | 'info' {
     switch (estado) {
-      case 'Activo':
-        return 'success';
-      case 'En Riesgo':
-        return 'warning';
-      case 'Inactivo':
-        return 'info';
-      default:
-        return 'info';
+      case 'Activo': return 'success';
+      case 'En Riesgo': return 'warning';
+      case 'Inactivo': return 'info';
+      default: return 'info';
     }
   }
 }

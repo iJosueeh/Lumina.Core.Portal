@@ -17,11 +17,10 @@ interface UltimoAccesoResponse {
 }
 
 /**
- * Servicio para obtener métricas de estudiantes desde múltiples APIs
+ * Servicio para obtener métricas de estudiantes desde múltiples APIs.
+ * No genera datos mock — cuando el backend falla retorna 0 / vacío.
  */
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class EstudianteMetricasService {
   private http = inject(HttpClient);
   private evaluacionesApiUrl = `${environment.evaluacionesApiUrl}/evaluaciones`;
@@ -55,11 +54,10 @@ export class EstudianteMetricasService {
     ).pipe(
       catchError(error => {
         console.warn(`⚠️ [METRICAS] Error obteniendo tareas de ${estudianteId}:`, error);
-        // Devolver valores deterministas como fallback
         return of({
-          tareasEntregadas: this.deterministicInt(estudianteId + 'te', 5, 20),
-          tareasPendientes: this.deterministicInt(estudianteId + 'tp', 0, 4),
-          tareasTotal: this.deterministicInt(estudianteId + 'te', 5, 20) + this.deterministicInt(estudianteId + 'tp', 0, 4)
+          tareasEntregadas: 0,
+          tareasPendientes: 0,
+          tareasTotal: 0
         });
       })
     );
@@ -91,21 +89,17 @@ export class EstudianteMetricasService {
 
   /**
    * Obtiene todas las métricas disponibles para un estudiante
-   * Combina datos de múltiples APIs (Evaluaciones, Tareas)
    */
   getMetricasCompletas(estudianteId: string): Observable<EstudianteMetricasCompletas> {
     return forkJoin({
       evaluaciones: this.getPromedioEstudiante(estudianteId),
       tareas: this.getTareasEstudiante(estudianteId),
-      // TODO: Agregar asistencias cuando el API esté disponible
-      // asistencias: this.getAsistenciaEstudiante(estudianteId),
     }).pipe(
       map(result => ({
         ...result.evaluaciones,
         tareasEntregadas: result.tareas.tareasEntregadas,
         tareasPendientes: result.tareas.tareasPendientes,
-        // Asistencia determinista hasta que exista el API
-        asistencia: this.generateDeterministicAttendance(estudianteId),
+        asistencia: 0, // Sin API de asistencia aún
       }))
     );
   }
@@ -135,23 +129,5 @@ export class EstudianteMetricasService {
         return of(new Map());
       })
     );
-  }
-
-  // Métodos auxiliares deterministas basados en hash del ID
-  private hashCode(str: string): number {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-    }
-    return Math.abs(h);
-  }
-
-  private deterministicInt(seed: string, min: number, max: number): number {
-    return min + (this.hashCode(seed) % (max - min + 1));
-  }
-
-  private generateDeterministicAttendance(id: string): number {
-    // Rango 70-100% determinista por estudiante
-    return 70 + (this.hashCode(id + 'att') % 31);
   }
 }

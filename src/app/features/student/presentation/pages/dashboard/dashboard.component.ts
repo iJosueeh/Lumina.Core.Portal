@@ -18,6 +18,7 @@ import { GetRecentAnnouncementsUseCase } from '@features/student/application/use
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
 import { CoursesService } from '@features/student/infrastructure/services/courses.service';
+import { StudentStatsService, StudentDashboardStats } from '@features/student/infrastructure/services/student-stats.service';
 
 // Sub-components
 import { WelcomeHeaderComponent } from './welcome-header/welcome-header.component';
@@ -46,6 +47,7 @@ export class DashboardComponent {
   public router = inject(Router);
   private cacheService = inject(CacheService);
   private coursesService = inject(CoursesService);
+  private studentStatsService = inject(StudentStatsService);
 
   // Signals de Estado
   userName = signal('Estudiante');
@@ -54,7 +56,12 @@ export class DashboardComponent {
   announcements = signal<Announcement[]>([]);
   todayCourses = signal<CursoConHorarios[]>([]);
   isLoading = signal(true);
-  
+
+  // Stats reales del backend
+  stats = signal<StudentDashboardStats | null>(null);
+  promedioGeneral = computed(() => this.stats()?.promedioGeneral ?? 0);
+  asistenciaTotal = computed(() => this.stats()?.asistenciaTotal ?? 0);
+
   pendingCount = computed(() => this.assignments().length);
 
   constructor() {
@@ -101,12 +108,19 @@ export class DashboardComponent {
           return of([] as Announcement[]);
         })
       ),
+      stats: this.studentStatsService.getDashboardStats(studentId).pipe(
+        catchError(() => of<StudentDashboardStats>({
+          cursosActivos: 0, evaluacionesPendientes: 0, promedioGeneral: 0,
+          horasEstudio: 0, cursosCompletados: 0, horasEstudioSemana: 0, asistenciaTotal: 0
+        }))
+      ),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe(({ courses, assignments, announcements }) => {
+      .subscribe(({ courses, assignments, announcements, stats }) => {
         this.courses.set(courses);
         this.assignments.set(assignments);
         this.announcements.set(announcements);
+        this.stats.set(stats);
       });
   }
 

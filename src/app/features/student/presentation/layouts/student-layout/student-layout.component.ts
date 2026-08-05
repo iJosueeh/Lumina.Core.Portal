@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { SidebarComponent, SidebarConfig } from '@shared/components/ui/sidebar/sidebar.component';
+import { SiteConfigService } from '@core/services/site-config.service';
 
 @Component({
     selector: 'app-student-layout',
@@ -23,7 +24,7 @@ import { SidebarComponent, SidebarConfig } from '@shared/components/ui/sidebar/s
                     <button (click)="sidebar.toggle()" class="p-2 text-slate-600">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="ml-4 font-bold text-slate-900">LUMINA.CORE</div>
+                    <div class="ml-4 font-bold text-slate-900">{{ siteName() }}</div>
                 </header>
 
                 <!-- Router Outlet -->
@@ -39,6 +40,9 @@ export class StudentLayoutComponent {
     @ViewChild('sidebar') sidebar!: SidebarComponent;
     private authRepository = inject(AuthRepository);
     private router = inject(Router);
+    private siteConfig = inject(SiteConfigService);
+
+    siteName = this.siteConfig.siteName;
 
     sidebarConfig: SidebarConfig = {
         logoIcon: 'graduation-cap',

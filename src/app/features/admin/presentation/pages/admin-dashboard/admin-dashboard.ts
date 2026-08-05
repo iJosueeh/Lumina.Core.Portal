@@ -1,37 +1,27 @@
 import { Component, inject, signal, computed, effect, InjectionToken } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin, of, catchError, finalize, Observable } from 'rxjs';
+import { Observable, forkJoin, of, catchError, finalize } from 'rxjs';
 
 // Services
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { CacheService } from '@core/services/cache.service';
 import { AdminDashboardApiService } from '../../../infrastructure/services/admin-dashboard-api.service';
-
-// Mocks & Types
-import {
-  AdminDashboardData,
-  ChartData
-} from '../../../infrastructure/mocks';
-
-/**
- * Token de inyección para los datos del dashboard
- * Usa el servicio real que conecta a los microservices
- */
-export const ADMIN_DASHBOARD_DATA = new InjectionToken<Observable<AdminDashboardData>>(
-  'admin-dashboard-data',
-  {
-    providedIn: 'root',
-    factory: () => {
-      const apiService = inject(AdminDashboardApiService);
-      return apiService.getDashboardData();
-    }
-  }
-);
+import { AdminDashboardData, ChartData } from '../../../infrastructure/mocks/admin-dashboard.types';
+import { AdminDashboardStatsService } from '../../../infrastructure/services/admin-dashboard-stats.service';
+import { AdminDashboardHealthService } from '../../../infrastructure/services/admin-dashboard-health.service';
 
 // Components
 import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
+
+/**
+ * Token de inyección para los datos del dashboard.
+ * Proporcionado en app.config.ts via AdminDashboardApiService.
+ */
+export const ADMIN_DASHBOARD_DATA = new InjectionToken<Observable<AdminDashboardData>>(
+  'admin-dashboard-data'
+);
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -68,10 +58,8 @@ export class AdminDashboard {
       const user = this.authRepository.getCurrentUser();
       if (user) {
         this.adminName.set(user.fullName.split(' ')[0]);
-        this.loadData();
-      } else {
-        this.loadData();
       }
+      this.loadData();
     });
   }
 
@@ -117,8 +105,8 @@ export class AdminDashboard {
   }
 
   /**
-   * Genera dinámicamente la ruta SVG para un gráfico de datos
-   * Usa quadratic Bézier curves para suavizar la línea
+   * Genera dinámicamente la ruta SVG para un gráfico de datos.
+   * Usa quadratic Bézier curves para suavizar la línea.
    */
   generateCurvePath(data: any[], key: string): string {
     if (!data || data.length === 0) return '';
@@ -129,12 +117,10 @@ export class AdminDashboard {
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding;
 
-    // Encontrar valores máximos para normalizar
     const maxValue = Math.max(
       ...data.map(item => Math.max(item.newRegistrations || 0, item.activeCompletion || 0))
     );
 
-    // Calcular puntos
     const points: [number, number][] = data.map((item, index) => {
       const x = padding + (index / (data.length - 1 || 1)) * chartWidth;
       const value = item[key] || 0;
@@ -146,18 +132,12 @@ export class AdminDashboard {
     if (points.length === 0) return '';
     if (points.length === 1) return `M ${points[0][0]} ${points[0][1]}`;
 
-    // Construir path con quadratic Bézier curves
     let path = `M ${points[0][0]} ${points[0][1]}`;
-    
+
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];
       const curr = points[i];
-      const next = i < points.length - 1 ? points[i + 1] : curr;
-
-      // Control point (promedio de puntos anterior y actual)
       const cp = [(prev[0] + curr[0]) / 2, (prev[1] + curr[1]) / 2];
-      
-      // Quadratic Bézier
       path += ` Q ${cp[0]} ${cp[1]}, ${curr[0]} ${curr[1]}`;
     }
 

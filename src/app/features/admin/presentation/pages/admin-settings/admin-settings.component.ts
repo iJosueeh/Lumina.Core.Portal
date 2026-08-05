@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { NotificationService } from '@shared/services/notification.service';
 import { ThemeService, Theme } from '@core/services/theme.service';
+import { SiteConfigService } from '@core/services/site-config.service';
 
 type SettingsTab = 'general' | 'appearance' | 'notifications' | 'security';
 
@@ -22,6 +23,7 @@ export class AdminSettingsComponent implements OnInit {
   private http = inject(HttpClient);
   private notification = inject(NotificationService);
   readonly themeService = inject(ThemeService);
+  private siteConfig = inject(SiteConfigService);
 
   /** Active settings tab */
   activeTab = signal<SettingsTab>('general');
@@ -174,8 +176,12 @@ export class AdminSettingsComponent implements OnInit {
     // Apply accent color
     const accentColor = this.appearanceForm.get('primaryColor')?.value;
     if (accentColor) {
-      document.documentElement.style.setProperty('--accent-primary', accentColor);
+      this.themeService.setAccentColor(accentColor);
     }
+
+    // Apply showAnimations
+    const showAnims = this.appearanceForm.get('showAnimations')?.value;
+    this.themeService.setShowAnimations(!!showAnims);
   }
 
   private getSettingValue(settings: any[], key: string, defaultValue: string): string {
@@ -246,7 +252,17 @@ export class AdminSettingsComponent implements OnInit {
       // Apply accent color
       const accentColor = this.appearanceForm.get('primaryColor')?.value;
       if (accentColor) {
-        document.documentElement.style.setProperty('--accent-primary', accentColor);
+        this.themeService.setAccentColor(accentColor);
+      }
+
+      // Apply animations
+      const showAnims = this.appearanceForm.get('showAnimations')?.value;
+      this.themeService.setShowAnimations(!!showAnims);
+
+      // Sync siteName across all layouts
+      const siteName = this.generalForm.get('siteName')?.value;
+      if (siteName) {
+        this.siteConfig.setName(siteName);
       }
 
       this.notification.show('success', 'Configuración guardada correctamente.');
@@ -274,11 +290,15 @@ export class AdminSettingsComponent implements OnInit {
       this.themeService.setTheme(newTheme);
     }
 
-    // Apply accent color
+    // Apply accent color via ThemeService (persists to localStorage)
     const accentColor = this.appearanceForm.get('primaryColor')?.value;
     if (accentColor) {
-      document.documentElement.style.setProperty('--accent-primary', accentColor);
+      this.themeService.setAccentColor(accentColor);
     }
+
+    // Apply animations via ThemeService
+    const showAnims = this.appearanceForm.get('showAnimations')?.value;
+    this.themeService.setShowAnimations(!!showAnims);
   }
 
   /** Switch active tab */
@@ -292,10 +312,17 @@ export class AdminSettingsComponent implements OnInit {
     this.appearanceForm.patchValue({ theme: this.themeService.preference() });
   }
 
+  /** Toggle animations immediately */
+  toggleAnimations(): void {
+    const current = this.appearanceForm.get('showAnimations')?.value;
+    this.appearanceForm.patchValue({ showAnimations: !current });
+    this.themeService.setShowAnimations(!current);
+  }
+
   /** Apply accent color */
   applyAccentColor(color: string): void {
     this.appearanceForm.patchValue({ primaryColor: color });
-    document.documentElement.style.setProperty('--accent-primary', color);
+    this.themeService.setAccentColor(color);
   }
 
   /** Check if tab has validation errors */

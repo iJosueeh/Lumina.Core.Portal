@@ -189,7 +189,8 @@
                       <p class="text-sm font-semibold text-[var(--text-primary)]">Animaciones</p>
                       <p class="text-[10px] text-[var(--text-muted)]">Habilitar transiciones y animaciones</p>
                     </div>
-                    <input type="checkbox" formControlName="showAnimations"
+                    <input type="checkbox" [checked]="appearanceForm.get('showAnimations')?.value"
+                      (change)="toggleAnimations()"
                       class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
                   </label>
                 </div>
@@ -256,6 +257,19 @@
                       </div>
                     </div>
                     <input type="checkbox" formControlName="gradeNotifications"
+                      class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
+                  </label>
+                  <label class="flex items-center justify-between p-4 rounded-xl border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-[var(--status-warning-bg)] flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-[var(--status-warning)]"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm font-semibold text-[var(--text-primary)]">Alertas del Sistema</p>
+                        <p class="text-[10px] text-[var(--text-muted)]">Notificar errores y mantenimiento del sistema</p>
+                      </div>
+                    </div>
+                    <input type="checkbox" formControlName="systemAlerts"
                       class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
                   </label>
                 </div>

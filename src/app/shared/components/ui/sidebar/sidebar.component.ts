@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, signal, computed, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { SiteConfigService } from '@core/services/site-config.service';
 
 export interface MenuItem {
   icon: string;
@@ -22,33 +23,56 @@ export interface SidebarConfig {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <aside 
+    <!-- Overlay (solo mobile) -->
+    @if (isOpen()) {
+      <div
+        class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+        (click)="close()"
+        @fadeIn>
+      </div>
+    }
+
+    <!-- Sidebar -->
+    <aside
         class="fixed inset-y-0 left-0 z-50 w-72 h-screen bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)] transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col"
-        [class.-translate-x-full]="!isOpen()">
-        
-        <!-- Logo / Brand -->
-        <div class="flex items-center gap-3 px-6 pt-6 pb-8 flex-shrink-0">
-            <div class="w-10 h-10 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-xl flex items-center justify-center shadow-sm">
-              <i class="fas fa-graduation-cap text-white font-black text-xl"></i>
+        [class.-translate-x-full]="!isOpen()"
+        style="--sidebar-text-primary: #0f172a; --sidebar-text-secondary: #475569; --sidebar-text-muted: #94a3b8;">
+
+        <!-- Header: Logo + Close Button -->
+        <div class="flex items-center justify-between px-6 pt-6 pb-8 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-xl flex items-center justify-center shadow-sm">
+                  <i class="fas fa-graduation-cap text-white font-black text-xl"></i>
+                </div>
+                <div>
+                  <h1 class="text-xl font-bold tracking-tight" style="color: var(--sidebar-text-primary)">{{ siteName() }}</h1>
+                  <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--sidebar-text-muted)">{{ config.panelTitle }}</p>
+                </div>
             </div>
-            <div>
-              <h1 class="text-xl font-bold text-[var(--text-primary)] tracking-tight">LUMINA<span class="text-[var(--accent-primary)]">.CORE</span></h1>
-              <p class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{{ config.panelTitle }}</p>
-            </div>
+
+            <!-- Close button (solo mobile) -->
+            <button
+                (click)="close()"
+                class="lg:hidden p-2 rounded-lg hover:bg-[var(--sidebar-hover)] transition-colors"
+                style="color: var(--sidebar-text-muted)"
+                aria-label="Cerrar menú">
+                <i class="fas fa-times text-lg"></i>
+            </button>
         </div>
 
         <!-- Navegación -->
         <nav class="flex-1 space-y-6 overflow-y-auto custom-scrollbar px-6 min-h-0">
             @for (category of categories(); track category) {
                 <div>
-                    <p class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2 px-4">{{ category }}</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-2 px-4" style="color: var(--sidebar-text-muted)">{{ category }}</p>
                     <div class="space-y-1">
                         @for (item of getCategoryItems(category); track item.route) {
-                            <a 
-                                [routerLink]="item.route" 
+                            <a
+                                [routerLink]="item.route"
                                 routerLinkActive="active-link"
                                 (click)="close()"
-                                class="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text-secondary)] font-semibold hover:bg-[var(--sidebar-hover)] hover:text-[var(--accent-primary)] transition-all text-sm">
+                                class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold hover:bg-[var(--sidebar-hover)] transition-all text-sm"
+                                style="color: var(--sidebar-text-secondary)">
                                 <i [class]="'fas fa-' + item.icon + ' w-5 text-center text-sm'"></i>
                                 <span>{{ item.label }}</span>
                             </a>
@@ -59,14 +83,14 @@ export interface SidebarConfig {
         </nav>
 
         <!-- Perfil del Usuario (Bottom) -->
-        <div class="flex-shrink-0 border-t border-[var(--border-primary)] px-6 py-4 mt-auto">
+        <div class="flex-shrink-0 border-t border-[var(--sidebar-border)] px-6 py-4 mt-auto">
             <div class="flex items-center gap-3">
-                <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-[var(--border-primary)]" alt="Avatar">
+                <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-[var(--sidebar-border)]" alt="Avatar">
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-[var(--text-primary)] truncate">{{ userName() }}</p>
-                    <p class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">{{ config.roleLabel }}</p>
+                    <p class="text-sm font-semibold truncate" style="color: var(--sidebar-text-primary)">{{ userName() }}</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--sidebar-text-muted)">{{ config.roleLabel }}</p>
                 </div>
-                <button (click)="onLogout()" class="text-[var(--text-muted)] hover:text-[var(--status-error)] transition-colors p-2 rounded-lg hover:bg-[var(--status-error-bg)]">
+                <button (click)="onLogout()" class="hover:text-[var(--status-error)] transition-colors p-2 rounded-lg hover:bg-[var(--status-error-bg)]" style="color: var(--sidebar-text-muted)">
                     <i class="fas fa-sign-out-alt text-sm"></i>
                 </button>
             </div>
@@ -82,6 +106,9 @@ export interface SidebarConfig {
     .active-link i {
       color: var(--sidebar-active-text);
     }
+    .active-link:hover {
+      background: var(--sidebar-active-bg) !important;
+    }
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
     }
@@ -89,7 +116,7 @@ export interface SidebarConfig {
       background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: var(--border-secondary);
+      background: var(--sidebar-border);
       border-radius: 10px;
     }
   `
@@ -100,8 +127,10 @@ export class SidebarComponent {
   @Output() logoutEvent = new EventEmitter<void>();
 
   private authRepository = inject(AuthRepository);
+  private siteConfig = inject(SiteConfigService);
 
   isOpen = signal(false);
+  siteName = this.siteConfig.siteName;
 
   currentUser = computed(() => this.authRepository.getCurrentUser());
   userName = computed(() => this.currentUser()?.fullName || 'Usuario');
@@ -135,5 +164,13 @@ export class SidebarComponent {
 
   onLogout(): void {
     this.logoutEvent.emit();
+  }
+
+  /** Cerrar sidebar con Escape key */
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.isOpen()) {
+      this.close();
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DashboardStat, ChartData, ChartDataPoint } from '../mocks';
+import { DashboardStat, ChartData, ChartDataPoint } from '../mocks/admin-dashboard.types';
 
 @Injectable({
   providedIn: 'root'
