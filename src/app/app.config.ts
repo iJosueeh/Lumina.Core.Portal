@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 import { provideRouter, withPreloading } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAngularQuery, QueryClient } from '@tanstack/angular-query-experimental';
@@ -42,6 +42,7 @@ import { TeacherStudentRepository } from '@features/teacher/domain/repositories/
 import { TeacherStudentHttpRepositoryImpl } from '@features/teacher/infrastructure/repositories/teacher-student-http.repository.impl';
 import { ADMIN_DASHBOARD_DATA } from '@features/admin/presentation/pages/admin-dashboard/admin-dashboard';
 import { AdminDashboardApiService } from '@features/admin/infrastructure/services/admin-dashboard-api.service';
+import { AuthService } from '@core/services/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -115,6 +116,13 @@ export const appConfig: ApplicationConfig = {
       provide: ADMIN_DASHBOARD_DATA,
       useFactory: (service: AdminDashboardApiService) => service.getDashboardData(),
       deps: [AdminDashboardApiService]
+    },
+    // Validate user session on app startup
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (authService: AuthService) => () => authService.validateCurrentUser(),
+      deps: [AuthService],
+      multi: true
     },
   ],
 };

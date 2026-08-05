@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CookieService } from './cookie.service';
 import { User } from '@features/auth/domain/models/user.model';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 interface DecodedToken {
   // Claims estándar de .NET
@@ -35,7 +38,10 @@ export type SystemRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
 export class AuthService {
   private currentUser: User | null = null;
   
-  constructor(private cookieService: CookieService) {}
+  constructor(
+    private cookieService: CookieService,
+    private http: HttpClient
+  ) {}
 
   /**
    * Obtiene el token JWT desde cookies o localStorage
@@ -231,6 +237,35 @@ export class AuthService {
     }
     
     return null;
+  }
+
+  /**
+   * Valida si el usuario actual sigue existiendo en el backend.
+   * Si no existe, limpia la sesión (localStorage + cookies).
+   * Llamar en APP_INITIALIZER o en guard de ruta.
+   */
+  async validateCurrentUser(): Promise<boolean> {
+    const user = this.getCurrentUser();
+    if (!user?.id) return false;
+
+    try {
+      const exists = await firstValueFrom(
+        this.http.get(`/api/usuarios/${user.id}`).pipe(
+          map(() => true),
+          catchError(() => of(false))
+        )
+      );
+
+      if (!exists) {
+        console.warn('⚠️ [AUTH] Usuario ya no existe en la BD, limpiando sesión');
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      // Si hay error de red, asumir que el usuario sigue válido
+      return true;
+    }
   }
 
   /**
