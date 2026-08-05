@@ -28,6 +28,17 @@ export class LoginPageComponent implements OnInit {
             username: ['', [Validators.required, Validators.email]],
             password: ['', Validators.required]
         });
+
+        // Si viene de una matrícula, mostrar mensaje
+        const returnUrl = this.getReturnUrlFromQuery();
+        if (returnUrl) {
+            this.errorMessage = 'Inicia sesión para continuar con tu matrícula.';
+        }
+    }
+
+    private getReturnUrlFromQuery(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('returnUrl');
     }
 
     togglePasswordVisibility(): void {
@@ -71,6 +82,17 @@ export class LoginPageComponent implements OnInit {
     }
 
     private redirectUser(role: string): void {
+        // Si viene de una página de matrícula en Lumina.Web, volver allá
+        // Guardar en sessionStorage (mismo origen portal) y usar window.location para cross-origin
+        const returnUrl = sessionStorage.getItem('enrollmentReturnUrl') || this.getReturnUrlFromQuery();
+        if (returnUrl) {
+            sessionStorage.removeItem('enrollmentReturnUrl');
+            // Decodificar por si viene encodeado
+            const decoded = decodeURIComponent(returnUrl);
+            window.location.href = decoded;
+            return;
+        }
+
         const routes: Record<string, string> = {
             'STUDENT': '/student/dashboard',
             'TEACHER': '/teacher/dashboard',

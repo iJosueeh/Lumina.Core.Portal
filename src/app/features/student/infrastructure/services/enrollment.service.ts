@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, switchMap, shareReplay } from 'rxjs';
 import { environment } from '@environments/environment';
 
 export interface Enrollment {
@@ -15,6 +15,34 @@ export interface Enrollment {
 export class EnrollmentService {
   private http = inject(HttpClient);
   private readonly estudiantesApiUrl = environment.estudiantesApiUrl;
+
+  // Cache: userId → studentId
+  private studentIdCache = new Map<string, string | null>();
+
+  /**
+   * Obtiene el estudianteId a partir del usuarioId.
+   * Llama a GET /api/estudiantes/by-usuario/{usuarioId}
+   */
+  getStudentIdByUserId(usuarioId: string): Observable<string | null> {
+    // Verificar cache
+    if (this.studentIdCache.has(usuarioId)) {
+      return of(this.studentIdCache.get(usuarioId));
+    }
+
+    return this.http.get<{ id: string }>(
+      `${this.estudiantesApiUrl}/estudiantes/by-usuario/${usuarioId}`
+    ).pipe(
+      map(response => {
+        const studentId = response?.id || null;
+        this.studentIdCache.set(usuarioId, studentId);
+        return studentId;
+      }),
+      catchError(() => {
+        this.studentIdCache.set(usuarioId, null);
+        return of(null);
+      })
+    );
+  }
 
   /** Verificar si un estudiante ya está matriculado en un curso */
   isEnrolled(studentId: string, courseId: string): Observable<boolean> {
@@ -43,6 +71,16 @@ export class EnrollmentService {
     return this.http.get<any>(`${this.estudiantesApiUrl}/estudiantes/${studentId}/cursos-matriculados`).pipe(
       map(response => response?.value || response || []),
       catchError(() => of([]))
+    );
+  }
+
+  /** Obtener cursos matriculados usando el usuarioId (resuelve automáticamente) */
+  getEnrolledCoursesByUserId(usuarioId: string): Observable<any[]> {
+    return this.getStudentIdByUserId(usuarioId).pipe(
+      switchMap(studentId => {
+        if (!studentId) return of([]);
+        return this.getEnrolledCourses(studentId);
+      })
     );
   }
 

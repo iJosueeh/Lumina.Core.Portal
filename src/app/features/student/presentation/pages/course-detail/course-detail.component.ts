@@ -151,11 +151,18 @@ export class CourseDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.courseId.set(this.route.snapshot.params['id'] || '1');
-    this.studentId.set(this.authService.getUserId() || '');
 
-    // Check enrollment status
-    if (this.studentId() && this.courseId()) {
-      this.checkEnrollment();
+    // Resolve studentId from userId
+    const userId = this.authService.getUserId() || '';
+    if (userId) {
+      this.enrollmentService.getStudentIdByUserId(userId).subscribe(studentId => {
+        this.studentId.set(studentId || '');
+
+        // Check enrollment status
+        if (this.studentId() && this.courseId()) {
+          this.checkEnrollment();
+        }
+      });
     }
   }
 

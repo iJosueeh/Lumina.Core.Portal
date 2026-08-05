@@ -56,7 +56,7 @@ export class CourseCatalogComponent implements OnInit {
 
         // Load enrolled status
         if (studentId) {
-          this.enrollmentService.getEnrolledCourses(studentId).subscribe({
+          this.enrollmentService.getEnrolledCoursesByUserId(studentId).subscribe({
             next: (enrolled) => {
               const ids = new Set(enrolled.map((e: any) => {
                 const id = e.id?.value || e.id || e.Id || e.courseId;
