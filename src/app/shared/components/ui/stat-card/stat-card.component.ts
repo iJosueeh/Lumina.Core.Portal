@@ -14,7 +14,7 @@ export class StatCardComponent {
   @Input() icon = 'chart-line';
   @Input() description = '';
   @Input() trend = '';
-  @Input() trendType: 'positive' | 'negative' = 'positive';
+  @Input() trendType: 'positive' | 'negative' | 'neutral' = 'positive';
   @Input() color: 'blue' | 'purple' | 'teal' | 'orange' | 'green' | 'indigo' = 'blue';
 
   get iconBgClass() {
