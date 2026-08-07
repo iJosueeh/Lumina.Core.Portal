@@ -1,0 +1,120 @@
+<div class="min-h-screen bg-gray-50 text-slate-900 pb-20">
+
+  <!-- Header Section -->
+  <header class="pt-12 pb-24 px-4 md:px-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <span class="text-violet-600 font-bold tracking-[0.2em] text-xs uppercase">Contenido</span>
+          </div>
+          <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">Eventos</h1>
+          <p class="mt-4 text-lg text-slate-500 max-w-2xl leading-relaxed font-medium">Gestiona los eventos y actividades de la plataforma.</p>
+        </div>
+        
+        <div class="flex gap-3">
+          <button (click)="openCreate()"
+            class="px-5 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-violet-500/20 transition-all flex items-center gap-2">
+            <i class="fas fa-plus"></i> Crear Evento
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-[1400px] mx-auto px-4 md:px-8 -mt-12 relative z-20">
+    
+    <!-- Search -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-8 shadow-sm">
+      <div class="flex gap-4 items-center">
+        <div class="flex-1 relative group">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-500 transition-colors text-sm"></i>
+          <input type="text" placeholder="Buscar eventos..."
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value)"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all">
+        </div>
+        <button (click)="loadData()" class="px-3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-all border border-slate-200 shrink-0">
+          <i class="fas fa-sync-alt text-sm" [class.animate-spin]="isLoading()"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @if (isLoading()) {
+        @for (i of [1,2,3]; track i) {
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <app-skeleton-loader height="200px" variant="rect" class="rounded-xl"></app-skeleton-loader>
+          </div>
+        }
+      } @else {
+        @for (evento of filteredEventos(); track evento.id) {
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+            <!-- Date Banner -->
+            <div class="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold opacity-70 uppercase tracking-wider">{{ evento.mes }}</p>
+                  <p class="text-4xl font-black mt-1">{{ evento.dia }}</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-bold px-3 py-1 rounded-lg"
+                    [class]="evento.tipo === 'Online' ? 'bg-white/20' : 'bg-white/10'">
+                    {{ evento.tipo }}
+                  </span>
+                  <p class="text-sm mt-2 opacity-80">{{ evento.hora }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6">
+              <h3 class="text-lg font-bold text-slate-900 mb-4">{{ evento.titulo }}</h3>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold px-3 py-1.5 rounded-lg"
+                  [class]="evento.botonTipo === 'primary' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'">
+                  {{ evento.botonTexto }}
+                </span>
+
+                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button (click)="openEdit(evento)"
+                    class="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                    title="Editar">
+                    <i class="fas fa-pen text-sm"></i>
+                  </button>
+                  <button (click)="confirmDelete(evento)"
+                    class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    title="Eliminar">
+                    <i class="fas fa-trash text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    @if (!isLoading() && filteredEventos().length === 0) {
+      <div class="py-32 text-center">
+        <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-calendar-alt text-4xl text-slate-300"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">No hay eventos</h3>
+        <p class="text-slate-400 mb-6">Crea tu primer evento para comenzar.</p>
+        <button (click)="openCreate()" class="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm rounded-xl transition-all">
+          <i class="fas fa-plus mr-2"></i>Crear Evento
+        </button>
+      </div>
+    }
+  </main>
+</div>
+
+@if (showDeleteModal()) {
+  <app-confirm-delete-modal [message]="deleteMessage()" (onConfirm)="deleteEvento()" (onCancel)="cancelDelete()" />
+}

@@ -1,0 +1,167 @@
+<div class="min-h-screen bg-gray-50 text-slate-900 pb-20">
+
+  <!-- Header Section -->
+  <header class="pt-12 pb-24 px-4 md:px-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <i class="fas fa-newspaper"></i>
+            </div>
+            <span class="text-emerald-600 font-bold tracking-[0.2em] text-xs uppercase">Contenido</span>
+          </div>
+          <h1 class="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">Noticias</h1>
+          <p class="mt-4 text-lg text-slate-500 max-w-2xl leading-relaxed font-medium">Gestiona las noticias y publicaciones de la plataforma.</p>
+        </div>
+        
+        <div class="flex gap-3">
+          <button
+            (click)="openCreate()"
+            class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+            <i class="fas fa-plus"></i> Crear Noticia
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-[1400px] mx-auto px-4 md:px-8 -mt-12 relative z-20">
+    
+    <!-- Filters & Search Bar -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-8 shadow-sm">
+      <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+        <div class="flex-1 relative group">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors text-sm"></i>
+          <input 
+            type="text" 
+            placeholder="Buscar por titulo, descripcion o categoria..." 
+            [value]="searchTerm()"
+            (input)="onSearch($any($event.target).value)"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+          >
+        </div>
+
+        <div class="flex gap-3 items-center shrink-0">
+          <select
+            [value]="selectedCategoria()"
+            (change)="onCategoriaChange($any($event.target).value)"
+            class="bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all cursor-pointer">
+            @for (cat of categorias; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+          
+          <button (click)="loadData()" title="Refrescar datos"
+            class="px-3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-all border border-slate-200 shrink-0">
+            <i class="fas fa-sync-alt text-sm" [class.animate-spin]="isLoading()"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      @if (isLoading()) {
+        <div class="p-8 space-y-4">
+          @for (i of [1,2,3,4,5]; track i) {
+            <app-skeleton-loader height="80px" variant="rect" class="rounded-xl"></app-skeleton-loader>
+          }
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-slate-100">
+                <th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Noticia</th>
+                <th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Categoria</th>
+                <th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha</th>
+                <th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Badge</th>
+                <th class="text-right px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (noticia of paginatedNoticias(); track noticia.id) {
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-4">
+                      <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                        <img [src]="noticia.imagenUrl" [alt]="noticia.titulo" class="w-full h-full object-cover" 
+                          onerror="this.style.display='none'">
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-bold text-sm text-slate-900 truncate max-w-[300px]">{{ noticia.titulo }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5 truncate max-w-[300px]">{{ noticia.descripcion }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+                      {{ noticia.categoria }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="text-sm text-slate-500">{{ formatDate(noticia.fecha) }}</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="text-xs font-bold px-3 py-1.5 rounded-lg" [class]="getBadgeColor(noticia.badge.color)">
+                      {{ noticia.badge.texto }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button (click)="openEdit(noticia)" 
+                        class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                        title="Editar">
+                        <i class="fas fa-pen text-sm"></i>
+                      </button>
+                      <button (click)="confirmDelete(noticia)"
+                        class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        title="Eliminar">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (filteredNoticias().length === 0) {
+          <div class="py-32 text-center">
+            <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-newspaper text-4xl text-slate-300"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">No hay noticias</h3>
+            <p class="text-slate-400 mb-6">Crea tu primera noticia para comenzar.</p>
+            <button (click)="openCreate()" 
+              class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition-all">
+              <i class="fas fa-plus mr-2"></i>Crear Noticia
+            </button>
+          </div>
+        }
+
+        @if (totalPages() > 1) {
+          <div class="px-6 py-4 border-t border-slate-100">
+            <app-pagination
+              [currentPage]="currentPage()"
+              [totalPages]="totalPages()"
+              (pageChange)="goToPage($event)"
+            />
+          </div>
+        }
+      }
+    </div>
+  </main>
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal()) {
+  <app-confirm-delete-modal
+    [message]="deleteMessage()"
+    (onConfirm)="deleteNoticia()"
+    (onCancel)="cancelDelete()"
+  />
+}

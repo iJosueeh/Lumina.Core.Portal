@@ -45,10 +45,12 @@ export class AdminLayout {
     panelTitle: 'Panel de Administración',
     roleLabel: 'Administrador',
     menuItems: [
-      { icon: 'th-large', label: 'Dashboard', route: '/admin/dashboard', category: 'Visión General' },
-      { icon: 'book', label: 'Cursos', route: '/admin/courses', category: 'Gestión' },
-      { icon: 'users', label: 'Usuarios', route: '/admin/users', category: 'Gestión' },
-      { icon: 'cog', label: 'Configuración', route: '/admin/settings', category: 'Sistema' }
+      { icon: 'th-large', label: 'Dashboard', route: '/admin/dashboard', category: 'Vision General' },
+      { icon: 'book', label: 'Cursos', route: '/admin/courses', category: 'Gestion' },
+      { icon: 'users', label: 'Usuarios', route: '/admin/users', category: 'Gestion' },
+      { icon: 'newspaper', label: 'Noticias', route: '/admin/noticias', category: 'Contenido' },
+      { icon: 'calendar-alt', label: 'Eventos', route: '/admin/eventos', category: 'Contenido' },
+      { icon: 'cog', label: 'Configuracion', route: '/admin/settings', category: 'Sistema' }
     ]
   };
 

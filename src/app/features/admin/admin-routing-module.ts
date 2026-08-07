@@ -43,6 +43,30 @@ const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./presentation/pages/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
+      },
+      {
+        path: 'noticias',
+        loadComponent: () => import('./presentation/pages/noticias-management/noticias-management').then(m => m.NoticiasManagement)
+      },
+      {
+        path: 'noticias/new',
+        loadComponent: () => import('./presentation/pages/noticia-editor/noticia-editor').then(m => m.NoticiaEditorComponent)
+      },
+      {
+        path: 'noticias/edit/:id',
+        loadComponent: () => import('./presentation/pages/noticia-editor/noticia-editor').then(m => m.NoticiaEditorComponent)
+      },
+      {
+        path: 'eventos',
+        loadComponent: () => import('./presentation/pages/eventos-management/eventos-management').then(m => m.EventosManagement)
+      },
+      {
+        path: 'eventos/new',
+        loadComponent: () => import('./presentation/pages/evento-editor/evento-editor').then(m => m.EventoEditorComponent)
+      },
+      {
+        path: 'eventos/edit/:id',
+        loadComponent: () => import('./presentation/pages/evento-editor/evento-editor').then(m => m.EventoEditorComponent)
       }
     ]
   }
