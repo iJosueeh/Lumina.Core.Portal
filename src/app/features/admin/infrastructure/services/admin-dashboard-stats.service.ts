@@ -5,7 +5,6 @@ import { DashboardStat, ChartData, ChartDataPoint } from '../mocks/admin-dashboa
   providedIn: 'root'
 })
 export class AdminDashboardStatsService {
-
   buildStats(
     estudiantesCount: number,
     docentesCount: number,
@@ -25,7 +24,7 @@ export class AdminDashboardStatsService {
         trend: estudiantesTrend.symbol,
         trendType: estudiantesTrend.type,
         description: 'Estudiantes matriculados',
-        status: 'active',
+        status: estudiantesCount > 0 ? 'active' : 'stable',
         color: 'blue'
       },
       {
@@ -35,7 +34,7 @@ export class AdminDashboardStatsService {
         trend: docentesTrend.symbol,
         trendType: docentesTrend.type,
         description: 'Docentes activos',
-        status: 'active',
+        status: docentesCount > 0 ? 'active' : 'stable',
         color: 'purple'
       },
       {
@@ -55,7 +54,7 @@ export class AdminDashboardStatsService {
         trend: usuariosTrend.symbol,
         trendType: usuariosTrend.type,
         description: 'Todos los usuarios de la plataforma',
-        status: 'active',
+        status: usuariosCount > 0 ? 'active' : 'stable',
         color: 'orange'
       },
     ];
@@ -65,14 +64,13 @@ export class AdminDashboardStatsService {
     count: number,
     totalUsers: number
   ): { symbol: string; type: 'positive' | 'negative' | 'neutral' } {
-    if (count === 0) return { symbol: '→', type: 'neutral' };
+    if (count === 0 || totalUsers === 0) return { symbol: '→', type: 'neutral' };
 
-    const percentage = (count / totalUsers) * 100;
-    if (percentage > 60) return { symbol: '↑14%', type: 'positive' };
-    if (percentage > 40) return { symbol: '↑12%', type: 'positive' };
-    if (percentage > 20) return { symbol: '↑8%', type: 'positive' };
-    if (percentage > 10) return { symbol: '↑4%', type: 'positive' };
-    if (percentage > 5) return { symbol: '↑2%', type: 'positive' };
+    const percentage = Math.round((count / totalUsers) * 100);
+    if (percentage >= 80) return { symbol: `↑${percentage}%`, type: 'positive' };
+    if (percentage >= 50) return { symbol: `↑${percentage}%`, type: 'positive' };
+    if (percentage >= 20) return { symbol: `↑${percentage}%`, type: 'positive' };
+    if (percentage >= 5) return { symbol: `↑${percentage}%`, type: 'positive' };
     return { symbol: '→', type: 'neutral' };
   }
 
@@ -82,20 +80,18 @@ export class AdminDashboardStatsService {
   ): { symbol: string; type: 'positive' | 'negative' | 'neutral' } {
     if (cursosCount === 0 || estudiantesCount === 0) return { symbol: '→', type: 'neutral' };
 
-    const coursePerStudent = cursosCount / estudiantesCount;
-    if (coursePerStudent > 0.5) return { symbol: '↑8%', type: 'positive' };
-    if (coursePerStudent > 0.3) return { symbol: '↑4%', type: 'positive' };
-    return { symbol: '→', type: 'neutral' };
+    const coursesPerStudent = (cursosCount / estudiantesCount * 100);
+    return { symbol: `${cursosCount} total`, type: 'neutral' };
   }
 
   private calculateUsersTrend(
     usuariosCount: number
   ): { symbol: string; type: 'positive' | 'negative' | 'neutral' } {
     if (usuariosCount === 0) return { symbol: '→', type: 'neutral' };
-    if (usuariosCount > 100) return { symbol: '↑14%', type: 'positive' };
-    if (usuariosCount > 50) return { symbol: '↑10%', type: 'positive' };
-    if (usuariosCount > 20) return { symbol: '↑8.2%', type: 'positive' };
-    return { symbol: '↑4%', type: 'positive' };
+    if (usuariosCount > 100) return { symbol: `↑${usuariosCount}`, type: 'positive' };
+    if (usuariosCount > 50) return { symbol: `↑${usuariosCount}`, type: 'positive' };
+    if (usuariosCount > 20) return { symbol: `↑${usuariosCount}`, type: 'positive' };
+    return { symbol: `↑${usuariosCount}`, type: 'positive' };
   }
 
   buildChartData(): ChartData {
@@ -107,16 +103,10 @@ export class AdminDashboardStatsService {
       const monthIndex = (now.getMonth() - i + 12) % 12;
       const monthLabel = months[monthIndex];
 
-      const baseNewReg = 150 + (i * 10);
-      const newRegistrations = baseNewReg + Math.random() * 50;
-
-      const baseCompletion = 200 + (i * 15);
-      const activeCompletion = baseCompletion + Math.random() * 60;
-
       data.push({
         month: monthLabel,
-        newRegistrations: Math.floor(newRegistrations),
-        activeCompletion: Math.floor(activeCompletion),
+        newRegistrations: 0,
+        activeCompletion: 0,
       });
     }
 

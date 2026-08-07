@@ -55,7 +55,7 @@ export class AdminDashboardApiService {
   }
 
   private getEstudiantesCount(): Observable<number> {
-    return this.http.get<number>(`${environment.estudiantesApiUrl}/estudiantes/system/count`).pipe(
+    return this.http.get<number>(`${environment.estudiantesApiUrl}/estudiantes/system/enrolled-count`).pipe(
       catchError(() => of(0))
     );
   }
