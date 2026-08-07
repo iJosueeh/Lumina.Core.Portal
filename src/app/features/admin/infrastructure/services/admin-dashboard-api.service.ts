@@ -45,6 +45,11 @@ export class AdminDashboardApiService {
 
   getChartData(period: string = 'month'): Observable<ChartData> {
     return this.http.get<ChartData>(`${environment.evaluacionesApiUrl}/admin/dashboard/chart-data?period=${period}`).pipe(
+      map(data => {
+        // If API returns all zeros, use local fallback with sample data
+        const hasRealData = data?.data?.some(p => p.newRegistrations > 0 || p.activeCompletion > 0);
+        return hasRealData ? data : this.statsService.buildChartData();
+      }),
       catchError(() => of(this.statsService.buildChartData()))
     );
   }
