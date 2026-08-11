@@ -2,6 +2,8 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
@@ -488,6 +490,144 @@ export class SharedProfileComponent implements OnInit {
             error: () => {
                 this.isSaving.set(false);
                 this.error.set('No se pudo cambiar la contraseña. Verifica la actual.');
+            }
+        });
+    }
+
+    // === SAVE ALL: Unifica todos los PUTs del tab activo ===
+    saveProfile(): void {
+        this.isSaving.set(true);
+        this.error.set(null);
+        this.successMessage.set(null);
+
+        const requests: any[] = [];
+
+        // Siempre enviar PUT de perfil común (personal)
+        if (this.personalForm.valid) {
+            const pv = this.personalForm.value;
+            requests.push(
+                this.http.put<{ success: boolean }>(
+                    `${environment.apiUrl}/users/profile`,
+                    {
+                        nombresPersona: pv.nombres,
+                        apellidoPaterno: pv.apellidoPaterno,
+                        apellidoMaterno: pv.apellidoMaterno,
+                        fechaNacimiento: new Date(pv.fechaNacimiento).toISOString(),
+                        pais: pv.pais,
+                        departamento: pv.departamento,
+                        provincia: pv.provincia,
+                        distrito: pv.distrito,
+                        calle: pv.calle
+                    }
+                ).pipe(catchError(err => {
+                    console.error('Error saving personal info:', err);
+                    return of({ success: false });
+                }))
+            );
+        }
+
+        // Si es estudiante, enviar los PUTs de perfil estudiante
+        if (this.isStudent()) {
+            // Info académica (teléfono, DNI, biografía)
+            const sv = this.studentInfoForm.value;
+            requests.push(
+                this.http.put<{ success: boolean }>(
+                    `${environment.apiUrl}/perfil-estudiante/personal`,
+                    {
+                        telefono: sv.telefono,
+                        dni: sv.dni,
+                        biografia: sv.biografia
+                    }
+                ).pipe(catchError(err => {
+                    console.error('Error saving student info:', err);
+                    return of({ success: false });
+                }))
+            );
+
+            // Contacto de emergencia
+            const ev = this.emergencyForm.value;
+            if (ev.nombre && ev.relacion && ev.telefono) {
+                requests.push(
+                    this.http.put<{ success: boolean }>(
+                        `${environment.apiUrl}/perfil-estudiante/contacto-emergencia`,
+                        {
+                            nombre: ev.nombre,
+                            relacion: ev.relacion,
+                            telefono: ev.telefono
+                        }
+                    ).pipe(catchError(err => {
+                        console.error('Error saving emergency contact:', err);
+                        return of({ success: false });
+                    }))
+                );
+            }
+
+            // Redes sociales
+            const rv = this.socialForm.value;
+            requests.push(
+                this.http.put<{ success: boolean }>(
+                    `${environment.apiUrl}/perfil-estudiante/redes-sociales`,
+                    {
+                        linkedIn: rv.linkedIn,
+                        gitHub: rv.gitHub,
+                        twitter: rv.twitter,
+                        facebook: rv.facebook,
+                        instagram: rv.instagram,
+                        portfolio: rv.portfolio,
+                        youTube: rv.youTube,
+                        tikTok: rv.tikTok
+                    }
+                ).pipe(catchError(err => {
+                    console.error('Error saving social links:', err);
+                    return of({ success: false });
+                }))
+            );
+        }
+
+        // Si es docente, enviar PUT de perfil docente
+        if (this.isTeacher()) {
+            const p = this.profile();
+            const tv = this.teacherForm.value;
+            if (p?.docenteId) {
+                requests.push(
+                    this.http.put<{ success: boolean }>(
+                        `${environment.apiUrl}/docentes/${p.docenteId}`,
+                        {
+                            especialidadId: p.especialidadId,
+                            nombre: this.fullName(),
+                            cargo: tv.cargo,
+                            bio: tv.bio,
+                            avatar: p.avatar,
+                            linkedIn: tv.linkedIn
+                        }
+                    ).pipe(catchError(err => {
+                        console.error('Error saving teacher info:', err);
+                        return of({ success: false });
+                    }))
+                );
+            }
+        }
+
+        if (requests.length === 0) {
+            this.isSaving.set(false);
+            return;
+        }
+
+        forkJoin(requests).subscribe({
+            next: (results) => {
+                this.isSaving.set(false);
+                const allSuccess = results.every((r: any) => r.success !== false);
+                if (allSuccess) {
+                    this.successMessage.set('Perfil actualizado correctamente.');
+                } else {
+                    this.successMessage.set('Perfil parcialmente actualizado.');
+                }
+                // Recargar perfil
+                this.loadProfile();
+            },
+            error: () => {
+                this.isSaving.set(false);
+                this.error.set('No se pudo actualizar el perfil.');
             }
         });
     }

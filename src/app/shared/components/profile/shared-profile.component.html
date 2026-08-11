@@ -112,7 +112,7 @@
 
             <!-- ==================== TAB: Personal ==================== -->
             @if (activeTab() === 'personal') {
-                <form [formGroup]="personalForm" (ngSubmit)="savePersonalInfo()">
+                <form [formGroup]="personalForm">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
                         <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-user mr-2 text-indigo-500"></i>Datos Personales
@@ -173,12 +173,6 @@
                             <input type="text" formControlName="calle"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                         </div>
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" [disabled]="personalForm.invalid || isSaving()"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                                {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
-                            </button>
-                        </div>
                     </div>
                 </form>
             }
@@ -186,7 +180,7 @@
             <!-- ==================== TAB: Student Academic ==================== -->
             @if (activeTab() === 'academic' && isStudent()) {
                 <!-- Student Info -->
-                <form [formGroup]="studentInfoForm" (ngSubmit)="saveStudentInfo()">
+                <form [formGroup]="studentInfoForm">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
                         <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-id-card mr-2 text-indigo-500"></i>Información Personal
@@ -208,17 +202,11 @@
                             <textarea formControlName="biografia" rows="3"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 resize-none"></textarea>
                         </div>
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" [disabled]="isSaving()"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
-                            </button>
-                        </div>
                     </div>
                 </form>
 
                 <!-- Emergency Contact -->
-                <form [formGroup]="emergencyForm" (ngSubmit)="saveEmergencyContact()">
+                <form [formGroup]="emergencyForm">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
                         <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-phone-alt mr-2 text-indigo-500"></i>Contacto de Emergencia
@@ -240,19 +228,13 @@
                                     class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                         </div>
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" [disabled]="emergencyForm.invalid || isSaving()"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
-                            </button>
-                        </div>
                     </div>
                 </form>
             }
 
             <!-- ==================== TAB: Social (Student) ==================== -->
             @if (activeTab() === 'social' && isStudent()) {
-                <form [formGroup]="socialForm" (ngSubmit)="saveSocialLinks()">
+                <form [formGroup]="socialForm">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
                         <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-link mr-2 text-indigo-500"></i>Redes Sociales
@@ -315,19 +297,13 @@
                                     class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                         </div>
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" [disabled]="isSaving()"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                                {{ isSaving() ? 'Guardando...' : 'Guardar Redes' }}
-                            </button>
-                        </div>
                     </div>
                 </form>
             }
 
             <!-- ==================== TAB: Teacher Info ==================== -->
             @if (activeTab() === 'social' && isTeacher()) {
-                <form [formGroup]="teacherForm" (ngSubmit)="saveTeacherInfo()">
+                <form [formGroup]="teacherForm">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
                         <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-chalkboard-teacher mr-2 text-indigo-500"></i>Información Profesional
@@ -351,12 +327,6 @@
                             <textarea formControlName="bio" rows="4"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 resize-none"
                                 placeholder="Describe tu experiencia profesional..."></textarea>
-                        </div>
-                        <div class="flex justify-end mt-6">
-                            <button type="submit" [disabled]="isSaving()"
-                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
-                            </button>
                         </div>
                     </div>
                 </form>
@@ -394,6 +364,20 @@
                         </div>
                     </div>
                 </form>
+            }
+
+            <!-- UNIFIED SAVE BUTTON (for all tabs except password) -->
+            @if (activeTab() !== 'password') {
+                <div class="flex justify-end">
+                    <button (click)="saveProfile()" [disabled]="isSaving()"
+                        class="px-8 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2">
+                        @if (isSaving()) {
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        }
+                        <i class="fas fa-save"></i>
+                        {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+                    </button>
+                </div>
             }
         }
     </div>
