@@ -51,6 +51,7 @@ export class StudentLayoutComponent {
         menuItems: [
             { icon: 'th-large', label: 'Dashboard', route: '/student/dashboard', category: 'Personal' },
             { icon: 'book', label: 'Mis Cursos', route: '/student/courses', category: 'Personal' },
+            { icon: 'search', label: 'Catálogo de Cursos', route: '/student/catalog', category: 'Personal' },
             { icon: 'calendar-alt', label: 'Horario', route: '/student/schedule', category: 'Académico' },
             { icon: 'chart-bar', label: 'Calificaciones', route: '/student/grades', category: 'Académico' },
             { icon: 'file-alt', label: 'Evaluaciones', route: '/student/evaluations', category: 'Recursos' },
