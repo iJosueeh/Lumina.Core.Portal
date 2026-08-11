@@ -128,16 +128,16 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () =>
-          import('./features/student/presentation/pages/profile-view/profile-view.component').then(
-            m => m.ProfileViewComponent
+          import('./shared/components/profile/shared-profile.component').then(
+            m => m.SharedProfileComponent
           ),
         title: 'Mi Perfil - Portal Estudiante',
       },
       {
         path: 'profile/edit',
         loadComponent: () =>
-          import('./features/student/presentation/pages/profile-edit/profile-edit.component').then(
-            m => m.ProfileEditComponent
+          import('./shared/components/profile/shared-profile.component').then(
+            m => m.SharedProfileComponent
           ),
         title: 'Editar Perfil - Portal Estudiante',
       },
@@ -247,8 +247,8 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/teacher-profile/teacher-profile.component').then(
-            m => m.TeacherProfileComponent
+          import('./shared/components/profile/shared-profile.component').then(
+            m => m.SharedProfileComponent
           ),
         title: 'Mi Perfil - Portal Docente',
       },
