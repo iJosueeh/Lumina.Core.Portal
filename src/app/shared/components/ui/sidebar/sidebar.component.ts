@@ -85,11 +85,13 @@ export interface SidebarConfig {
         <!-- Perfil del Usuario (Bottom) -->
         <div class="flex-shrink-0 border-t border-[var(--sidebar-border)] px-6 py-4 mt-auto">
             <div class="flex items-center gap-3">
-                <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-[var(--sidebar-border)]" alt="Avatar">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold truncate" style="color: var(--sidebar-text-primary)">{{ userName() }}</p>
-                    <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--sidebar-text-muted)">{{ config.roleLabel }}</p>
-                </div>
+                <a [routerLink]="getProfileRoute()" (click)="close()" class="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+                    <img [src]="userAvatar()" class="w-9 h-9 rounded-lg border border-[var(--sidebar-border)]" alt="Avatar">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold truncate" style="color: var(--sidebar-text-primary)">{{ userName() }}</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--sidebar-text-muted)">{{ config.roleLabel }}</p>
+                    </div>
+                </a>
                 <button (click)="onLogout()" class="hover:text-[var(--status-error)] transition-colors p-2 rounded-lg hover:bg-[var(--status-error-bg)]" style="color: var(--sidebar-text-muted)">
                     <i class="fas fa-sign-out-alt text-sm"></i>
                 </button>
@@ -147,8 +149,8 @@ export class SidebarComponent {
 
   getProfileRoute(): string {
     const role = this.config.roleLabel.toLowerCase();
-    if (role.includes('estudiante')) return '/student/account-settings';
-    if (role.includes('docente')) return '/teacher/account-settings';
+    if (role.includes('estudiante')) return '/student/profile';
+    if (role.includes('docente')) return '/teacher/profile';
     if (role.includes('admin')) return '/admin/settings';
     return '/';
   }
