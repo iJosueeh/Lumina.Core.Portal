@@ -23,12 +23,23 @@ export class GradesComponent {
   isLoading = signal(true);
   errorMessage = signal('');
 
+  filteredCourses = computed(() => {
+    const semester = this.activeSemester();
+    const all = this.allCourses();
+    if (semester === 'all') return all;
+    if (semester === '2026') return all.filter(c => c.promedio > 0).slice(0, 3);
+    if (semester === '2025') return all.filter(c => c.promedio > 0).slice(3);
+    return all;
+  });
+
+  hasRealGrades = computed(() => this.allCourses().some(c => c.promedio > 0));
+
   stats = signal<GradeStats>({
     promedioGeneral: 0,
     creditosAprobados: 0,
     totalCreditos: 0,
     cursosCompletados: 0,
-    rankingClase: 'Cargando...',
+    rankingClase: 'Sin datos',
     percentilRanking: 0,
     ultimaActualizacion: new Date(),
   });
@@ -80,16 +91,6 @@ export class GradesComponent {
 
   setSemester(semester: SemesterFilter): void {
     this.activeSemester.set(semester);
-    if (semester === 'all') {
-      this.courses.set(this.allCourses());
-    } else {
-      const filtered = this.allCourses().filter((_, index) => {
-        if (semester === '2026') return index < 3;
-        if (semester === '2025') return index >= 3 && index < 5;
-        return true;
-      });
-      this.courses.set(filtered);
-    }
   }
 
   toggleCourse(courseId: string): void {

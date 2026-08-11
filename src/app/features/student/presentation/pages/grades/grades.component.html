@@ -18,7 +18,7 @@
         <div class="flex items-center gap-4">
           <div class="bg-white border border-slate-200 rounded-xl p-4 text-center min-w-[120px] shadow-sm">
             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Promedio General</p>
-            <p class="text-2xl font-bold text-indigo-600">{{ stats().promedioGeneral.toFixed(1) }}</p>
+            <p class="text-2xl font-bold text-indigo-600">{{ hasRealGrades() ? stats().promedioGeneral.toFixed(1) : '—' }}</p>
           </div>
           <button 
             (click)="printGrades()"
@@ -52,11 +52,11 @@
         <div class="flex items-center gap-3">
           <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
             <p class="text-xs text-slate-500">Créditos</p>
-            <p class="text-sm font-bold text-slate-900">{{ stats().creditosAprobados }} / {{ stats().totalCreditos }}</p>
+            <p class="text-sm font-bold text-slate-900">{{ hasRealGrades() ? stats().creditosAprobados : '—' }} / {{ hasRealGrades() ? stats().totalCreditos : '—' }}</p>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
             <p class="text-xs text-slate-500">Cursos</p>
-            <p class="text-sm font-bold text-slate-900">{{ stats().cursosCompletados }}</p>
+            <p class="text-sm font-bold text-slate-900">{{ hasRealGrades() ? stats().cursosCompletados : '—' }}</p>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
             <p class="text-xs text-slate-500">Ranking</p>
@@ -123,7 +123,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                @for (course of courses(); track course.id) {
+                @for (course of filteredCourses(); track course.id) {
                   <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-5">
                       <div class="flex flex-col">
@@ -139,7 +139,7 @@
                     </td>
                     <td class="px-6 py-5 text-center">
                       <span [class]="getPromedioColor(course.promedio)">
-                        {{ course.promedio.toFixed(1) }}
+                        {{ course.promedio > 0 ? course.promedio.toFixed(1) : '—' }}
                       </span>
                     </td>
                     <td class="px-6 py-5 text-center">
