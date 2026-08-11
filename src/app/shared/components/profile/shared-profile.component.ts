@@ -214,8 +214,8 @@ export class SharedProfileComponent implements OnInit {
                 }
                 this.isLoading.set(false);
             },
-            error: (err) => {
-                console.warn('Student profile not found, using defaults');
+            error: () => {
+                // No limpiar datos existentes en caso de error
                 this.isLoading.set(false);
             }
         });
@@ -261,26 +261,37 @@ export class SharedProfileComponent implements OnInit {
     }
 
     populateStudentForms(p: UserProfile): void {
-        this.studentInfoForm.patchValue({
-            telefono: p.telefono || '',
-            dni: p.dni || '',
-            biografia: p.biografia || ''
-        });
-        this.emergencyForm.patchValue({
-            nombre: p.contactoEmergencia?.nombre || '',
-            relacion: p.contactoEmergencia?.relacion || '',
-            telefono: p.contactoEmergencia?.telefono || ''
-        });
-        this.socialForm.patchValue({
-            linkedIn: p.redesSociales?.linkedIn || '',
-            gitHub: p.redesSociales?.gitHub || '',
-            twitter: p.redesSociales?.twitter || '',
-            facebook: p.redesSociales?.facebook || '',
-            instagram: p.redesSociales?.instagram || '',
-            portfolio: p.redesSociales?.portfolio || '',
-            youTube: p.redesSociales?.youTube || '',
-            tikTok: p.redesSociales?.tikTok || ''
-        });
+        if (p.telefono || p.dni || p.biografia) {
+            this.studentInfoForm.patchValue({
+                telefono: p.telefono || '',
+                dni: p.dni || '',
+                biografia: p.biografia || ''
+            });
+        }
+        if (p.contactoEmergencia?.nombre || p.contactoEmergencia?.telefono) {
+            this.emergencyForm.patchValue({
+                nombre: p.contactoEmergencia?.nombre || '',
+                relacion: p.contactoEmergencia?.relacion || '',
+                telefono: p.contactoEmergencia?.telefono || ''
+            });
+        }
+        const hasSocial = p.redesSociales && (
+            p.redesSociales.linkedIn || p.redesSociales.gitHub || p.redesSociales.twitter ||
+            p.redesSociales.facebook || p.redesSociales.instagram || p.redesSociales.portfolio ||
+            p.redesSociales.youTube || p.redesSociales.tikTok
+        );
+        if (hasSocial) {
+            this.socialForm.patchValue({
+                linkedIn: p.redesSociales?.linkedIn || '',
+                gitHub: p.redesSociales?.gitHub || '',
+                twitter: p.redesSociales?.twitter || '',
+                facebook: p.redesSociales?.facebook || '',
+                instagram: p.redesSociales?.instagram || '',
+                portfolio: p.redesSociales?.portfolio || '',
+                youTube: p.redesSociales?.youTube || '',
+                tikTok: p.redesSociales?.tikTok || ''
+            });
+        }
     }
 
     populateTeacherForm(p: UserProfile): void {
