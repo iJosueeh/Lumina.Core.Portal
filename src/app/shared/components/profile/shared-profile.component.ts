@@ -122,6 +122,22 @@ export class SharedProfileComponent implements OnInit {
         this.loadProfile();
     }
 
+    private getRoleFromJwt(): string {
+        try {
+            const user = this.authRepository.getCurrentUser();
+            if (!user?.role) return '';
+            // Map: 'STUDENT' → 'Student', 'TEACHER' → 'Teacher'
+            const roleMap: Record<string, string> = {
+                'STUDENT': 'Student',
+                'TEACHER': 'Teacher',
+                'ADMIN': 'Admin'
+            };
+            return roleMap[user.role] || user.role;
+        } catch {
+            return '';
+        }
+    }
+
     loadProfile(): void {
         this.isLoading.set(true);
         this.error.set(null);
@@ -139,13 +155,19 @@ export class SharedProfileComponent implements OnInit {
 
                 const profile: UserProfile = {
                     id: response.data.id,
-                    nombres: response.data.nombres,
+                    nombres: response.data.nombresPersona || response.data.nombres,
                     apellidoPaterno: response.data.apellidoPaterno,
                     apellidoMaterno: response.data.apellidoMaterno,
-                    email: response.data.correoElectronico || response.data.email,
+                    email: response.data.email || response.data.correoElectronico,
                     fechaNacimiento: response.data.fechaNacimiento,
-                    direccion: response.data.direccion || { pais: '', departamento: '', provincia: '', distrito: '', calle: '' },
-                    rol: response.data.rolNombre || response.data.rol || ''
+                    direccion: response.data.direccion || {
+                        pais: response.data.pais || '',
+                        departamento: response.data.departamento || '',
+                        provincia: response.data.provincia || '',
+                        distrito: response.data.distrito || '',
+                        calle: response.data.calle || ''
+                    },
+                    rol: response.data.rolNombre || response.data.rol || this.getRoleFromJwt()
                 };
 
                 this.populatePersonalForm(profile);
