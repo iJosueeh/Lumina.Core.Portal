@@ -128,12 +128,105 @@ export class ScheduleComponent implements OnInit {
     return this.filteredEvents().filter(e => DateUtils.isSameDate(e.date, this.selectedDate()));
   }
 
-  getEventPosition(event: CalendarEvent) {
-    const [sh, sm] = event.startTime.split(':').map(Number);
-    const [eh, em] = event.endTime.split(':').map(Number);
+  // Layout calculado con detección de colisiones
+  eventLayout = computed(() => {
+    const events = this.filteredEvents();
+    const layout: { [dayIndex: number]: Array<{event: CalendarEvent, col: number, colSpan: number}> } = {};
+
+    // Inicializar por día (0=Lunes a 5=Sábado)
+    for (let i = 0; i < 6; i++) {
+      layout[i] = [];
+    }
+
+    // Agrupar eventos por día
+    const byDay: { [day: number]: CalendarEvent[] } = {};
+    events.forEach(e => {
+      if (!byDay[e.dayOfWeek]) byDay[e.dayOfWeek] = [];
+      byDay[e.dayOfWeek].push(e);
+    });
+
+    // Procesar cada día
+    Object.entries(byDay).forEach(([dayStr, dayEvents]) => {
+      const day = parseInt(dayStr);
+      // Ordenar por hora de inicio
+      const sorted = [...dayEvents].sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      // Algoritmo de colisiones: asignar columna a cada evento
+      // Events que se cruzan van en columnas distintas
+      const columns: CalendarEvent[][] = []; // columns[colIdx] = eventos en esa columna
+
+      sorted.forEach(event => {
+        const eventStart = this.timeToMinutes(event.startTime);
+        const eventEnd = this.timeToMinutes(event.endTime);
+
+        // Buscar primera columna donde no hay conflicto
+        let placed = false;
+        for (let col = 0; col < columns.length; col++) {
+          const hasConflict = columns[col].some(existing => {
+            const existStart = this.timeToMinutes(existing.startTime);
+            const existEnd = this.timeToMinutes(existing.endTime);
+            return eventStart < existEnd && eventEnd > existStart;
+          });
+          if (!hasConflict) {
+            columns[col].push(event);
+            layout[day].push({ event, col, colSpan: 1 });
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          columns.push([event]);
+          layout[day].push({ event, col: columns.length - 1, colSpan: 1 });
+        }
+      });
+
+      // Ahora calcular colSpan: eventos que ocupan la misma columna + columnas vacías entre ellos
+      // Simplificado: eventos que no se solapan pueden compartir colSpan=1 y posicionarse en paralelo
+      // Primero determinamos el total de columnas para este día
+      const totalCols = columns.length;
+      layout[day].forEach(item => {
+        item.colSpan = 1; // Por ahora 1, el width se calcula dinámicamente
+        item.col = item.col % totalCols;
+      });
+    });
+
+    return layout;
+  });
+
+  private timeToMinutes(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  getLayoutForDay(dayIndex: number) {
+    return this.eventLayout()[dayIndex] || [];
+  }
+
+  getEventStyle(layoutItem: {event: CalendarEvent, col: number, colSpan: number}, totalCols: number) {
+    const [sh, sm] = layoutItem.event.startTime.split(':').map(Number);
+    const [eh, em] = layoutItem.event.endTime.split(':').map(Number);
     const top = ((sh - 7) * 60 + sm) * 1.06;
     const height = ((eh - sh) * 60 + (em - sm)) * 1.06;
-    return { top: `${top}px`, height: `${height}px` };
+
+    // Calcular width y left basado en columna
+    // Columna 0 = left-1, columna 1 = left-1 + width+gap, etc.
+    const minWidth = 85 / totalCols;
+    const left = 4 + layoutItem.col * (minWidth + 4);
+    const widthPct = (minWidth * layoutItem.colSpan) - 4;
+
+    return {
+      top: `${top}px`,
+      height: `${height}px`,
+      left: `${left}%`,
+      width: `${widthPct}%`
+    };
+  }
+
+  getTotalColsForDay(dayIndex: number): number {
+    const layout = this.eventLayout()[dayIndex];
+    if (!layout) return 1;
+    const cols = new Set(layout.map(l => l.col));
+    return Math.max(cols.size, 1);
   }
 
   changeDate(offset: number) {

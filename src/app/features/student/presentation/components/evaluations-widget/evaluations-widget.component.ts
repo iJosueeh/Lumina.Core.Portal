@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { EvaluationsService } from '@features/student/domain/services/evaluations.service';
 import { GlobalQuizSummary, GlobalEvaluationsStats } from '@features/student/domain/models/global-evaluation.model';
+import {
+  getStatusColorClasses,
+  getDifficultyClasses,
+  getDifficultyLabel,
+  EvaluationStatus,
+  EvaluationDifficulty,
+} from '@features/student/domain/utils/evaluation-utils';
 
 @Component({
   selector: 'app-evaluations-widget',
@@ -39,8 +46,7 @@ export class EvaluationsWidgetComponent implements OnInit {
         this.upcomingEvaluations.set(evaluations);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error loading evaluations:', err);
+      error: () => {
         this.isLoading.set(false);
       }
     });
@@ -51,9 +57,7 @@ export class EvaluationsWidgetComponent implements OnInit {
       next: (stats) => {
         this.stats.set(stats);
       },
-      error: (err) => {
-        console.error('Error loading stats:', err);
-      }
+      error: () => {}
     });
   }
 
@@ -72,6 +76,7 @@ export class EvaluationsWidgetComponent implements OnInit {
     });
   }
 
+  /** Emoji icon per status — kept inline, not worth abstracting. */
   getStatusIcon(status: string): string {
     switch (status) {
       case 'urgent': return '🔴';
@@ -93,21 +98,14 @@ export class EvaluationsWidgetComponent implements OnInit {
   }
 
   getStatusColor(status: string): string {
-    switch (status) {
-      case 'urgent': return 'text-red-500 bg-red-500/10';
-      case 'upcoming': return 'text-yellow-500 bg-yellow-500/10';
-      case 'available': return 'text-green-500 bg-green-500/10';
-      case 'completed': return 'text-blue-500 bg-blue-500/10';
-      default: return 'text-gray-500 bg-gray-500/10';
-    }
+    return getStatusColorClasses(status as EvaluationStatus);
   }
 
   getDifficultyBadge(difficulty: string): string {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-500/20 text-green-400';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400';
-      case 'hard': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
+    return getDifficultyClasses(difficulty as EvaluationDifficulty);
+  }
+
+  getDifficultyLabel(difficulty: string): string {
+    return getDifficultyLabel(difficulty as EvaluationDifficulty);
   }
 }

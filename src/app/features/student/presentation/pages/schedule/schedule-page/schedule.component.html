@@ -93,15 +93,17 @@
                         }
 
                         <div class="absolute inset-0 pointer-events-none">
-                          @for (event of getEventsForDay(dayIndex); track event.id) {
+                          @for (layoutItem of getLayoutForDay(dayIndex); track layoutItem.event.id) {
                             <div
-                              (click)="openEventDetail(event)"
-                              [style.top]="getEventPosition(event).top"
-                              [style.height]="getEventPosition(event).height"
-                              [class]="event.color"
-                              class="absolute left-1 right-1 rounded-lg p-2 text-white text-xs pointer-events-auto cursor-pointer hover:opacity-90 transition-opacity overflow-hidden shadow-sm">
-                              <div class="font-bold mb-0.5 truncate">{{ event.title }}</div>
-                              <div class="text-[10px] opacity-90">{{ event.startTime }} - {{ event.endTime }}</div>
+                              (click)="openEventDetail(layoutItem.event)"
+                              [style.top]="getEventStyle(layoutItem, getTotalColsForDay(dayIndex)).top"
+                              [style.height]="getEventStyle(layoutItem, getTotalColsForDay(dayIndex)).height"
+                              [style.left]="getEventStyle(layoutItem, getTotalColsForDay(dayIndex)).left"
+                              [style.width]="getEventStyle(layoutItem, getTotalColsForDay(dayIndex)).width"
+                              [class]="layoutItem.event.color"
+                              class="absolute rounded-lg p-2 text-white text-xs pointer-events-auto cursor-pointer hover:opacity-90 transition-opacity overflow-hidden shadow-sm">
+                              <div class="font-bold mb-0.5 truncate">{{ layoutItem.event.title }}</div>
+                              <div class="text-[10px] opacity-90">{{ layoutItem.event.startTime }} - {{ layoutItem.event.endTime }}</div>
                             </div>
                           }
                         </div>
