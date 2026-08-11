@@ -38,6 +38,10 @@
       "destination": "https://lumina-estudiantes.onrender.com/api/estudiantes/:path*"
     },
     {
+      "source": "/api/perfil-estudiante/:path*",
+      "destination": "https://lumina-estudiantes.onrender.com/api/perfil-estudiante/:path*"
+    },
+    {
       "source": "/api/docente/:path*",
       "destination": "https://lumina-docentes.onrender.com/api/docente/:path*"
     },
