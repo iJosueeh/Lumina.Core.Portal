@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <!-- Loading -->
         @if (isLoading()) {
             <div class="flex items-center justify-center py-20">
@@ -13,50 +13,35 @@
         } @else if (profile()) {
             <!-- Header -->
             <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-5">
-                        <div class="w-20 h-20 rounded-2xl bg-indigo-100 flex items-center justify-center">
-                            @if (profile()?.avatar) {
-                                <img [src]="profile()?.avatar" class="w-20 h-20 rounded-2xl object-cover" alt="Avatar">
-                            } @else {
-                                <i class="fas fa-user text-indigo-600 text-3xl"></i>
-                            }
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-slate-900">{{ fullName() }}</h1>
-                            <p class="text-slate-500">{{ profile()?.email }}</p>
-                            <span class="inline-block mt-2 px-3 py-1 text-xs font-bold rounded-full"
-                                [class.bg-indigo-100]="isStudent()"
-                                [class.text-indigo-700]="isStudent()"
-                                [class.bg-green-100]="isTeacher()"
-                                [class.text-green-700]="isTeacher()"
-                                [class.bg-red-100]="isAdmin()"
-                                [class.text-red-700]="isAdmin()">
-                                {{ profile()?.rol }}
-                            </span>
-                        </div>
+                <div class="flex items-center gap-5">
+                    <div class="w-20 h-20 rounded-2xl bg-indigo-100 flex items-center justify-center overflow-hidden">
+                        @if (profile()?.fotoUrl || profile()?.avatar) {
+                            <img [src]="profile()?.fotoUrl || profile()?.avatar" class="w-20 h-20 object-cover" alt="Avatar">
+                        } @else {
+                            <i class="fas fa-user text-indigo-600 text-3xl"></i>
+                        }
                     </div>
-                    <button (click)="toggleEdit()"
-                        class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
-                        [class.bg-indigo-600]="!isEditing()"
-                        [class.text-white]="!isEditing()"
-                        [class.hover:bg-indigo-700]="!isEditing()"
-                        [class.bg-slate-200]="isEditing()"
-                        [class.text-slate-700]="isEditing()">
-                        {{ isEditing() ? 'Cancelar' : 'Editar Perfil' }}
-                    </button>
+                    <div class="flex-1">
+                        <h1 class="text-2xl font-bold text-slate-900">{{ fullName() }}</h1>
+                        <p class="text-slate-500">{{ profile()?.email }}</p>
+                        <span class="inline-block mt-2 px-3 py-1 text-xs font-bold rounded-full"
+                            [class.bg-indigo-100]="isStudent()"
+                            [class.text-indigo-700]="isStudent()"
+                            [class.bg-green-100]="isTeacher()"
+                            [class.text-green-700]="isTeacher()">
+                            {{ profile()?.rol === 'Student' ? 'Estudiante' : 'Docente' }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Success Message -->
+            <!-- Messages -->
             @if (successMessage()) {
                 <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3">
                     <i class="fas fa-check-circle text-green-500"></i>
                     <p class="text-green-700">{{ successMessage() }}</p>
                 </div>
             }
-
-            <!-- Error Message -->
             @if (error() && profile()) {
                 <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
                     <i class="fas fa-exclamation-circle text-red-500"></i>
@@ -64,208 +49,352 @@
                 </div>
             }
 
-            <!-- Profile Form -->
-            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-                <!-- Personal Info -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">
-                        <i class="fas fa-user mr-2 text-indigo-500"></i>Información Personal
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombres</label>
-                            <input type="text" formControlName="nombres"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()"
-                                [class.cursor-not-allowed]="!isEditing()">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Apellido Paterno</label>
-                            <input type="text" formControlName="apellidoPaterno"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()"
-                                [class.cursor-not-allowed]="!isEditing()">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Apellido Materno</label>
-                            <input type="text" formControlName="apellidoMaterno"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()"
-                                [class.cursor-not-allowed]="!isEditing()">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
-                            <input type="email" [value]="profile()?.email" readonly
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed text-slate-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Fecha de Nacimiento</label>
-                            <input type="date" formControlName="fechaNacimiento"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()"
-                                [class.cursor-not-allowed]="!isEditing()">
-                        </div>
-                    </div>
-                </div>
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-6 overflow-x-auto">
+                <button (click)="setTab('personal')"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
+                    [class.bg-indigo-600]="activeTab() === 'personal'"
+                    [class.text-white]="activeTab() === 'personal'"
+                    [class.bg-white]="activeTab() !== 'personal'"
+                    [class.text-slate-600]="activeTab() !== 'personal'"
+                    [class.border]="activeTab() !== 'personal'"
+                    [class.border-slate-200]="activeTab() !== 'personal'">
+                    <i class="fas fa-user mr-2"></i>Información Personal
+                </button>
 
-                <!-- Address -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4">
-                        <i class="fas fa-map-marker-alt mr-2 text-indigo-500"></i>Dirección
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">País</label>
-                            <input type="text" formControlName="pais"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Departamento</label>
-                            <input type="text" formControlName="departamento"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Provincia</label>
-                            <input type="text" formControlName="provincia"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Distrito</label>
-                            <input type="text" formControlName="distrito"
-                                [readonly]="!isEditing()"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                                [class.bg-slate-50]="!isEditing()">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Dirección</label>
-                        <input type="text" formControlName="calle"
-                            [readonly]="!isEditing()"
-                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
-                            [class.bg-slate-50]="!isEditing()">
-                    </div>
-                </div>
-
-                <!-- Student-Specific Info -->
                 @if (isStudent()) {
+                    <button (click)="setTab('academic')"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
+                        [class.bg-indigo-600]="activeTab() === 'academic'"
+                        [class.text-white]="activeTab() === 'academic'"
+                        [class.bg-white]="activeTab() !== 'academic'"
+                        [class.text-slate-600]="activeTab() !== 'academic'"
+                        [class.border]="activeTab() !== 'academic'"
+                        [class.border-slate-200]="activeTab() !== 'academic'">
+                        <i class="fas fa-graduation-cap mr-2"></i>Info. Académica
+                    </button>
+                    <button (click)="setTab('social')"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
+                        [class.bg-indigo-600]="activeTab() === 'social'"
+                        [class.text-white]="activeTab() === 'social'"
+                        [class.bg-white]="activeTab() !== 'social'"
+                        [class.text-slate-600]="activeTab() !== 'social'"
+                        [class.border]="activeTab() !== 'social'"
+                        [class.border-slate-200]="activeTab() !== 'social'">
+                        <i class="fas fa-link mr-2"></i>Redes Sociales
+                    </button>
+                }
+
+                @if (isTeacher()) {
+                    <button (click)="setTab('social')"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
+                        [class.bg-indigo-600]="activeTab() === 'social'"
+                        [class.text-white]="activeTab() === 'social'"
+                        [class.bg-white]="activeTab() !== 'social'"
+                        [class.text-slate-600]="activeTab() !== 'social'"
+                        [class.border]="activeTab() !== 'social'"
+                        [class.border-slate-200]="activeTab() !== 'social'">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>Info. Profesional
+                    </button>
+                }
+
+                <button (click)="setTab('password')"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
+                    [class.bg-indigo-600]="activeTab() === 'password'"
+                    [class.text-white]="activeTab() === 'password'"
+                    [class.bg-white]="activeTab() !== 'password'"
+                    [class.text-slate-600]="activeTab() !== 'password'"
+                    [class.border]="activeTab() !== 'password'"
+                    [class.border-slate-200]="activeTab() !== 'password'">
+                    <i class="fas fa-lock mr-2"></i>Contraseña
+                </button>
+            </div>
+
+            <!-- ==================== TAB: Personal ==================== -->
+            @if (activeTab() === 'personal') {
+                <form [formGroup]="personalForm" (ngSubmit)="savePersonalInfo()">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-                        <h2 class="text-lg font-bold text-slate-900 mb-4">
-                            <i class="fas fa-graduation-cap mr-2 text-indigo-500"></i>Información Académica
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
+                            <i class="fas fa-user mr-2 text-indigo-500"></i>Datos Personales
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nombres</label>
+                                <input type="text" formControlName="nombres"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Apellido Paterno</label>
+                                <input type="text" formControlName="apellidoPaterno"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Apellido Materno</label>
+                                <input type="text" formControlName="apellidoMaterno"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+                                <input type="email" [value]="profile()?.email" readonly
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed text-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Fecha de Nacimiento</label>
+                                <input type="date" formControlName="fechaNacimiento"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">País</label>
+                                <input type="text" formControlName="pais"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Departamento</label>
+                                <input type="text" formControlName="departamento"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Provincia</label>
+                                <input type="text" formControlName="provincia"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Distrito</label>
+                                <input type="text" formControlName="distrito"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Dirección</label>
+                            <input type="text" formControlName="calle"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="personalForm.invalid || isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
+
+            <!-- ==================== TAB: Student Academic ==================== -->
+            @if (activeTab() === 'academic' && isStudent()) {
+                <!-- Student Info -->
+                <form [formGroup]="studentInfoForm" (ngSubmit)="saveStudentInfo()">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
+                            <i class="fas fa-id-card mr-2 text-indigo-500"></i>Información Personal
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Código</label>
-                                <input type="text" [value]="profile()?.codigo || '—'" readonly
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Teléfono</label>
+                                <input type="tel" formControlName="telefono"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Ciclo</label>
-                                <input type="text" [value]="profile()?.ciclo || '—'" readonly
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Modalidad</label>
-                                <input type="text" [value]="profile()?.modalidad || '—'" readonly
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Sede</label>
-                                <input type="text" [value]="profile()?.sede || '—'" readonly
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">DNI</label>
+                                <input type="text" formControlName="dni"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                         </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Biografía</label>
+                            <textarea formControlName="biografia" rows="3"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 resize-none"></textarea>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                        </div>
                     </div>
-                }
+                </form>
 
-                <!-- Teacher-Specific Info -->
-                @if (isTeacher()) {
+                <!-- Emergency Contact -->
+                <form [formGroup]="emergencyForm" (ngSubmit)="saveEmergencyContact()">
                     <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-                        <h2 class="text-lg font-bold text-slate-900 mb-4">
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
+                            <i class="fas fa-phone-alt mr-2 text-indigo-500"></i>Contacto de Emergencia
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre</label>
+                                <input type="text" formControlName="nombre"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Relación</label>
+                                <input type="text" formControlName="relacion"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Teléfono</label>
+                                <input type="tel" formControlName="telefono"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="emergencyForm.invalid || isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
+
+            <!-- ==================== TAB: Social (Student) ==================== -->
+            @if (activeTab() === 'social' && isStudent()) {
+                <form [formGroup]="socialForm" (ngSubmit)="saveSocialLinks()">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
+                            <i class="fas fa-link mr-2 text-indigo-500"></i>Redes Sociales
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-linkedin text-blue-600 mr-1"></i>LinkedIn
+                                </label>
+                                <input type="url" formControlName="linkedIn" placeholder="https://linkedin.com/in/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-github text-slate-800 mr-1"></i>GitHub
+                                </label>
+                                <input type="url" formControlName="gitHub" placeholder="https://github.com/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-twitter text-blue-400 mr-1"></i>Twitter
+                                </label>
+                                <input type="url" formControlName="twitter" placeholder="https://twitter.com/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-instagram text-pink-500 mr-1"></i>Instagram
+                                </label>
+                                <input type="url" formControlName="instagram" placeholder="https://instagram.com/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-facebook text-blue-700 mr-1"></i>Facebook
+                                </label>
+                                <input type="url" formControlName="facebook" placeholder="https://facebook.com/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fas fa-globe text-indigo-500 mr-1"></i>Portfolio
+                                </label>
+                                <input type="url" formControlName="portfolio" placeholder="https://tu-portfolio.com"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-youtube text-red-500 mr-1"></i>YouTube
+                                </label>
+                                <input type="url" formControlName="youTube" placeholder="https://youtube.com/@tu-canal"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-tiktok text-slate-900 mr-1"></i>TikTok
+                                </label>
+                                <input type="url" formControlName="tikTok" placeholder="https://tiktok.com/@tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                {{ isSaving() ? 'Guardando...' : 'Guardar Redes' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
+
+            <!-- ==================== TAB: Teacher Info ==================== -->
+            @if (activeTab() === 'social' && isTeacher()) {
+                <form [formGroup]="teacherForm" (ngSubmit)="saveTeacherInfo()">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
                             <i class="fas fa-chalkboard-teacher mr-2 text-indigo-500"></i>Información Profesional
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Cargo</label>
-                                <input type="text" [value]="profile()?.cargo || '—'" readonly
-                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 cursor-not-allowed">
+                                <input type="text" formControlName="cargo"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">LinkedIn</label>
-                                <a [href]="profile()?.linkedIn" target="_blank" 
-                                    class="text-indigo-600 hover:underline text-sm">
-                                    {{ profile()?.linkedIn || '—' }}
-                                </a>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                    <i class="fab fa-linkedin text-blue-600 mr-1"></i>LinkedIn
+                                </label>
+                                <input type="url" formControlName="linkedIn" placeholder="https://linkedin.com/in/tu-usuario"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
                             </div>
                         </div>
-                        @if (profile()?.bio) {
-                            <div class="mt-4">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Biografía</label>
-                                <p class="text-sm text-slate-600 bg-slate-50 rounded-xl p-4">{{ profile()?.bio }}</p>
-                            </div>
-                        }
-                    </div>
-                }
-
-                <!-- Save Button -->
-                @if (isEditing()) {
-                    <div class="flex justify-end gap-3 mb-6">
-                        <button type="button" (click)="toggleEdit()"
-                            class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50">
-                            Cancelar
-                        </button>
-                        <button type="submit" 
-                            [disabled]="profileForm.invalid || isSaving()"
-                            class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
-                            {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
-                        </button>
-                    </div>
-                }
-            </form>
-
-            <!-- Change Password -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 class="text-lg font-bold text-slate-900 mb-4">
-                    <i class="fas fa-lock mr-2 text-indigo-500"></i>Cambiar Contraseña
-                </h2>
-                <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Contraseña Actual</label>
-                            <input type="password" formControlName="currentPassword"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Biografía Profesional</label>
+                            <textarea formControlName="bio" rows="4"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 resize-none"
+                                placeholder="Describe tu experiencia profesional..."></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nueva Contraseña</label>
-                            <input type="password" formControlName="newPassword"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                {{ isSaving() ? 'Guardando...' : 'Guardar' }}
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Confirmar Contraseña</label>
-                            <input type="password" formControlName="confirmPassword"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
-                        </div>
-                    </div>
-                    <div class="flex justify-end mt-4">
-                        <button type="submit" 
-                            [disabled]="passwordForm.invalid || isSaving()"
-                            class="px-6 py-2.5 rounded-xl bg-slate-800 text-white font-semibold text-sm hover:bg-slate-900 disabled:opacity-50">
-                            Cambiar Contraseña
-                        </button>
                     </div>
                 </form>
-            </div>
+            }
+
+            <!-- ==================== TAB: Password ==================== -->
+            @if (activeTab() === 'password') {
+                <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6">
+                        <h2 class="text-lg font-bold text-slate-900 mb-5">
+                            <i class="fas fa-lock mr-2 text-indigo-500"></i>Cambiar Contraseña
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Contraseña Actual</label>
+                                <input type="password" formControlName="currentPassword"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nueva Contraseña</label>
+                                <input type="password" formControlName="newPassword"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Confirmar Contraseña</label>
+                                <input type="password" formControlName="confirmPassword"
+                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10">
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" [disabled]="passwordForm.invalid || isSaving()"
+                                class="px-6 py-2.5 rounded-xl bg-slate-800 text-white font-semibold text-sm hover:bg-slate-900 disabled:opacity-50">
+                                {{ isSaving() ? 'Cambiando...' : 'Cambiar Contraseña' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
         }
     </div>
 </div>
