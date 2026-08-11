@@ -133,8 +133,8 @@ export class ScheduleComponent implements OnInit {
     const events = this.filteredEvents();
     const layout: { [dayIndex: number]: Array<{event: CalendarEvent, col: number, colSpan: number}> } = {};
 
-    // Inicializar por día (0=Lunes a 5=Sábado)
-    for (let i = 0; i < 6; i++) {
+    // Inicializar por día (0=Lunes a 6=Domingo)
+    for (let i = 0; i < 7; i++) {
       layout[i] = [];
     }
 
