@@ -72,6 +72,8 @@ export class DashboardComponent {
       const user = this.authRepository.getCurrentUser();
       if (user) {
         this.userName.set(user.fullName.split(' ')[0]);
+        // Limpiar cache para forzar consulta fresca a la API
+        this.enrollmentService.clearStudentIdCache();
         // Resolver studentId desde userId
         this.enrollmentService.getStudentIdByUserId(user.id).subscribe(studentId => {
           if (studentId) {

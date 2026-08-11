@@ -20,7 +20,13 @@ export class EnrollmentService {
   private studentIdCache = new Map<string, string | null>();
 
   /**
-   * Obtiene el estudianteId a partir del usuarioId.
+   * Limpia el cache de studentId para forzar nueva consulta a la API.
+   */
+  clearStudentIdCache(): void {
+    this.studentIdCache.clear();
+  }
+
+  /**
    * Llama a GET /api/estudiantes/by-usuario/{usuarioId}
    */
   getStudentIdByUserId(usuarioId: string): Observable<string | null> {
