@@ -33,6 +33,10 @@
       "source": "/api/system-settings/:path*",
       "destination": "https://lumina-usuarios.onrender.com/api/system-settings/:path*"
     },
+      {
+      "source": "/api/asistencias/:path*",
+      "destination": "https://lumina-estudiantes.onrender.com/api/asistencias/:path*"
+    },
     {
       "source": "/api/estudiantes/:path*",
       "destination": "https://lumina-estudiantes.onrender.com/api/estudiantes/:path*"

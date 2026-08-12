@@ -1,97 +1,187 @@
-<div class="min-h-screen bg-[#020617] relative overflow-hidden text-slate-300 font-sans selection:bg-cyan-500/30">
-  
-    <!-- Efectos de Luces Ambientales -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px] animate-pulse"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
-  
-    <!-- Header Estilo Glassmorphism -->
-    <header class="relative border-b border-white/5 bg-slate-950/20 backdrop-blur-xl z-20">
-      <div class="max-w-7xl mx-auto px-6 py-8 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="space-y-2">
-          <div class="flex items-center gap-3">
-            <span class="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Registro Diario</span>
-            <div class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-          </div>
-          <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
-            Control de <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">Asistencia</span>
-          </h1>
-          <p class="text-slate-500 font-medium max-w-lg">
-            Monitorea la puntualidad y permanencia de tus estudiantes en tiempo real.
-          </p>
+<div class="min-h-screen bg-slate-50 font-sans">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full uppercase tracking-wide">Registro Diario</span>
         </div>
-  
-        <div class="flex gap-3">
-          <button (click)="exportToCSV()" class="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center gap-3 group">
-            <i class="fas fa-file-export text-cyan-400 group-hover:scale-110 transition-transform"></i>
-            Exportar reporte
-          </button>
-          <button class="px-6 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.3)] text-sm uppercase tracking-widest flex items-center gap-2">
-            <i class="fas fa-calendar-check"></i>
-            Nueva Sesión
-          </button>
-        </div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">
+          Control de Asistencia
+        </h1>
+        <p class="text-sm text-slate-500">Selecciona curso y fecha, luego marca la asistencia de cada estudiante.</p>
       </div>
-    </header>
-  
-    <!-- Contenido Principal -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-12">
-      
-      <!-- Filtros y Resumen -->
-      <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 p-8 rounded-[2.5rem] space-y-10">
-        <app-attendance-header
-          [courses]="courses()"
-          [selectedCourseId]="selectedCourseId()"
-          [searchTerm]="searchTerm()"
-          (courseChange)="selectedCourseId.set($any($event)); onCourseChange()"
-          (searchChange)="searchTerm.set($any($event))"
-        />
+      <div class="flex items-center gap-3">
+        <button (click)="exportToCSV()" class="px-4 py-2.5 border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-100 transition-all text-sm flex items-center gap-2">
+          <i class="fas fa-file-csv text-slate-500"></i>
+          Exportar CSV
+        </button>
+        <button (click)="onSaveAll()" [disabled]="isSaving() || !selectedCourseId()"
+          class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm flex items-center gap-2">
+          @if (isSaving()) {
+            <i class="fas fa-spinner fa-spin"></i>
+            Guardando...
+          } @else if (saveSuccess()) {
+            <i class="fas fa-check text-green-400"></i>
+            Guardado
+          } @else {
+            <i class="fas fa-save"></i>
+            Guardar Asistencia
+          }
+        </button>
+      </div>
+    </div>
+  </header>
 
-        <!-- Mini Stats Summary -->
-        @if (!isLoading() && attendanceData()) {
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-white/5">
-            <div class="space-y-1">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Promedio Asistencia</p>
-                <p class="text-xl font-black text-white">{{ promedioAsistencia() | number:'1.0-0' }}%</p>
-            </div>
-            <div class="space-y-1">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Presentes</p>
-                <p class="text-xl font-black text-cyan-400">{{ totalPresentes() }}</p>
-            </div>
-            <div class="space-y-1">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Tardanzas</p>
-                <p class="text-xl font-black text-orange-400">{{ totalTardanzas() }}</p>
-            </div>
-            <div class="space-y-1">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Inasistencias</p>
-                <p class="text-xl font-black text-red-500">{{ totalAusentes() }}</p>
-            </div>
-          </div>
-        }
+  <!-- Filters -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-start md:items-end gap-5">
+      <div class="flex-1">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Curso</label>
+        <select [(ngModel)]="selectedCourseId" (ngModelChange)="onCourseChange()"
+          class="w-full md:w-80 bg-white border border-slate-300 rounded-xl py-3 px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-sm">
+          @for (course of courses(); track course.id) {
+            <option [value]="course.id">{{ course.titulo }} ({{ course.codigo }})</option>
+          }
+          @if (!courses().length) {
+            <option value="">Sin cursos asignados</option>
+          }
+        </select>
       </div>
-  
-      <!-- Tabla de Asistencia -->
-      <div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl relative">
-        @if (isLoading()) {
-          <div class="p-16 space-y-4">
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <app-skeleton-loader class="h-16 w-full rounded-2xl opacity-10"></app-skeleton-loader>
-            }
-          </div>
-        } @else if (attendanceData()) {
-          <app-attendance-table
-            [sesiones]="attendanceData()?.sesiones || []"
-            [resumenEstudiantes]="filteredResumen()"
-          />
-        } @else {
-            <div class="py-32 text-center">
-                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-calendar-times text-3xl text-slate-700"></i>
-                </div>
-                <h3 class="text-2xl font-black text-white mb-2">No hay datos de asistencia</h3>
-                <p class="text-slate-500 max-w-xs mx-auto">Selecciona un curso válido para ver el registro.</p>
-            </div>
-        }
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fecha</label>
+        <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChange()"
+          class="bg-white border border-slate-300 rounded-xl py-3 px-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-sm">
       </div>
-    </main>
+      <div class="flex-1">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Buscar estudiante</label>
+        <div class="relative">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" [(ngModel)]="searchTerm"
+            placeholder="Nombre del estudiante..."
+            class="w-full md:w-72 bg-white border border-slate-300 rounded-xl py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-sm placeholder:text-slate-400">
+        </div>
+      </div>
+    </div>
   </div>
-  
+
+  <!-- Stats -->
+  @if (allStats().length > 0) {
+    <div class="max-w-7xl mx-auto px-6 py-6">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Promedio</p>
+          <p class="text-2xl font-black text-slate-900">{{ averages().promedio }}%</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estudiantes</p>
+          <p class="text-2xl font-black text-slate-900">{{ allStats().length }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Presentes</p>
+          <p class="text-2xl font-black text-emerald-600">{{ averages().presentes }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tardanzas</p>
+          <p class="text-2xl font-black text-amber-500">{{ averages().tardanzas }}</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ausentes</p>
+          <p class="text-2xl font-black text-red-500">{{ averages().ausentes }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Table -->
+  <main class="max-w-7xl mx-auto px-6 pb-12">
+    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      @if (isLoading()) {
+        <div class="p-8 text-center text-slate-400">
+          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+          <p class="text-sm">Cargando...</p>
+        </div>
+      } @else if (!selectedCourseId()) {
+        <div class="p-16 text-center">
+          <i class="fas fa-book-open text-4xl text-slate-300 mb-3"></i>
+          <h3 class="text-lg font-bold text-slate-700 mb-1">Selecciona un curso</h3>
+          <p class="text-sm text-slate-400">Elige un curso para registrar la asistencia.</p>
+        </div>
+      } @else if (!filteredStats().length) {
+        <div class="p-16 text-center">
+          <i class="fas fa-users text-4xl text-slate-300 mb-3"></i>
+          <h3 class="text-lg font-bold text-slate-700 mb-1">Sin estudiantes</h3>
+          <p class="text-sm text-slate-400">No hay estudiantes matriculados en este curso.</p>
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Estudiante</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Estado de hoy</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">% Asistencia</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Sesiones</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">P</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">T</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">A</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (stat of filteredStats(); track stat.studentId) {
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xs font-bold text-indigo-600">{{ stat.studentName.charAt(0) }}</span>
+                      </div>
+                      <span class="font-semibold text-slate-900">{{ stat.studentName }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <div class="flex justify-center gap-1">
+                      @let estado = getEstadoForStudent(stat.studentId);
+                      <button (click)="onEstadoChange(stat.studentId, 'Presente')"
+                        [title]="'Presente'"
+                        [class]="estado === 'Presente' ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300 hover:border-emerald-400'"
+                        class="w-8 h-8 rounded-lg border-2 text-white transition-all flex items-center justify-center">
+                        <i class="fas fa-check text-xs"></i>
+                      </button>
+                      <button (click)="onEstadoChange(stat.studentId, 'Tardanza')"
+                        [title]="'Tardanza'"
+                        [class]="estado === 'Tardanza' ? 'bg-amber-500 border-amber-500' : 'bg-white border-slate-300 hover:border-amber-400'"
+                        class="w-8 h-8 rounded-lg border-2 text-white transition-all flex items-center justify-center">
+                        <i class="fas fa-clock text-xs"></i>
+                      </button>
+                      <button (click)="onEstadoChange(stat.studentId, 'Ausente')"
+                        [title]="'Ausente'"
+                        [class]="estado === 'Ausente' ? 'bg-red-500 border-red-500' : 'bg-white border-slate-300 hover:border-red-400'"
+                        class="w-8 h-8 rounded-lg border-2 text-white transition-all flex items-center justify-center">
+                        <i class="fas fa-times text-xs"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <span [class]="stat.porcentaje >= 80 ? 'text-emerald-600 font-black' : stat.porcentaje >= 60 ? 'text-amber-600 font-black' : 'text-red-600 font-black'">
+                      {{ stat.porcentaje }}%
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-center text-slate-600 font-medium">{{ stat.total }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">{{ stat.presentes }}</span>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">{{ stat.tardanzas }}</span>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 text-xs font-bold">{{ stat.ausentes }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </main>
+</div>
