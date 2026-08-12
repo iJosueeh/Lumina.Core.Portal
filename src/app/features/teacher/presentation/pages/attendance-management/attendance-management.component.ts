@@ -7,10 +7,17 @@ import { AuthRepository } from '@features/auth/domain/repositories/auth.reposito
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { environment } from '@environments/environment';
 
+interface ActividadItem {
+  t: string;
+  r: string;
+  d?: number;
+  h?: string;
+}
+
 interface AsistenciaRegistro {
   id: string;
   estudianteId: string;
-  estado: 'Presente' | 'Ausente' | 'Tardanza';
+  estado: 'Activo' | 'Pendiente';
   observacion: string | null;
   fecha: string;
 }
@@ -19,9 +26,8 @@ interface AttendanceStats {
   studentId: string;
   studentName: string;
   total: number;
-  presentes: number;
-  ausentes: number;
-  tardanzas: number;
+  activos: number;
+  pendientes: number;
   porcentaje: number;
 }
 
@@ -68,12 +74,11 @@ export class AttendanceManagementComponent implements OnInit {
 
   averages = computed(() => {
     const stats = this.allStats();
-    if (!stats.length) return { promedio: 0, presentes: 0, tardanzas: 0, ausentes: 0 };
+    if (!stats.length) return { promedio: 0, activos: 0, pendientes: 0 };
     return {
       promedio: Math.round(stats.reduce((sum, s) => sum + s.porcentaje, 0) / stats.length),
-      presentes: stats.reduce((sum, s) => sum + s.presentes, 0),
-      tardanzas: stats.reduce((sum, s) => sum + s.tardanzas, 0),
-      ausentes: stats.reduce((sum, s) => sum + s.ausentes, 0),
+      activos: stats.reduce((sum, s) => sum + s.activos, 0),
+      pendientes: stats.reduce((sum, s) => sum + s.pendientes, 0),
     };
   });
 
@@ -125,7 +130,7 @@ export class AttendanceManagementComponent implements OnInit {
       const records: AsistenciaRegistro[] = (data.value || data || []).map((r: any) => ({
         id: r.id,
         estudianteId: r.estudianteId,
-        estado: r.estado as 'Presente' | 'Ausente' | 'Tardanza',
+        estado: r.estado === 'Activo' ? 'Activo' : 'Pendiente',
         observacion: r.observacion || null,
         fecha: r.fecha,
       }));
@@ -154,9 +159,8 @@ export class AttendanceManagementComponent implements OnInit {
             studentId: student.id,
             studentName: student.nombre,
             total: data.totalClases ?? 0,
-            presentes: data.presentes ?? 0,
-            ausentes: data.ausentes ?? 0,
-            tardanzas: data.tardanzas ?? 0,
+            activos: data.presentes ?? 0, // "Presente" backend → "Activo" frontend
+            pendientes: data.ausentes ?? 0, // "Ausente" backend → "Pendiente" frontend
             porcentaje: data.porcentajeAsistencia ?? 0,
           });
         } catch {
@@ -188,11 +192,26 @@ export class AttendanceManagementComponent implements OnInit {
     }
   }
 
-  getEstadoForStudent(studentId: string): 'Presente' | 'Ausente' | 'Tardanza' | null {
+  getEstadoForStudent(studentId: string): 'Activo' | 'Pendiente' | null {
     return this.dateAttendance().find(a => a.estudianteId === studentId)?.estado ?? null;
   }
 
-  async onEstadoChange(studentId: string, estado: 'Presente' | 'Ausente' | 'Tardanza'): Promise<void> {
+  getObservacionForStudent(studentId: string): string | null {
+    return this.dateAttendance().find(a => a.estudianteId === studentId)?.observacion ?? null;
+  }
+
+  parseActividades(observacion: string | null): ActividadItem[] {
+    if (!observacion) return [];
+    try {
+      const doc = JSON.parse(observacion);
+      if (doc.actividades && Array.isArray(doc.actividades)) {
+        return doc.actividades as ActividadItem[];
+      }
+    } catch { }
+    return [];
+  }
+
+  async onEstadoChange(studentId: string, estado: 'Activo' | 'Pendiente'): Promise<void> {
     const existing = this.dateAttendance().find(a => a.estudianteId === studentId);
     const courseId = this.selectedCourseId();
 
@@ -216,15 +235,13 @@ export class AttendanceManagementComponent implements OnInit {
         })
       );
       const updated = [...this.dateAttendance()];
-      if ((result as any).registros?.[0]) {
-        updated.push({
-          id: (result as any).id || crypto.randomUUID(),
-          estudianteId: studentId,
-          estado,
-          observacion: null,
-          fecha: this.selectedDate(),
-        });
-      }
+      updated.push({
+        id: (result as any).registros?.[0]?.id || crypto.randomUUID(),
+        estudianteId: studentId,
+        estado,
+        observacion: null,
+        fecha: this.selectedDate(),
+      });
       this.dateAttendance.set(updated);
     }
 
@@ -244,7 +261,7 @@ export class AttendanceManagementComponent implements OnInit {
       const existing = this.dateAttendance().find(a => a.estudianteId === s.id);
       return {
         estudianteId: s.id,
-        estado: existing?.estado || 'Ausente',
+        estado: existing?.estado || 'Pendiente',
         observacion: existing?.observacion || null,
       };
     });
@@ -270,8 +287,8 @@ export class AttendanceManagementComponent implements OnInit {
   exportToCSV(): void {
     const stats = this.filteredStats();
     if (!stats.length) return;
-    const headers = ['Estudiante', 'Total', 'Presentes', 'Tardanzas', 'Ausentes', '%'];
-    const rows = stats.map(s => [`"${s.studentName}"`, s.total, s.presentes, s.tardanzas, s.ausentes, s.porcentaje + '%']);
+    const headers = ['Estudiante', 'Total', 'Activos', 'Pendientes', '%'];
+    const rows = stats.map(s => [`"${s.studentName}"`, s.total, s.activos, s.pendientes, s.porcentaje + '%']);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
