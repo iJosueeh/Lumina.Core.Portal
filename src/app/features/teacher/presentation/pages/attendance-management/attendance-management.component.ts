@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { environment } from '@environments/environment';
 
 interface AsistenciaRegistro {
@@ -39,6 +40,7 @@ interface AttendanceCourse {
 export class AttendanceManagementComponent implements OnInit {
   private http = inject(HttpClient);
   private authRepo = inject(AuthRepository);
+  private teacherQuery = inject(TeacherQueryService);
 
   // State
   courses = signal<AttendanceCourse[]>([]);
@@ -47,12 +49,14 @@ export class AttendanceManagementComponent implements OnInit {
   isLoading = signal(false);
   isSaving = signal(false);
   saveSuccess = signal(false);
+  searchTerm = signal('');
 
-  // Live attendance state
+  // Live attendance
   dateAttendance = signal<AsistenciaRegistro[]>([]);
   allStats = signal<AttendanceStats[]>([]);
 
-  // Optimized: single source of truth for students loaded per course
+  // Private state
+  private docenteId = '';
   private studentsCache = new Map<string, { id: string; nombre: string }[]>();
 
   filteredStats = computed(() => {
@@ -61,8 +65,6 @@ export class AttendanceManagementComponent implements OnInit {
     if (!term) return stats;
     return stats.filter(s => s.studentName.toLowerCase().includes(term));
   });
-
-  searchTerm = signal('');
 
   averages = computed(() => {
     const stats = this.allStats();
@@ -79,19 +81,26 @@ export class AttendanceManagementComponent implements OnInit {
     await this.loadCourses();
   }
 
+  async onCourseChange(): Promise<void> {
+    this.dateAttendance.set([]);
+    await this.loadAttendanceForDate();
+    await this.loadAllStats();
+  }
+
+  async onDateChange(): Promise<void> {
+    await this.loadAttendanceForDate();
+  }
+
   private async loadCourses(): Promise<void> {
     try {
       const user = this.authRepo.getCurrentUser();
       const userId = user?.id || (user as any)?.sub || '';
 
-      const courses = await firstValueFrom(
-        this.http.get<any[]>(`${environment.docentesApiUrl}/cursosImpartidos/${userId}`)
-      );
-      this.courses.set(courses.map((c: any) => ({
-        id: c.id || c.cursoId,
-        codigo: c.codigo || c.courseCode || '',
-        titulo: c.titulo || c.nombre || c.courseName || '',
-      })));
+      const teacherInfo = await this.teacherQuery.getTeacherInfo(userId);
+      this.docenteId = teacherInfo.id;
+
+      const courses = await this.teacherQuery.getTeacherCourses(userId);
+      this.courses.set(courses.map((c) => ({ id: c.id, codigo: c.codigo, titulo: c.titulo })));
 
       if (this.courses().length > 0) {
         this.selectedCourseId.set(this.courses()[0].id);
@@ -101,16 +110,6 @@ export class AttendanceManagementComponent implements OnInit {
     } catch (err) {
       console.error('Error loading courses:', err);
     }
-  }
-
-  async onCourseChange(): Promise<void> {
-    this.dateAttendance.set([]);
-    await this.loadAttendanceForDate();
-    await this.loadAllStats();
-  }
-
-  async onDateChange(): Promise<void> {
-    await this.loadAttendanceForDate();
   }
 
   private async loadAttendanceForDate(): Promise<void> {
@@ -131,7 +130,7 @@ export class AttendanceManagementComponent implements OnInit {
         fecha: r.fecha,
       }));
       this.dateAttendance.set(records);
-    } catch (err) {
+    } catch {
       this.dateAttendance.set([]);
     } finally {
       this.isLoading.set(false);
@@ -147,21 +146,25 @@ export class AttendanceManagementComponent implements OnInit {
       const stats: AttendanceStats[] = [];
 
       for (const student of students) {
-        const data = await firstValueFrom(
-          this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
-        );
-        stats.push({
-          studentId: student.id,
-          studentName: student.nombre,
-          total: data.totalClases ?? 0,
-          presentes: data.presentes ?? 0,
-          ausentes: data.ausentes ?? 0,
-          tardanzas: data.tardanzas ?? 0,
-          porcentaje: data.porcentajeAsistencia ?? 0,
-        });
+        try {
+          const data = await firstValueFrom(
+            this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
+          );
+          stats.push({
+            studentId: student.id,
+            studentName: student.nombre,
+            total: data.totalClases ?? 0,
+            presentes: data.presentes ?? 0,
+            ausentes: data.ausentes ?? 0,
+            tardanzas: data.tardanzas ?? 0,
+            porcentaje: data.porcentajeAsistencia ?? 0,
+          });
+        } catch {
+          // Student has no attendance records yet
+        }
       }
       this.allStats.set(stats);
-    } catch (err) {
+    } catch {
       this.allStats.set([]);
     }
   }
@@ -192,12 +195,9 @@ export class AttendanceManagementComponent implements OnInit {
   async onEstadoChange(studentId: string, estado: 'Presente' | 'Ausente' | 'Tardanza'): Promise<void> {
     const existing = this.dateAttendance().find(a => a.estudianteId === studentId);
     const courseId = this.selectedCourseId();
-    const user = this.authRepo.getCurrentUser();
-    const docenteId = user?.id || (user as any)?.sub || '';
 
     if (existing) {
-      // Update existing
-      const result = await firstValueFrom(
+      await firstValueFrom(
         this.http.put<any>(
           `${environment.estudiantesApiUrl}/asistencias/${existing.id}`,
           { asistenciaId: existing.id, estado, observacion: existing.observacion }
@@ -207,18 +207,16 @@ export class AttendanceManagementComponent implements OnInit {
         list.map(a => a.estudianteId === studentId ? { ...a, estado } : a)
       );
     } else {
-      // Create new
       const result = await firstValueFrom(
         this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
           cursoId: courseId,
-          docenteId,
+          docenteId: this.docenteId,
           fecha: this.selectedDate(),
           registros: [{ estudianteId: studentId, estado, observacion: null }],
         })
       );
       const updated = [...this.dateAttendance()];
-      const reg = (result as any).registros?.[0];
-      if (reg) {
+      if ((result as any).registros?.[0]) {
         updated.push({
           id: (result as any).id || crypto.randomUUID(),
           estudianteId: studentId,
@@ -230,7 +228,6 @@ export class AttendanceManagementComponent implements OnInit {
       this.dateAttendance.set(updated);
     }
 
-    // Refresh stats
     await this.loadAllStats();
 
     this.saveSuccess.set(true);
@@ -239,8 +236,6 @@ export class AttendanceManagementComponent implements OnInit {
 
   async onSaveAll(): Promise<void> {
     const courseId = this.selectedCourseId();
-    const user = this.authRepo.getCurrentUser();
-    const docenteId = user?.id || (user as any)?.sub || '';
     const fecha = this.selectedDate();
     if (!courseId) return;
 
@@ -256,9 +251,9 @@ export class AttendanceManagementComponent implements OnInit {
 
     this.isSaving.set(true);
     try {
-      const result = await firstValueFrom(
+      await firstValueFrom(
         this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
-          cursoId: courseId, docenteId, fecha, registros,
+          cursoId: courseId, docenteId: this.docenteId, fecha, registros,
         })
       );
       await this.loadAttendanceForDate();
