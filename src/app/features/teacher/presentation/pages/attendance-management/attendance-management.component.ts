@@ -179,7 +179,7 @@ export class AttendanceManagementComponent implements OnInit {
       );
       const mapped = (students || []).map((e: any) => ({
         id: e.id || e.estudianteId,
-        nombre: e.nombre || `${e.nombres ?? ''} ${e.apellidos ?? ''}`.trim(),
+        nombre: e.nombreCompleto || e.NombreCompleto || `${e.nombres ?? ''} ${e.apellidos ?? ''}`.trim(),
       }));
       this.studentsCache.set(courseId, mapped);
       return mapped;
