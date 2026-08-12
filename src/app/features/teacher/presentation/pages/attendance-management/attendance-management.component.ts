@@ -85,7 +85,7 @@ export class AttendanceManagementComponent implements OnInit {
       const userId = user?.id || (user as any)?.sub || '';
 
       const courses = await firstValueFrom(
-        this.http.get<any[]>(`${environment.docentesApiUrl}/docentes/${userId}/cursos`)
+        this.http.get<any[]>(`${environment.docentesApiUrl}/cursosImpartidos/${userId}`)
       );
       this.courses.set(courses.map((c: any) => ({
         id: c.id || c.cursoId,
