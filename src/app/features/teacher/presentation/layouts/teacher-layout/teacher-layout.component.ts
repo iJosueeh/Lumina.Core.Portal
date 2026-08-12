@@ -45,13 +45,14 @@ export class TeacherLayoutComponent {
         panelTitle: 'Panel del Docente',
         roleLabel: 'Docente',
         menuItems: [
-            { icon: 'th-large', label: 'Dashboard', route: '/teacher/dashboard', category: 'Panel' },
-            { icon: 'book', label: 'Mis Cursos', route: '/teacher/courses', category: 'Gestión' },
-            { icon: 'users', label: 'Alumnos', route: '/teacher/students', category: 'Gestión' },
-            { icon: 'file-alt', label: 'Mis Evaluaciones', route: '/teacher/evaluations', category: 'Académico' },
-            { icon: 'chart-bar', label: 'Calificaciones', route: '/teacher/grades', category: 'Académico' },
-            { icon: 'calendar-alt', label: 'Horario', route: '/teacher/schedule', category: 'Académico' }
-        ]
+                    { icon: 'th-large', label: 'Dashboard', route: '/teacher/dashboard', category: 'Panel' },
+                    { icon: 'book', label: 'Mis Cursos', route: '/teacher/courses', category: 'Gestión' },
+                    { icon: 'users', label: 'Alumnos', route: '/teacher/students', category: 'Gestión' },
+                    { icon: 'clipboard-check', label: 'Asistencia', route: '/teacher/attendance', category: 'Gestión' },
+                    { icon: 'file-alt', label: 'Mis Evaluaciones', route: '/teacher/evaluations', category: 'Académico' },
+                    { icon: 'chart-bar', label: 'Calificaciones', route: '/teacher/grades', category: 'Académico' },
+                    { icon: 'calendar-alt', label: 'Horario', route: '/teacher/schedule', category: 'Académico' }
+                ]
     };
 
     handleLogout(): void {
