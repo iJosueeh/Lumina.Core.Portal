@@ -1,40 +1,67 @@
-<div class="bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl p-4">
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
     @if (students()?.length) {
-        <div class="space-y-3 max-h-[520px] overflow-y-auto">
+        <div class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
             @for (student of students(); track student.id) {
-                <a [routerLink]="['/teacher/student', student.id]" class="group block p-3 rounded-2xl hover:bg-white/5 transition-all">
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-sm overflow-hidden border border-white/10 bg-gradient-to-br from-cyan-600 to-cyan-400">
-                                @if (hasAvatar(student)) {
-                                    <img [src]="student.avatar" (error)="handleAvatarError(student)" class="w-full h-full object-cover rounded-full" alt="Avatar">
-                                } @else {
-                                    <span class="px-1">{{ getInitials(student.nombre, student.apellidos) }}</span>
-                                }
+                <a [routerLink]="['/teacher/student', student.id]"
+                   class="group flex items-center justify-between px-5 py-4 hover:bg-indigo-50/60 transition-all">
+                    <!-- Left: Avatar + Name -->
+                    <div class="flex items-center gap-3 min-w-0">
+                        @if (hasAvatar(student)) {
+                            <img [src]="student.avatar" (error)="handleAvatarError(student)"
+                                 class="w-10 h-10 rounded-full object-cover border-2 border-slate-100"
+                                 alt="Avatar">
+                        } @else {
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center
+                                        bg-gradient-to-br from-indigo-500 to-indigo-600 text-white font-black text-xs
+                                        border-2 border-indigo-100">
+                                <span>{{ getInitials(student.nombre, student.apellidos) }}</span>
                             </div>
-                            <div>
-                                <div class="text-sm font-black text-white group-hover:text-cyan-400">{{ student.nombre }} {{ student.apellidos }}</div>
-                                <div class="text-[11px] text-slate-500 mt-1">{{ student.codigo }}</div>
+                        }
+                        <div class="min-w-0">
+                            <div class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                                {{ student.nombre }} {{ student.apellidos }}
                             </div>
+                            <div class="text-[11px] text-slate-400 font-medium mt-0.5">{{ student.codigo }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Grade + Attendance -->
+                    <div class="flex items-center gap-6 shrink-0">
+                        <!-- Promedio -->
+                        <div class="text-center w-14">
+                            <div class="text-sm font-black text-slate-700">
+                                {{ student.promedio != null && student.promedio > 0 ? student.promedio : '—' }}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Promedio</div>
                         </div>
 
-                        <div class="flex items-center gap-4">
-                            <div class="text-right">
-                                <div class="text-sm font-black text-white">{{ student.promedio || '—' }}</div>
-                                <div class="text-[11px] text-slate-500">Promedio</div>
-                            </div>
-                            <div class="w-12 text-right">
-                                <div class="text-sm font-black text-cyan-400">{{ student.asistencia }}%</div>
-                                <div class="text-[11px] text-slate-500">Asist.</div>
-                            </div>
+                        <!-- Asistencia -->
+                        <div class="text-center w-14">
+                            @if (student.asistencia != null && student.asistencia > 0) {
+                                <div class="text-sm font-black"
+                                     [class.text-green-600]="student.asistencia >= 80"
+                                     [class.text-amber-500]="student.asistencia >= 60 && student.asistencia < 80"
+                                     [class.text-red-500]="student.asistencia < 60">
+                                    {{ student.asistencia }}%
+                                </div>
+                            } @else {
+                                <div class="text-sm font-black text-slate-300">—</div>
+                            }
+                            <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Asist.</div>
                         </div>
+
+                        <!-- Arrow -->
+                        <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-indigo-400 transition-colors"></i>
                     </div>
                 </a>
             }
         </div>
     } @else {
         <div class="p-10 text-center">
-            <p class="text-slate-500 font-bold">No hay alumnos matriculados en este curso.</p>
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-users text-slate-300 text-lg"></i>
+            </div>
+            <p class="text-slate-400 font-semibold text-sm">No hay alumnos matriculados en este curso.</p>
         </div>
     }
 </div>
