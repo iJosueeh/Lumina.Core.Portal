@@ -129,7 +129,6 @@ export class EvaluacionModalComponent implements OnInit {
       } else {
         const body = {
           cursoId: this.courseId,
-          docenteId: this.docenteId,
           titulo: formValue.titulo,
           descripcion: formValue.descripcion,
           fechaInicio: new Date(formValue.fechaInicio).toISOString(),

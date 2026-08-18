@@ -11,6 +11,7 @@ export class AdminCourseService {
   private http = inject(HttpClient);
   private readonly cursosApiUrl = environment.cursosApiUrl;
   private readonly docentesApiUrl = environment.docentesApiUrl;
+  private readonly evaluacionesApiUrl = environment.evaluacionesApiUrl;
 
   getCourses(): Observable<AdminCourse[]> {
     return this.http.get<any>(`${this.cursosApiUrl}/cursos/system/all`).pipe(
@@ -58,6 +59,24 @@ export class AdminCourseService {
           id: this.flattenId(d.id || d.Id),
           nombreCompleto: d.nombreRaw || d.nombre || 'Sin nombre',
           email: d.email || 'N/A'
+        }));
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  getEvaluacionesByCurso(cursoId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.evaluacionesApiUrl}/evaluaciones?cursoId=${cursoId}`).pipe(
+      map(response => {
+        const evals = response?.evaluaciones || response || [];
+        return evals.map((e: any) => ({
+          id: this.flattenId(e.id || e.Id),
+          titulo: e.titulo || e.tituloEvaluacion || 'Sin título',
+          tipo: e.tipoEvaluacion || e.tipo || 'Test',
+          fechaInicio: e.fechaInicio || e.fechaLimite,
+          fechaFin: e.fechaFin || e.fechaLimite,
+          puntajeMaximo: e.puntajeMaximo || 0,
+          estado: e.estado || 'Pendiente'
         }));
       }),
       catchError(() => of([]))

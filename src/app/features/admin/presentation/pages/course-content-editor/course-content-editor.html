@@ -138,63 +138,55 @@
             }
           </div>
 
-          <!-- Lesson Metadata Editor -->
+          <!-- Evaluaciones del Curso -->
           <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h4 class="text-xl font-black text-slate-900 tracking-tight">Detalles de la Clase</h4>
-                    <div class="flex items-center gap-2 mt-1">
-                      <span class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Información técnica y descriptiva</span>
-                      @if (activeLesson()?.tipo) {
-                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider
-                          @switch (activeLesson()?.tipo) {
-                            @case ('video') { bg-indigo-50 text-indigo-600 border border-indigo-200 }
-                            @case ('lectura') { bg-amber-50 text-amber-600 border border-amber-200 }
-                            @default { bg-slate-100 text-slate-600 border border-slate-200 }
-                          }">
-                          @switch (activeLesson()?.tipo) {
-                            @case ('video') { 🎬 Video }
-                            @case ('lectura') { 📖 Lectura }
-                            @default { 📦 Recurso }
-                          }
-                        </span>
-                      }
-                    </div>
-                </div>
-                <button (click)="openEditLesson(activeLesson())"
-                  class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all border border-slate-200 flex items-center gap-2">
-                  <i class="fas fa-edit"></i> Editar Metadatos
-                </button>
+            <div class="flex justify-between items-center mb-6">
+              <h4 class="text-xl font-black text-slate-900 tracking-tight">Evaluaciones del Curso</h4>
+              <button
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2">
+                <i class="fas fa-plus"></i> Nueva Evaluación
+              </button>
             </div>
 
-            <div class="grid grid-cols-1 gap-8">
-              <!-- Info Actual -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-2">
-                  <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Título</label>
-                  <p class="bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-900 font-bold">{{ activeLesson()?.title }}</p>
-                </div>
-                @if (activeLesson()?.tipo === 'video') {
-                  <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duración</label>
-                    <p class="bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-slate-500">{{ activeLesson()?.duration }}</p>
+            @if (evaluaciones().length === 0) {
+              <div class="text-center py-8 text-slate-400">
+                <i class="fas fa-clipboard-list text-3xl mb-2"></i>
+                <p class="text-sm font-medium">No hay evaluaciones creadas para este curso</p>
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (eval of evaluaciones(); track eval.id) {
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-200 transition-all">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-clipboard-list"></i>
+                      </div>
+                      <div>
+                        <p class="font-bold text-sm text-slate-900">{{ eval.titulo }}</p>
+                        <p class="text-xs text-slate-500">
+                          {{ eval.tipo }} · {{ eval.puntajeMaximo }} pts
+                          · {{ eval.fechaFin ? 'Vence: ' + (eval.fechaFin | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider
+                        @switch (eval.estado) {
+                          @case ('Pendiente') { bg-amber-50 text-amber-600 border border-amber-200 }
+                          @case ('Vencido') { bg-red-50 text-red-600 border border-red-200 }
+                          @case ('Publicado') { bg-green-50 text-green-600 border border-green-200 }
+                          @default { bg-slate-100 text-slate-600 border border-slate-200 }
+                        }">
+                        {{ eval.estado }}
+                      </span>
+                      <button class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-400 flex items-center justify-center transition-all">
+                        <i class="fas fa-ellipsis-v text-xs"></i>
+                      </button>
+                    </div>
                   </div>
                 }
               </div>
-
-              @if (activeLesson()?.videoUrl) {
-                <div class="space-y-2">
-                  <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">
-                    @switch (activeLesson()?.tipo) {
-                      @case ('video') { URL del Video }
-                      @case ('lectura') { URL del Documento }
-                      @default { Archivo Adjunto }
-                    }
-                  </label>
-                  <p class="bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-indigo-600 font-mono text-xs truncate">{{ activeLesson()?.videoUrl }}</p>
-                </div>
-              }
-            </div>
+            }
           </div>
         </div>
       </section>

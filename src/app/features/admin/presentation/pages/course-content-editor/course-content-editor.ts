@@ -40,6 +40,7 @@ export class CourseContentEditorComponent implements OnInit {
   isUploadingImage = signal(false);
 
   classroomData = signal<any>(null);
+  evaluaciones = signal<any[]>([]);
 
   showAddModuleModal = signal(false);
   showAddContentModal = signal(false);
@@ -82,6 +83,9 @@ export class CourseContentEditorComponent implements OnInit {
       if (data?.courseImageUrl) {
         this.courseImageUrl.set(data.courseImageUrl);
       }
+      // Load evaluations for this course
+      const evals = await lastValueFrom(this.adminService.getEvaluacionesByCurso(this.courseId()));
+      this.evaluaciones.set(evals || []);
     } catch {
       this.classroomData.set(null);
     } finally {
