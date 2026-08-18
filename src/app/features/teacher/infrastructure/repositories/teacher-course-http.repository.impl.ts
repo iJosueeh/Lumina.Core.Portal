@@ -40,13 +40,13 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
     }
 
     override getCourseById(courseId: string): Observable<TeacherCourse> {
-        return this.http.get<any>(`${this.cursosApiUrl}/Cursos/${courseId}`).pipe(
+        return this.http.get<any>(`${this.cursosApiUrl}/cursos/${courseId}`).pipe(
             map(response => this.mapToTeacherCourse(response))
         );
     }
 
     override getCourseStats(courseId: string): Observable<CourseStats> {
-        return this.http.get<any>(`${this.cursosApiUrl}/Cursos/${courseId}/estadisticas`).pipe(
+        return this.http.get<any>(`${this.cursosApiUrl}/cursos/${courseId}/estadisticas`).pipe(
             map(response => ({
                 totalAlumnos: response.totalAlumnos || 0,
                 alumnosActivos: response.alumnosActivos || 0,
@@ -62,7 +62,7 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
     }
 
     override updateCourse(courseId: string, course: Partial<TeacherCourse>): Observable<TeacherCourse> {
-        return this.http.put<any>(`${this.cursosApiUrl}/Cursos/${courseId}`, course).pipe(
+        return this.http.put<any>(`${this.cursosApiUrl}/cursos/${courseId}`, course).pipe(
             map(response => this.mapToTeacherCourse(response))
         );
     }
