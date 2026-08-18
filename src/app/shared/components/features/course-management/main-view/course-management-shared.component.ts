@@ -184,6 +184,7 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
         this.modulos.set(rawModulos.map((m: any, i: number) => this.courseMapper.mapApiModuloToModulo(m, i)));
         
         this.students.set(this.allTeacherStudents().map((s: any) => this.courseMapper.mapTeacherStudentToCourseStudent(s)));
+        this.loadStudentAverages();
         this.isLoading.set(false);
         this.loadEvaluaciones();
       },
@@ -323,6 +324,31 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
         const errorMsg = err?.error?.error || 'No se pudo eliminar el módulo.';
         this.notificationService.show('error', `Error: ${errorMsg}`);
     }
+  }
+
+  async loadStudentAverages(): Promise<void> {
+    const students = this.students();
+    const courseId = this.courseId();
+    if (!students.length || !courseId) return;
+
+    const promedioRequests = students
+      .filter(s => s.id)
+      .map(s =>
+        this.http
+          .get<any>(`${environment.evaluacionesApiUrl}/evaluaciones/estudiante/${s.id}/curso/${courseId}/promedio`)
+          .pipe(catchError(() => of({ promedio: null })))
+      );
+
+    if (!promedioRequests.length) return;
+
+    const resultados = await firstValueFrom(forkJoin(promedioRequests));
+
+    const updated = students.map((s, i) => ({
+      ...s,
+      promedio: resultados[i]?.promedio ?? null,
+    }));
+
+    this.students.set(updated);
   }
 
   async loadEvaluaciones(): Promise<void> {

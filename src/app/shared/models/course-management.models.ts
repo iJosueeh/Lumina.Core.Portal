@@ -98,8 +98,8 @@ export interface CourseStudent {
   apellidos: string;
   email: string;
   avatar: string;
-  promedio: number;
-  asistencia: number;
+  promedio: number | null;
+  asistencia: number | null;
   tareasEntregadas: number;
   tareasPendientes: number;
   estado: string;
