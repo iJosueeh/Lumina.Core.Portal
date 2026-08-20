@@ -99,7 +99,7 @@ export class CourseDetailComponent implements OnInit {
     enabled: !!this.courseId() && !!this.studentId(),
   }));
 
-  loadingQuiz = signal(false);
+  isStartingQuizId = signal<string | null>(null);
   isQuizActive = signal(false);
   activeQuiz = signal<any>(null);
   activeIntentoId = signal<string | null>(null);
@@ -261,7 +261,7 @@ export class CourseDetailComponent implements OnInit {
   }
 
   async startQuiz(quiz: QuizSummary): Promise<void> {
-    this.loadingQuiz.set(true);
+    this.isStartingQuizId.set(quiz.id);
     try {
       const studentId = this.studentId();
       if (!studentId) throw new Error('No student ID');
@@ -280,7 +280,7 @@ export class CourseDetailComponent implements OnInit {
     } catch (error) {
       console.error('Error starting quiz:', error);
     } finally {
-      this.loadingQuiz.set(false);
+      this.isStartingQuizId.set(null);
     }
   }
 

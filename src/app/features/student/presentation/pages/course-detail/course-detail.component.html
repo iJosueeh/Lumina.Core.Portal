@@ -72,7 +72,7 @@
         @case ('evaluaciones') {
           <app-course-evaluations
             [quizzes]="quizSummaries()"
-            [isStarting]="loadingQuiz()"
+            [startingQuizId]="isStartingQuizId()"
             (onStartQuiz)="startQuiz($event)"
             (onViewResults)="viewQuizResults($event)"
           />
