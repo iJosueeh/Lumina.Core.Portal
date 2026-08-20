@@ -100,7 +100,7 @@
             </div>
 
             <div class="self-center w-full md:w-auto">
-              @if (quiz.status === 'completed') {
+              @if (quiz.status === 'completed' || (quiz.attemptsUsed > 0 && quiz.status !== 'expired')) {
                 <button
                   (click)="onViewResults.emit(quiz)"
                   [disabled]="startingQuizId() !== null"
