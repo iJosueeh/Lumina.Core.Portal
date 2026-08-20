@@ -16,6 +16,7 @@ interface UserProfileBackendDto {
   distrito: string;
   calle: string;
   username: string;
+  avatarUrl: string | null;
 }
 
 interface UpdateProfileRequest {
@@ -72,6 +73,24 @@ export class UserProfileIntegrationService {
         }),
         catchError(error => {
           console.error('❌ [USER-PROFILE] Error al actualizar perfil:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Actualiza el avatar del usuario (guarda URL de Cloudinary)
+   */
+  updateAvatar(avatarUrl: string | null): Observable<void> {
+    console.log('💾 [USER-PROFILE] Actualizando avatar:', avatarUrl);
+    return this.http.patch<{ success: boolean; message: string }>(`${this.usuariosApiUrl}/users/avatar`, { avatarUrl })
+      .pipe(
+        map(response => {
+          console.log('✅ [USER-PROFILE] Avatar actualizado:', response.message);
+          return undefined;
+        }),
+        catchError(error => {
+          console.error('❌ [USER-PROFILE] Error al actualizar avatar:', error);
           return throwError(() => error);
         })
       );

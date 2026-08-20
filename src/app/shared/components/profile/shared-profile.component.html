@@ -14,12 +14,21 @@
             <!-- Header -->
             <div class="bg-white rounded-2xl border border-slate-200 p-8 mb-6">
                 <div class="flex items-center gap-5">
-                    <div class="w-20 h-20 rounded-2xl bg-indigo-100 flex items-center justify-center overflow-hidden">
+                    <div class="w-20 h-20 rounded-2xl bg-indigo-100 flex items-center justify-center overflow-hidden relative cursor-pointer group"
+                         (click)="triggerAvatarInput()">
                         @if (profile()?.fotoUrl || profile()?.avatar) {
                             <img [src]="profile()?.fotoUrl || profile()?.avatar" class="w-20 h-20 object-cover" alt="Avatar">
                         } @else {
                             <i class="fas fa-user text-indigo-600 text-3xl"></i>
                         }
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            @if (isUploadingAvatar()) {
+                                <div class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            } @else {
+                                <i class="fas fa-camera text-white text-lg"></i>
+                            }
+                        </div>
                     </div>
                     <div class="flex-1">
                         <h1 class="text-2xl font-bold text-slate-900">{{ fullName() }}</h1>
@@ -381,4 +390,13 @@
             }
         }
     </div>
+
+    <!-- Hidden file input for avatar upload -->
+    <input
+        type="file"
+        id="avatarInput"
+        accept="image/*"
+        class="hidden"
+        (change)="onAvatarFileSelected($event)"
+    />
 </div>

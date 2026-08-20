@@ -115,6 +115,7 @@ export class SharedProfileComponent implements OnInit {
 
     isStudent = computed(() => this.profile()?.rol === 'Student');
     isTeacher = computed(() => this.profile()?.rol === 'Teacher');
+    isUploadingAvatar = signal(false);
     fullName = computed(() => {
         const p = this.profile();
         return p ? `${p.nombres} ${p.apellidoPaterno} ${p.apellidoMaterno}` : '';
@@ -162,6 +163,7 @@ export class SharedProfileComponent implements OnInit {
                     apellidoMaterno: response.data.apellidoMaterno,
                     email: response.data.email || response.data.correoElectronico,
                     fechaNacimiento: response.data.fechaNacimiento,
+                    fotoUrl: response.data.avatarUrl || response.data.fotoUrl,
                     direccion: response.data.direccion || {
                         pais: response.data.pais || '',
                         departamento: response.data.departamento || '',
@@ -503,6 +505,94 @@ export class SharedProfileComponent implements OnInit {
                 this.error.set('No se pudo cambiar la contraseña. Verifica la actual.');
             }
         });
+    }
+
+    // === Cloudinary avatar upload ===
+    readonly cloudName = 'dy8qrtq40';
+    readonly uploadPreset = 'lumina_avatars';
+
+    triggerAvatarInput(): void {
+        const input = document.getElementById('avatarInput') as HTMLInputElement;
+        input?.click();
+    }
+
+    onAvatarFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            this.error.set('Solo se permiten archivos de imagen.');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            this.error.set('La imagen debe ser menor a 2MB.');
+            return;
+        }
+
+        this.isUploadingAvatar.set(true);
+        this.error.set(null);
+        this.uploadToCloudinary(file).then(avatarUrl => {
+            this.isUploadingAvatar.set(false);
+            this.saveAvatarUrl(avatarUrl);
+        }).catch(err => {
+            this.isUploadingAvatar.set(false);
+            this.error.set('Error al subir la imagen. Intenta de nuevo.');
+            console.error('Error subiendo a Cloudinary:', err);
+        });
+    }
+
+    private async uploadToCloudinary(file: File): Promise<string> {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', this.uploadPreset);
+        formData.append('folder', 'lumina-avatars');
+
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`,
+            { method: 'POST', body: formData }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Cloudinary error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.secure_url as string;
+    }
+
+    private saveAvatarUrl(avatarUrl: string): void {
+        const rol = this.profile()?.rol;
+        if (rol === 'Teacher') {
+            // Teacher avatar goes through the existing docente endpoint
+            const p = this.profile();
+            if (p?.docenteId) {
+                this.http.put<{ success: boolean }>(
+                    `${environment.apiUrl}/docentes/${p.docenteId}`,
+                    { avatar: avatarUrl }
+                ).subscribe({
+                    next: () => {
+                        if (p) { p.avatar = avatarUrl; this.profile.set({ ...p }); }
+                        this.successMessage.set('Foto de perfil actualizada.');
+                    },
+                    error: () => this.error.set('Error al guardar la foto.')
+                });
+            }
+        } else {
+            // Student/other: use new PATCH /users/avatar endpoint
+            this.http.patch<{ success: boolean }>(
+                `${environment.apiUrl}/users/avatar`,
+                { avatarUrl }
+            ).subscribe({
+                next: () => {
+                    const p = this.profile();
+                    if (p) { p.fotoUrl = avatarUrl; this.profile.set({ ...p }); }
+                    this.successMessage.set('Foto de perfil actualizada.');
+                },
+                error: () => this.error.set('Error al guardar la foto.')
+            });
+        }
     }
 
     // === SAVE ALL: Unifica todos los PUTs del tab activo ===
