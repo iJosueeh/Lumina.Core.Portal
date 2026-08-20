@@ -1,52 +1,38 @@
-<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-  <div class="bg-[#0f172a] rounded-2xl shadow-2xl max-w-3xl w-full max-h-[85vh] my-8 overflow-hidden flex flex-col border border-slate-700">
+<!-- Path: src/app/features/student/presentation/components/quiz-results/quiz-results.component.html -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto modal-container">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] my-8 overflow-hidden flex flex-col border border-slate-200 modal-card">
+
     <!-- Header -->
     <div
-      class="p-4 border-b border-slate-600"
-      [ngClass]="passedQuiz() ? 'bg-gradient-to-r from-green-900 to-green-800' : 'bg-gradient-to-r from-red-900 to-red-800'"
+      class="p-5 border-b border-slate-200"
+      [ngClass]="passedQuiz() ? 'bg-gradient-to-r from-emerald-50 to-teal-50' : 'bg-gradient-to-r from-red-50 to-orange-50'"
     >
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="text-2xl font-bold text-white">{{ quiz.title }}</h2>
-          <p class="text-gray-300 text-sm mt-1">Resultados de tu evaluación</p>
+          <h2 class="text-2xl font-bold text-slate-900">{{ quiz.title }}</h2>
+          <p class="text-slate-500 text-sm mt-1">Resultados de tu evaluación</p>
         </div>
         <button
           (click)="close()"
-          class="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+          class="p-2 hover:bg-black/5 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
           aria-label="Cerrar"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
 
       <!-- Score Display -->
-      <div class="flex items-center justify-center gap-6">
+      <div class="flex items-center justify-center gap-8">
         <!-- Circular Progress -->
         <div class="relative w-24 h-24">
           <svg class="w-full h-full transform -rotate-90">
+            <circle cx="48" cy="48" r="42" stroke="currentColor" stroke-width="8" class="text-slate-100" fill="none"/>
             <circle
-              cx="48"
-              cy="48"
-              r="42"
-              stroke="currentColor"
-              stroke-width="8"
-              class="text-navy-700"
-              fill="none"
-            />
-            <circle
-              cx="48"
-              cy="48"
-              r="42"
-              stroke="currentColor"
-              stroke-width="6"
-              [ngClass]="getScoreColor()"
+              cx="48" cy="48" r="42"
+              stroke="currentColor" stroke-width="6"
+              [ngClass]="passedQuiz() ? 'text-emerald-500' : 'text-red-500'"
               fill="none"
               stroke-dasharray="263.89"
               [attr.stroke-dashoffset]="263.89 - (263.89 * gradeAsPercentage()) / 100"
@@ -54,7 +40,7 @@
             />
           </svg>
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-bold text-white">{{ scorePercentage().toFixed(1) }}</span>
+            <span class="text-2xl font-bold text-slate-800">{{ scorePercentage().toFixed(1) }}</span>
           </div>
         </div>
 
@@ -62,148 +48,127 @@
         <div class="space-y-2">
           <div class="flex items-center gap-3">
             @if (passedQuiz()) {
-              <svg class="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  fill-rule="evenodd"
-                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                  clip-rule="evenodd"
-                />
+              <svg class="w-8 h-8 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
               </svg>
-              <span class="text-2xl font-bold text-green-500">¡Aprobado!</span>
+              <span class="text-2xl font-bold text-emerald-600">¡Aprobado!</span>
             } @else {
               <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  fill-rule="evenodd"
-                  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
-                  clip-rule="evenodd"
-                />
+                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd"/>
               </svg>
-              <span class="text-2xl font-bold text-red-500">No Aprobado</span>
+              <span class="text-2xl font-bold text-red-600">No Aprobado</span>
             }
           </div>
-          <div class="text-gray-300">
+
+          <div class="text-slate-600">
             <p class="text-lg">
-              <span class="font-bold" [ngClass]="getScoreColor()">{{ scorePercentage().toFixed(1) }}</span>
-              <span class="text-gray-400"> / 20 pts</span>
+              <span class="font-bold" [ngClass]="passedQuiz() ? 'text-emerald-600' : 'text-red-600'">{{ scorePercentage().toFixed(1) }}</span>
+              <span class="text-slate-400"> / 20 pts</span>
             </p>
-            <p class="text-sm text-gray-400">
-              {{ correctAnswersCount() }} correctas, {{ incorrectAnswersCount() }} incorrectas
-            </p>
-            <p class="text-sm text-gray-400">Tiempo: {{ timeSpentDisplay() }}</p>
+            <p class="text-sm text-slate-400">{{ correctAnswersCount() }} correctas, {{ incorrectAnswersCount() }} incorrectas</p>
+            <p class="text-sm text-slate-400">Tiempo: {{ timeSpentDisplay() }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-3 gap-3 p-4 bg-slate-800 border-b border-slate-600">
+    <div class="grid grid-cols-3 gap-3 p-4 bg-slate-50 border-b border-slate-200">
       <div class="text-center">
-        <p class="text-gray-400 text-sm mb-1">Preguntas Correctas</p>
-        <p class="text-2xl font-bold text-green-500">{{ correctAnswersCount() }}</p>
+        <p class="text-slate-400 text-xs mb-1 font-medium">Correctas</p>
+        <p class="text-2xl font-bold text-emerald-600">{{ correctAnswersCount() }}</p>
       </div>
       <div class="text-center">
-        <p class="text-gray-400 text-sm mb-1">Preguntas Incorrectas</p>
-        <p class="text-2xl font-bold text-red-500">{{ incorrectAnswersCount() }}</p>
+        <p class="text-slate-400 text-xs mb-1 font-medium">Incorrectas</p>
+        <p class="text-2xl font-bold text-red-600">{{ incorrectAnswersCount() }}</p>
       </div>
       <div class="text-center">
-        <p class="text-gray-400 text-sm mb-1">Puntuación Mínima</p>
-        <p class="text-2xl font-bold text-gray-300">{{ quiz.config.passingScore }}%</p>
+        <p class="text-slate-400 text-xs mb-1 font-medium">Mínimo</p>
+        <p class="text-2xl font-bold text-slate-500">{{ quiz.config.passingScore }}</p>
       </div>
     </div>
 
     <!-- Questions Review -->
-    <div class="flex-1 overflow-y-auto p-4">
-      <h3 class="text-lg font-semibold text-white mb-4">Revisión de Preguntas</h3>
-      
+    <div class="flex-1 overflow-y-auto p-5">
+      <h3 class="text-base font-semibold text-slate-800 mb-4">Revisión de Preguntas</h3>
+
       @if (!attempt.answers || attempt.answers.length === 0) {
-        <div class="text-center py-8">
-          <p class="text-gray-400">No hay respuestas registradas para este intento.</p>
+        <div class="text-center py-12">
+          <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="text-slate-400">No hay respuestas registradas.</p>
         </div>
       } @else {
-        <div class="space-y-4">
+        <div class="space-y-3">
           @for (answer of attempt.answers; track answer.questionId; let i = $index) {
           @if (getQuestionById(answer.questionId); as question) {
             <div
-              class="p-4 rounded-lg border-2 transition-all"
-              [class.border-green-500]="answer.isCorrect"
-              [class.bg-green-500/5]="answer.isCorrect"
-              [class.border-red-500]="!answer.isCorrect"
-              [class.bg-red-500/5]="!answer.isCorrect"
+              class="p-4 rounded-xl border-2 transition-all"
+              [class.border-emerald-300]="answer.isCorrect"
+              [class.bg-emerald-50]="answer.isCorrect"
+              [class.border-red-300]="!answer.isCorrect"
+              [class.bg-red-50]="!answer.isCorrect"
             >
               <!-- Question Header -->
-              <div class="flex items-start gap-3 mb-3">
-                <span
-                  class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
-                  [ngClass]="answer.isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
-                >
+              <div class="flex items-center gap-3 mb-3">
+                <span class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white"
+                  [class.bg-emerald-500]="answer.isCorrect"
+                  [class.bg-red-500]="!answer.isCorrect">
                   {{ i + 1 }}
                 </span>
                 <div class="flex-1">
-                  <p class="text-white font-medium">{{ question.text }}</p>
-                  <p class="text-sm text-gray-400 mt-1">{{ question.points }} puntos</p>
+                  <p class="text-slate-800 font-medium text-sm">{{ question.text }}</p>
+                  <p class="text-xs text-slate-400 mt-0.5">{{ question.points }} puntos</p>
                 </div>
                 @if (answer.isCorrect) {
-                  <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      fill-rule="evenodd"
-                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                      clip-rule="evenodd"
-                    />
+                  <svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
                   </svg>
                 } @else {
-                  <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      fill-rule="evenodd"
-                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
-                      clip-rule="evenodd"
-                    />
+                  <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd"/>
                   </svg>
                 }
               </div>
 
               <!-- Answer Review -->
-              <div class="ml-11 space-y-2">
+              <div class="ml-11 space-y-1.5">
                 <div class="flex items-start gap-2">
-                  <span class="text-sm font-semibold text-gray-400">Tu respuesta:</span>
-                  <span
-                    class="text-sm flex-1"
-                    [ngClass]="answer.isCorrect ? 'text-green-400' : 'text-red-400'"
-                  >
+                  <span class="text-xs font-semibold text-slate-400 mt-0.5">Tu respuesta:</span>
+                  <span class="text-sm" [ngClass]="answer.isCorrect ? 'text-emerald-600' : 'text-red-600'">
                     {{ getAnswerText(answer.questionId, answer.answer) }}
                   </span>
                 </div>
 
                 @if (!answer.isCorrect && quiz.config.showCorrectAnswers) {
                   <div class="flex items-start gap-2">
-                    <span class="text-sm font-semibold text-gray-400">Respuesta correcta:</span>
-                    <span class="text-sm text-green-400 flex-1">
-                      {{ getCorrectAnswerText(answer.questionId) }}
-                    </span>
+                    <span class="text-xs font-semibold text-slate-400 mt-0.5">Correcta:</span>
+                    <span class="text-sm text-emerald-600">{{ getCorrectAnswerText(answer.questionId) }}</span>
                   </div>
                 }
 
                 @if (question.explanation && quiz.config.showCorrectAnswers) {
-                  <div class="mt-2 p-3 bg-navy-700/50 rounded-lg">
-                    <p class="text-sm text-gray-300">
-                      <span class="font-semibold text-blue-400">Explicación:</span>
-                      {{ question.explanation }}
+                  <div class="mt-2 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                    <p class="text-xs text-indigo-700">
+                      <span class="font-semibold">Explicación:</span> {{ question.explanation }}
                     </p>
                   </div>
                 }
               </div>
             </div>
           }
-        }
+          }
         </div>
       }
     </div>
 
     <!-- Footer Actions -->
-    <div class="bg-slate-900 p-4 border-t border-slate-600">
+    <div class="bg-slate-50 p-4 border-t border-slate-200">
       <div class="flex items-center justify-between">
         <button
           (click)="close()"
-          class="px-6 py-3 bg-navy-700 hover:bg-navy-600 text-white rounded-lg font-semibold transition-colors"
+          class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-semibold transition-colors"
         >
           Cerrar
         </button>
@@ -211,17 +176,12 @@
         @if (canRetry()) {
           <button
             (click)="retry()"
-            class="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all flex items-center gap-2 shadow-sm"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            Reintentar Evaluación
+            Reintentar
           </button>
         }
       </div>
