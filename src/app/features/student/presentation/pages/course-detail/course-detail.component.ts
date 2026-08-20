@@ -325,10 +325,10 @@ export class CourseDetailComponent implements OnInit {
   async viewQuizResults(quiz: QuizSummary): Promise<void> {
     try {
       const userId = inject(AuthService).getUserId();
-      if (!userId) return;
+      if (!userId) { console.warn('[viewQuizResults] No userId'); return; }
 
       const studentId = await lastValueFrom(this.enrollmentService.getStudentIdByUserId(userId));
-      if (!studentId) return;
+      if (!studentId) { console.warn('[viewQuizResults] No studentId for userId:', userId); return; }
 
       const courseId = this.courseId();
       if (!courseId) return;
@@ -341,17 +341,22 @@ export class CourseDetailComponent implements OnInit {
         })
       );
 
+      console.log('[viewQuizResults] quiz.id:', quiz.id, '| attempts:', attempts.length, '| first attempt:', attempts[0]);
+
       // Último intento completado de este quiz
       const completedAttempt = attempts
-        .filter(a => a.quizId === quiz.id && a.status === 'completed')
+        .filter(a => (a.quizId || a.evaluacionId) === quiz.id && a.status === 'completed')
         .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0];
 
-      if (!completedAttempt) return;
+      if (!completedAttempt) {
+        console.warn('[viewQuizResults] No completed attempt found for quiz:', quiz.id, '| available attempts:', attempts.map(a => ({ id: a.id, quizId: a.quizId, status: a.status })));
+        return;
+      }
 
       this.activeResults.set({ quiz: fullQuiz, attempt: completedAttempt });
       this.isResultsActive.set(true);
     } catch (error) {
-      console.error('Error loading quiz results:', error);
+      console.error('[viewQuizResults] Error:', error);
     }
   }
 }
