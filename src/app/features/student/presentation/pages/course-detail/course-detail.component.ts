@@ -100,6 +100,7 @@ export class CourseDetailComponent implements OnInit {
   }));
 
   isStartingQuizId = signal<string | null>(null);
+  isViewingResultsId = signal<string | null>(null);
   isQuizActive = signal(false);
   activeQuiz = signal<any>(null);
   activeIntentoId = signal<string | null>(null);
@@ -323,6 +324,7 @@ export class CourseDetailComponent implements OnInit {
   }
 
   async viewQuizResults(quiz: QuizSummary): Promise<void> {
+    this.isViewingResultsId.set(quiz.id);
     try {
       const userId = this.authService.getUserId();
       if (!userId) { console.warn('[viewQuizResults] No userId'); return; }
@@ -359,6 +361,8 @@ export class CourseDetailComponent implements OnInit {
       this.isResultsActive.set(true);
     } catch (error) {
       console.error('[viewQuizResults] Error:', error);
+    } finally {
+      this.isViewingResultsId.set(null);
     }
   }
 }

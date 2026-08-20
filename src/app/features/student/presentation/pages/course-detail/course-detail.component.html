@@ -73,6 +73,7 @@
           <app-course-evaluations
             [quizzes]="quizSummaries()"
             [startingQuizId]="isStartingQuizId()"
+            [viewingResultsId]="isViewingResultsId()"
             (onStartQuiz)="startQuiz($event)"
             (onViewResults)="viewQuizResults($event)"
           />

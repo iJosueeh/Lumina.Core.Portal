@@ -103,10 +103,20 @@
               @if (quiz.status === 'completed' || (quiz.attemptsUsed > 0 && quiz.status !== 'expired')) {
                 <button
                   (click)="onViewResults.emit(quiz)"
-                  [disabled]="startingQuizId() !== null"
-                  class="w-full md:w-auto min-w-[160px] px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors"
+                  [disabled]="startingQuizId() !== null || viewingResultsId() !== null"
+                  class="w-full md:w-auto min-w-[160px] px-8 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 text-white
+                    @if (viewingResultsId() === quiz.id) {
+                      bg-indigo-400 cursor-wait
+                    } @else {
+                      bg-indigo-600 hover:bg-indigo-500
+                    }"
                 >
-                  Ver Resultado
+                  @if (viewingResultsId() === quiz.id) {
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    Cargando...
+                  } @else {
+                    Ver Resultado
+                  }
                 </button>
               } @else if (quiz.status === 'expired') {
                 <button
