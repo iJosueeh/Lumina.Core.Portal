@@ -334,22 +334,24 @@ export class CourseDetailComponent implements OnInit {
       if (!courseId) return;
 
       // forkJoin: quiz con preguntas + intentos del estudiante en paralelo
-      const [fullQuiz, attempts] = await lastValueFrom(
+      const results = await lastValueFrom(
         forkJoin({
           quiz: this.evaluationsService.getEvaluacionConPreguntas(quiz.id),
           attempts: this.evaluationsService.getQuizAttempts(studentId, courseId)
         })
       );
+      const fullQuiz = results.quiz;
+      const attempts = results.attempts;
 
       console.log('[viewQuizResults] quiz.id:', quiz.id, '| attempts:', attempts.length, '| first attempt:', attempts[0]);
 
       // Último intento completado de este quiz
       const completedAttempt = attempts
-        .filter(a => (a.quizId || a.evaluacionId) === quiz.id && a.status === 'completed')
-        .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0];
+        .filter((a: QuizAttempt) => a.quizId === quiz.id && a.status === 'completed')
+        .sort((a: QuizAttempt, b: QuizAttempt) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0];
 
       if (!completedAttempt) {
-        console.warn('[viewQuizResults] No completed attempt found for quiz:', quiz.id, '| available attempts:', attempts.map(a => ({ id: a.id, quizId: a.quizId, status: a.status })));
+        console.warn('[viewQuizResults] No completed attempt found for quiz:', quiz.id, '| available attempts:', attempts.map((a: QuizAttempt) => ({ id: a.id, quizId: a.quizId, status: a.status })));
         return;
       }
 
