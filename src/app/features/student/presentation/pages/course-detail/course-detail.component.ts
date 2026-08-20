@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery } from '@tanstack/angular-query-experimental';
-import { lastValueFrom } from 'rxjs';
+import { forkJoin, lastValueFrom } from 'rxjs';
 
 import {
   Module,
@@ -322,7 +322,36 @@ export class CourseDetailComponent implements OnInit {
     }
   }
 
-  viewQuizResults(_quiz: QuizSummary): void {
-    // TODO: Implement view results logic
+  async viewQuizResults(quiz: QuizSummary): Promise<void> {
+    try {
+      const userId = inject(AuthService).getUserId();
+      if (!userId) return;
+
+      const studentId = await lastValueFrom(this.enrollmentService.getStudentIdByUserId(userId));
+      if (!studentId) return;
+
+      const courseId = this.courseId();
+      if (!courseId) return;
+
+      // forkJoin: quiz con preguntas + intentos del estudiante en paralelo
+      const [fullQuiz, attempts] = await lastValueFrom(
+        forkJoin({
+          quiz: this.evaluationsService.getEvaluacionConPreguntas(quiz.id),
+          attempts: this.evaluationsService.getQuizAttempts(studentId, courseId)
+        })
+      );
+
+      // Último intento completado de este quiz
+      const completedAttempt = attempts
+        .filter(a => a.quizId === quiz.id && a.status === 'completed')
+        .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0];
+
+      if (!completedAttempt) return;
+
+      this.activeResults.set({ quiz: fullQuiz, attempt: completedAttempt });
+      this.isResultsActive.set(true);
+    } catch (error) {
+      console.error('Error loading quiz results:', error);
+    }
   }
 }
