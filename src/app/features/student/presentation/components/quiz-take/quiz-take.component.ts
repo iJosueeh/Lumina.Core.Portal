@@ -10,7 +10,18 @@ import { EnrollmentService } from '@features/student/infrastructure/services/enr
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './quiz-take.component.html',
-  styles: ``,
+  styles: [`
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .modal-container { animation: fadeIn 200ms ease-out; }
+    .modal-card { animation: modalIn 250ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  `]
 })
 export class QuizTakeComponent implements OnInit, OnDestroy {
   @Input() quiz!: Quiz;

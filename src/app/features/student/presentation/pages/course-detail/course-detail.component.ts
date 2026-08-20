@@ -139,6 +139,23 @@ export class CourseDetailComponent implements OnInit {
     });
   });
 
+  // Pre-cache: pre-load all quiz questions when evaluations tab is active
+  // This makes "Iniciar Test" feel instant — questions are already in cache
+  quizDetailsQuery = injectQuery(() => ({
+    queryKey: ['quiz-details', this.courseId()],
+    queryFn: async () => {
+      const quizzes = this.evaluationsQuery.data() ?? [];
+      // Fetch all quiz questions in parallel — runs in background, cached for later
+      const results = await Promise.allSettled(
+        quizzes.map(q => lastValueFrom(this.evaluationsService.getEvaluacionConPreguntas(q.id)))
+      );
+      return results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<any>).value);
+    },
+    enabled: computed(() => !!this.evaluationsQuery.data()?.length)
+  }));
+
   private calculateQuizStatus(quiz: Quiz, attempts: QuizAttempt[]): QuizStatus {
     if (attempts.some(a => a.status === 'completed' && a.passed)) return 'completed';
     if (quiz.availableUntil && new Date() > quiz.availableUntil) return 'expired';
@@ -249,10 +266,15 @@ export class CourseDetailComponent implements OnInit {
       const studentId = this.studentId();
       if (!studentId) throw new Error('No student ID');
 
+      // Create the attempt (always needed — no cache for this)
       const attemptRes = await lastValueFrom(this.evaluationsService.createQuizAttempt(quiz.id, studentId));
       this.activeIntentoId.set(attemptRes.intentoId);
 
-      const fullQuiz = await lastValueFrom(this.evaluationsService.getEvaluacionConPreguntas(quiz.id));
+      // Try to get quiz from pre-cached pool first (instant), fallback to API
+      const cached = this.quizDetailsQuery.data()?.find(q => q.id === quiz.id);
+      const fullQuiz = cached
+        ?? await lastValueFrom(this.evaluationsService.getEvaluacionConPreguntas(quiz.id));
+
       this.activeQuiz.set(fullQuiz);
       this.isQuizActive.set(true);
     } catch (error) {

@@ -11,6 +11,7 @@ import { QuizSummary } from '../../../../../domain/models/course-detail.model';
 })
 export class CourseEvaluationsComponent {
   quizzes = input.required<QuizSummary[]>();
+  isStarting = input(false);
   
   onStartQuiz = output<QuizSummary>();
   onViewResults = output<QuizSummary>();
