@@ -324,7 +324,7 @@ export class CourseDetailComponent implements OnInit {
 
   async viewQuizResults(quiz: QuizSummary): Promise<void> {
     try {
-      const userId = inject(AuthService).getUserId();
+      const userId = this.authService.getUserId();
       if (!userId) { console.warn('[viewQuizResults] No userId'); return; }
 
       const studentId = await lastValueFrom(this.enrollmentService.getStudentIdByUserId(userId));
