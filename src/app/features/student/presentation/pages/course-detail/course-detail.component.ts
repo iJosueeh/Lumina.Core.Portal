@@ -135,7 +135,8 @@ export class CourseDetailComponent implements OnInit {
         attemptsAllowed: quiz.config.attemptsAllowed,
         bestScore: bestAttempt?.score,
         bestPercentage: bestAttempt?.percentage,
-        passed: bestAttempt?.passed
+        passed: bestAttempt?.passed,
+        hasCompletedAttempt: quizAttempts.some(a => a.status === 'completed' && a.answers.length > 0)
       };
     });
   });
@@ -345,12 +346,14 @@ export class CourseDetailComponent implements OnInit {
       const fullQuiz = results.quiz;
       const attempts = results.attempts;
 
-      console.log('[viewQuizResults] quiz.id:', quiz.id, '| attempts:', attempts.length, '| first attempt:', attempts[0]);
+      console.log('[viewQuizResults] quiz.id:', quiz.id, '| quiz.status:', quiz.status, '| quiz.attemptsUsed:', quiz.attemptsUsed, '| attempts:', attempts.length, '| first attempt:', attempts[0]);
 
       // Último intento completado de este quiz
       const completedAttempt = attempts
         .filter((a: QuizAttempt) => a.quizId === quiz.id && a.status === 'completed')
         .sort((a: QuizAttempt, b: QuizAttempt) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())[0];
+
+      console.log('[viewQuizResults] completedAttempt:', completedAttempt, '| all statuses:', attempts.map(a => ({ id: a.id, quizId: a.quizId, status: a.status })));
 
       if (!completedAttempt) {
         console.warn('[viewQuizResults] No completed attempt found for quiz:', quiz.id, '| available attempts:', attempts.map((a: QuizAttempt) => ({ id: a.id, quizId: a.quizId, status: a.status })));

@@ -125,4 +125,5 @@ export interface QuizSummary {
   bestScore?: number;
   bestPercentage?: number;
   passed?: boolean;
+  hasCompletedAttempt: boolean; // true si tiene al menos un intento completado (con respuestas)
 }
