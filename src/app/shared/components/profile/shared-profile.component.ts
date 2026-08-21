@@ -115,7 +115,7 @@ export class SharedProfileComponent implements OnInit {
 
     isStudent = computed(() => this.profile()?.rol === 'Student');
     isTeacher = computed(() => this.profile()?.rol === 'Teacher');
-    isUploadingAvatar = signal(false);
+    pendingAvatarFile = signal<File | null>(null); // archivo seleccionado, aún no sube
     fullName = computed(() => {
         const p = this.profile();
         return p ? `${p.nombres} ${p.apellidoPaterno} ${p.apellidoMaterno}` : '';
@@ -531,16 +531,16 @@ export class SharedProfileComponent implements OnInit {
             return;
         }
 
-        this.isUploadingAvatar.set(true);
         this.error.set(null);
-        this.uploadToCloudinary(file).then(avatarUrl => {
-            this.isUploadingAvatar.set(false);
-            this.saveAvatarUrl(avatarUrl);
-        }).catch(err => {
-            this.isUploadingAvatar.set(false);
-            this.error.set('Error al subir la imagen. Intenta de nuevo.');
-            console.error('Error subiendo a Cloudinary:', err);
-        });
+        this.pendingAvatarFile.set(file);
+
+        // Preview local
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const current = this.profile();
+            this.profile.set({ ...current!, fotoUrl: e.target?.result as string });
+        };
+        reader.readAsDataURL(file);
     }
 
     private async uploadToCloudinary(file: File): Promise<string> {
@@ -595,11 +595,27 @@ export class SharedProfileComponent implements OnInit {
         }
     }
 
-    // === SAVE ALL: Unifica todos los PUTs del tab activo ===
+    // === SAVE ALL: Unifica todos los PUTs del tab activo + avatar ===
     saveProfile(): void {
         this.isSaving.set(true);
         this.error.set(null);
         this.successMessage.set(null);
+
+        // Si hay archivo pendiente, subir primero y salir (no mezcla con forkJoin)
+        const pendingFile = this.pendingAvatarFile();
+        if (pendingFile) {
+            this.uploadToCloudinary(pendingFile)
+                .then(avatarUrl => {
+                    this.pendingAvatarFile.set(null);
+                    this.saveAvatarUrl(avatarUrl);
+                })
+                .catch(err => {
+                    this.isSaving.set(false);
+                    this.error.set('Error al subir la imagen. Intenta de nuevo.');
+                    console.error('Error subiendo a Cloudinary:', err);
+                });
+            return;
+        }
 
         const requests: any[] = [];
 
