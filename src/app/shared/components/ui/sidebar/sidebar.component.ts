@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, signal, computed, inject, HostListener } from '@angular/core';
+import { UserAvatarService } from '@shared/services/user-avatar.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
@@ -130,6 +131,7 @@ export class SidebarComponent {
 
   private authRepository = inject(AuthRepository);
   private siteConfig = inject(SiteConfigService);
+  private avatarService = inject(UserAvatarService);
 
   isOpen = signal(false);
   siteName = this.siteConfig.siteName;
@@ -137,7 +139,7 @@ export class SidebarComponent {
   currentUser = computed(() => this.authRepository.getCurrentUser());
   userName = computed(() => this.currentUser()?.fullName || 'Usuario');
   userAvatar = computed(() => {
-    const stored = localStorage.getItem('lumina_avatar');
+    const stored = this.avatarService.avatarUrl();
     return stored || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName())}&background=4f46e5&color=fff&size=80`;
   });
 
