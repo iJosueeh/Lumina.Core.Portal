@@ -140,6 +140,7 @@ export class SidebarComponent {
   userName = computed(() => this.currentUser()?.fullName || 'Usuario');
   userAvatar = computed(() => {
     const stored = this.avatarService.avatarUrl();
+    console.log('[Sidebar] userAvatar computed, stored:', stored);
     return stored || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName())}&background=4f46e5&color=fff&size=80`;
   });
 
