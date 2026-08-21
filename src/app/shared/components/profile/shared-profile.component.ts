@@ -156,13 +156,6 @@ export class SharedProfileComponent implements OnInit {
                     return;
                 }
 
-                // DEBUG avatar
-                console.log('[PROFILE DEBUG] API response data:', JSON.stringify(response.data, null, 2));
-                console.log('[PROFILE DEBUG] avatarUrl from API:', response.data?.avatarUrl);
-                console.log('[PROFILE DEBUG] fotoUrl from API:', response.data?.fotoUrl);
-                const apiAvatarUrl = response.data.avatarUrl || response.data.fotoUrl || localStorage.getItem('pendingAvatarUrl') || undefined;
-                console.log('[PROFILE DEBUG] final apiAvatarUrl:', apiAvatarUrl);
-
                 const profile: UserProfile = {
                     id: response.data.id,
                     nombres: response.data.nombresPersona || response.data.nombres,
@@ -181,7 +174,6 @@ export class SharedProfileComponent implements OnInit {
                     rol: response.data.rolNombre || response.data.rol || this.getRoleFromJwt()
                 };
 
-                console.log('[PROFILE DEBUG] final profile.fotoUrl:', profile.fotoUrl);
                 this.populatePersonalForm(profile);
                 this.profile.set(profile);
 
@@ -215,7 +207,7 @@ export class SharedProfileComponent implements OnInit {
                     // Solo sobrescribir fotoUrl si el API de estudiantes lo provee (no undefined)
                     if (data.fotoUrl) {
                         p.fotoUrl = data.fotoUrl;
-                        console.log('[PROFILE DEBUG] loadStudentProfile - fotoUrl from API:', data.fotoUrl);
+
                     }
                     p.redesSociales = data.redesSociales || {};
                     p.contactoEmergencia = data.contactoEmergencia;
@@ -572,6 +564,30 @@ export class SharedProfileComponent implements OnInit {
 
         const data = await response.json();
         return data.secure_url as string;
+    }
+
+    private async deleteOldAvatar(avatarUrl: string): Promise<void> {
+        if (!avatarUrl || !avatarUrl.includes('cloudinary.com')) return;
+
+        const parts = avatarUrl.split('/');
+        const fileName = parts[parts.length - 1];
+        const publicId = fileName.substring(0, fileName.lastIndexOf('.'));
+
+        const folderParts = parts.slice(parts.indexOf('upload') + 2, -1);
+        const publicIdWithFolder = [...folderParts, publicId].join('/');
+
+        try {
+            const formData = new FormData();
+            formData.append('public_id', publicIdWithFolder);
+
+            await fetch(
+                `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload/delete`,
+                { method: 'POST', body: formData }
+            );
+            console.log('[AVATAR] Old avatar deleted:', publicIdWithFolder);
+        } catch (err) {
+            console.warn('[AVATAR] Failed to delete old avatar:', err);
+        }
     }
 
     private saveAvatarUrl(avatarUrl: string): void {
