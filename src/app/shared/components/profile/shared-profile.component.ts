@@ -156,6 +156,13 @@ export class SharedProfileComponent implements OnInit {
                     return;
                 }
 
+                // DEBUG avatar
+                console.log('[PROFILE DEBUG] API response data:', JSON.stringify(response.data, null, 2));
+                console.log('[PROFILE DEBUG] avatarUrl from API:', response.data?.avatarUrl);
+                console.log('[PROFILE DEBUG] fotoUrl from API:', response.data?.fotoUrl);
+                const apiAvatarUrl = response.data.avatarUrl || response.data.fotoUrl || localStorage.getItem('pendingAvatarUrl') || undefined;
+                console.log('[PROFILE DEBUG] final apiAvatarUrl:', apiAvatarUrl);
+
                 const profile: UserProfile = {
                     id: response.data.id,
                     nombres: response.data.nombresPersona || response.data.nombres,
@@ -174,6 +181,7 @@ export class SharedProfileComponent implements OnInit {
                     rol: response.data.rolNombre || response.data.rol || this.getRoleFromJwt()
                 };
 
+                console.log('[PROFILE DEBUG] final profile.fotoUrl:', profile.fotoUrl);
                 this.populatePersonalForm(profile);
                 this.profile.set(profile);
 
@@ -205,6 +213,7 @@ export class SharedProfileComponent implements OnInit {
                     p.dni = data.dni;
                     p.biografia = data.biografia;
                     p.fotoUrl = data.fotoUrl;
+                    console.log('[PROFILE DEBUG] loadStudentProfile - fotoUrl from API:', data.fotoUrl);
                     p.redesSociales = data.redesSociales || {};
                     p.contactoEmergencia = data.contactoEmergencia;
                     p.codigo = data.codigo;
