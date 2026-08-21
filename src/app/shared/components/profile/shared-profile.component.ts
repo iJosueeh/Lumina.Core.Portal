@@ -177,6 +177,11 @@ export class SharedProfileComponent implements OnInit {
                 this.populatePersonalForm(profile);
                 this.profile.set(profile);
 
+                // Guardar avatar en localStorage para que el sidebar lo use
+                if (profile.fotoUrl) {
+                    localStorage.setItem('lumina_avatar', profile.fotoUrl);
+                }
+
                 // Step 2: Load role-specific data
                 if (profile.rol === 'Student') {
                     this.loadStudentProfile();

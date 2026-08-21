@@ -136,7 +136,10 @@ export class SidebarComponent {
 
   currentUser = computed(() => this.authRepository.getCurrentUser());
   userName = computed(() => this.currentUser()?.fullName || 'Usuario');
-  userAvatar = computed(() => 'https://ui-avatars.com/api/?name=' + this.userName() + '&background=4f46e5&color=fff&size=80');
+  userAvatar = computed(() => {
+    const stored = localStorage.getItem('lumina_avatar');
+    return stored || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName())}&background=4f46e5&color=fff&size=80`;
+  });
 
   categories = computed(() => {
     const cats = [...new Set(this.config.menuItems.map(i => i.category))];
