@@ -212,8 +212,11 @@ export class SharedProfileComponent implements OnInit {
                     p.telefono = data.telefono;
                     p.dni = data.dni;
                     p.biografia = data.biografia;
-                    p.fotoUrl = data.fotoUrl;
-                    console.log('[PROFILE DEBUG] loadStudentProfile - fotoUrl from API:', data.fotoUrl);
+                    // Solo sobrescribir fotoUrl si el API de estudiantes lo provee (no undefined)
+                    if (data.fotoUrl) {
+                        p.fotoUrl = data.fotoUrl;
+                        console.log('[PROFILE DEBUG] loadStudentProfile - fotoUrl from API:', data.fotoUrl);
+                    }
                     p.redesSociales = data.redesSociales || {};
                     p.contactoEmergencia = data.contactoEmergencia;
                     p.codigo = data.codigo;
