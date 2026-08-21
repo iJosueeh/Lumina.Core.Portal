@@ -6,7 +6,8 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
-
+import { SiteConfigService } from '@core/services/site-config.service';
+import { UserAvatarService } from '@shared/services/user-avatar.service';
 interface UserProfile {
     // Common (from /api/users/profile)
     id: string;
