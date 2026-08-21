@@ -163,7 +163,7 @@ export class SharedProfileComponent implements OnInit {
                     apellidoMaterno: response.data.apellidoMaterno,
                     email: response.data.email || response.data.correoElectronico,
                     fechaNacimiento: response.data.fechaNacimiento,
-                    fotoUrl: response.data.avatarUrl || response.data.fotoUrl,
+                    fotoUrl: response.data.avatarUrl || response.data.fotoUrl || localStorage.getItem('pendingAvatarUrl') || undefined,
                     direccion: response.data.direccion || {
                         pais: response.data.pais || '',
                         departamento: response.data.departamento || '',
