@@ -169,13 +169,15 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                 // Build evaluations display
                                 const evaluaciones = evaluacionesMapped;
 
+                                // Estado determined by grade (Peru scale: approved≥14, at-risk 10-13, failed<10)
+                                const promedio = promedioMap.get(cursoId) ?? 0;
                                 let estado: 'Aprobado' | 'En Curso' | 'En Riesgo';
-                                if (avance >= 100) {
+                                if (promedio >= 14) {
                                     estado = 'Aprobado';
-                                } else if (avance > 0) {
-                                    estado = 'En Curso';
-                                } else {
+                                } else if (promedio > 0 && promedio < 14) {
                                     estado = 'En Riesgo';
+                                } else {
+                                    estado = 'En Riesgo'; // 0 = no grades yet = at risk
                                 }
 
                                 return {
@@ -185,7 +187,7 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                     profesor: cursoDetail?.instructorId ?? 'Por definir',
                                     creditos: cursoDetail?.creditos ?? 4,
                                     avance,
-                                    promedio: promedioMap.get(cursoId) ?? 0,
+                                    promedio,
                                     estado,
                                     evaluaciones,
                                     promedioClase: 0,
