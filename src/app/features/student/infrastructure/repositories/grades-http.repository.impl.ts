@@ -50,10 +50,13 @@ interface PromedioEstudianteResponse {
 
 interface CursoResponse {
     id: string;
-    nombre: string;
+    titulo: string; // API uses 'titulo' not 'nombre'
     codigo: string;
     creditos: number;
-    instructorId?: string;
+    instructor?: {
+        nombre: string;
+        cargo?: string;
+    };
     ciclo?: string;
 }
 
@@ -115,7 +118,7 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                             catchError(() =>
                                 of({
                                     id,
-                                    nombre: `Curso ${id.substring(0, 8).toUpperCase()}`,
+                                    titulo: `Curso ${id.substring(0, 8).toUpperCase()}`,
                                     codigo: id.substring(0, 8).toUpperCase(),
                                     creditos: 4,
                                 } as CursoResponse)
@@ -182,9 +185,9 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
 
                                 return {
                                     id: cursoId,
-                                    nombre: cursoDetail?.nombre ?? `Curso ${cursoId.substring(0, 8).toUpperCase()}`,
+                                    nombre: cursoDetail?.titulo ?? `Curso ${cursoId.substring(0, 8).toUpperCase()}`,
                                     codigo: cursoDetail?.codigo ?? cursoId.substring(0, 8).toUpperCase(),
-                                    profesor: cursoDetail?.instructorId ?? 'Por definir',
+                                    profesor: cursoDetail?.instructor?.nombre ?? 'Por definir',
                                     creditos: cursoDetail?.creditos ?? 4,
                                     avance,
                                     promedio,
