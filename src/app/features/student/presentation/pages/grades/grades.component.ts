@@ -108,6 +108,10 @@ export class GradesComponent {
   }
 
   toggleCourse(courseId: string): void {
+    this.allCourses.update(courses =>
+      courses.map(c => c.id === courseId ? { ...c, isExpanded: !c.isExpanded } : c)
+    );
+    // Also update courses signal for any direct usage
     this.courses.update(courses =>
       courses.map(c => c.id === courseId ? { ...c, isExpanded: !c.isExpanded } : c)
     );
