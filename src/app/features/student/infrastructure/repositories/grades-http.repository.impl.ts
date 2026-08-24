@@ -109,7 +109,6 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                         cursoMap.get(ev.cursoId)!.push(ev);
                     });
 
-                    // 3. Fetch course details for each unique cursoId
                     const cursoIds = Array.from(cursoMap.keys());
                     const cursoDetailRequests = cursoIds.map((id) =>
                         this.http.get<CursoResponse>(`${this.cursosApiUrl}/cursos/${id}`).pipe(
@@ -123,11 +122,24 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                             )
                         )
                     );
+                    const cursoPromedioRequests = cursoIds.map((cursoId) =>
+                        this.http.get<{ promedio: number }>(
+                            `${this.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/curso/${cursoId}/promedio`
+                        ).pipe(
+                            map((r) => ({ cursoId, promedio: r.promedio ?? 0 })),
+                            catchError(() => of({ cursoId, promedio: 0 }))
+                        )
+                    );
 
-                    return forkJoin(cursoDetailRequests).pipe(
-                        map((cursos) => {
+                    return forkJoin({
+                        cursos: forkJoin(cursoDetailRequests),
+                        promedios: forkJoin(cursoPromedioRequests),
+                    }).pipe(
+                        map(({ cursos, promedios }) => {
                             const cursoDetails = new Map<string, CursoResponse>();
                             cursos.forEach((c) => cursoDetails.set(c.id, c));
+                            const promedioMap = new Map<string, number>();
+                            promedios.forEach((p) => promedioMap.set(p.cursoId, p.promedio));
 
                             // 4. Build CourseGrade[]
                             return cursoIds.map((cursoId): CourseGrade => {
@@ -173,7 +185,7 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                     profesor: cursoDetail?.instructorId ?? 'Por definir',
                                     creditos: cursoDetail?.creditos ?? 4,
                                     avance,
-                                    promedio: 0, // Will be enriched from promedio endpoint
+                                    promedio: promedioMap.get(cursoId) ?? 0,
                                     estado,
                                     evaluaciones,
                                     promedioClase: 0,
@@ -196,24 +208,28 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
     }
 
     override getGradeStats(studentId: string): Observable<GradeStats> {
-        // Use the real promedio endpoint
+        // Use the real promedio endpoint — no caching, data must be fresh
         return this.http
             .get<PromedioEstudianteResponse>(
-                `${this.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/promedio`
+                `${this.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/promedio`,
+                { headers: { 'Cache-Control': 'no-cache' } }
             )
             .pipe(
-                map((response) => ({
-                    promedioGeneral: Number(response.promedioGeneral) || 0,
-                    creditosAprobados: response.evaluacionesCompletadas * 4, // approximate
-                    totalCreditos: response.totalEvaluaciones * 4,
-                    cursosCompletados: response.evaluacionesCompletadas,
-                    rankingClase: response.notaMasAlta != null ? `Top ${Math.max(5, Math.round((response.promedioGeneral / 20) * 100))}%` : 'Sin datos',
-                    percentilRanking: response.notaMasAlta != null ? Math.round((response.promedioGeneral / 20) * 100) : 0,
-                    ultimaActualizacion: new Date(),
-                })),
+                map((response) => {
+                    const promedio = Number(response.promedioGeneral) || 0;
+                    return {
+                        promedioGeneral: promedio,
+                        creditosAprobados: response.evaluacionesCompletadas * 4,
+                        totalCreditos: response.totalEvaluaciones * 4,
+                        cursosCompletados: response.evaluacionesCompletadas,
+                        // Ranking show actual grade, not percentile without class data
+                        rankingClase: promedio > 0 ? `${promedio.toFixed(1)}/20` : 'Sin datos',
+                        percentilRanking: 0,
+                        ultimaActualizacion: new Date(),
+                    };
+                }),
                 catchError((error) => {
                     console.error('[GRADES] Error loading stats:', error);
-                    // Fallback stats
                     return of({
                         promedioGeneral: 0,
                         creditosAprobados: 0,
