@@ -197,7 +197,7 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                     avance,
                                     promedio,
                                     estado,
-                                    evaluaciones,
+                                    evaluaciones: evaluacionesMapped,
                                     promedioClase: 0,
                                     posicionamiento: 0,
                                     totalEstudiantes: 0,
