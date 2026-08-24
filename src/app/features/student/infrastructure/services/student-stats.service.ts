@@ -24,15 +24,19 @@ export class StudentStatsService {
     return this.http.get<any>(
       `${this.estudiantesApiUrl}/estudiantes/${estudianteId}/dashboard-stats`
     ).pipe(
-      map(response => ({
-        cursosActivos: response?.cursosActivos ?? response?.CursosActivos ?? 0,
-        evaluacionesPendientes: response?.evaluacionesPendientes ?? response?.EvaluacionesPendientes ?? 0,
-        promedioGeneral: response?.promedioGeneral ?? response?.PromedioGeneral ?? 0,
-        horasEstudio: response?.horasEstudio ?? response?.HorasEstudio ?? 0,
-        cursosCompletados: response?.cursosCompletados ?? response?.CursosCompletados ?? 0,
-        horasEstudioSemana: response?.horasEstudioSemana ?? response?.HorasEstudioSemana ?? 0,
-        asistenciaTotal: response?.asistenciaTotal ?? response?.AsistenciaTotal ?? 0,
-      })),
+      map(response => {
+        console.log('📊 [StudentStatsService] raw response:', response);
+        console.log('📊 [StudentStatsService] promedioGeneral:', response?.promedioGeneral, 'PromedioGeneral:', response?.PromedioGeneral);
+        return ({
+          cursosActivos: response?.cursosActivos ?? response?.CursosActivos ?? 0,
+          evaluacionesPendientes: response?.evaluacionesPendientes ?? response?.EvaluacionesPendientes ?? 0,
+          promedioGeneral: response?.promedioGeneral ?? response?.PromedioGeneral ?? 0,
+          horasEstudio: response?.horasEstudio ?? response?.HorasEstudio ?? 0,
+          cursosCompletados: response?.cursosCompletados ?? response?.CursosCompletados ?? 0,
+          horasEstudioSemana: response?.horasEstudioSemana ?? response?.HorasEstudioSemana ?? 0,
+          asistenciaTotal: response?.asistenciaTotal ?? response?.AsistenciaTotal ?? 0,
+        });
+      }),
       catchError(() => of({
         cursosActivos: 0,
         evaluacionesPendientes: 0,
