@@ -6,4 +6,5 @@ export interface Assignment {
     esUrgente: boolean;
     mes: string;
     dia: number;
+    estaCompletada?: boolean;
 }
