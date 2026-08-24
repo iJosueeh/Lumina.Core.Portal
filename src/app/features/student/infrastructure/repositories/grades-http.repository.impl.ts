@@ -171,11 +171,14 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                     estado: (e.estadoNota as 'Completado' | 'Pendiente') ?? 'Pendiente',
                                 }));
 
-                                // Build evaluations display
-                                const evaluaciones = evaluacionesMapped;
-
                                 // Estado determined by grade (Peru scale: approved≥14, at-risk 10-13, failed<10)
                                 const promedio = promedioMap.get(cursoId) ?? 0;
+
+                                console.log('[GradesRepo] Building course:', cursoId, {
+                                    evaluacionesCount: evaluacionesMapped.length,
+                                    sampleEv: evaluacionesMapped[0],
+                                    promedio,
+                                });
                                 let estado: 'Aprobado' | 'En Curso' | 'En Riesgo';
                                 if (promedio >= 14) {
                                     estado = 'Aprobado';
