@@ -28,7 +28,7 @@ export class AssignmentsHttpRepositoryImpl extends AssignmentsRepository {
   }
 
   override getUpcomingAssignments(studentId: string): Observable<Assignment[]> {
-    return this.http.get<{ evaluaciones: EvaluacionResponse[] } | EvaluacionResponse[] }>(
+    return this.http.get<EvaluacionResponse[]>(
       `${environment.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`
     ).pipe(
       map((response) => {
