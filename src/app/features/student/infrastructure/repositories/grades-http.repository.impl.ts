@@ -37,6 +37,8 @@ interface EvaluacionResponse {
     intentosMaximos: number;
     totalPreguntas: number;
     puntajeMaximo: number;
+    nota?: number | null;    // Calificacion real (escala 1-20), null si no ha calificado
+    estadoNota?: string | null; // "Completado", "Vencido", "Pendiente"
 }
 
 interface PromedioEstudianteResponse {
@@ -161,12 +163,12 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
                                           )
                                         : 0;
 
-                                // Map evaluations
+                                // Map evaluations with real grades from API
                                 const evaluacionesMapped: Evaluation[] = evs.map((e) => ({
                                     actividad: e.titulo,
                                     peso: e.puntajeMaximo,
-                                    nota: 0, // Would need entregas endpoint for actual grades
-                                    estado: e.estado === 'Vencido' || e.intentos > 0 ? 'Completado' : 'Pendiente',
+                                    nota: e.nota ?? 0,
+                                    estado: (e.estadoNota as 'Completado' | 'Pendiente') ?? 'Pendiente',
                                 }));
 
                                 // Build evaluations display
