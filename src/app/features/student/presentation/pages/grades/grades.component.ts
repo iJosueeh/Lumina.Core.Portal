@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
-import { GradeStats, CourseGrade } from '@features/student/domain/models/grade.model';
+import { GradeStats, CourseGrade, Evaluation } from '@features/student/domain/models/grade.model';
 import { GetStudentGradesUseCase } from '@features/student/application/use-cases/get-student-grades.usecase';
 import { GetGradeStatsUseCase } from '@features/student/application/use-cases/get-grade-stats.usecase';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
@@ -139,6 +139,10 @@ export class GradesComponent {
       Pendiente: 'bg-amber-50 text-amber-700 border border-amber-200',
     };
     return badges[estado] || 'bg-slate-50 text-slate-700 border border-slate-200';
+  }
+
+  getCompletadasCount(evaluaciones: Evaluation[] | undefined): number {
+    return (evaluaciones ?? []).filter(e => e.estado === 'Completado').length;
   }
 
   exportGrades(): void {

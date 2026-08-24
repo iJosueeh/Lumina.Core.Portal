@@ -164,7 +164,7 @@
                             <div>
                               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Evaluaciones</p>
                               <p class="text-sm font-semibold text-slate-700">
-                                {{ (course.evaluaciones ?? []).filter(e => e.estado === 'Completado').length }}/{{ course.evaluaciones.length }} completadas
+                                {{ getCompletadasCount(course.evaluaciones) }}/{{ course.evaluaciones.length }} completadas
                               </p>
                             </div>
                           </div>
