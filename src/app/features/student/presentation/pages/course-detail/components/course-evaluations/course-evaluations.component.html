@@ -73,8 +73,8 @@
                   [class.border-indigo-200]="quiz.status !== 'expired'"
                   [class.bg-indigo-50]="quiz.status !== 'expired'"
                 >
-                  <!-- DEBUG badge: {{ quiz.title }} | status={{ quiz.status }} -->
-                  {{ getQuizStatusLabel(quiz.status) }}
+                  <!-- DEBUG: {{ quiz.title }} | status={{ quiz.status }} -->
+                  {{ getQuizStatusLabel(quiz.status) }} ({{ quiz.status }})
                 </span>
                 <span class="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-widest text-slate-600 border border-slate-200 bg-slate-50 font-semibold">
                   {{ getDifficultyLabel(quiz.difficulty) }}
@@ -127,7 +127,7 @@
                   Vencido
                 </button>
               } @else {
-                <!-- DEBUG: {{ quiz.title }} | status={{ quiz.status }} | hasCompleted={{ quiz.hasCompletedAttempt }} | attempts={{ quiz.attemptsUsed }}/{{ quiz.attemptsAllowed }} -->
+                <!-- DEBUG btn: {{ quiz.title }} | hasCompleted={{ quiz.hasCompletedAttempt }} | status={{ quiz.status }} -->
                 <button
                   (click)="onStartQuiz.emit(quiz)"
                   [disabled]="startingQuizId() !== null"
