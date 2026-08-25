@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap, catchError, throwError } from 'rxjs';
+import { Observable, map, tap, catchError, throwError } from 'rxjs';
 import { Quiz, QuizAttempt } from '../../domain/models/course-detail.model';
 import { DifficultyLevel, Question, QuestionOption, QuestionType } from '../../domain/models/quiz.model';
 import { environment } from '../../../../../environments/environment';
@@ -38,7 +38,7 @@ interface EvaluacionConPreguntasResponse {
 
 interface PreguntaResponse {
   id: string;
-  tipo: string; // 'multiple-choice' | 'true-false' | 'short-answer' | 'matching'
+  tipo: string;
   texto: string;
   puntos: number;
   respuestaCorrecta: string | null;
@@ -55,33 +55,21 @@ interface OpcionResponse {
   orden: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class EvaluationsIntegrationService {
   private readonly evaluacionesApiUrl = environment.evaluacionesApiUrl;
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+  private readonly CACHE_TTL = 5 * 60 * 1000;
 
-  constructor(
-    private http: HttpClient,
-    private cacheService: CacheService
-  ) { }
+  constructor(private http: HttpClient, private cacheService: CacheService) {}
 
   getEvaluationsByCourse(courseId: string): Observable<Quiz[]> {
     const cacheKey = `course-evaluations-${courseId}`;
-    console.log('📡 Realizando petición HTTP para evaluaciones:', cacheKey);
     return this.http.get<{ evaluaciones: EvaluacionResponse[] }>(`${this.evaluacionesApiUrl}/evaluaciones?cursoId=${courseId}`)
       .pipe(
         map(response => response.evaluaciones.map(e => this.mapToQuiz(e))),
-        tap(quizzes => {
-          this.cacheService.set(cacheKey, quizzes, this.CACHE_TTL);
-          console.log('💾 Evaluaciones almacenadas en caché:', cacheKey, quizzes.length, 'items');
-        }),
+        tap(quizzes => this.cacheService.set(cacheKey, quizzes, this.CACHE_TTL)),
         catchError(error => {
-          console.error('❌ Error al cargar evaluaciones del backend:', error);
-          if (error.status === 401) {
-            console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
-          }
+          console.error('Error al cargar evaluaciones:', error);
           return throwError(() => error);
         })
       );
@@ -89,24 +77,14 @@ export class EvaluationsIntegrationService {
 
   getQuizAttempts(studentId: string, courseId: string): Observable<QuizAttempt[]> {
     const cacheKey = `quiz-attempts-${studentId}-${courseId}`;
-
-    // Sin caché para intentos (para reflejar siempre el estado actual)
-    console.log('📡 Realizando petición HTTP para intentos de evaluaciones:', cacheKey);
     return this.http.get<{ intentos: any[] }>(`${this.evaluacionesApiUrl}/evaluaciones/intentos?estudianteId=${studentId}&cursoId=${courseId}`)
       .pipe(
         map(response => (response.intentos || []).map((i: any) => this.mapToQuizAttempt(i))),
-        tap(attempts => {
-          attempts.forEach((a: any) => console.log(`🔄 Mapeando intento del backend: ${JSON.stringify(a).slice(0, 120)}`));
-          this.cacheService.set(cacheKey, attempts, this.CACHE_TTL);
-          console.log('💾 Intentos almacenados en caché:', cacheKey, attempts.length, 'items');
-        })
+        tap(attempts => this.cacheService.set(cacheKey, attempts, this.CACHE_TTL))
       );
   }
 
   private mapToQuizAttempt(intento: any): QuizAttempt {
-    console.log('🔄 Mapeando intento del backend:', intento);
-
-    // Mapear respuestas con normalización de nombres de propiedades
     const answers = (intento.answers || intento.respuestas || []).map((r: any) => ({
       questionId: r.questionId || r.preguntaId,
       answer: r.answer || r.respuestaEstudiante,
@@ -114,13 +92,13 @@ export class EvaluationsIntegrationService {
       pointsEarned: r.pointsEarned ?? r.puntosObtenidos ?? 0
     }));
 
-    const mapped = {
+    return {
       id: intento.id,
       quizId: intento.quizId || intento.evaluacionId,
       studentId: intento.studentId || intento.estudianteId,
       attemptNumber: intento.attemptNumber || intento.numeroIntento || 1,
       status: (intento.status || intento.estado || 'completed') as 'in-progress' | 'completed' | 'abandoned',
-      answers: answers,
+      answers,
       startedAt: new Date(intento.startedAt || intento.fechaInicio),
       completedAt: intento.completedAt ? new Date(intento.completedAt) :
         intento.fechaFin ? new Date(intento.fechaFin) : undefined,
@@ -129,223 +107,141 @@ export class EvaluationsIntegrationService {
       percentage: intento.percentage || intento.porcentaje || 0,
       passed: intento.passed ?? intento.aprobado ?? false
     };
-
-    console.log('✅ Intento mapeado con', mapped.answers.length, 'respuestas');
-
-    return mapped;
   }
 
-  private mapToQuiz(evaluacion: EvaluacionResponse): Quiz {
+  private mapToQuiz(e: EvaluacionResponse): Quiz {
     return {
-      id: evaluacion.id,
-      title: evaluacion.titulo,
-      courseId: evaluacion.cursoId,
-      moduleId: '', // TODO: Agregar al backend si es necesario
-      moduleName: '', // TODO: Agregar al backend si es necesario
-      description: '', // TODO: Agregar descripción en backend
-      totalQuestions: evaluacion.totalPreguntas,
+      id: e.id,
+      title: e.titulo,
+      courseId: e.cursoId,
+      moduleId: '',
+      moduleName: '',
+      description: '',
+      totalQuestions: e.totalPreguntas,
       totalPoints: 100,
       difficulty: 'medium' as DifficultyLevel,
-      availableFrom: new Date(evaluacion.fechaInicio),
-      availableUntil: evaluacion.fechaLimite ? new Date(evaluacion.fechaLimite) : undefined,
-      weight: 0.1, // TODO: Obtener del backend o configurar
-      createdAt: new Date(evaluacion.fechaInicio),
-      updatedAt: undefined, // TODO: Agregar fechaActualizacion en backend
+      availableFrom: new Date(e.fechaInicio),
+      availableUntil: e.fechaLimite ? new Date(e.fechaLimite) : undefined,
+      weight: 0.1,
+      createdAt: new Date(e.fechaInicio),
+      updatedAt: undefined,
       config: {
-        timeLimit: evaluacion.duracionMinutos,
-        attemptsAllowed: evaluacion.intentosMaximos,
+        timeLimit: e.duracionMinutos,
+        attemptsAllowed: e.intentosMaximos,
         passingScore: 70,
         showCorrectAnswers: false,
         shuffleQuestions: false,
         shuffleOptions: false
       },
-      questions: [] // Cargaremos las preguntas por separado
+      questions: []
     };
   }
 
-  /**
-   * Obtiene una evaluación con todas sus preguntas
-   * NOTA: No usa caché para garantizar que las preguntas y opciones se carguen correctamente
-   * cada vez que el estudiante inicia un quiz
-   */
   getEvaluacionConPreguntas(evaluacionId: string): Observable<Quiz> {
-    // Siempre obtener datos frescos para evitar problemas de caché con preguntas/opciones
     this.cacheService.invalidatePattern(`evaluation-with-questions-${evaluacionId}`);
-
-    console.log('📡 Realizando petición HTTP para evaluación con preguntas:', evaluacionId);
     return this.http.get<EvaluacionConPreguntasResponse>(`${this.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/preguntas`)
       .pipe(
-        map(response => {
-          console.log('📋 Response del backend:', response);
-          console.log('❓ Preguntas recibidas:', response.preguntas?.length || 0);
-          response.preguntas?.forEach((p, i) => {
-            console.log(`  Pregunta ${i + 1}: "${p.texto}" - Tipo: ${p.tipo} - Opciones: ${p.opciones?.length || 0}`);
-          });
-          return this.mapToQuizWithQuestions(response);
-        }),
-        tap(quiz => {
-          console.log('✅ Quiz mapeado:', {
-            id: quiz.id,
-            title: quiz.title,
-            totalQuestions: quiz.questions.length,
-            totalPoints: quiz.totalPoints
-          });
-          quiz.questions.forEach((q, i) => {
-            console.log(`  Q${i + 1}: "${q.text}" - Options: ${q.options?.length || 0}`);
-          });
-        }),
+        map(response => this.mapToQuizWithQuestions(response)),
         catchError(error => {
-          console.error('❌ Error al cargar evaluación con preguntas:', error);
-          if (error.status === 401) {
-            console.error('⚠️ Token no válido o expirado. Intente iniciar sesión nuevamente.');
-          }
+          console.error('Error al cargar evaluación con preguntas:', error);
           return throwError(() => error);
         })
       );
   }
 
-  private mapToQuizWithQuestions(evaluacion: EvaluacionConPreguntasResponse): Quiz {
+  private mapToQuizWithQuestions(e: EvaluacionConPreguntasResponse): Quiz {
     return {
-      id: evaluacion.id,
-      title: evaluacion.titulo,
-      description: evaluacion.descripcion,
-      courseId: evaluacion.cursoId,
+      id: e.id,
+      title: e.titulo,
+      description: e.descripcion,
+      courseId: e.cursoId,
       moduleId: '',
       moduleName: '',
-      totalQuestions: evaluacion.preguntas.length,
-      totalPoints: evaluacion.puntajeMaximo,
+      totalQuestions: e.preguntas.length,
+      totalPoints: e.puntajeMaximo,
       difficulty: 'medium' as DifficultyLevel,
-      availableFrom: new Date(evaluacion.fechaInicio),
-      availableUntil: new Date(evaluacion.fechaFin),
+      availableFrom: new Date(e.fechaInicio),
+      availableUntil: new Date(e.fechaFin),
       weight: 0.1,
-      createdAt: new Date(evaluacion.fechaInicio),
+      createdAt: new Date(e.fechaInicio),
       updatedAt: undefined,
       config: {
-        timeLimit: undefined, // Se puede agregar al backend si es necesario
-        attemptsAllowed: 3, // Default, se puede agregar al backend
+        timeLimit: undefined,
+        attemptsAllowed: 3,
         passingScore: 70,
         showCorrectAnswers: true,
         shuffleQuestions: false,
         shuffleOptions: false
       },
-      questions: evaluacion.preguntas.map(p => this.mapToQuestion(p))
+      questions: e.preguntas.map(p => this.mapToQuestion(p))
     };
   }
 
-  private mapToQuestion(pregunta: PreguntaResponse): Question {
+  private mapToQuestion(p: PreguntaResponse): Question {
     return {
-      id: pregunta.id,
-      type: pregunta.tipo as QuestionType,
-      text: pregunta.texto,
-      points: pregunta.puntos,
-      options: pregunta.opciones?.map(o => this.mapToQuestionOption(o)),
-      correctAnswer: pregunta.respuestaCorrecta || undefined,
-      explanation: pregunta.explicacion || undefined,
+      id: p.id,
+      type: p.tipo as QuestionType,
+      text: p.texto,
+      points: p.puntos,
+      options: p.opciones?.map(o => this.mapToQuestionOption(o)),
+      correctAnswer: p.respuestaCorrecta || undefined,
+      explanation: p.explicacion || undefined,
       imageUrl: undefined
     };
   }
 
-  private mapToQuestionOption(opcion: OpcionResponse): QuestionOption {
-    return {
-      id: opcion.id,
-      text: opcion.texto,
-      isCorrect: opcion.esCorrecta
-    };
+  private mapToQuestionOption(o: OpcionResponse): QuestionOption {
+    return { id: o.id, text: o.texto, isCorrect: o.esCorrecta };
   }
 
-  /**
-   * Crea un nuevo intento de evaluación para un estudiante
-   */
   createQuizAttempt(evaluacionId: string, estudianteId: string): Observable<{ intentoId: string }> {
-    console.log('📡 Creando nuevo intento de evaluación:', { evaluacionId, estudianteId });
     return this.http.post<{ intentoId: string }>(
       `${this.evaluacionesApiUrl}/evaluaciones/${evaluacionId}/intentos`,
       { estudianteId }
     ).pipe(
-      tap(response => {
-        console.log('✅ Intento creado exitosamente:', response.intentoId);
-        // Invalidar caché de intentos
-        this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`);
-      }),
+      tap(() => this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`)),
       catchError(error => {
-        console.error('❌ Error al crear intento de evaluación:', error);
+        console.error('Error al crear intento:', error);
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Completa un intento de evaluación enviando las respuestas del estudiante
-   */
   submitQuizAttempt(
     intentoId: string,
-    respuestas: Array<{
-      preguntaId: string;
-      respuestaEstudiante: string;
-      esCorrecta: boolean;
-      puntosObtenidos: number;
-    }>,
+    respuestas: Array<{ preguntaId: string; respuestaEstudiante: string; esCorrecta: boolean; puntosObtenidos: number }>,
     puntajeMaximo: number,
     estudianteId: string,
     tiempoEmpleadoMinutos?: number
-  ): Observable<{
-    intentoId: string;
-    calificacion: number;
-    respuestasCorrectas: number;
-    totalPreguntas: number;
-  }> {
-    console.log('📡 Enviando respuestas de evaluación:', { intentoId, respuestasCount: respuestas?.length, puntajeMaximo });
-    
-    // Soporte para ambos formatos de propiedad (Inglés/Español) y seguridad contra nulos
+  ): Observable<{ intentoId: string; calificacion: number; respuestasCorrectas: number; totalPreguntas: number }> {
     const safeRespuestas = (respuestas || []).map((r: any) => ({
       preguntaId: r.preguntaId || r.questionId,
-      respuestaEstudiante: Array.isArray(r.respuestaEstudiante || r.answer) 
-        ? (r.respuestaEstudiante || r.answer).join(', ') 
+      respuestaEstudiante: Array.isArray(r.respuestaEstudiante || r.answer)
+        ? (r.respuestaEstudiante || r.answer).join(', ')
         : (r.respuestaEstudiante || r.answer || ''),
       esCorrecta: r.esCorrecta ?? r.isCorrect ?? false,
       puntosObtenidos: r.puntosObtenidos ?? r.pointsEarned ?? 0
     }));
 
-    return this.http.post<{
-      intentoId: string;
-      calificacion: number;
-      respuestasCorrectas: number;
-      totalPreguntas: number;
-    }>(
+    return this.http.post<{ intentoId: string; calificacion: number; respuestasCorrectas: number; totalPreguntas: number }>(
       `${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/completar`,
-      {
-        respuestas: safeRespuestas,
-        puntajeMaximo,
-        tiempoEmpleadoMinutos
-      }
+      { respuestas: safeRespuestas, puntajeMaximo, tiempoEmpleadoMinutos }
     ).pipe(
-      tap(result => {
-        console.log('✅ Evaluación completada exitosamente:', result);
-        // Invalidar caché de intentos
-        this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`);
-      }),
+      tap(() => this.cacheService.invalidatePattern(`quiz-attempts-${estudianteId}`)),
       catchError(error => {
-        console.error('❌ Error al enviar respuestas de evaluación:', error);
+        console.error('Error al enviar respuestas:', error);
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Abandona un intento de evaluación en progreso
-   */
   abandonQuizAttempt(intentoId: string): Observable<void> {
-    console.log('💤 Abandonando intento:', intentoId);
-    return this.http.post<void>(
-      `${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/abandonar`,
-      {}
-    ).pipe(
-      catchError(error => {
-        // Silenciar el error en abandon (best-effort)
-        console.warn('⚠️ No se pudo marcar el intento como abandonado:', error);
-        return of(undefined as void);
-      })
-    );
+    return this.http.post<void>(`${this.evaluacionesApiUrl}/evaluaciones/intentos/${intentoId}/abandonar`, {})
+      .pipe(
+        catchError(error => {
+          console.warn('No se pudo abandonar el intento:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }
-

@@ -158,16 +158,11 @@ export class CourseDetailComponent implements OnInit {
     const rawQuizzes = this.evaluationsQuery.data() ?? [];
     const attempts = this.attemptsQuery.data() ?? [];
 
-    console.log('[CourseDetail] rawQuizzes count:', rawQuizzes.length);
-    console.log('[CourseDetail] attempts count:', attempts.length);
-
     return rawQuizzes.map(quiz => {
       const quizAttempts = attempts.filter(a => a.quizId === quiz.id);
       const bestAttempt = [...quizAttempts].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
       const status = this.calculateQuizStatus(quiz, quizAttempts);
       const hasCompleted = quizAttempts.some(a => a.status === 'completed' && a.answers.length > 0);
-
-      console.log(`[CourseDetail] RESULTADO FINAL: "${quiz.titulo || quiz.title}" → status=${status} | hasCompleted=${hasCompleted} | attempts=${quizAttempts.length}`);
 
       return {
         id: quiz.id,
@@ -216,7 +211,6 @@ export class CourseDetailComponent implements OnInit {
   }
 
   getQuizStatusLabel(status: string): string {
-    console.log(`[getQuizStatusLabel] called with status="${status}"`);
     switch (status) {
       case 'completed':   return 'Completada';
       case 'in-progress': return 'En curso';
