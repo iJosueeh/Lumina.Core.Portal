@@ -167,13 +167,7 @@ export class CourseDetailComponent implements OnInit {
       const status = this.calculateQuizStatus(quiz, quizAttempts);
       const hasCompleted = quizAttempts.some(a => a.status === 'completed' && a.answers.length > 0);
 
-      console.log(`[CourseDetail] Quiz "${quiz.titulo || quiz.id}":`, {
-        quizId: quiz.id,
-        attemptsForQuiz: quizAttempts.map(a => ({ id: a.id, status: a.status, answers: a.answers?.length })),
-        calculatedStatus: status,
-        hasCompletedAttempt: hasCompleted,
-        bestScore: bestAttempt?.score
-      });
+      console.log(`[CourseDetail] RESULTADO FINAL: "${quiz.titulo || quiz.title}" → status=${status} | hasCompleted=${hasCompleted} | attempts=${quizAttempts.length}`);
 
       return {
         id: quiz.id,
