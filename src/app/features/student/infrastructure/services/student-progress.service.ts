@@ -21,8 +21,9 @@ export class StudentProgressService {
    * que devuelve IsCompleted por cada lección.
    */
   getCourseProgress(estudianteId: string, cursoId: string): Observable<StudentCourseProgress> {
+    // El estudiante se obtiene del JWT en el backend, no del path
     return this.http.get<any>(
-      `${environment.estudiantesApiUrl}/estudiantes/${estudianteId}/cursos/${cursoId}/aula-video`
+      `${environment.estudiantesApiUrl}/estudiantes/cursos/${cursoId}/aula-video`
     ).pipe(
       map(response => {
         const sections = response?.data?.Sections || response?.sections || [];
