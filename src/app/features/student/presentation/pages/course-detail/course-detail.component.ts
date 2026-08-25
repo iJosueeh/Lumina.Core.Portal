@@ -215,21 +215,9 @@ export class CourseDetailComponent implements OnInit {
   }));
 
   private calculateQuizStatus(quiz: Quiz, attempts: QuizAttempt[]): QuizStatus {
-    // DEBUG
-    console.log(`[calculateQuizStatus] "${quiz.title}": attempts.length=${attempts.length}`, attempts.map(a => ({ status: a.status, passed: a.passed })));
-    if (attempts.some(a => a.status === 'completed' && a.passed)) {
-      console.log(`[calculateQuizStatus] "${quiz.title}" → completed (has passed attempt)`);
-      return 'completed';
-    }
-    if (quiz.availableUntil && new Date() > quiz.availableUntil) {
-      console.log(`[calculateQuizStatus] "${quiz.title}" → expired (past ${quiz.availableUntil})`);
-      return 'expired';
-    }
-    if (attempts.length > 0) {
-      console.log(`[calculateQuizStatus] "${quiz.title}" → in-progress (has ${attempts.length} attempt(s))`);
-      return 'in-progress';
-    }
-    console.log(`[calculateQuizStatus] "${quiz.title}" → not-started`);
+    if (attempts.some(a => a.status === 'completed' && a.passed)) return 'completed';
+    if (quiz.availableUntil && new Date() > quiz.availableUntil) return 'expired';
+    if (attempts.length > 0) return 'in-progress';
     return 'not-started';
   }
 

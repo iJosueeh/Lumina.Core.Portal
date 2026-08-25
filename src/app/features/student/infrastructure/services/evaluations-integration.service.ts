@@ -69,17 +69,9 @@ export class EvaluationsIntegrationService {
 
   getEvaluationsByCourse(courseId: string): Observable<Quiz[]> {
     const cacheKey = `course-evaluations-${courseId}`;
-
-    // Sin caché para evaluaciones (para obtener siempre intentos actualizados del backend)
     console.log('📡 Realizando petición HTTP para evaluaciones:', cacheKey);
     return this.http.get<{ evaluaciones: EvaluacionResponse[] }>(`${this.evaluacionesApiUrl}/evaluaciones?cursoId=${courseId}`)
       .pipe(
-        tap(raw => {
-          console.log('📦 [getEvaluationsByCourse] Evaluaciones crudas del backend:');
-          raw.evaluaciones.forEach((e: any) => {
-            console.log(`  - ${e.titulo} | id=${e.id} | estado=${e.estado} | fechaLimite=${e.fechaLimite}`);
-          });
-        }),
         map(response => response.evaluaciones.map(e => this.mapToQuiz(e))),
         tap(quizzes => {
           this.cacheService.set(cacheKey, quizzes, this.CACHE_TTL);
@@ -102,24 +94,11 @@ export class EvaluationsIntegrationService {
     console.log('📡 Realizando petición HTTP para intentos de evaluaciones:', cacheKey);
     return this.http.get<{ intentos: any[] }>(`${this.evaluacionesApiUrl}/evaluaciones/intentos?estudianteId=${studentId}&cursoId=${courseId}`)
       .pipe(
-        tap(raw => {
-          console.log('📦 [getQuizAttempts] Intentos crudos del backend:');
-          (raw.intentos || []).forEach((i: any) => {
-            console.log(`  - id=${i.id} | quizId=${i.quizId} | estado=${i.estado} | respuestas=${i.respuestas?.length || 0}`);
-          });
-        }),
-        map(response => (response.intentos || []).map(i => this.mapToQuizAttempt(i))),
+        map(response => (response.intentos || []).map((i: any) => this.mapToQuizAttempt(i))),
         tap(attempts => {
+          attempts.forEach((a: any) => console.log(`🔄 Mapeando intento del backend: ${JSON.stringify(a).slice(0, 120)}`));
           this.cacheService.set(cacheKey, attempts, this.CACHE_TTL);
           console.log('💾 Intentos almacenados en caché:', cacheKey, attempts.length, 'items');
-        }),
-        catchError(error => {
-          console.error('❌ Error al cargar intentos de evaluaciones del backend:', error);
-          if (error.status === 401) {
-            console.error('⚠️  Token no válido o expirado. Intente iniciar sesión nuevamente.');
-          }
-          // Devolver array vacío en caso de error para que la UI no falle
-          return of([]);
         })
       );
   }

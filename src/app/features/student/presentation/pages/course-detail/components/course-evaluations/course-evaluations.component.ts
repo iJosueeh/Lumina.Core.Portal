@@ -41,10 +41,12 @@ export class CourseEvaluationsComponent {
 
   getQuizStatusLabel(status: string): string {
     switch (status) {
-      case 'completed': return 'Completada';
-      case 'expired': return 'Vencida';
-      case 'pending': return 'Pendiente';
-      default: return 'No disponible';
+      case 'completed':   return 'Completada';
+      case 'in-progress': return 'En curso';
+      case 'not-started': return 'No iniciada';
+      case 'expired':     return 'Vencida';
+      case 'pending':     return 'Pendiente';
+      default:             return `Desconocido(${status})`;
     }
   }
 
