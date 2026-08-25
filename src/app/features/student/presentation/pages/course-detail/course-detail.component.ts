@@ -158,9 +158,22 @@ export class CourseDetailComponent implements OnInit {
     const rawQuizzes = this.evaluationsQuery.data() ?? [];
     const attempts = this.attemptsQuery.data() ?? [];
 
+    console.log('[CourseDetail] rawQuizzes count:', rawQuizzes.length);
+    console.log('[CourseDetail] attempts count:', attempts.length);
+
     return rawQuizzes.map(quiz => {
       const quizAttempts = attempts.filter(a => a.quizId === quiz.id);
       const bestAttempt = [...quizAttempts].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
+      const status = this.calculateQuizStatus(quiz, quizAttempts);
+      const hasCompleted = quizAttempts.some(a => a.status === 'completed' && a.answers.length > 0);
+
+      console.log(`[CourseDetail] Quiz "${quiz.titulo || quiz.id}":`, {
+        quizId: quiz.id,
+        attemptsForQuiz: quizAttempts.map(a => ({ id: a.id, status: a.status, answers: a.answers?.length })),
+        calculatedStatus: status,
+        hasCompletedAttempt: hasCompleted,
+        bestScore: bestAttempt?.score
+      });
 
       return {
         id: quiz.id,
@@ -173,13 +186,13 @@ export class CourseDetailComponent implements OnInit {
         timeLimit: quiz.config.timeLimit,
         availableFrom: quiz.availableFrom,
         availableUntil: quiz.availableUntil,
-        status: this.calculateQuizStatus(quiz, quizAttempts),
+        status,
         attemptsUsed: quizAttempts.length,
         attemptsAllowed: quiz.config.attemptsAllowed,
         bestScore: bestAttempt?.score,
         bestPercentage: bestAttempt?.percentage,
         passed: bestAttempt?.passed,
-        hasCompletedAttempt: quizAttempts.some(a => a.status === 'completed' && a.answers.length > 0)
+        hasCompletedAttempt: hasCompleted
       };
     });
   });
