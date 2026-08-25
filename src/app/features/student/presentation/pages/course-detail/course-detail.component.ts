@@ -215,6 +215,18 @@ export class CourseDetailComponent implements OnInit {
     return 'not-started';
   }
 
+  getQuizStatusLabel(status: string): string {
+    console.log(`[getQuizStatusLabel] called with status="${status}"`);
+    switch (status) {
+      case 'completed':   return 'Completada';
+      case 'in-progress': return 'En curso';
+      case 'not-started': return 'No iniciada';
+      case 'expired':     return 'Vencida';
+      case 'pending':     return 'Pendiente';
+      default:             return `?(${status})`;
+    }
+  }
+
   isLoadingCourse = computed(() => this.courseQuery.isLoading());
   hasError = computed(() => !!this.courseQuery.error());
 
