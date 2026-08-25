@@ -117,16 +117,19 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
 
   async toggleLessonCompletion(lesson: ClassroomLesson): Promise<void> {
     const nextState = !lesson.isCompleted;
+    console.log('[VideoClassroom] Toggle lesson:', lesson.lessonId, '→', nextState);
     this.updateLocalProgress(lesson.lessonId, nextState);
 
     try {
+      console.log('[VideoClassroom] Calling backend:', this.courseId(), lesson.lessonId);
       await lastValueFrom(this.videoClassroomService.updateLessonCompletion(this.courseId(), lesson.lessonId, {
         isCompleted: nextState,
         source: 'manual'
       }));
-      // Invalidar cache de progreso para que course-detail se actualice
+      console.log('[VideoClassroom] Backend success, invalidating progress cache');
       this.queryClient.invalidateQueries({ queryKey: ['student-progress'] });
-    } catch {
+    } catch (err: any) {
+      console.error('[VideoClassroom] Backend error:', err?.status, err?.message);
       this.updateLocalProgress(lesson.lessonId, !nextState);
     }
   }
