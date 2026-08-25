@@ -124,6 +124,8 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
         isCompleted: nextState,
         source: 'manual'
       }));
+      // Invalidar cache de progreso para que course-detail se actualice
+      this.queryClient.invalidateQueries({ queryKey: ['student-progress'] });
     } catch {
       this.updateLocalProgress(lesson.lessonId, !nextState);
     }
@@ -134,7 +136,6 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
     if (!data) return;
 
     const updated = {
-      ...data,
       sections: data.sections.map(s => ({
         ...s,
         videos: s.videos.map(v => v.lessonId === lessonId ? { ...v, isCompleted: completed } : v)
