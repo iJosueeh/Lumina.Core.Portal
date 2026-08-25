@@ -74,6 +74,12 @@ export class EvaluationsIntegrationService {
     console.log('📡 Realizando petición HTTP para evaluaciones:', cacheKey);
     return this.http.get<{ evaluaciones: EvaluacionResponse[] }>(`${this.evaluacionesApiUrl}/evaluaciones?cursoId=${courseId}`)
       .pipe(
+        tap(raw => {
+          console.log('📦 [getEvaluationsByCourse] Evaluaciones crudas del backend:');
+          raw.evaluaciones.forEach((e: any) => {
+            console.log(`  - ${e.titulo} | id=${e.id} | estado=${e.estado} | fechaLimite=${e.fechaLimite}`);
+          });
+        }),
         map(response => response.evaluaciones.map(e => this.mapToQuiz(e))),
         tap(quizzes => {
           this.cacheService.set(cacheKey, quizzes, this.CACHE_TTL);
@@ -96,6 +102,12 @@ export class EvaluationsIntegrationService {
     console.log('📡 Realizando petición HTTP para intentos de evaluaciones:', cacheKey);
     return this.http.get<{ intentos: any[] }>(`${this.evaluacionesApiUrl}/evaluaciones/intentos?estudianteId=${studentId}&cursoId=${courseId}`)
       .pipe(
+        tap(raw => {
+          console.log('📦 [getQuizAttempts] Intentos crudos del backend:');
+          (raw.intentos || []).forEach((i: any) => {
+            console.log(`  - id=${i.id} | quizId=${i.quizId} | estado=${i.estado} | respuestas=${i.respuestas?.length || 0}`);
+          });
+        }),
         map(response => (response.intentos || []).map(i => this.mapToQuizAttempt(i))),
         tap(attempts => {
           this.cacheService.set(cacheKey, attempts, this.CACHE_TTL);
