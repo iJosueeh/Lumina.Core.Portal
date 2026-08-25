@@ -22,7 +22,7 @@ export class StudentProgressService {
    */
   getCourseProgress(estudianteId: string, cursoId: string): Observable<StudentCourseProgress> {
     return this.http.get<any>(
-      `${environment.estudiantesApiUrl}/estudiantes/${estudianteId}/aula-video/${cursoId}`
+      `${environment.estudiantesApiUrl}/estudiantes/${estudianteId}/cursos/${cursoId}/aula-video`
     ).pipe(
       map(response => {
         const sections = response?.data?.Sections || response?.sections || [];

@@ -105,6 +105,7 @@ export class CourseDetailComponent implements OnInit {
     queryKey: ['student-progress', this.studentId(), this.courseId()],
     queryFn: () => lastValueFrom(this.studentProgressService.getCourseProgress(this.studentId(), this.courseId())),
     enabled: !!this.studentId() && !!this.courseId(),
+    staleTime: 0, // Siempre fresco para reflejar completados reales
   }));
 
   isStartingQuizId = signal<string | null>(null);
