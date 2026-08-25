@@ -121,21 +121,30 @@
           <span class="text-[10px] uppercase tracking-widest text-slate-500">Completado</span>
         </div>
       </div>
-      <p class="text-xs text-slate-500 mb-4">Aún no has comenzado este viaje. ¡Es un buen momento para aprender!</p>
+      @if (course().progress > 0) {
+        <p class="text-xs text-slate-600 mb-2">
+          {{ getCompletedLessonsCount() }} de {{ getTotalLessonsCount() }} lecciones completadas
+        </p>
+      }
+      <p class="text-xs text-slate-500 mb-4">
+        {{ course().progress > 0 ? 'Sigue así, vas por buen camino.' : 'Aún no has comenzado. ¡Es un buen momento para empezar!' }}
+      </p>
       <button (click)="onContinueLesson.emit()" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors text-sm">
-        Comenzar Ahora
+        {{ course().progress > 0 ? 'Continuar' : 'Comenzar Ahora' }}
       </button>
     </div>
 
-    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
-      <p class="text-sm font-semibold text-slate-900 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-        Certificación Oficial
-      </p>
-      <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Avalado globalmente</p>
-      <button class="mt-4 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors">
-        Ver Detalles del Título
-      </button>
-    </div>
+    @if (course().hasCertification) {
+      <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+        <p class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+          Certificación Oficial
+        </p>
+        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Al completar el curso</p>
+        <button class="mt-4 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors">
+          Ver Detalles del Título
+        </button>
+      </div>
+    }
   </aside>
 </div>

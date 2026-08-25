@@ -156,6 +156,7 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
             progress,
             completedModules,
             totalModules: mappedModules.length,
+            hasCertification: true,
             coverImage: response.imagenUrl || response.imagen || response.imageUrl || response.coverImage || response.portada || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop',
             modules: mappedModules,
             materials: flattenedMaterials,

@@ -155,6 +155,7 @@ export interface CourseDetail {
   completedModules: number;
   totalModules: number;
   coverImage: string;
+  hasCertification?: boolean; // Mostrar card de certificación
   modules: Module[];
   materials: CourseMaterial[]; // NUEVO
   forums: Forum[]; // NUEVO
