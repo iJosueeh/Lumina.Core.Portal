@@ -5,6 +5,7 @@ import { injectQuery, injectQueryClient } from '@tanstack/angular-query-experime
 import { lastValueFrom } from 'rxjs';
 
 import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
+import { StudentProgressService } from '@features/student/infrastructure/services/student-progress.service';
 import { AuthService } from '@core/services/auth.service';
 import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { LayoutService } from '@features/student/domain/services/layout.service';
@@ -40,6 +41,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   private enrollmentService = inject(EnrollmentService);
   private layoutService = inject(LayoutService);
   private videoClassroomService = inject(VideoClassroomService);
+  private studentProgressService = inject(StudentProgressService);
 
   classroomQuery = injectQuery(() => ({
     queryKey: ['course-video-classroom', this.courseId()],
@@ -54,9 +56,35 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
     refetchOnWindowFocus: false,
   }));
 
+  // Real lesson completion from backend
+  progressQuery = injectQuery(() => ({
+    queryKey: ['student-progress', this.courseId()],
+    queryFn: () => lastValueFrom(
+      this.studentProgressService.getCourseProgress(this.authService.getUserId() || '', this.courseId())
+    ),
+    enabled: !!this.courseId() && !!this.authService.getUserId(),
+    staleTime: 0,
+  }));
+
   classroomData = computed(() => this.classroomQuery.data());
   sections = computed(() => this.classroomData()?.sections || []);
-  allLessons = computed(() => this.sections().flatMap(s => s.videos));
+
+  // Cross real isCompleted from backend into allLessons
+  allLessons = computed(() => {
+    const sectionsData = this.sections();
+    const progressData = this.progressQuery.data();
+    const completedIds = new Set<string>(
+      progressData?.completedLessonIds?.map(id => id.toLowerCase()) || []
+    );
+
+    return sectionsData.flatMap(s =>
+      s.videos.map(v => ({
+        ...v,
+        isCompleted: completedIds.has(v.lessonId.toLowerCase())
+      }))
+    );
+  });
+
   queryError = computed(() => this.classroomQuery.error());
   isCourseUnavailable = computed(() => {
     const error = this.queryError();
@@ -127,7 +155,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
         source: 'manual'
       }));
       console.log('[VideoClassroom] Backend success, invalidating progress cache');
-      this.queryClient.invalidateQueries({ queryKey: ['student-progress'] });
+      this.queryClient.invalidateQueries({ queryKey: ['student-progress', this.courseId()] });
     } catch (err: any) {
       console.error('[VideoClassroom] Backend error:', err?.status, err?.message);
       this.updateLocalProgress(lesson.lessonId, !nextState);
@@ -135,6 +163,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   }
 
   private updateLocalProgress(lessonId: string, completed: boolean): void {
+    // Optimistically update the local cache for instant UI feedback
     const data = this.classroomData();
     if (!data) return;
 
