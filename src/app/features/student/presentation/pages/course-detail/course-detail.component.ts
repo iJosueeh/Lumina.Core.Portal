@@ -17,6 +17,7 @@ import { GetCourseDetailUseCase } from '@features/student/application/use-cases/
 import { MaterialsService } from '@features/student/infrastructure/services/materials.service';
 import { EvaluationsIntegrationService } from '@features/student/infrastructure/services/evaluations-integration.service';
 import { ProgressStorageService } from '@features/student/infrastructure/services/progress-storage.service';
+import { StudentProgressService } from '@features/student/infrastructure/services/student-progress.service';
 import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@shared/services/notification.service';
@@ -54,6 +55,7 @@ export class CourseDetailComponent implements OnInit {
   private materialsService = inject(MaterialsService);
   private evaluationsService = inject(EvaluationsIntegrationService);
   private progressStorage = inject(ProgressStorageService);
+  private studentProgressService = inject(StudentProgressService);
   private enrollmentService = inject(EnrollmentService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
@@ -99,6 +101,12 @@ export class CourseDetailComponent implements OnInit {
     enabled: !!this.courseId() && !!this.studentId(),
   }));
 
+  progressQuery = injectQuery(() => ({
+    queryKey: ['student-progress', this.studentId(), this.courseId()],
+    queryFn: () => lastValueFrom(this.studentProgressService.getCourseProgress(this.studentId(), this.courseId())),
+    enabled: !!this.studentId() && !!this.courseId(),
+  }));
+
   isStartingQuizId = signal<string | null>(null);
   isViewingResultsId = signal<string | null>(null);
   isQuizActive = signal(false);
@@ -108,7 +116,41 @@ export class CourseDetailComponent implements OnInit {
   isResultsActive = signal(false);
   activeResults = signal<any>(null);
 
-  course = computed(() => this.courseQuery.data());
+  course = computed(() => {
+    const base = this.courseQuery.data();
+    const progress = this.progressQuery.data();
+    if (!base) return undefined;
+
+    // Cruzar: usar isCompleted real del estudiante si existe
+    const realCompletedIds = new Set(progress?.completedLessonIds ?? []);
+
+    const enrichedModules = base.modules.map(m => ({
+      ...m,
+      lessons: m.lessons?.map(l => ({
+        ...l,
+        isCompleted: realCompletedIds.has(l.id) || l.isCompleted,
+      })) ?? [],
+    }));
+
+    // Recalcular progress y completedModules desde datos reales
+    let totalLessons = 0;
+    let completedLessons = 0;
+    let completedModulesCount = 0;
+    for (const mod of enrichedModules) {
+      const modLessons = mod.lessons?.length ?? 0;
+      const modCompleted = mod.lessons?.filter(l => l.isCompleted).length ?? 0;
+      totalLessons += modLessons;
+      completedLessons += modCompleted;
+      if (modLessons > 0 && modCompleted === modLessons) completedModulesCount++;
+    }
+
+    return {
+      ...base,
+      modules: enrichedModules,
+      progress: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
+      completedModules: completedModulesCount,
+    };
+  });
   materials = computed(() => this.materialsQuery.data() ?? []);
 
   quizSummaries = computed<QuizSummary[]>(() => {
