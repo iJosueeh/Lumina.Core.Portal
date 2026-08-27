@@ -26,7 +26,7 @@ export class TeacherGradesService {
    * - GET /api/estudiantes/por-curso/{courseId} → estudiantes del curso
    */
   getCourseGrades(courseId: string): Observable<CourseGradesData> {
-    console.log('🔍 [GRADES-SERVICE] getCourseGrades called with courseId:', courseId);
+
     const courseIdGuid = courseId;
 
     return forkJoin({

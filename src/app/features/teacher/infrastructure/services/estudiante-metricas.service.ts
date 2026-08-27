@@ -38,7 +38,7 @@ export class EstudianteMetricasService {
       `${this.evaluacionesApiUrl}/estudiante/${estudianteId}/promedio`
     ).pipe(
       catchError(error => {
-        console.warn(`⚠️ [METRICAS] Error obteniendo promedio de ${estudianteId}:`, error);
+
         return of({
           estudianteId,
           promedioGeneral: 0,
@@ -57,7 +57,7 @@ export class EstudianteMetricasService {
       `${this.evaluacionesApiUrl}/estudiantes/${estudianteId}/tareas`
     ).pipe(
       catchError(error => {
-        console.warn(`⚠️ [METRICAS] Error obteniendo tareas de ${estudianteId}:`, error);
+
         return of({
           tareasEntregadas: 0,
           tareasPendientes: 0,

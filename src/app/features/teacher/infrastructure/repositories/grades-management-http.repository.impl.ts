@@ -20,8 +20,7 @@ export class GradesManagementHttpRepositoryImpl extends GradesManagementReposito
         // Obtener evaluaciones del curso y estudiantes matriculados
         return this.http.get<any>(`${this.evaluacionesApiUrl}/Evaluaciones?cursoId=${courseId}`).pipe(
             map(response => {
-                console.log('🔍 [GRADES-MANAGEMENT] RAW Response:', response);
-                
+
                 let evaluaciones: any[];
                 if (Array.isArray(response)) {
                     evaluaciones = response;

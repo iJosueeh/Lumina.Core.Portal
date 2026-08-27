@@ -141,7 +141,7 @@ export class StudentsListComponent {
       const metricasMap = await firstValueFrom(this.metricasService.getMetricasMultiplesEstudiantes(idsToLoad, cursoId));
       this.metricasCache.update(cache => new Map([...cache, ...metricasMap]));
     } catch (error) {
-      console.error('Error loading metrics:', error);
+
     }
   }
 
@@ -159,7 +159,7 @@ export class StudentsListComponent {
       const results = await Promise.all(coursePromises);
       this.courseNamesCache.update(cache => new Map([...cache, ...results]));
     } catch (error) {
-      console.error('Error loading course names:', error);
+
     }
   }
 
@@ -210,7 +210,7 @@ export class StudentsListComponent {
       this.assignableUsers.set(users);
       if (users.length > 0) this.newStudentSelectedUserId.set(users[0].id);
     } catch (err: any) {
-      console.error('Error loading assignable users:', err);
+
       this.assignableUsers.set([]);
     } finally {
       this.loadingAssignableUsers.set(false);

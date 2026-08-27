@@ -35,11 +35,9 @@ export class TeacherStudentHttpRepositoryImpl extends TeacherStudentRepository {
           docenteResponse.id;
 
         if (!docenteId) {
-          console.warn('⚠️ [TEACHER-STUDENTS-HTTP] No se pudo obtener docenteId');
+
           return of([]);
         }
-
-        console.log('✅ [TEACHER-STUDENTS-HTTP] DocenteId:', docenteId);
 
         // Paso 2: Llamada única al endpoint optimizado del backend
         return this.http
@@ -48,17 +46,17 @@ export class TeacherStudentHttpRepositoryImpl extends TeacherStudentRepository {
           )
           .pipe(
             map((estudiantes) => {
-              console.log(`✅ [TEACHER-STUDENTS-HTTP] ${estudiantes.length} estudiantes recibidos`);
+
               return estudiantes.map((e) => this.mapToTeacherStudent(e));
             }),
             catchError((error) => {
-              console.error('❌ [TEACHER-STUDENTS-HTTP] Error obteniendo estudiantes:', error);
+
               return of([]);
             })
           );
       }),
       catchError((error) => {
-        console.error('❌ [TEACHER-STUDENTS-HTTP] Error obteniendo docente:', error);
+
         return of([]);
       })
     );

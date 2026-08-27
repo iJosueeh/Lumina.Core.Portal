@@ -164,7 +164,7 @@ export class StudentDetailComponent implements OnInit {
         })),
       );
     } catch (err) {
-      console.error('❌ [STUDENT-DETAIL] Error loading:', err);
+
       this.errorMsg.set('Error al cargar la información del estudiante.');
     } finally {
       this.isLoading.set(false);

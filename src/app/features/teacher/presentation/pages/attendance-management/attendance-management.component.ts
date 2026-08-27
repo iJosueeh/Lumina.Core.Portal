@@ -113,7 +113,7 @@ export class AttendanceManagementComponent implements OnInit {
         await this.loadAllStats();
       }
     } catch (err) {
-      console.error('Error loading courses:', err);
+
     }
   }
 
@@ -278,7 +278,7 @@ export class AttendanceManagementComponent implements OnInit {
       this.saveSuccess.set(true);
       setTimeout(() => this.saveSuccess.set(false), 3000);
     } catch (err) {
-      console.error('Error saving attendance:', err);
+
     } finally {
       this.isSaving.set(false);
     }

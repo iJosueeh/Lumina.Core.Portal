@@ -79,7 +79,7 @@ export class QuestionEditorComponent implements OnInit {
         })),
       }));
     } catch (err) {
-      console.error('❌ Error cargando preguntas:', err);
+
       this.notificationService.show('error', 'No se pudieron cargar las preguntas.');
       this.questionsList = [this.createEmptyQuestion()];
     } finally {
@@ -119,7 +119,7 @@ export class QuestionEditorComponent implements OnInit {
         );
         this.notificationService.show('success', 'Pregunta eliminada.');
       } catch (err) {
-        console.error('❌ Error eliminando pregunta:', err);
+
         this.notificationService.show('error', 'No se pudo eliminar la pregunta.');
         return;
       }
@@ -185,7 +185,7 @@ export class QuestionEditorComponent implements OnInit {
       this.onSaved.emit();
       this.onClose.emit();
     } catch (err) {
-      console.error('❌ Error guardando preguntas:', err);
+
       this.notificationService.show('error', 'Ocurrió un error al guardar las preguntas.');
     } finally {
       this.isSaving.set(false);

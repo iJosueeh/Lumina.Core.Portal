@@ -61,13 +61,13 @@ export class TeacherCourseHttpRepositoryImpl extends TeacherCourseRepository {
                         return forkJoin(enriched$);
                     }),
                     catchError(error => {
-                        console.error('Error fetching courses:', error);
+
                         return of([]);
                     })
                 );
             }),
             catchError(error => {
-                console.error('Error fetching docente:', error);
+
                 return of([]);
             })
         );

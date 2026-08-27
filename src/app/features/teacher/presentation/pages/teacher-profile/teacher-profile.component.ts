@@ -139,7 +139,7 @@ private profileOverrides = signal<Partial<TeacherProfile>>({});
       this.saveNotification.set({ type: 'success', msg: 'Perfil actualizado correctamente' });
       setTimeout(() => this.saveNotification.set(null), 3500);
     } catch (err) {
-      console.error('❌ [PROFILE] Error saving profile:', err);
+
       this.saveNotification.set({ type: 'error', msg: 'Error al guardar. Intente nuevamente.' });
       setTimeout(() => this.saveNotification.set(null), 4000);
     } finally {

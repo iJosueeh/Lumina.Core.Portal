@@ -24,8 +24,7 @@ export class TeacherQueryService {
    * Obtiene información del docente por usuario_id
    */
   async getTeacherInfo(teacherId: string): Promise<TeacherInfo> {
-    console.log(`🔍 [TEACHER-QUERY] Fetching teacher info for userId: ${teacherId}`);
-    
+
     const response = await firstValueFrom(
       this.http.get<any>(`${this.docentesApiUrl}/docente/by-usuario/${teacherId}`)
     );
@@ -47,8 +46,7 @@ export class TeacherQueryService {
    * Usa el use case existente que maneja la lógica de llamadas HTTP
    */
   async getTeacherCourses(teacherId: string): Promise<TeacherCourse[]> {
-    console.log(`🔍 [TEACHER-QUERY] Fetching courses for teacherId: ${teacherId}`);
-    
+
     // Usar el use case que ya tiene la lógica implementada
     return await firstValueFrom(this.getCoursesUseCase.execute(teacherId));
   }
@@ -57,8 +55,7 @@ export class TeacherQueryService {
    * Obtiene las estadísticas del dashboard del docente
    */
   async getDashboardStats(teacherId: string): Promise<TeacherDashboardStats> {
-    console.log(`🔍 [TEACHER-QUERY] Fetching dashboard stats for userId: ${teacherId}`);
-    
+
     return await firstValueFrom(
       this.http.get<TeacherDashboardStats>(
         `${this.docentesApiUrl}/docente/by-usuario/${teacherId}/dashboard-stats`

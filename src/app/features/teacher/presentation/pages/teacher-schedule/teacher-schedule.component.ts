@@ -109,7 +109,7 @@ export class TeacherScheduleComponent implements OnInit {
         sesiones,
       });
     } catch (err) {
-      console.error('Error loading schedule:', err);
+
     } finally {
       this.isLoading.set(false);
     }

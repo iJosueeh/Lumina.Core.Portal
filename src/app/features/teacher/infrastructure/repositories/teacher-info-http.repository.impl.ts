@@ -21,7 +21,7 @@ export class TeacherInfoHttpRepositoryImpl extends TeacherInfoRepository {
     // Usando el nuevo endpoint by-usuario que busca por usuarioId
     return this.http.get<any>(`${this.docentesApiUrl}/docente/by-usuario/${teacherId}`).pipe(
       map(response => {
-        console.log('✅ [TEACHER-INFO] Respuesta del backend:', response);
+
         return {
           id: response.id.value,
           usuarioId: response.usuarioId,
@@ -34,7 +34,7 @@ export class TeacherInfoHttpRepositoryImpl extends TeacherInfoRepository {
         };
       }),
       catchError(error => {
-        console.error('❌ [TEACHER-INFO] Error obteniendo información del docente:', error);
+
         // Fallback: retornar información básica
         return of({
           id: teacherId,

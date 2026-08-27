@@ -13,41 +13,38 @@ export class TeacherCourseMockRepositoryImpl extends TeacherCourseRepository {
   }
 
   override getCoursesByTeacher(teacherId: string): Observable<TeacherCourse[]> {
-    console.log('📚 [TEACHER-COURSES-MOCK] Loading courses for teacher:', teacherId);
-    
+
     return this.http.get<any[]>('/assets/mock-data/teachers/teacher-courses-detail.json').pipe(
       map((courses) => {
-        console.log('✅ [TEACHER-COURSES-MOCK] Courses loaded:', courses.length);
+
         return courses.map((course) => this.mapToTeacherCourse(course));
       }),
     );
   }
 
   override getCourseById(courseId: string): Observable<TeacherCourse> {
-    console.log('📚 [TEACHER-COURSES-MOCK] Loading course:', courseId);
-    
+
     return this.http.get<any[]>('/assets/mock-data/teachers/teacher-courses-detail.json').pipe(
       map((courses) => {
         const course = courses.find((c) => c.id === courseId);
         if (!course) {
           throw new Error(`Course not found: ${courseId}`);
         }
-        console.log('✅ [TEACHER-COURSES-MOCK] Course loaded:', course.titulo);
+
         return this.mapToTeacherCourse(course);
       }),
     );
   }
 
   override getCourseStats(courseId: string): Observable<CourseStats> {
-    console.log('📊 [TEACHER-COURSES-MOCK] Loading stats for course:', courseId);
-    
+
     return this.http.get<any[]>('/assets/mock-data/teachers/teacher-courses-detail.json').pipe(
       map((courses) => {
         const course = courses.find((c) => c.id === courseId);
         if (!course || !course.stats) {
           throw new Error(`Course stats not found: ${courseId}`);
         }
-        console.log('✅ [TEACHER-COURSES-MOCK] Stats loaded');
+
         return course.stats;
       }),
     );

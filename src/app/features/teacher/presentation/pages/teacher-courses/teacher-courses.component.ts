@@ -77,7 +77,7 @@ export class TeacherCoursesComponent implements OnInit {
                 this.isLoading.set(false);
             },
             error: (error) => {
-                console.error('❌ [TEACHER-COURSES] Error cargando cursos:', error);
+
                 this.isLoading.set(false);
             }
         });
