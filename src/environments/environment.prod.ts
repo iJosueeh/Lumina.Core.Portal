@@ -1,21 +1,20 @@
 export const environment = {
     production: true,
     useMockData: false,
-    
-    // URLs directas a microservicios (producción)
-    // En producción, usar un reverse proxy como NGINX frente a los servicios
-    usuariosApiUrl: 'https://usuarios.lumina.edu/api',
-    estudiantesApiUrl: 'https://estudiantes.lumina.edu/api',
+
+    // URLs directas a microservicios en Render (dominios *.lumina.edu aún no configurados)
+    usuariosApiUrl: 'https://lumina-usuarios.onrender.com/api',
+    estudiantesApiUrl: 'https://lumina-estudiantes.onrender.com/api',
     cursosApiUrl: 'https://lumina-cursos.onrender.com/api',
-    evaluacionesApiUrl: 'https://evaluaciones.lumina.edu/api',
-    noticiasEventosApiUrl: 'https://noticias.lumina.edu/api',
-    docentesApiUrl: 'https://docentes.lumina.edu/api',
-    carrerasApiUrl: 'https://carreras.lumina.edu/api',
-    pedidosApiUrl: 'https://pedidos.lumina.edu/api',
+    evaluacionesApiUrl: 'https://lumina-evaluaciones.onrender.com/api',
+    noticiasEventosApiUrl: 'https://lumina-noticias.onrender.com/api',
+    docentesApiUrl: 'https://lumina-docentes.onrender.com/api',
+    carrerasApiUrl: 'https://lumina-carreras.onrender.com/api',
+    pedidosApiUrl: 'https://lumina-pedidos.onrender.com/api',
 
     // System Settings (integrated into Usuarios microservice)
-    systemSettingsApiUrl: 'https://usuarios.lumina.edu/api/system-settings',
+    systemSettingsApiUrl: 'https://lumina-usuarios.onrender.com/api/system-settings',
 
     // Default API (para auth)
-    apiUrl: 'https://usuarios.lumina.edu/api',
+    apiUrl: 'https://lumina-usuarios.onrender.com/api',
 };
