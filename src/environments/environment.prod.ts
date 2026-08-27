@@ -6,7 +6,7 @@ export const environment = {
     // En producción, usar un reverse proxy como NGINX frente a los servicios
     usuariosApiUrl: 'https://usuarios.lumina.edu/api',
     estudiantesApiUrl: 'https://estudiantes.lumina.edu/api',
-    cursosApiUrl: 'https://cursos.lumina.edu/api',
+    cursosApiUrl: 'https://lumina-cursos.onrender.com/api',
     evaluacionesApiUrl: 'https://evaluaciones.lumina.edu/api',
     noticiasEventosApiUrl: 'https://noticias.lumina.edu/api',
     docentesApiUrl: 'https://docentes.lumina.edu/api',
