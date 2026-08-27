@@ -14,7 +14,6 @@ export interface CourseStudentUI {
   tareasEntregadas: number;
   tareasPendientes: number;
   estado: string;
-  ultimoAcceso: string;
   courseId?: string;
   courseName?: string;
 }
@@ -28,7 +27,6 @@ export class TeacherStudentMapper {
   toUIModel(
     student: TeacherStudent,
     metricas?: EstudianteMetricasCompletas,
-    ultimoAcceso?: string | null,
     courseName?: string
   ): CourseStudentUI {
     const [nombre, ...apellidosArr] = student.nombreCompleto.split(' ');
@@ -49,7 +47,6 @@ export class TeacherStudentMapper {
       tareasPendientes: metricas?.tareasPendientes ?? 0,
       asistencia: metricas?.asistencia ?? 0,
       estado: this.calculateEstudianteStatus(metricas),
-      ultimoAcceso: ultimoAcceso ?? '',
       courseId: courseId,
       courseName: courseName ?? 'Sin datos',
     };
@@ -73,23 +70,6 @@ export class TeacherStudentMapper {
     }
 
     return 'Activo';
-  }
-
-  /**
-   * Formats "time ago" string
-   */
-  getTimeAgo(timestamp: string): string {
-    if (!timestamp) return 'Sin datos';
-    
-    const now = new Date();
-    const date = new Date(timestamp);
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-
-    if (hours < 1) return 'Hace menos de 1h';
-    if (hours < 24) return `Hace ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `Hace ${days} día${days > 1 ? 's' : ''}`;
   }
 
   /**

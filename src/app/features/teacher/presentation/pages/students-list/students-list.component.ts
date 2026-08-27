@@ -49,19 +49,18 @@ export class StudentsListComponent {
   private mapper = inject(TeacherStudentMapper);
   private http = inject(HttpClient);
   private notification = inject(NotificationService);
-  
+
   private currentUserId = computed(() => this.authRepository.getCurrentUser()?.id ?? '');
-  
+
   // Queries
   studentsQuery = useTeacherStudents(this.currentUserId());
-  
+
   // State
   searchTerm = signal('');
   selectedCourse = signal<string>('all');
   selectedStatus = signal<string>('all');
   private courseNamesCache = signal<Map<string, string>>(new Map());
   private metricasCache = signal<Map<string, EstudianteMetricasCompletas>>(new Map());
-  private ultimosAccesosCache = signal<Map<string, string | null>>(new Map());
 
   // New Student Modal
   showNewStudentModal = signal(false);
@@ -74,11 +73,10 @@ export class StudentsListComponent {
   // Data processing
   allStudents = computed(() => {
     const students = this.studentsQuery.data() || [];
-    return students.map((s: TeacherStudent) => 
+    return students.map((s: TeacherStudent) =>
       this.mapper.toUIModel(
-        s, 
+        s,
         this.metricasCache().get(s.id),
-        this.ultimosAccesosCache().get(s.usuarioId),
         this.courseNamesCache().get(s.cursos[0] || '')
       )
     );
@@ -91,7 +89,7 @@ export class StudentsListComponent {
     return students.filter(s => {
       const matchCourse = this.selectedCourse() === 'all' || s.courseId === this.selectedCourse();
       const matchStatus = this.selectedStatus() === 'all' || s.estado === this.selectedStatus();
-      const matchSearch = !term || 
+      const matchSearch = !term ||
         s.nombre.toLowerCase().includes(term) ||
         s.apellidos.toLowerCase().includes(term) ||
         s.codigo.toLowerCase().includes(term) ||
@@ -115,7 +113,7 @@ export class StudentsListComponent {
     });
 
     const options = Array.from(uniqueCourses.entries()).map(([id, name]) => ({ label: name, value: id }));
-    return options; // StudentFilter adds 'all'
+    return options;
   });
 
   constructor() {
@@ -131,7 +129,6 @@ export class StudentsListComponent {
     await Promise.all([
       this.loadCourseNames(students),
       this.loadStudentMetrics(students),
-      this.loadUltimosAccesos(students)
     ]);
   }
 
@@ -145,19 +142,6 @@ export class StudentsListComponent {
       this.metricasCache.update(cache => new Map([...cache, ...metricasMap]));
     } catch (error) {
       console.error('Error loading metrics:', error);
-    }
-  }
-
-  private async loadUltimosAccesos(students: CourseStudentUI[]) {
-    const backendStudents = this.studentsQuery.data() || [];
-    const idsToLoad = backendStudents.map(s => s.usuarioId).filter(id => !this.ultimosAccesosCache().has(id));
-    if (idsToLoad.length === 0) return;
-
-    try {
-      const accesosMap = await firstValueFrom(this.metricasService.getUltimosAccesos(idsToLoad));
-      this.ultimosAccesosCache.update(cache => new Map([...cache, ...accesosMap]));
-    } catch (error) {
-      console.error('Error loading last access:', error);
     }
   }
 
@@ -248,26 +232,5 @@ export class StudentsListComponent {
     } finally {
       this.isCreatingStudent.set(false);
     }
-  }
-
-  exportToCSV(): void {
-    const students = this.filteredStudents();
-    if (students.length === 0) return;
-
-    const headers = ['Nombre', 'Apellidos', 'Código', 'Email', 'Curso', 'Promedio', 'Asistencia %', 'Estado'];
-    const rows = students.map(s => [
-      `"${s.nombre}"`, `"${s.apellidos}"`, s.codigo, s.email,
-      `"${s.courseName ?? ''}"`, s.promedio.toFixed(2),
-      s.asistencia.toFixed(1) + '%', s.estado,
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `estudiantes_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
   }
 }

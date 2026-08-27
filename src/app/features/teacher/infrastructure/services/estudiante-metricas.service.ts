@@ -11,11 +11,6 @@ interface TareasEstudianteResponse {
   tareasTotal: number;
 }
 
-interface UltimoAccesoResponse {
-  usuarioId: string;
-  ultimoAcceso: string | null;
-}
-
 interface AulaVirtualProgressBatchItem {
   estudianteId: string;
   progressPercent: number;
@@ -86,7 +81,6 @@ export class EstudianteMetricasService {
 
   /**
    * Obtiene el progreso de aula virtual para múltiples estudiantes de un curso (batch - 1 request).
-   * Este es el % de vídeos completados del estudiante en el curso.
    */
   getAulaVirtualProgressBatch(cursoId: string, estudianteIds: string[]): Observable<Map<string, number>> {
     if (estudianteIds.length === 0) return of(new Map());
@@ -100,30 +94,6 @@ export class EstudianteMetricasService {
         return map;
       }),
       catchError(() => of(new Map()))
-    );
-  }
-
-  /**
-   * Obtiene el último acceso de múltiples usuarios
-   */
-  getUltimosAccesos(usuarioIds: string[]): Observable<Map<string, string | null>> {
-    if (usuarioIds.length === 0) {
-      return of(new Map());
-    }
-
-    const idsParam = usuarioIds.join(',');
-    return this.http.get<UltimoAccesoResponse[]>(
-      `${this.estudiantesApiUrl}/usuarios/ultimos-accesos?usuarioIds=${idsParam}`
-    ).pipe(
-      map(response => {
-        const map = new Map<string, string | null>();
-        response.forEach(item => map.set(item.usuarioId, item.ultimoAcceso));
-        return map;
-      }),
-      catchError(error => {
-        console.warn(`⚠️ [METRICAS] Error obteniendo últimos accesos:`, error);
-        return of(new Map());
-      })
     );
   }
 
@@ -167,7 +137,7 @@ export class EstudianteMetricasService {
 
   /**
    * Obtiene métricas para múltiples estudiantes en paralelo.
-   * Si se proporciona cursoId, incluye asistencia en batch (1 request).
+   * Si se proporciona cursoId, incluye asistencia del aula virtual en batch (1 request).
    */
   getMetricasMultiplesEstudiantes(
     estudianteIds: string[],
