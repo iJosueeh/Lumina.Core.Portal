@@ -123,22 +123,14 @@
                 </div>
               </div>
 
-              <div class="mt-auto flex items-center justify-between gap-3">
-                <div class="flex -space-x-2">
-                  @for (i of [1,2,3,4]; track i) {
-                    <img [src]="'https://i.pravatar.cc/100?u=' + course.id + i"
-                      class="w-8 h-8 rounded-full border-2 border-white bg-slate-200" alt="Alumno">
-                  }
-                </div>
-                <div class="flex gap-2">
-                  <button [routerLink]="['/teacher/course', course.id, 'preview']" (click)="$event.stopPropagation()"
-                    class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">
-                    Previsualizar Aula
-                  </button>
-                  <button class="w-9 h-9 bg-slate-100 hover:bg-indigo-500 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition-all">
-                    <i class="fas fa-chevron-right text-xs"></i>
-                  </button>
-                </div>
+              <div class="mt-auto flex items-center justify-end gap-2">
+                <button [routerLink]="['/teacher/course', course.id, 'preview']" (click)="$event.stopPropagation()"
+                  class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">
+                  Previsualizar Aula
+                </button>
+                <button class="w-9 h-9 bg-slate-100 hover:bg-indigo-500 text-slate-400 hover:text-white rounded-lg flex items-center justify-center transition-all">
+                  <i class="fas fa-chevron-right text-xs"></i>
+                </button>
               </div>
             </div>
           } @empty {

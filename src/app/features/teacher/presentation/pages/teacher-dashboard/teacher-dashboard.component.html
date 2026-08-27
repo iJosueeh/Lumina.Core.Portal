@@ -131,49 +131,8 @@
         </div>
       </section>
 
-      <!-- Panel Lateral (Próximas Clases + Actividad) -->
+      <!-- Panel Lateral (Actividad) -->
       <section class="space-y-6">
-        <!-- Próximas Clases -->
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-3">
-              <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clock text-purple-600 text-sm"></i>
-              </span>
-              Próximas Clases
-            </h2>
-          </div>
-
-          <div class="space-y-3">
-            @if (isLoadingStats()) {
-              @for (i of [1,2,3]; track i) {
-                <div class="h-20 bg-white rounded-xl border border-slate-200 animate-pulse shadow-sm"></div>
-              }
-            } @else {
-              @for (clase of stats()?.upcomingClasses; track clase.id) {
-                <div class="bg-white border border-slate-200 p-4 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all shadow-sm group">
-                  <div class="flex gap-3 items-center">
-                    <div class="flex-shrink-0 w-12 h-12 bg-purple-50 rounded-xl flex flex-col items-center justify-center text-purple-600">
-                      <span class="text-[9px] font-bold uppercase">{{ clase.date | date:'MMM' }}</span>
-                      <span class="text-lg font-bold leading-none">{{ clase.date | date:'dd' }}</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <h4 class="text-sm font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{{ clase.courseName }}</h4>
-                      <p class="text-[10px] text-slate-500 font-medium mt-1">
-                        {{ clase.date | date:'HH:mm' }} - {{ clase.endTime | date:'HH:mm' }} · {{ clase.room }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              } @empty {
-                <div class="p-6 text-center bg-white rounded-xl border border-dashed border-slate-300">
-                  <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Sin clases programadas</p>
-                </div>
-              }
-            }
-          </div>
-        </div>
-
         <!-- Actividad Reciente -->
         <div>
           <div class="flex items-center justify-between mb-4">

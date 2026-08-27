@@ -5,17 +5,11 @@
     badge="Gestión de Estudiantes"
     title="Lista de Estudiantes"
     subtitle="Monitorea el progreso, asistencia y desempeño de todos tus alumnos">
-    <div class="flex items-center gap-3">
-      <button (click)="openNewStudentModal()"
-        class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm">
-        <i class="fas fa-user-plus"></i>
-        Nuevo Estudiante
-      </button>
-      <button (click)="exportToCSV()" class="px-5 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm">
-        <i class="fas fa-file-export text-indigo-500"></i>
-        Exportar CSV
-      </button>
-    </div>
+    <button (click)="openNewStudentModal()"
+      class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm">
+      <i class="fas fa-user-plus"></i>
+      Nuevo Estudiante
+    </button>
   </app-page-header>
 
   <!-- Contenido Principal -->
