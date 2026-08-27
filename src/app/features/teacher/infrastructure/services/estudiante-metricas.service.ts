@@ -16,14 +16,13 @@ interface UltimoAccesoResponse {
   ultimoAcceso: string | null;
 }
 
-interface AsistenciaBatchItem {
+interface AulaVirtualProgressBatchItem {
   estudianteId: string;
-  cursoId: string;
-  totalClases: number;
-  activos: number;
-  ausentes: number;
-  pendientes: number;
-  porcentajeAsistencia: number;
+  progressPercent: number;
+  completedLessons: number;
+  totalLessons: number;
+  lastLessonId: string | null;
+  lastActivityAt: string | null;
 }
 
 /**
@@ -86,17 +85,18 @@ export class EstudianteMetricasService {
   }
 
   /**
-   * Obtiene resúmenes de asistencia para múltiples estudiantes de un curso (batch - 1 request)
+   * Obtiene el progreso de aula virtual para múltiples estudiantes de un curso (batch - 1 request).
+   * Este es el % de vídeos completados del estudiante en el curso.
    */
-  getAsistenciaBatch(cursoId: string, estudianteIds: string[]): Observable<Map<string, number>> {
+  getAulaVirtualProgressBatch(cursoId: string, estudianteIds: string[]): Observable<Map<string, number>> {
     if (estudianteIds.length === 0) return of(new Map());
     const idsParam = estudianteIds.join(',');
-    return this.http.get<AsistenciaBatchItem[]>(
-      `${this.estudiantesApiUrl}/asistencias/resumen/batch?cursoId=${cursoId}&estudianteIds=${idsParam}`
+    return this.http.get<AulaVirtualProgressBatchItem[]>(
+      `${this.estudiantesApiUrl}/matricula/aula-virtual-progress/batch?cursoId=${cursoId}&estudianteIds=${idsParam}`
     ).pipe(
       map(results => {
         const map = new Map<string, number>();
-        results.forEach(r => map.set(r.estudianteId, r.porcentajeAsistencia ?? 0));
+        results.forEach(r => map.set(r.estudianteId, r.progressPercent ?? 0));
         return map;
       }),
       catchError(() => of(new Map()))
@@ -206,12 +206,12 @@ export class EstudianteMetricasService {
 
     return forkJoin({
       metricas: metricas$,
-      asistencia: this.getAsistenciaBatch(cursoId, estudianteIds),
+      aulaVirtual: this.getAulaVirtualProgressBatch(cursoId, estudianteIds),
     }).pipe(
-      map(({ metricas, asistencia }) => {
+      map(({ metricas, aulaVirtual }) => {
         const combined = new Map<string, EstudianteMetricasCompletas>();
         metricas.forEach((m, id) => {
-          combined.set(id, { ...m, asistencia: asistencia.get(id) ?? 0 });
+          combined.set(id, { ...m, asistencia: aulaVirtual.get(id) ?? 0 });
         });
         return combined;
       })
