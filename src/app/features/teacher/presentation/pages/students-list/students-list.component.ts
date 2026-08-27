@@ -140,7 +140,8 @@ export class StudentsListComponent {
     if (idsToLoad.length === 0) return;
 
     try {
-      const metricasMap = await firstValueFrom(this.metricasService.getMetricasMultiplesEstudiantes(idsToLoad));
+      const cursoId = this.selectedCourse() !== 'all' ? this.selectedCourse() : undefined;
+      const metricasMap = await firstValueFrom(this.metricasService.getMetricasMultiplesEstudiantes(idsToLoad, cursoId));
       this.metricasCache.update(cache => new Map([...cache, ...metricasMap]));
     } catch (error) {
       console.error('Error loading metrics:', error);

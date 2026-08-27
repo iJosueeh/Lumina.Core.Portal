@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { EstudianteMetricas, EstudianteMetricasCompletas } from '@features/teacher/domain/models/estudiante-metricas.model';
 
@@ -16,6 +16,16 @@ interface UltimoAccesoResponse {
   ultimoAcceso: string | null;
 }
 
+interface AsistenciaBatchItem {
+  estudianteId: string;
+  cursoId: string;
+  totalClases: number;
+  activos: number;
+  ausentes: number;
+  pendientes: number;
+  porcentajeAsistencia: number;
+}
+
 /**
  * Servicio para obtener métricas de estudiantes desde múltiples APIs.
  * No genera datos mock — cuando el backend falla retorna 0 / vacío.
@@ -24,7 +34,7 @@ interface UltimoAccesoResponse {
 export class EstudianteMetricasService {
   private http = inject(HttpClient);
   private evaluacionesApiUrl = `${environment.evaluacionesApiUrl}/evaluaciones`;
-  private usuariosApiUrl = environment.usuariosApiUrl;
+  private estudiantesApiUrl = environment.estudiantesApiUrl;
 
   /**
    * Obtiene el promedio y estadísticas de evaluaciones de un estudiante
@@ -64,6 +74,36 @@ export class EstudianteMetricasService {
   }
 
   /**
+   * Obtiene el resumen de asistencia de un estudiante en un curso
+   */
+  getAsistenciaEstudiante(estudianteId: string, cursoId: string): Observable<number> {
+    return this.http.get<any>(
+      `${this.estudiantesApiUrl}/asistencias/resumen?estudianteId=${estudianteId}&cursoId=${cursoId}`
+    ).pipe(
+      map(r => r?.porcentajeAsistencia ?? 0),
+      catchError(() => of(0))
+    );
+  }
+
+  /**
+   * Obtiene resúmenes de asistencia para múltiples estudiantes de un curso (batch - 1 request)
+   */
+  getAsistenciaBatch(cursoId: string, estudianteIds: string[]): Observable<Map<string, number>> {
+    if (estudianteIds.length === 0) return of(new Map());
+    const idsParam = estudianteIds.join(',');
+    return this.http.get<AsistenciaBatchItem[]>(
+      `${this.estudiantesApiUrl}/asistencias/resumen/batch?cursoId=${cursoId}&estudianteIds=${idsParam}`
+    ).pipe(
+      map(results => {
+        const map = new Map<string, number>();
+        results.forEach(r => map.set(r.estudianteId, r.porcentajeAsistencia ?? 0));
+        return map;
+      }),
+      catchError(() => of(new Map()))
+    );
+  }
+
+  /**
    * Obtiene el último acceso de múltiples usuarios
    */
   getUltimosAccesos(usuarioIds: string[]): Observable<Map<string, string | null>> {
@@ -73,7 +113,7 @@ export class EstudianteMetricasService {
 
     const idsParam = usuarioIds.join(',');
     return this.http.get<UltimoAccesoResponse[]>(
-      `${this.usuariosApiUrl}/usuarios/ultimos-accesos?usuarioIds=${idsParam}`
+      `${this.estudiantesApiUrl}/usuarios/ultimos-accesos?usuarioIds=${idsParam}`
     ).pipe(
       map(response => {
         const map = new Map<string, string | null>();
@@ -90,43 +130,90 @@ export class EstudianteMetricasService {
   /**
    * Obtiene todas las métricas disponibles para un estudiante
    */
-  getMetricasCompletas(estudianteId: string): Observable<EstudianteMetricasCompletas> {
+  getMetricasCompletas(estudianteId: string, cursoId?: string): Observable<EstudianteMetricasCompletas> {
     return forkJoin({
       evaluaciones: this.getPromedioEstudiante(estudianteId),
       tareas: this.getTareasEstudiante(estudianteId),
     }).pipe(
-      map(result => ({
-        ...result.evaluaciones,
-        tareasEntregadas: result.tareas.tareasEntregadas,
-        tareasPendientes: result.tareas.tareasPendientes,
-        asistencia: 0, // Sin API de asistencia aún
+      switchMap(result => {
+        if (!cursoId) {
+          return of({
+            ...result.evaluaciones,
+            tareasEntregadas: result.tareas.tareasEntregadas,
+            tareasPendientes: result.tareas.tareasPendientes,
+            asistencia: 0,
+          });
+        }
+        return this.getAsistenciaEstudiante(estudianteId, cursoId).pipe(
+          map(asistencia => ({
+            ...result.evaluaciones,
+            tareasEntregadas: result.tareas.tareasEntregadas,
+            tareasPendientes: result.tareas.tareasPendientes,
+            asistencia,
+          }))
+        );
+      }),
+      catchError(() => of({
+        estudianteId,
+        promedioGeneral: 0,
+        totalEvaluaciones: 0,
+        evaluacionesCompletadas: 0,
+        tareasEntregadas: 0,
+        tareasPendientes: 0,
+        asistencia: 0,
       }))
     );
   }
 
   /**
-   * Obtiene métricas para múltiples estudiantes en paralelo
+   * Obtiene métricas para múltiples estudiantes en paralelo.
+   * Si se proporciona cursoId, incluye asistencia en batch (1 request).
    */
-  getMetricasMultiplesEstudiantes(estudianteIds: string[]): Observable<Map<string, EstudianteMetricasCompletas>> {
-    if (estudianteIds.length === 0) {
-      return of(new Map());
-    }
+  getMetricasMultiplesEstudiantes(
+    estudianteIds: string[],
+    cursoId?: string
+  ): Observable<Map<string, EstudianteMetricasCompletas>> {
+    if (estudianteIds.length === 0) return of(new Map());
 
-    const requests = estudianteIds.map(id =>
-      this.getMetricasCompletas(id).pipe(
-        map(metricas => ({ id, metricas }))
+    const metricasRequests$ = estudianteIds.map(id =>
+      this.getPromedioEstudiante(id).pipe(
+        switchMap(metricas =>
+          this.getTareasEstudiante(id).pipe(
+            map(tareas => ({
+              id,
+              metricas: {
+                ...metricas,
+                tareasEntregadas: tareas.tareasEntregadas,
+                tareasPendientes: tareas.tareasPendientes,
+                asistencia: 0,
+              } as EstudianteMetricasCompletas
+            }))
+          )
+        )
       )
     );
 
-    return forkJoin(requests).pipe(
-      map(results => {
-        const map = new Map<string, EstudianteMetricasCompletas>();
-        results.forEach(({ id, metricas }) => map.set(id, metricas));
-        return map;
-      }),
-      catchError(error => {
-        console.error('❌ [METRICAS] Error obteniendo métricas múltiples:', error);
-        return of(new Map());
+    const metricas$: Observable<Map<string, EstudianteMetricasCompletas>> =
+      forkJoin(metricasRequests$).pipe(
+        map(results => {
+          const map = new Map<string, EstudianteMetricasCompletas>();
+          results.forEach(({ id, metricas }) => map.set(id, metricas));
+          return map;
+        })
+      );
+
+    if (!cursoId) return metricas$;
+
+    return forkJoin({
+      metricas: metricas$,
+      asistencia: this.getAsistenciaBatch(cursoId, estudianteIds),
+    }).pipe(
+      map(({ metricas, asistencia }) => {
+        const combined = new Map<string, EstudianteMetricasCompletas>();
+        metricas.forEach((m, id) => {
+          combined.set(id, { ...m, asistencia: asistencia.get(id) ?? 0 });
+        });
+        return combined;
       })
     );
   }
