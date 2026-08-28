@@ -54,8 +54,8 @@
                             <td colspan="3" class="p-0">
                                 <div class="bg-slate-50/80 border-l-4 border-indigo-300 mx-2 sm:mx-4 my-2 rounded-r-xl">
                                     @for (eval of evaluaciones; track eval.id) {
-                                        <!-- Desktop: fila horizontal -->
-                                        <div class="hidden sm:flex items-center gap-4 px-5 py-3 border-b border-slate-100 last:border-b-0">
+                                        <!-- Desktop: tarjeta envuelta -->
+                                        <div class="flex flex-wrap items-center gap-4 px-5 py-3 border-b border-slate-100 last:border-b-0">
                                             <div class="flex-1 min-w-0">
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-sm font-medium text-slate-700 truncate">{{ eval.nombre }}</span>
