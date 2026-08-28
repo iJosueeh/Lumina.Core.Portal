@@ -150,4 +150,33 @@ export class GradesManagementComponent implements OnInit {
         : 0;
     }
   }
+
+  exportToCSV(): void {
+    const data = this.courseGradesData();
+    if (!data) return;
+    const { evaluaciones, calificaciones } = data;
+    if (!calificaciones.length) return;
+
+    const headers = ['Estudiante', 'Código', ...evaluaciones.map(e => e.nombre), 'Promedio'];
+    const rows = calificaciones.map(c => {
+      const evalNotas = evaluaciones.map(e =>
+        c.notas[e.id] ?? ''
+      );
+      return [
+        c.estudianteNombre,
+        c.estudianteCodigo,
+        ...evalNotas,
+        c.promedio > 0 ? c.promedio.toString() : ''
+      ];
+    });
+
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `calificaciones_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 }
