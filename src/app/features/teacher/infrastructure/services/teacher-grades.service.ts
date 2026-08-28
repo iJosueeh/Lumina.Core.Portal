@@ -109,7 +109,7 @@ export class TeacherGradesService {
       const estId = String(est.estudianteId || est.id || '');
       if (!estId) continue;
       const nombre = est.nombreCompleto || est.nombre || est.email || 'Sin nombre';
-      const codigo = est.correoElectronico?.split('@')[0] || estId.slice(0, 8);
+      const codigo = est.codigo || est.correoElectronico?.split('@')[0] || 'S/N';
       estudiantesMap.set(estId, {
         estudianteId: estId,
         estudianteNombre: nombre,
