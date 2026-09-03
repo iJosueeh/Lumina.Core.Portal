@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, effect, InjectionToken } from '@angular/core';
+// Admin Dashboard - Recent Activity with cursor-based pagination
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Observable, forkJoin, of, catchError, finalize } from 'rxjs';
@@ -94,11 +95,8 @@ export class AdminDashboard {
   }
 
   loadMoreActivity(): void {
-    console.log('[PAGINATION] loadMoreActivity called, hasMore:', this.hasMoreActivity(), 'loading:', this.isLoadingMore());
-    if (this.isLoadingMore() || !this.hasMoreActivity()) {
-      console.log('[PAGINATION] Early return - hasMore:', this.hasMoreActivity(), 'loading:', this.isLoadingMore());
-      return;
-    }
+    alert('loadMoreActivity clicked!');
+    if (this.isLoadingMore() || !this.hasMoreActivity()) return;
 
     this.isLoadingMore.set(true);
 
