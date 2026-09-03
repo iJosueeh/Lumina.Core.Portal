@@ -94,6 +94,16 @@ export class UserManagement implements OnInit {
 
     totalPages = computed(() => Math.ceil(this.filteredUsers().length / this.itemsPerPage) || 1);
 
+    onRoleChange(value: string): void {
+        this.selectedRole.set(value);
+        this.currentPage.set(1);
+    }
+
+    onStatusChange(value: string): void {
+        this.selectedStatus.set(value);
+        this.currentPage.set(1);
+    }
+
     ngOnInit(): void {
         this.loadData();
     }
@@ -125,9 +135,26 @@ export class UserManagement implements OnInit {
 
     saveUser(userData: any): void {
         this.isSaving.set(true);
-        // Lógica de persistencia...
-        this.isModalOpen.set(false);
-        this.isSaving.set(false);
+        this.saveError.set('');
+
+        const action = this.isEditing()
+            ? this.adminService.updateUser(this.currentUser.id, userData)
+            : this.adminService.createUser(userData);
+
+        action.subscribe({
+            next: () => {
+                this.notificationService.show('success',
+                    this.isEditing() ? 'Usuario actualizado' : 'Usuario registrado'
+                );
+                this.loadData();
+                this.isModalOpen.set(false);
+                this.isSaving.set(false);
+            },
+            error: (err) => {
+                this.saveError.set(err?.error?.message || 'Error al guardar usuario');
+                this.isSaving.set(false);
+            }
+        });
     }
 
     deleteUser(user: AdminUser): void {

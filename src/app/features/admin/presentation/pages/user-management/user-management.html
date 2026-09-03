@@ -30,13 +30,13 @@
                 </button>
             }
         </div>
-        <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
+        <select [ngModel]="selectedRole()" (ngModelChange)="onRoleChange($event)"
             class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all appearance-none">
             @for (r of ['Rol: Todos', 'Estudiante', 'Docente', 'Admin']; track r) {
                 <option [value]="r">{{ r }}</option>
             }
         </select>
-        <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)"
+        <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)"
             class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all appearance-none">
             @for (s of ['Estado: Todos', 'Activo', 'Suspendido']; track s) {
                 <option [value]="s">{{ s }}</option>

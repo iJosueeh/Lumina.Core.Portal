@@ -10,20 +10,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const cookieService = inject(CookieService);
     const router = inject(Router);
     
-    let token = cookieService.get('auth_token');
-    
+    let token = cookieService.get('auth_token') || cookieService.get('AuthToken') || cookieService.get('AUTH_TOKEN');
+
     if (!token) {
-        token = localStorage.getItem('token');
-        
+        token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+
         if (token) {
             console.log('⚠️ [AUTH INTERCEPTOR] Migrando token de localStorage a cookies');
             cookieService.set('auth_token', token, {
-                expires: 7, // 7 días
+                expires: 7,
                 path: '/',
                 sameSite: 'Lax',
                 secure: false
             });
             localStorage.removeItem('token');
+            localStorage.removeItem('auth_token');
         }
     }
 
