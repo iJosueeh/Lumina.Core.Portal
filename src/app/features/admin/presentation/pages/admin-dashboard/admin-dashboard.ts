@@ -94,20 +94,27 @@ export class AdminDashboard {
   }
 
   loadMoreActivity(): void {
-    if (this.isLoadingMore() || !this.hasMoreActivity()) return;
+    console.log('[PAGINATION] loadMoreActivity called, hasMore:', this.hasMoreActivity(), 'loading:', this.isLoadingMore());
+    if (this.isLoadingMore() || !this.hasMoreActivity()) {
+      console.log('[PAGINATION] Early return - hasMore:', this.hasMoreActivity(), 'loading:', this.isLoadingMore());
+      return;
+    }
 
     this.isLoadingMore.set(true);
 
     // Usar el timestamp del último item como cursor
     const currentItems = this.recentActivity();
+    console.log('[PAGINATION] Current items:', currentItems.length);
     const cursor = currentItems.length > 0
       ? currentItems[currentItems.length - 1].timestamp
       : null;
+    console.log('[PAGINATION] Cursor:', cursor);
 
     this.apiService.getRecentActivityPaged(cursor).pipe(
       catchError(() => of({ items: [], hasMore: false, nextCursor: null }))
     ).subscribe({
       next: (result) => {
+        console.log('[PAGINATION] API result:', result.items.length, 'hasMore:', result.hasMore);
         if (result.items.length > 0) {
           // Deduplicar por timestamp antes de agregar
           const existingTimestamps = new Set(currentItems.map(a => a.timestamp));
