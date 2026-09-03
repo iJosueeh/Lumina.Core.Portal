@@ -123,6 +123,7 @@ export class AdminDashboardApiService {
       title: item.title,
       description: item.description,
       time: item.timeAgo,
+      timestamp: item.timestamp,
       type: item.type
     }));
   }

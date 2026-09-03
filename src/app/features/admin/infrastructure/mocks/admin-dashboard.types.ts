@@ -23,6 +23,7 @@ export interface SystemStatus {
 export interface RecentActivity {
   title: string;
   time: string;
+  timestamp?: string;
   description?: string;
   type?: string;
 }
