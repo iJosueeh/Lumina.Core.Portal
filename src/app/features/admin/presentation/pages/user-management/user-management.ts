@@ -137,9 +137,25 @@ export class UserManagement implements OnInit {
         this.isSaving.set(true);
         this.saveError.set('');
 
+        // Transformar campos al formato que espera el backend
+        const backendData = {
+            CorreoElectronico: userData.email,
+            Password: userData.password,
+            Nombres: userData.nombresPersona,
+            ApellidoPaterno: userData.apellidoPaterno,
+            ApellidoMaterno: userData.apellidoMaterno || '',
+            Rol: userData.role || 'STUDENT',
+            FechaNacimiento: null,
+            Pais: userData.pais || 'Perú',
+            Departamento: userData.departamento || 'Lima',
+            Provincia: userData.provincia || '',
+            Distrito: userData.distrito || '',
+            Calle: userData.calle || ''
+        };
+
         const action = this.isEditing()
-            ? this.adminService.updateUser(this.currentUser.id, userData)
-            : this.adminService.createUser(userData);
+            ? this.adminService.updateUser(this.currentUser.id, backendData)
+            : this.adminService.createUser(backendData);
 
         action.subscribe({
             next: () => {
