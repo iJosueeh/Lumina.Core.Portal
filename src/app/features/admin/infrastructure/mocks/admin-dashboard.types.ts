@@ -24,6 +24,13 @@ export interface RecentActivity {
   title: string;
   time: string;
   description?: string;
+  type?: string;
+}
+
+export interface PagedRecentActivityResponse {
+  items: RecentActivity[];
+  hasMore: boolean;
+  nextCursor: string | null;
 }
 
 export interface ChartDataPoint {

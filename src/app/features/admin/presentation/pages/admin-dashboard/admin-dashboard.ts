@@ -46,6 +46,9 @@ export class AdminDashboard {
   chartPeriod = signal<'month' | 'year'>('month');
   isLoading = signal(true);
   isChartLoading = signal(false);
+  isLoadingMore = signal(false);
+  hasMoreActivity = signal(true);
+  activityCursor = signal<string | null>(null);
   currentYear = computed(() => new Date().getFullYear().toString());
   hasChartData = computed(() => {
     const d = this.chartData()?.data;
@@ -81,6 +84,26 @@ export class AdminDashboard {
         this.recentActivity.set(data.recentActivity || []);
         this.chartData.set(data.chartData || undefined);
       });
+  }
+
+  loadMoreActivity(): void {
+    if (this.isLoadingMore() || !this.hasMoreActivity()) return;
+
+    this.isLoadingMore.set(true);
+    const cursor = this.activityCursor();
+
+    this.apiService.getRecentActivityPaged(cursor).pipe(
+      catchError(() => of({ items: [], hasMore: false, nextCursor: null }))
+    ).subscribe({
+      next: (result) => {
+        if (result.items.length > 0) {
+          this.recentActivity.update(current => [...current, ...result.items]);
+        }
+        this.hasMoreActivity.set(result.hasMore);
+        this.activityCursor.set(result.nextCursor);
+      },
+      complete: () => this.isLoadingMore.set(false)
+    });
   }
 
   handleRefresh(): void {

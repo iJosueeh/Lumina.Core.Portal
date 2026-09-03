@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '@environments/environment';
-import { AdminDashboardData, ChartData, SystemStatus, RecentActivity } from '../mocks/admin-dashboard.types';
+import { AdminDashboardData, ChartData, SystemStatus, RecentActivity, PagedRecentActivityResponse } from '../mocks/admin-dashboard.types';
 import { AdminDashboardStatsService } from './admin-dashboard-stats.service';
 import { AdminDashboardHealthService } from './admin-dashboard-health.service';
 
@@ -91,10 +91,29 @@ export class AdminDashboardApiService {
     );
   }
 
-  private getRecentActivity(): Observable<RecentActivity[]> {
-    return this.http.get<any[]>(`${environment.evaluacionesApiUrl}/admin/dashboard/recent-activity?limit=8`).pipe(
-      map(data => this.mapRecentActivity(data)),
+  private getRecentActivity(cursor?: string | null): Observable<RecentActivity[]> {
+    let params = new HttpParams().set('limit', '8');
+    if (cursor) {
+      params = params.set('cursor', cursor);
+    }
+    return this.http.get<PagedRecentActivityResponse>(`${environment.evaluacionesApiUrl}/admin/dashboard/recent-activity`, { params }).pipe(
+      map(data => this.mapRecentActivity(data.items)),
       catchError(() => of(this.healthService.buildRecentActivityTodo()))
+    );
+  }
+
+  getRecentActivityPaged(cursor?: string | null): Observable<{ items: RecentActivity[]; hasMore: boolean; nextCursor: string | null }> {
+    let params = new HttpParams().set('limit', '8');
+    if (cursor) {
+      params = params.set('cursor', cursor);
+    }
+    return this.http.get<PagedRecentActivityResponse>(`${environment.evaluacionesApiUrl}/admin/dashboard/recent-activity`, { params }).pipe(
+      map(data => ({
+        items: this.mapRecentActivity(data.items),
+        hasMore: data.hasMore,
+        nextCursor: data.nextCursor
+      })),
+      catchError(() => of({ items: this.healthService.buildRecentActivityTodo(), hasMore: false, nextCursor: null }))
     );
   }
 
