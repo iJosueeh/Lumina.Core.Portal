@@ -83,6 +83,13 @@ export class AdminDashboard {
         this.systemStatus.set(data.systemStatus || []);
         this.recentActivity.set(data.recentActivity || []);
         this.chartData.set(data.chartData || undefined);
+
+        // Inicializar pagination state desde la primera carga
+        if (data.recentActivity && data.recentActivity.length > 0) {
+          // Asumir que hay más si hay 5+ items (límite de página)
+          this.hasMoreActivity.set(data.recentActivity.length >= 5);
+          // El cursor se calcula dinámicamente en loadMoreActivity
+        }
       });
   }
 
@@ -90,7 +97,12 @@ export class AdminDashboard {
     if (this.isLoadingMore() || !this.hasMoreActivity()) return;
 
     this.isLoadingMore.set(true);
-    const cursor = this.activityCursor();
+
+    // Usar el timestamp del último item como cursor
+    const currentItems = this.recentActivity();
+    const cursor = currentItems.length > 0
+      ? currentItems[currentItems.length - 1].timestamp
+      : null;
 
     this.apiService.getRecentActivityPaged(cursor).pipe(
       catchError(() => of({ items: [], hasMore: false, nextCursor: null }))
@@ -98,7 +110,7 @@ export class AdminDashboard {
       next: (result) => {
         if (result.items.length > 0) {
           // Deduplicar por timestamp antes de agregar
-          const existingTimestamps = new Set(this.recentActivity().map(a => a.timestamp));
+          const existingTimestamps = new Set(currentItems.map(a => a.timestamp));
           const newItems = result.items.filter(item => !existingTimestamps.has(item.timestamp));
 
           if (newItems.length > 0) {
