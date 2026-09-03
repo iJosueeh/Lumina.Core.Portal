@@ -46,7 +46,12 @@ export class AuthMockRepositoryImpl extends AuthRepository {
       map((data) => {
         // Si es un array, tomar el primer elemento; si es un objeto, usarlo directamente
         const user = Array.isArray(data) ? data[0] : data;
-        
+
+        // Agregar token mock para que el auth interceptor funcione
+        // (El backend verificará el token, pero para pruebas locales el mock permite acceso)
+        const mockToken = 'mock-jwt-token-for-local-dev-only';
+        user.token = mockToken;
+
         console.log('✅ [AUTH MOCK] User loaded:', user);
         console.log('✅ [AUTH MOCK] User role:', user.role);
         console.log('✅ [AUTH MOCK] Login successful:', user.fullName);

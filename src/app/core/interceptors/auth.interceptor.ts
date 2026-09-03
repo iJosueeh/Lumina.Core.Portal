@@ -28,13 +28,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         }
     }
 
+    // Para cookies httpOnly del backend real, el navegador envía el cookie automáticamente
+    // Solo necesitamos withCredentials: true en las peticiones
+    const isBackendRequest = req.url.includes('/api/') && !req.url.includes('/assets/');
+    
     let reqToSend = req;
-    if (token) {
+    if (token && !isBackendRequest) {
+        // Solo agregar header Authorization para requests que no van al backend con httpOnly cookie
         console.log('✅ [AUTH INTERCEPTOR] Token encontrado, agregando a headers');
         reqToSend = req.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`
             }
+        });
+    } else if (isBackendRequest) {
+        // Para peticiones al backend, usar withCredentials para enviar cookies httpOnly
+        console.log('🔐 [AUTH INTERCEPTOR] Peticion al backend - usando withCredentials');
+        reqToSend = req.clone({
+            withCredentials: true
         });
     } else {
         console.log('⚠️ [AUTH INTERCEPTOR] No se encontró token en cookies ni localStorage');
