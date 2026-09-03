@@ -145,10 +145,11 @@ export class UserManagement implements OnInit {
             ApellidoPaterno: userData.apellidoPaterno,
             ApellidoMaterno: userData.apellidoMaterno || '',
             Rol: userData.role === 'Estudiante' ? 'ESTUDIANTE' : userData.role === 'Docente' ? 'PROFESOR' : userData.role === 'Administrador' ? 'ADMIN' : userData.role,
-            FechaNacimiento: null,
+            FechaNacimiento: '1990-01-01T00:00:00Z',
             Pais: 'Perú',
             Departamento: 'Lima',
             Provincia: 'Lima',
+            Ciudad: 'Lima',
             Distrito: 'Lima',
             Calle: 'Av. Universidad'
         };
