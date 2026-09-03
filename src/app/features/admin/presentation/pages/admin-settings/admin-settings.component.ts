@@ -9,7 +9,7 @@ import { NotificationService } from '@shared/services/notification.service';
 import { ThemeService, Theme } from '@core/services/theme.service';
 import { SiteConfigService } from '@core/services/site-config.service';
 
-type SettingsTab = 'general' | 'appearance' | 'notifications' | 'security';
+type SettingsTab = 'general' | 'appearance';
 
 @Component({
   selector: 'app-admin-settings',
@@ -32,11 +32,9 @@ export class AdminSettingsComponent implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
 
-  /** Settings forms */
+  /** Settings forms - simplified */
   generalForm: FormGroup;
   appearanceForm: FormGroup;
-  notificationForm: FormGroup;
-  securityForm: FormGroup;
 
   /** Theme options */
   readonly themeOptions: { value: Theme; label: string; icon: string }[] = [
@@ -55,12 +53,10 @@ export class AdminSettingsComponent implements OnInit {
     { value: '#dc2626', label: 'Rojo' }
   ];
 
-  /** Tabs configuration */
+  /** Tabs configuration - only 2 tabs now */
   readonly tabs: { id: SettingsTab; label: string; icon: string }[] = [
     { id: 'general', label: 'General', icon: 'cog' },
-    { id: 'appearance', label: 'Apariencia', icon: 'palette' },
-    { id: 'notifications', label: 'Notificaciones', icon: 'bell' },
-    { id: 'security', label: 'Seguridad', icon: 'shield-alt' }
+    { id: 'appearance', label: 'Apariencia', icon: 'palette' }
   ];
 
   /** Current effective theme for display */
@@ -70,35 +66,17 @@ export class AdminSettingsComponent implements OnInit {
   });
 
   constructor() {
+    // Simplified General form - only essential settings
     this.generalForm = this.fb.group({
       siteName: ['Lumina.Core', [Validators.required, Validators.minLength(3)]],
-      siteDescription: ['Plataforma educativa enterprise'],
       maintenanceMode: [false],
-      allowRegistration: [true],
-      defaultLanguage: ['es']
+      allowRegistration: [true]
     });
 
+    // Simplified Appearance form - only theme and accent color
     this.appearanceForm = this.fb.group({
       theme: ['light'],
-      primaryColor: ['#4f46e5'],
-      sidebarCollapsed: [false],
-      compactMode: [false],
-      showAnimations: [true]
-    });
-
-    this.notificationForm = this.fb.group({
-      emailNotifications: [true],
-      pushNotifications: [true],
-      courseUpdates: [true],
-      gradeNotifications: [true],
-      systemAlerts: [true]
-    });
-
-    this.securityForm = this.fb.group({
-      sessionTimeout: [30, [Validators.required, Validators.min(5), Validators.max(1440)]],
-      requireTwoFactor: [false],
-      passwordMinLength: [8, [Validators.required, Validators.min(6)]],
-      allowPasswordReset: [true]
+      primaryColor: ['#4f46e5']
     });
   }
 
@@ -128,43 +106,19 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   private patchFormsFromResponse(response: Record<string, any[]>): void {
-    // Patch general settings
+    // Patch general settings - only essential ones
     const general = response['general'] || [];
     this.generalForm.patchValue({
       siteName: this.getSettingValue(general, 'general:siteName', 'Lumina.Core'),
-      siteDescription: this.getSettingValue(general, 'general:siteDescription', 'Plataforma educativa enterprise'),
       maintenanceMode: this.getSettingValue(general, 'general:maintenanceMode', 'false') === 'true',
-      allowRegistration: this.getSettingValue(general, 'general:allowRegistration', 'true') === 'true',
-      defaultLanguage: this.getSettingValue(general, 'general:defaultLanguage', 'es')
+      allowRegistration: this.getSettingValue(general, 'general:allowRegistration', 'true') === 'true'
     });
 
-    // Patch appearance settings
+    // Patch appearance settings - only theme and accent color
     const appearance = response['appearance'] || [];
     this.appearanceForm.patchValue({
       theme: this.getSettingValue(appearance, 'appearance:theme', 'light'),
-      primaryColor: this.getSettingValue(appearance, 'appearance:primaryColor', '#4f46e5'),
-      sidebarCollapsed: this.getSettingValue(appearance, 'appearance:sidebarCollapsed', 'false') === 'true',
-      compactMode: this.getSettingValue(appearance, 'appearance:compactMode', 'false') === 'true',
-      showAnimations: this.getSettingValue(appearance, 'appearance:showAnimations', 'true') === 'true'
-    });
-
-    // Patch notification settings
-    const notifications = response['notifications'] || [];
-    this.notificationForm.patchValue({
-      emailNotifications: this.getSettingValue(notifications, 'notifications:emailNotifications', 'true') === 'true',
-      pushNotifications: this.getSettingValue(notifications, 'notifications:pushNotifications', 'true') === 'true',
-      courseUpdates: this.getSettingValue(notifications, 'notifications:courseUpdates', 'true') === 'true',
-      gradeNotifications: this.getSettingValue(notifications, 'notifications:gradeNotifications', 'true') === 'true',
-      systemAlerts: this.getSettingValue(notifications, 'notifications:systemAlerts', 'true') === 'true'
-    });
-
-    // Patch security settings
-    const security = response['security'] || [];
-    this.securityForm.patchValue({
-      sessionTimeout: parseInt(this.getSettingValue(security, 'security:sessionTimeout', '30'), 10),
-      requireTwoFactor: this.getSettingValue(security, 'security:requireTwoFactor', 'false') === 'true',
-      passwordMinLength: parseInt(this.getSettingValue(security, 'security:passwordMinLength', '8'), 10),
-      allowPasswordReset: this.getSettingValue(security, 'security:allowPasswordReset', 'true') === 'true'
+      primaryColor: this.getSettingValue(appearance, 'appearance:primaryColor', '#4f46e5')
     });
 
     // Apply theme from backend
@@ -178,14 +132,10 @@ export class AdminSettingsComponent implements OnInit {
     if (accentColor) {
       this.themeService.setAccentColor(accentColor);
     }
-
-    // Apply showAnimations
-    const showAnims = this.appearanceForm.get('showAnimations')?.value;
-    this.themeService.setShowAnimations(!!showAnims);
   }
 
   private getSettingValue(settings: any[], key: string, defaultValue: string): string {
-    const setting = settings.find(s => s.key === key);
+    const setting = settings.find((s: any) => s.key === key);
     return setting?.value ?? defaultValue;
   }
 
@@ -196,8 +146,6 @@ export class AdminSettingsComponent implements OnInit {
         const settings = JSON.parse(saved);
         this.generalForm.patchValue(settings.general || {});
         this.appearanceForm.patchValue(settings.appearance || {});
-        this.notificationForm.patchValue(settings.notifications || {});
-        this.securityForm.patchValue(settings.security || {});
       }
     } catch {
       // Use defaults
@@ -214,31 +162,21 @@ export class AdminSettingsComponent implements OnInit {
 
     this.isSaving.set(true);
     try {
-      // Try to save to backend
+      // Save general settings
       await firstValueFrom(
         this.http.put(`${environment.systemSettingsApiUrl}/general`, {
-          ...this.generalForm.value,
+          siteName: this.generalForm.get('siteName')?.value,
+          maintenanceMode: this.generalForm.get('maintenanceMode')?.value,
+          allowRegistration: this.generalForm.get('allowRegistration')?.value,
           updatedBy: 'admin'
         })
       );
 
+      // Save appearance settings
       await firstValueFrom(
         this.http.put(`${environment.systemSettingsApiUrl}/appearance`, {
-          ...this.appearanceForm.value,
-          updatedBy: 'admin'
-        })
-      );
-
-      await firstValueFrom(
-        this.http.put(`${environment.systemSettingsApiUrl}/notifications`, {
-          ...this.notificationForm.value,
-          updatedBy: 'admin'
-        })
-      );
-
-      await firstValueFrom(
-        this.http.put(`${environment.systemSettingsApiUrl}/security`, {
-          ...this.securityForm.value,
+          theme: this.appearanceForm.get('theme')?.value,
+          primaryColor: this.appearanceForm.get('primaryColor')?.value,
           updatedBy: 'admin'
         })
       );
@@ -254,10 +192,6 @@ export class AdminSettingsComponent implements OnInit {
       if (accentColor) {
         this.themeService.setAccentColor(accentColor);
       }
-
-      // Apply animations
-      const showAnims = this.appearanceForm.get('showAnimations')?.value;
-      this.themeService.setShowAnimations(!!showAnims);
 
       // Sync siteName across all layouts
       const siteName = this.generalForm.get('siteName')?.value;
@@ -278,9 +212,7 @@ export class AdminSettingsComponent implements OnInit {
   private saveToLocalStorage(): void {
     const settings = {
       general: this.generalForm.value,
-      appearance: this.appearanceForm.value,
-      notifications: this.notificationForm.value,
-      security: this.securityForm.value
+      appearance: this.appearanceForm.value
     };
     localStorage.setItem('admin-settings', JSON.stringify(settings));
 
@@ -290,15 +222,11 @@ export class AdminSettingsComponent implements OnInit {
       this.themeService.setTheme(newTheme);
     }
 
-    // Apply accent color via ThemeService (persists to localStorage)
+    // Apply accent color
     const accentColor = this.appearanceForm.get('primaryColor')?.value;
     if (accentColor) {
       this.themeService.setAccentColor(accentColor);
     }
-
-    // Apply animations via ThemeService
-    const showAnims = this.appearanceForm.get('showAnimations')?.value;
-    this.themeService.setShowAnimations(!!showAnims);
   }
 
   /** Switch active tab */
@@ -310,13 +238,6 @@ export class AdminSettingsComponent implements OnInit {
   toggleTheme(): void {
     this.themeService.toggle();
     this.appearanceForm.patchValue({ theme: this.themeService.preference() });
-  }
-
-  /** Toggle animations immediately */
-  toggleAnimations(): void {
-    const current = this.appearanceForm.get('showAnimations')?.value;
-    this.appearanceForm.patchValue({ showAnimations: !current });
-    this.themeService.setShowAnimations(!current);
   }
 
   /** Apply accent color */
@@ -335,8 +256,6 @@ export class AdminSettingsComponent implements OnInit {
     switch (tab) {
       case 'general': return this.generalForm;
       case 'appearance': return this.appearanceForm;
-      case 'notifications': return this.notificationForm;
-      case 'security': return this.securityForm;
       default: return null;
     }
   }
