@@ -9,6 +9,7 @@ import { AuthRepository } from '@features/auth/domain/repositories/auth.reposito
 import { AuthRepositoryImpl } from '@features/auth/infrastructure/repositories/auth.repository.impl';
 import { AuthMockRepositoryImpl } from '@features/auth/infrastructure/repositories/auth-mock.repository.impl';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
+import { mockFallbackInterceptor } from '@core/interceptors/mock-fallback.interceptor';
 import { CoursesRepository } from '@features/student/domain/repositories/courses.repository';
 import { CoursesHttpRepositoryImpl } from '@features/student/infrastructure/repositories/courses-http.repository.impl';
 import { AssignmentsRepository } from '@features/student/domain/repositories/assignments.repository';
@@ -48,7 +49,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withPreloading(CustomPreloadStrategy)),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, mockFallbackInterceptor])),
     // TanStack Query configuration
     provideAngularQuery(
       new QueryClient({
