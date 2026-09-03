@@ -144,13 +144,13 @@ export class UserManagement implements OnInit {
             Nombres: userData.nombresPersona,
             ApellidoPaterno: userData.apellidoPaterno,
             ApellidoMaterno: userData.apellidoMaterno || '',
-            Rol: userData.role || 'STUDENT',
+            Rol: userData.role === 'Estudiante' ? 'ESTUDIANTE' : userData.role === 'Docente' ? 'PROFESOR' : userData.role === 'Administrador' ? 'ADMIN' : userData.role,
             FechaNacimiento: null,
-            Pais: userData.pais || 'Perú',
-            Departamento: userData.departamento || 'Lima',
-            Provincia: userData.provincia || '',
-            Distrito: userData.distrito || '',
-            Calle: userData.calle || ''
+            Pais: 'Perú',
+            Departamento: 'Lima',
+            Provincia: 'Lima',
+            Distrito: 'Lima',
+            Calle: 'Av. Universidad'
         };
 
         const action = this.isEditing()
