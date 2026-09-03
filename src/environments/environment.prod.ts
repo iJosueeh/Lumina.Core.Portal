@@ -7,7 +7,7 @@ export const environment = {
     estudiantesApiUrl: 'https://lumina-estudiantes.onrender.com/api',
     cursosApiUrl: 'https://lumina-cursos.onrender.com/api',
     evaluacionesApiUrl: 'https://lumina-evaluaciones.onrender.com/api',
-    noticiasEventosApiUrl: 'https://lumina-noticias.onrender.com/api',
+    noticiasEventosApiUrl: 'https://lumina-noticiaseventos.onrender.com/api',
     docentesApiUrl: 'https://lumina-docentes.onrender.com/api',
     carrerasApiUrl: 'https://lumina-carreras.onrender.com/api',
     pedidosApiUrl: 'https://lumina-pedidos.onrender.com/api',
