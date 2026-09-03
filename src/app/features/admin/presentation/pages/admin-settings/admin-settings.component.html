@@ -74,33 +74,29 @@
                     <input type="text" formControlName="siteName"
                       class="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl py-3 px-4 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--input-focus-ring)] transition-all text-sm font-medium">
                   </div>
+                  <!-- System Options -->
+                  <div class="pt-2 border-t border-[var(--border-primary)]">
+                    <p class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Opciones del Sistema</p>
+                    <div class="space-y-3">
+                      <label class="flex items-center justify-between p-3 rounded-xl border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer">
+                        <div>
+                          <p class="text-sm font-semibold text-[var(--text-primary)]">Modo Mantenimiento</p>
+                          <p class="text-[10px] text-[var(--text-muted)]">Deshabilita el acceso para usuarios no administradores</p>
+                        </div>
+                        <input type="checkbox" formControlName="maintenanceMode"
+                          class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
+                      </label>
+                      <label class="flex items-center justify-between p-3 rounded-xl border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer">
+                        <div>
+                          <p class="text-sm font-semibold text-[var(--text-primary)]">Permitir Registro</p>
+                          <p class="text-[10px] text-[var(--text-muted)]">Permitir que nuevos usuarios creen cuentas</p>
+                        </div>
+                        <input type="checkbox" formControlName="allowRegistration"
+                          class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
+                      </label>
+                    </div>
+                  </div>
                 </form>
-              </div>
-
-              <!-- System Options -->
-              <div class="bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)] p-6 shadow-[var(--shadow-sm)]">
-                <div class="mb-5">
-                  <h3 class="text-base font-black text-[var(--text-primary)] tracking-tight">Opciones del Sistema</h3>
-                  <p class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-0.5">Control de funcionalidad</p>
-                </div>
-                <div class="space-y-4">
-                  <label class="flex items-center justify-between p-4 rounded-xl border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer">
-                    <div>
-                      <p class="text-sm font-semibold text-[var(--text-primary)]">Modo Mantenimiento</p>
-                      <p class="text-[10px] text-[var(--text-muted)]">Deshabilita el acceso para usuarios no administradores</p>
-                    </div>
-                    <input type="checkbox" formControlName="maintenanceMode"
-                      class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
-                  </label>
-                  <label class="flex items-center justify-between p-4 rounded-xl border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer">
-                    <div>
-                      <p class="text-sm font-semibold text-[var(--text-primary)]">Permitir Registro</p>
-                      <p class="text-[10px] text-[var(--text-muted)]">Permitir que nuevos usuarios creen cuentas</p>
-                    </div>
-                    <input type="checkbox" formControlName="allowRegistration"
-                      class="w-5 h-5 rounded-lg border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--input-focus-ring)]">
-                  </label>
-                </div>
               </div>
             </div>
           }
