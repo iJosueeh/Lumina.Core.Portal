@@ -97,7 +97,13 @@ export class AdminDashboard {
     ).subscribe({
       next: (result) => {
         if (result.items.length > 0) {
-          this.recentActivity.update(current => [...current, ...result.items]);
+          // Deduplicar por timestamp antes de agregar
+          const existingTimestamps = new Set(this.recentActivity().map(a => a.timestamp));
+          const newItems = result.items.filter(item => !existingTimestamps.has(item.timestamp));
+
+          if (newItems.length > 0) {
+            this.recentActivity.update(current => [...current, ...newItems]);
+          }
         }
         this.hasMoreActivity.set(result.hasMore);
         this.activityCursor.set(result.nextCursor);

@@ -92,7 +92,7 @@ export class AdminDashboardApiService {
   }
 
   private getRecentActivity(cursor?: string | null): Observable<RecentActivity[]> {
-    let params = new HttpParams().set('limit', '8');
+    let params = new HttpParams().set('limit', '5');
     if (cursor) {
       params = params.set('cursor', cursor);
     }
@@ -103,7 +103,7 @@ export class AdminDashboardApiService {
   }
 
   getRecentActivityPaged(cursor?: string | null): Observable<{ items: RecentActivity[]; hasMore: boolean; nextCursor: string | null }> {
-    let params = new HttpParams().set('limit', '8');
+    let params = new HttpParams().set('limit', '5');
     if (cursor) {
       params = params.set('cursor', cursor);
     }
