@@ -38,6 +38,10 @@
       "destination": "https://lumina-estudiantes.onrender.com/api/asistencias/:path*"
     },
     {
+      "source": "/api/programaciones/:path*",
+      "destination": "https://lumina-estudiantes.onrender.com/api/programaciones/:path*"
+    },
+    {
       "source": "/api/matricula/:path*",
       "destination": "https://lumina-estudiantes.onrender.com/api/matricula/:path*"
     },

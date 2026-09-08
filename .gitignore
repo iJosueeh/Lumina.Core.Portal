@@ -161,3 +161,5 @@ build.log
 # Angular cache
 .angular/cache/
 .vercel
+test-results/
+playwright-report/

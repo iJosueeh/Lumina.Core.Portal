@@ -36,7 +36,7 @@ export class ResourceDetailComponent implements OnInit {
   ngOnInit(): void {
     // Cargar todos los recursos primero
     this.http
-      .get<ResourceDetail[]>('/assets/mock-data/resources/resources-detail.json')
+      .get<ResourceDetail[]>('assets/mock-data/resources/resources-detail.json')
       .pipe(
         map((resources) =>
           resources.map((r) => ({
@@ -64,7 +64,7 @@ export class ResourceDetailComponent implements OnInit {
 
   loadResource(id: string): void {
     this.http
-      .get<ResourceDetail[]>('/assets/mock-data/resources/resources-detail.json')
+      .get<ResourceDetail[]>('assets/mock-data/resources/resources-detail.json')
       .pipe(
         map((resources) =>
           resources

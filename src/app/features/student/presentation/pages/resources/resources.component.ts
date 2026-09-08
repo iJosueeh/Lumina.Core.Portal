@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Resource, ResourceCategory } from '@features/student/domain/models/resource.model';
+import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
 
 @Component({
   selector: 'app-resources',
@@ -13,8 +14,8 @@ import { Resource, ResourceCategory } from '@features/student/domain/models/reso
 })
 export class ResourcesComponent implements OnInit {
   searchQuery = '';
-
-  constructor(private router: Router) {}
+  private router = inject(Router);
+  private resourcesRepository = inject(ResourcesRepository);
 
   categories: ResourceCategory[] = [
     {
@@ -82,13 +83,14 @@ export class ResourcesComponent implements OnInit {
       uploadDate: new Date(2024, 4, 10),
     },
     {
-      id: 'lib-010',
-      title: 'Artificial Intelligence: A Modern Approach',
-      description: 'Introducción completa a la inteligencia artificial.',
-      category: 'BIBLIOGRAFÍA',
-      type: 'book',
+      id: 'soft-001',
+      title: 'Visual Studio Code & Extensiones Recomendadas',
+      description: 'Paquete de extensiones y configuración recomendada para desarrollo web y .NET en Lumina.',
+      category: 'HERRAMIENTAS',
+      type: 'code',
       url: '#',
-      imageUrl: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400',
+      imageUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400',
+      badge: 'Popular',
       isFeatured: true,
       uploadDate: new Date(2024, 4, 1),
     },
@@ -96,31 +98,31 @@ export class ResourcesComponent implements OnInit {
 
   recentResources: Resource[] = [
     {
-      id: 'lib-013',
-      title: 'Python Crash Course',
-      description: 'Introducción práctica a Python para principiantes.',
-      category: 'BIBLIOGRAFÍA',
-      type: 'book',
+      id: 'guide-001',
+      title: 'Guía de Inicio Rápido: Plataforma Académica Lumina',
+      description: 'Manual paso a paso sobre cómo matricularte, entregar evaluaciones y consultar notas.',
+      category: 'MANUALES',
+      type: 'pdf',
       url: '#',
       isFeatured: false,
       uploadDate: new Date(2024, 4, 15),
     },
     {
-      id: 'lib-015',
-      title: 'Learning React',
-      description: 'Guía moderna para aprender React y desarrollo frontend.',
-      category: 'BIBLIOGRAFÍA',
-      type: 'book',
+      id: 'prog-001',
+      title: 'Malla Curricular y Sílabos 2026',
+      description: 'Compendio de planes de estudio, competencias por ciclo y prerrequisitos de cursos.',
+      category: 'PLANES DE ESTUDIO',
+      type: 'pdf',
       url: '#',
       isFeatured: false,
       uploadDate: new Date(2024, 3, 10),
     },
     {
-      id: 'lib-014',
-      title: 'Web Development with Node and Express',
-      description: 'Desarrollo web moderno con Node.js y Express.',
-      category: 'BIBLIOGRAFÍA',
-      type: 'book',
+      id: 'sup-001',
+      title: 'Preguntas Frecuentes y Mesa de Ayuda TI',
+      description: 'Canales de atención técnica, recuperación de credenciales y soporte de aula virtual.',
+      category: 'SOPORTE',
+      type: 'link',
       url: '#',
       isFeatured: false,
       uploadDate: new Date(2024, 3, 5),
@@ -138,7 +140,23 @@ export class ResourcesComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Cargar recursos desde el backend
+    this.resourcesRepository.getFeaturedResources().subscribe({
+      next: (featured) => {
+        if (featured && featured.length > 0) {
+          this.featuredResources = featured;
+        }
+      },
+      error: (err) => console.warn('[Resources] Error fetching featured resources:', err)
+    });
+
+    this.resourcesRepository.getResources().subscribe({
+      next: (resources) => {
+        if (resources && resources.length > 0) {
+          this.recentResources = resources.slice(0, 4);
+        }
+      },
+      error: (err) => console.warn('[Resources] Error fetching recent resources:', err)
+    });
   }
 
   search(): void {

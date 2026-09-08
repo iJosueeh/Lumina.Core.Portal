@@ -40,19 +40,31 @@ export class ResourceCategoryComponent implements OnInit {
     viewMode: 'grid',
   });
 
+  private readonly categoryMap: Record<string, string> = {
+    library: 'Biblioteca Digital',
+    biblioteca: 'Biblioteca Digital',
+    software: 'Software y Herramientas',
+    guides: 'Guías y Manuales',
+    guias: 'Guías y Manuales',
+    programs: 'Programas Académicos',
+    programas: 'Programas Académicos',
+    support: 'Soporte Técnico',
+    soporte: 'Soporte Técnico',
+    programacion: 'Programación',
+    frontend: 'Frontend',
+    backend: 'Backend',
+    databases: 'Bases de Datos',
+    all: 'Todos los Recursos',
+  };
+
   // Computed
   categoryName = computed(() => {
-    const id = this.categoryId();
-    const names: Record<string, string> = {
-      biblioteca: 'Biblioteca Digital',
-      videos: 'Videos Educativos',
-      laboratorios: 'Laboratorios Virtuales',
-    };
-    return names[id] || 'Recursos';
+    const id = (this.categoryId() || '').toLowerCase();
+    return this.categoryMap[id] || (id === 'all' ? 'Todos los Recursos' : 'Centro de Recursos');
   });
 
   stats = computed(() => {
-    const resources = this.allResources();
+    const resources = this.filteredResources();
     return {
       total: resources.length,
       pdf: resources.filter((r) => r.type === 'pdf').length,
@@ -64,20 +76,16 @@ export class ResourceCategoryComponent implements OnInit {
   filteredResources = computed(() => {
     let resources = this.allResources();
     const { searchQuery, type, sortBy } = this.filters();
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
+    const catId = (this.categoryId() || '').toLowerCase();
 
-    // 1. Filter by Category (implicit in loading, but good to check if mixed)
-    // Assuming backend returns only category resources, or we verify?
-    // Current impl filters by loading ONE file for all. So we probably should filter by category if the JSON has mixed data?
-    // The JSON seems to be 'resources-detail.json' which might contain mixed.
-    // But let's assume we filter by ID passed in route.
-    // Wait, the JSON loading logic below loads ALL.
-    const catId = this.categoryId();
-    if (catId) {
-      // Filter by category if needed? The mock helper used to return strict list.
-      // Let's assume resources have 'category' field matching catId?
-      // ResourceDetail has 'category'.
-      resources = resources.filter((r) => r.category === catId || catId === 'all'); // 'all' might not be a valid catId but just in case
+    // 1. Filter by Category
+    if (catId && catId !== 'all') {
+      const targetName = (this.categoryMap[catId] || catId).toLowerCase();
+      resources = resources.filter((r) => {
+        const resourceCat = (r.category || '').toLowerCase();
+        return resourceCat.includes(targetName) || targetName.includes(resourceCat) || resourceCat === catId;
+      });
     }
 
     // 2. Filter by Type
@@ -91,7 +99,8 @@ export class ResourceCategoryComponent implements OnInit {
         (r) =>
           r.title.toLowerCase().includes(query) ||
           r.description.toLowerCase().includes(query) ||
-          (r.author && r.author.name && r.author.name.toLowerCase().includes(query)),
+          (r.author && r.author.name && r.author.name.toLowerCase().includes(query)) ||
+          (r.tags && r.tags.some(tag => tag.toLowerCase().includes(query)))
       );
     }
 
@@ -101,7 +110,7 @@ export class ResourceCategoryComponent implements OnInit {
         case 'recent':
           return b.uploadDate.getTime() - a.uploadDate.getTime();
         case 'popular':
-          return b.views - a.views;
+          return (b.views || 0) - (a.views || 0);
         case 'alphabetical':
           return a.title.localeCompare(b.title);
         default:
@@ -114,8 +123,14 @@ export class ResourceCategoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
-      this.categoryId.set(params['categoryId']);
+      this.categoryId.set(params['categoryId'] || 'all');
       this.loadResources();
+    });
+
+    this.route.queryParams.subscribe((queryParams) => {
+      if (queryParams['q']) {
+        this.filters.update((f) => ({ ...f, searchQuery: queryParams['q'] }));
+      }
     });
   }
 
