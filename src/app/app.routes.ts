@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '@core/guards/auth.guard';
+import { roleGuard } from '@core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -8,18 +10,20 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => 
+    loadComponent: () =>
       import('@features/auth/presentation/pages/login-page/login-page.component').then(
-        m => m.LoginPageComponent
+        (m) => m.LoginPageComponent
       ),
     title: 'Iniciar Sesión - Lumina Core',
   },
   {
     path: 'student',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'STUDENT' },
     loadComponent: () =>
-      import('@features/student/presentation/layouts/student-layout/student-layout.component').then(
-        m => m.StudentLayoutComponent
-      ),
+      import(
+        '@features/student/presentation/layouts/student-layout/student-layout.component'
+      ).then((m) => m.StudentLayoutComponent),
     children: [
       {
         path: '',
@@ -29,74 +33,74 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('@features/student/presentation/pages/dashboard/dashboard.component').then(
-            m => m.DashboardComponent
-          ),
+          import(
+            '@features/student/presentation/pages/dashboard/dashboard.component'
+          ).then((m) => m.DashboardComponent),
         title: 'Dashboard - Portal Estudiante',
-        data: { preload: true }
+        data: { preload: true },
       },
       {
         path: 'courses',
         loadComponent: () =>
-          import('@features/student/presentation/pages/my-courses/my-courses.component').then(
-            m => m.MyCoursesComponent
-          ),
+          import(
+            '@features/student/presentation/pages/my-courses/my-courses.component'
+          ).then((m) => m.MyCoursesComponent),
         title: 'Mis Cursos - Portal Estudiante',
       },
       {
         path: 'catalog',
         loadComponent: () =>
-          import('@features/student/presentation/pages/course-catalog/course-catalog.component').then(
-            m => m.CourseCatalogComponent
-          ),
+          import(
+            '@features/student/presentation/pages/course-catalog/course-catalog.component'
+          ).then((m) => m.CourseCatalogComponent),
         title: 'Catálogo de Cursos - Portal Estudiante',
       },
       {
         path: 'course/:id',
         loadComponent: () =>
-          import('@features/student/presentation/pages/course-detail/course-detail.component').then(
-            m => m.CourseDetailComponent
-          ),
+          import(
+            '@features/student/presentation/pages/course-detail/course-detail.component'
+          ).then((m) => m.CourseDetailComponent),
         title: 'Detalle del Curso - Portal Estudiante',
       },
       {
         path: 'course/:id/learn/:lessonId',
         loadComponent: () =>
-          import('@features/student/presentation/pages/video-classroom/video-classroom.component').then(
-            m => m.VideoClassroomComponent
-          ),
+          import(
+            '@features/student/presentation/pages/video-classroom/video-classroom.component'
+          ).then((m) => m.VideoClassroomComponent),
         title: 'Aula de Video - Portal Estudiante',
       },
       {
         path: 'video-classroom/:id',
         loadComponent: () =>
-          import('@features/student/presentation/pages/video-classroom/video-classroom.component').then(
-            m => m.VideoClassroomComponent
-          ),
+          import(
+            '@features/student/presentation/pages/video-classroom/video-classroom.component'
+          ).then((m) => m.VideoClassroomComponent),
         title: 'Aula de Video - Portal Estudiante',
       },
       {
         path: 'evaluations',
         loadComponent: () =>
-          import('./features/student/presentation/pages/evaluations/evaluations.component').then(
-            m => m.EvaluationsComponent
-          ),
+          import(
+            './features/student/presentation/pages/evaluations/evaluations.component'
+          ).then((m) => m.EvaluationsComponent),
         title: 'Mis Evaluaciones - Portal Estudiante',
       },
       {
         path: 'grades',
         loadComponent: () =>
-          import('@features/student/presentation/pages/grades/grades.component').then(
-            m => m.GradesComponent
-          ),
+          import(
+            '@features/student/presentation/pages/grades/grades.component'
+          ).then((m) => m.GradesComponent),
         title: 'Mis Calificaciones - Portal Estudiante',
       },
       {
         path: 'schedule',
         loadComponent: () =>
-          import('@features/student/presentation/pages/schedule/schedule-page/schedule.component').then(
-            (c) => c.ScheduleComponent,
-          ),
+          import(
+            '@features/student/presentation/pages/schedule/schedule-page/schedule.component'
+          ).then((c) => c.ScheduleComponent),
         title: 'Mi Horario - Portal Estudiante',
       },
       {
@@ -105,58 +109,60 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/student/presentation/pages/resources/resources.component').then(
-                m => m.ResourcesComponent
-              ),
+              import(
+                './features/student/presentation/pages/resources/resources.component'
+              ).then((m) => m.ResourcesComponent),
           },
           {
             path: 'category/:categoryId',
             loadComponent: () =>
-              import('./features/student/presentation/pages/resources/resource-category/resource-category').then(
-                m => m.ResourceCategoryComponent
-              ),
+              import(
+                './features/student/presentation/pages/resources/resource-category/resource-category'
+              ).then((m) => m.ResourceCategoryComponent),
           },
           {
             path: 'detail/:resourceId',
             loadComponent: () =>
-              import('./features/student/presentation/pages/resources/resource-detail/resource-detail').then(
-                m => m.ResourceDetailComponent
-              ),
+              import(
+                './features/student/presentation/pages/resources/resource-detail/resource-detail'
+              ).then((m) => m.ResourceDetailComponent),
           },
         ],
       },
       {
         path: 'profile',
         loadComponent: () =>
-          import('./shared/components/profile/shared-profile.component').then(
-            m => m.SharedProfileComponent
-          ),
+          import(
+            './shared/components/profile/shared-profile.component'
+          ).then((m) => m.SharedProfileComponent),
         title: 'Mi Perfil - Portal Estudiante',
       },
       {
         path: 'profile/edit',
         loadComponent: () =>
-          import('./shared/components/profile/shared-profile.component').then(
-            m => m.SharedProfileComponent
-          ),
+          import(
+            './shared/components/profile/shared-profile.component'
+          ).then((m) => m.SharedProfileComponent),
         title: 'Editar Perfil - Portal Estudiante',
       },
       {
         path: 'settings',
         loadComponent: () =>
-          import('./features/student/presentation/pages/account-settings/account-settings.component').then(
-            m => m.AccountSettingsComponent
-          ),
+          import(
+            './features/student/presentation/pages/account-settings/account-settings.component'
+          ).then((m) => m.AccountSettingsComponent),
         title: 'Configuración - Portal Estudiante',
       },
     ],
   },
   {
     path: 'teacher',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'TEACHER' },
     loadComponent: () =>
-      import('@features/teacher/presentation/layouts/teacher-layout/teacher-layout.component').then(
-        m => m.TeacherLayoutComponent
-      ),
+      import(
+        '@features/teacher/presentation/layouts/teacher-layout/teacher-layout.component'
+      ).then((m) => m.TeacherLayoutComponent),
     children: [
       {
         path: '',
@@ -166,121 +172,124 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/teacher-dashboard/teacher-dashboard.component').then(
-            m => m.TeacherDashboardComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/teacher-dashboard/teacher-dashboard.component'
+          ).then((m) => m.TeacherDashboardComponent),
         title: 'Dashboard - Portal Docente',
-        data: { preload: true }
+        data: { preload: true },
       },
       {
         path: 'courses',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/teacher-courses/teacher-courses.component').then(
-            m => m.TeacherCoursesComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/teacher-courses/teacher-courses.component'
+          ).then((m) => m.TeacherCoursesComponent),
         title: 'Mis Cursos - Portal Docente',
       },
       {
         path: 'course/:id',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/course-management/course-management.component').then(
-            m => m.CourseManagementComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/course-management/course-management.component'
+          ).then((m) => m.CourseManagementComponent),
         title: 'Gestión de Curso - Portal Docente',
       },
       {
         path: 'course/:id/preview',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/video-classroom/video-classroom.component').then(
-            m => m.VideoClassroomComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/video-classroom/video-classroom.component'
+          ).then((m) => m.VideoClassroomComponent),
         title: 'Previsualización de Aula - Portal Docente',
       },
       {
         path: 'course/:id/preview/:lessonId',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/video-classroom/video-classroom.component').then(
-            m => m.VideoClassroomComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/video-classroom/video-classroom.component'
+          ).then((m) => m.VideoClassroomComponent),
         title: 'Previsualización de Aula - Portal Docente',
       },
       {
         path: 'students',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/students-list/students-list.component').then(
-            m => m.StudentsListComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/students-list/students-list.component'
+          ).then((m) => m.StudentsListComponent),
         title: 'Alumnos - Portal Docente',
       },
       {
         path: 'grades',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/grades-management/grades-management.component').then(
-            m => m.GradesManagementComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/grades-management/grades-management.component'
+          ).then((m) => m.GradesManagementComponent),
         title: 'Gestión de Calificaciones - Portal Docente',
       },
       {
         path: 'evaluations',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/evaluations-list/evaluations-list.component').then(
-            m => m.EvaluationsListComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/evaluations-list/evaluations-list.component'
+          ).then((m) => m.EvaluationsListComponent),
         title: 'Mis Evaluaciones - Portal Docente',
       },
       {
         path: 'attendance',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/attendance-management/attendance-management.component').then(
-            m => m.AttendanceManagementComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/attendance-management/attendance-management.component'
+          ).then((m) => m.AttendanceManagementComponent),
         title: 'Gestión de Asistencia - Portal Docente',
       },
       {
         path: 'schedule',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/teacher-schedule/teacher-schedule.component').then(
-            m => m.TeacherScheduleComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/teacher-schedule/teacher-schedule.component'
+          ).then((m) => m.TeacherScheduleComponent),
         title: 'Mi Horario - Portal Docente',
       },
       {
         path: 'profile',
         loadComponent: () =>
-          import('./shared/components/profile/shared-profile.component').then(
-            m => m.SharedProfileComponent
-          ),
+          import(
+            './shared/components/profile/shared-profile.component'
+          ).then((m) => m.SharedProfileComponent),
         title: 'Mi Perfil - Portal Docente',
       },
       {
         path: 'materials',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/materials-management/materials-management.component').then(
-            m => m.MaterialsManagementComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/materials-management/materials-management.component'
+          ).then((m) => m.MaterialsManagementComponent),
         title: 'Gestión de Materiales - Portal Docente',
       },
       {
         path: 'student/:id',
         loadComponent: () =>
-          import('@features/teacher/presentation/pages/student-detail/student-detail.component').then(
-            m => m.StudentDetailComponent
-          ),
+          import(
+            '@features/teacher/presentation/pages/student-detail/student-detail.component'
+          ).then((m) => m.StudentDetailComponent),
         title: 'Detalle de Estudiante - Portal Docente',
       },
     ],
   },
   {
     path: 'admin',
-    loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
-    title: 'Portal Administrador'
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'ADMIN' },
+    loadChildren: () =>
+      import('./features/admin/admin-module').then((m) => m.AdminModule),
+    title: 'Portal Administrador',
   },
   {
     path: '**',
     loadComponent: () =>
       import('./shared/components/not-found/not-found.component').then(
-        m => m.NotFoundComponent
+        (m) => m.NotFoundComponent
       ),
-    title: 'Página no encontrada'
-  }
+    title: 'Página no encontrada',
+  },
 ];
