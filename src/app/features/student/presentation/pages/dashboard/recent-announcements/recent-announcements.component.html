@@ -5,7 +5,7 @@
         }
     } @else {
         @for (announcement of announcements.slice(0, limit); track announcement.id) {
-            <div class="group bg-white border border-slate-200 p-4 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer shadow-sm">
+            <div (click)="openAnnouncement(announcement)" class="group bg-white border border-slate-200 p-4 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer shadow-sm">
                 <div class="flex gap-3 items-center">
                     <div class="w-10 h-10 {{ getIconBg(announcement.tipo) }} rounded-xl flex items-center justify-center {{ getIconColor(announcement.tipo) }} flex-shrink-0">
                         <i [class]="getIcon(announcement.icono)"></i>
@@ -31,5 +31,54 @@
                 <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Sin noticias recientes</p>
             </div>
         }
+    }
+
+    <!-- Modal de Detalle de Noticia / Anuncio -->
+    @if (selectedAnnouncement(); as item) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn" (click)="closeAnnouncement()">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-5 transform transition-all animate-scaleUp" (click)="$event.stopPropagation()">
+                <!-- Header Modal -->
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 {{ getIconBg(item.tipo) }} rounded-xl flex items-center justify-center {{ getIconColor(item.tipo) }} flex-shrink-0">
+                            <i [class]="getIcon(item.icono) + ' text-base'"></i>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full {{ getBadgeColor(item.tipo) }}">
+                                {{ item.tipo }}
+                            </span>
+                            <h3 class="text-base font-bold text-slate-900 mt-1 leading-snug">{{ item.titulo }}</h3>
+                        </div>
+                    </div>
+                    <button (click)="closeAnnouncement()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Info de Autor y Fecha -->
+                <div class="flex items-center gap-4 text-xs text-slate-500 py-2 px-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-user text-slate-400 text-[10px]"></i>
+                        <span class="font-semibold">{{ item.autor || 'Administración Lumina' }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-clock text-slate-400 text-[10px]"></i>
+                        <span>{{ item.tiempoRelativo }}</span>
+                    </div>
+                </div>
+
+                <!-- Contenido Completo -->
+                <div class="text-sm text-slate-700 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line pr-1">
+                    {{ item.descripcion }}
+                </div>
+
+                <!-- Footer Modal -->
+                <div class="flex justify-end pt-2 border-t border-slate-100">
+                    <button (click)="closeAnnouncement()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
     }
 </div>

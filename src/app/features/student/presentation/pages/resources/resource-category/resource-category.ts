@@ -2,9 +2,11 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ResourceDetail } from '@features/student/domain/models/resource.model';
+import { ResourceDetail, Resource } from '@features/student/domain/models/resource.model';
+import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 type FilterType = 'all' | 'pdf' | 'video' | 'code' | 'link' | 'book';
 type SortType = 'recent' | 'popular' | 'alphabetical';
@@ -28,6 +30,7 @@ export class ResourceCategoryComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
+  private resourcesRepository = inject(ResourcesRepository);
 
   // Signals
   categoryId = signal<string>('');
@@ -84,7 +87,16 @@ export class ResourceCategoryComponent implements OnInit {
       const targetName = (this.categoryMap[catId] || catId).toLowerCase();
       resources = resources.filter((r) => {
         const resourceCat = (r.category || '').toLowerCase();
-        return resourceCat.includes(targetName) || targetName.includes(resourceCat) || resourceCat === catId;
+        return (
+          resourceCat.includes(targetName) ||
+          targetName.includes(resourceCat) ||
+          resourceCat === catId ||
+          (catId === 'library' && resourceCat.includes('biblioteca')) ||
+          (catId === 'software' && resourceCat.includes('software')) ||
+          (catId === 'guides' && (resourceCat.includes('guía') || resourceCat.includes('guia') || resourceCat.includes('manual'))) ||
+          (catId === 'programs' && (resourceCat.includes('programa') || resourceCat.includes('académ'))) ||
+          (catId === 'support' && (resourceCat.includes('soporte') || resourceCat.includes('técnic')))
+        );
       });
     }
 
@@ -100,7 +112,7 @@ export class ResourceCategoryComponent implements OnInit {
           r.title.toLowerCase().includes(query) ||
           r.description.toLowerCase().includes(query) ||
           (r.author && r.author.name && r.author.name.toLowerCase().includes(query)) ||
-          (r.tags && r.tags.some(tag => tag.toLowerCase().includes(query)))
+          (r.tags && r.tags.some((tag) => tag.toLowerCase().includes(query)))
       );
     }
 
@@ -134,8 +146,8 @@ export class ResourceCategoryComponent implements OnInit {
     });
   }
 
-  loadResources(): void {
-    this.http
+  private loadMockResources() {
+    return this.http
       .get<ResourceDetail[]>('assets/mock-data/resources/resources-detail.json')
       .pipe(
         map((resources) =>
@@ -146,6 +158,55 @@ export class ResourceCategoryComponent implements OnInit {
             lastUpdated: r.lastUpdated ? new Date(r.lastUpdated) : new Date(r.uploadDate),
           })),
         ),
+        catchError(() => of([]))
+      );
+  }
+
+  private mapResourceToDetail(r: Resource): ResourceDetail {
+    return {
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      category: r.category || 'General',
+      type: (r.type as any) || 'document',
+      url: r.url || '#',
+      imageUrl: r.imageUrl || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400',
+      badge: r.badge || 'Académico',
+      isFeatured: r.isFeatured || false,
+      uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
+      publishDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
+      lastUpdated: new Date(),
+      downloads: 145,
+      views: 420,
+      rating: 4.8,
+      tags: [r.category?.toLowerCase() || 'académico', r.type],
+      format: (r.type || 'PDF').toUpperCase(),
+      language: 'Español',
+      fileSize: r.fileSize || '2.5 MB',
+      author: {
+        name: 'Plataforma Lumina',
+        title: 'Recurso Académico',
+        avatar: 'https://ui-avatars.com/api/?name=Lumina+Core&background=4f46e5&color=fff',
+      },
+      isFavorite: false,
+    };
+  }
+
+  loadResources(): void {
+    this.resourcesRepository
+      .getResources()
+      .pipe(
+        map((resources) => resources.map((r) => this.mapResourceToDetail(r))),
+        switchMap((backendList) => {
+          return this.loadMockResources().pipe(
+            map((mockList) => {
+              const backendIds = new Set(backendList.map((r) => r.id));
+              const filteredMocks = mockList.filter((m) => !backendIds.has(m.id));
+              return [...backendList, ...filteredMocks];
+            })
+          );
+        }),
+        catchError(() => this.loadMockResources())
       )
       .subscribe({
         next: (resources) => {

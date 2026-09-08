@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Announcement } from '@features/student/domain/models/announcement.model';
 import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
@@ -15,6 +15,16 @@ export class RecentAnnouncementsComponent {
   @Input() isLoading = false;
   @Input() limit = 3;
   @Output() viewAll = new EventEmitter<void>();
+
+  selectedAnnouncement = signal<Announcement | null>(null);
+
+  openAnnouncement(announcement: Announcement): void {
+    this.selectedAnnouncement.set(announcement);
+  }
+
+  closeAnnouncement(): void {
+    this.selectedAnnouncement.set(null);
+  }
 
   getIcon(iconName: string): string {
     const icons: Record<string, string> = {
