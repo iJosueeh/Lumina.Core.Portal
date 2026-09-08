@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
     @if (isOpen) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div (click)="onCancel.emit()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-        <div class="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl flex flex-col">
+        <div class="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl flex flex-col z-10 animate-scaleUp">
           <!-- Header -->
           <div class="flex items-center justify-between p-6 border-b border-slate-100">
             <div class="flex items-center gap-3">
@@ -29,19 +29,21 @@ import { FormsModule } from '@angular/forms';
           <div class="p-6 space-y-4">
             <p class="text-sm text-slate-600">{{ message }}</p>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                Escribe <span class="text-red-500">{{ confirmText }}</span> para confirmar
-              </label>
-              <input type="text"
-                [ngModel]="typedText()"
-                (ngModelChange)="typedText.set($event)"
-                [placeholder]="confirmText"
-                class="w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
-                [class.border-red-400]="typedText().length > 0 && !isValid()"
-                [class.border-green-400]="isValid()"
-                [class.border-slate-200]="typedText().length === 0 || isValid()">
-            </div>
+            @if (confirmText) {
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                  Escribe <span class="text-red-500">{{ confirmText }}</span> para confirmar
+                </label>
+                <input type="text"
+                  [ngModel]="typedText()"
+                  (ngModelChange)="typedText.set($event)"
+                  [placeholder]="confirmText"
+                  class="w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
+                  [class.border-red-400]="typedText().length > 0 && !isValid()"
+                  [class.border-green-400]="isValid()"
+                  [class.border-slate-200]="typedText().length === 0 || isValid()">
+              </div>
+            }
           </div>
 
           <!-- Footer -->
@@ -66,7 +68,7 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class ConfirmDeleteModalComponent implements OnChanges {
-  @Input() isOpen = false;
+  @Input() isOpen = true;
   @Input() title = 'Confirmar eliminación';
   @Input() message = 'Esta acción no se puede deshacer.';
   @Input() confirmText = '';
@@ -75,7 +77,7 @@ export class ConfirmDeleteModalComponent implements OnChanges {
   @Output() onCancel = new EventEmitter<void>();
 
   typedText = signal('');
-  isValid = computed(() => this.typedText() === this.confirmText);
+  isValid = computed(() => !this.confirmText || this.typedText() === this.confirmText);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue) {
