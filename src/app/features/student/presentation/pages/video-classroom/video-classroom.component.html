@@ -130,6 +130,7 @@
                     [sections]="sections()"
                     [activeLessonId]="selectedLessonId() || ''"
                     (onLessonSelect)="selectLesson($event)"
+                    (onToggleCompletion)="toggleLessonCompletion($event)"
                 />
             </div>
         </aside>

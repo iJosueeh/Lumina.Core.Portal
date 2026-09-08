@@ -19,6 +19,7 @@ export class ClassroomPlayerComponent {
   isEditable = input<boolean>(false);
   
   onVideoEnded = output<void>();
+  onComplete = output<void>();
   onEditVideo = output<void>();
   onUploadVideo = output<File>();
 
