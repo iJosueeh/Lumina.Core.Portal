@@ -1,12 +1,21 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ResourceDetail, Resource } from '@features/student/domain/models/resource.model';
-import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { map, switchMap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { ResourceDetail } from '@features/student/domain/models/resource.model';
+import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import {
+  RESOURCE_CATEGORY_MAP,
+  getResourceBadgeColor,
+  getResourceEmoji,
+  formatResourceDate,
+  formatFileSize,
+  mapResourceToDetail,
+  loadMockResources,
+  DEFAULT_RESOURCE_PLACEHOLDER,
+} from '../resource.utils';
 
 type FilterType = 'all' | 'pdf' | 'video' | 'code' | 'link' | 'book';
 type SortType = 'recent' | 'popular' | 'alphabetical';
@@ -22,7 +31,7 @@ interface FilterState {
 @Component({
   selector: 'app-resource-category',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './resource-category.html',
   styleUrl: './resource-category.css',
 })
@@ -35,6 +44,9 @@ export class ResourceCategoryComponent implements OnInit {
   // Signals
   categoryId = signal<string>('');
   allResources = signal<ResourceDetail[]>([]);
+  isLoading = signal(true);
+
+  readonly defaultPlaceholder = DEFAULT_RESOURCE_PLACEHOLDER;
 
   filters = signal<FilterState>({
     searchQuery: '',
@@ -43,27 +55,10 @@ export class ResourceCategoryComponent implements OnInit {
     viewMode: 'grid',
   });
 
-  private readonly categoryMap: Record<string, string> = {
-    library: 'Biblioteca Digital',
-    biblioteca: 'Biblioteca Digital',
-    software: 'Software y Herramientas',
-    guides: 'Guías y Manuales',
-    guias: 'Guías y Manuales',
-    programs: 'Programas Académicos',
-    programas: 'Programas Académicos',
-    support: 'Soporte Técnico',
-    soporte: 'Soporte Técnico',
-    programacion: 'Programación',
-    frontend: 'Frontend',
-    backend: 'Backend',
-    databases: 'Bases de Datos',
-    all: 'Todos los Recursos',
-  };
-
   // Computed
   categoryName = computed(() => {
     const id = (this.categoryId() || '').toLowerCase();
-    return this.categoryMap[id] || (id === 'all' ? 'Todos los Recursos' : 'Centro de Recursos');
+    return RESOURCE_CATEGORY_MAP[id] || (id === 'all' ? 'Todos los Recursos' : 'Centro de Recursos');
   });
 
   stats = computed(() => {
@@ -73,6 +68,7 @@ export class ResourceCategoryComponent implements OnInit {
       pdf: resources.filter((r) => r.type === 'pdf').length,
       video: resources.filter((r) => r.type === 'video').length,
       book: resources.filter((r) => r.type === 'book').length,
+      code: resources.filter((r) => r.type === 'code').length,
     };
   });
 
@@ -84,7 +80,7 @@ export class ResourceCategoryComponent implements OnInit {
 
     // 1. Filter by Category
     if (catId && catId !== 'all') {
-      const targetName = (this.categoryMap[catId] || catId).toLowerCase();
+      const targetName = (RESOURCE_CATEGORY_MAP[catId] || catId).toLowerCase();
       resources = resources.filter((r) => {
         const resourceCat = (r.category || '').toLowerCase();
         return (
@@ -120,7 +116,7 @@ export class ResourceCategoryComponent implements OnInit {
     resources = [...resources].sort((a, b) => {
       switch (sortBy) {
         case 'recent':
-          return b.uploadDate.getTime() - a.uploadDate.getTime();
+          return (b.uploadDate?.getTime() || 0) - (a.uploadDate?.getTime() || 0);
         case 'popular':
           return (b.views || 0) - (a.views || 0);
         case 'alphabetical':
@@ -146,59 +142,14 @@ export class ResourceCategoryComponent implements OnInit {
     });
   }
 
-  private loadMockResources() {
-    return this.http
-      .get<ResourceDetail[]>('assets/mock-data/resources/resources-detail.json')
-      .pipe(
-        map((resources) =>
-          resources.map((r) => ({
-            ...r,
-            uploadDate: new Date(r.uploadDate),
-            publishDate: r.publishDate ? new Date(r.publishDate) : new Date(r.uploadDate),
-            lastUpdated: r.lastUpdated ? new Date(r.lastUpdated) : new Date(r.uploadDate),
-          })),
-        ),
-        catchError(() => of([]))
-      );
-  }
-
-  private mapResourceToDetail(r: Resource): ResourceDetail {
-    return {
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      category: r.category || 'General',
-      type: (r.type as any) || 'document',
-      url: r.url || '#',
-      imageUrl: r.imageUrl || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400',
-      badge: r.badge || 'Académico',
-      isFeatured: r.isFeatured || false,
-      uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-      publishDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-      lastUpdated: new Date(),
-      downloads: 145,
-      views: 420,
-      rating: 4.8,
-      tags: [r.category?.toLowerCase() || 'académico', r.type],
-      format: (r.type || 'PDF').toUpperCase(),
-      language: 'Español',
-      fileSize: r.fileSize || '2.5 MB',
-      author: {
-        name: 'Plataforma Lumina',
-        title: 'Recurso Académico',
-        avatar: 'https://ui-avatars.com/api/?name=Lumina+Core&background=4f46e5&color=fff',
-      },
-      isFavorite: false,
-    };
-  }
-
   loadResources(): void {
+    this.isLoading.set(true);
     this.resourcesRepository
       .getResources()
       .pipe(
-        map((resources) => resources.map((r) => this.mapResourceToDetail(r))),
+        map((resources) => resources.map((r) => mapResourceToDetail(r))),
         switchMap((backendList) => {
-          return this.loadMockResources().pipe(
+          return loadMockResources(this.http).pipe(
             map((mockList) => {
               const backendIds = new Set(backendList.map((r) => r.id));
               const filteredMocks = mockList.filter((m) => !backendIds.has(m.id));
@@ -206,16 +157,25 @@ export class ResourceCategoryComponent implements OnInit {
             })
           );
         }),
-        catchError(() => this.loadMockResources())
+        catchError(() => loadMockResources(this.http))
       )
       .subscribe({
         next: (resources) => {
           this.allResources.set(resources);
+          this.isLoading.set(false);
         },
         error: (err) => {
           console.error('Error loading resources:', err);
+          this.isLoading.set(false);
         },
       });
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== this.defaultPlaceholder) {
+      img.src = this.defaultPlaceholder;
+    }
   }
 
   // Template Methods
@@ -224,7 +184,6 @@ export class ResourceCategoryComponent implements OnInit {
   }
 
   setTypeFilter(type: string): void {
-    // Cast string to FilterType if valid
     this.filters.update((f) => ({ ...f, type: type as FilterType }));
   }
 
@@ -244,40 +203,19 @@ export class ResourceCategoryComponent implements OnInit {
     this.router.navigate(['/student/resources']);
   }
 
-  getResourceColor(type: string): string {
-    const colors: Record<string, string> = {
-      pdf: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      video: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      book: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-      code: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      link: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
+  getBadgeClass(type: string): string {
+    return getResourceBadgeColor(type);
   }
 
-  getResourceIcon(type: string): string {
-    const icons: Record<string, string> = {
-      pdf: '📄',
-      video: '🎥',
-      link: '🔗',
-      document: '📝',
-      book: '📚',
-      code: '💻',
-    };
-    return icons[type] || '📁';
+  getEmoji(type: string): string {
+    return getResourceEmoji(type);
   }
 
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  formatDate(date: Date | string | undefined | null): string {
+    return formatResourceDate(date);
   }
 
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  formatSize(size: number | string | undefined | null): string {
+    return formatFileSize(size);
   }
 }

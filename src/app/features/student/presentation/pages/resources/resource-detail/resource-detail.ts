@@ -1,24 +1,28 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ResourceDetail, Resource } from '@features/student/domain/models/resource.model';
-import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ResourceDetail } from '@features/student/domain/models/resource.model';
+import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import {
+  RESOURCE_CATEGORY_MAP,
+  getResourceBadgeColor,
+  getResourceEmoji,
+  formatResourceDate,
+  formatFileSize,
+  mapResourceToDetail,
+  loadMockResources,
+  DEFAULT_RESOURCE_PLACEHOLDER,
+} from '../resource.utils';
 
 @Component({
   selector: 'app-resource-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './resource-detail.html',
   styleUrl: './resource-detail.css',
-  styles: `
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
-    .animate-scaleUp { animation: scaleUp 0.2s ease-out; }
-  `
 })
 export class ResourceDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -31,6 +35,9 @@ export class ResourceDetailComponent implements OnInit {
   allResources = signal<ResourceDetail[]>([]);
   isLoading = signal(true);
   linkCopied = signal(false);
+  isFavorite = signal(false);
+
+  readonly defaultPlaceholder = DEFAULT_RESOURCE_PLACEHOLDER;
 
   // Computed
   relatedResources = computed(() => {
@@ -42,25 +49,19 @@ export class ResourceDetailComponent implements OnInit {
       .slice(0, 3);
   });
 
-  ngOnInit(): void {
-    // 1. Cargar todos los recursos (backend + mock fallback) para "Recursos relacionados"
-    this.resourcesRepository.getResources().pipe(
-      map(resources => resources.map(r => this.mapResourceToDetail(r))),
-      switchMap(backendList => {
-        if (backendList && backendList.length > 0) return of(backendList);
-        return this.loadMockResources();
-      }),
-      catchError(() => this.loadMockResources())
-    ).subscribe({
-      next: (resources) => {
-        this.allResources.set(resources);
-      },
-      error: (err) => {
-        console.warn('[ResourceDetail] Error loading related resources:', err);
-      },
-    });
+  categorySlug = computed(() => {
+    const res = this.resource();
+    if (!res) return 'all';
+    const cat = res.category.toLowerCase();
+    for (const [key, val] of Object.entries(RESOURCE_CATEGORY_MAP)) {
+      if (val.toLowerCase() === cat || cat.includes(key)) return key;
+    }
+    return 'all';
+  });
 
-    // 2. Escuchar cambios de ruta para cargar el recurso activo
+  ngOnInit(): void {
+    this.loadAllResources();
+
     this.route.params.subscribe((params) => {
       const resourceId = params['resourceId'];
       if (resourceId) {
@@ -69,173 +70,163 @@ export class ResourceDetailComponent implements OnInit {
     });
   }
 
-  private loadMockResources() {
-    return this.http
-      .get<ResourceDetail[]>('assets/mock-data/resources/resources-detail.json')
+  private loadAllResources(): void {
+    this.resourcesRepository
+      .getResources()
       .pipe(
-        map((resources) =>
-          resources.map((r) => ({
-            ...r,
-            uploadDate: new Date(r.uploadDate),
-            publishDate: r.publishDate ? new Date(r.publishDate) : new Date(r.uploadDate),
-            lastUpdated: r.lastUpdated ? new Date(r.lastUpdated) : new Date(r.uploadDate),
-          })),
-        ),
-        catchError(() => of([]))
-      );
+        map((resources) => resources.map((r) => mapResourceToDetail(r))),
+        switchMap((backendList) => {
+          return loadMockResources(this.http).pipe(
+            map((mockList) => {
+              const backendIds = new Set(backendList.map((r) => r.id));
+              const filteredMocks = mockList.filter((m) => !backendIds.has(m.id));
+              return [...backendList, ...filteredMocks];
+            })
+          );
+        }),
+        catchError(() => loadMockResources(this.http))
+      )
+      .subscribe({
+        next: (resources) => {
+          this.allResources.set(resources);
+        },
+        error: (err) => console.warn('[ResourceDetail] Error loading related resources:', err),
+      });
   }
 
   loadResource(id: string): void {
     this.isLoading.set(true);
 
-    // Intentar buscar primero en el repositorio real (Backend API)
-    this.resourcesRepository.getResources().pipe(
-      map(backendList => {
-        const match = backendList.find(r => r.id === id);
-        return match ? this.mapResourceToDetail(match) : null;
-      }),
-      switchMap(foundInBackend => {
-        if (foundInBackend) return of(foundInBackend);
-
-        // Si no está en el backend, buscar en el archivo local de recursos
-        return this.loadMockResources().pipe(
-          map(mockList => mockList.find(r => r.id === id) || null)
-        );
-      }),
-      catchError(() => {
-        return this.loadMockResources().pipe(
-          map(mockList => mockList.find(r => r.id === id) || null)
-        );
-      })
-    ).subscribe({
-      next: (found) => {
-        if (found) {
-          this.resource.set(found);
-        } else {
-          console.warn('[ResourceDetail] Resource not found:', id);
-          // Si no se encuentra, creamos una vista de detalle con los datos disponibles o redirigimos
-          const fallback = this.allResources().find(r => r.id === id);
-          if (fallback) {
-            this.resource.set(fallback);
+    this.resourcesRepository
+      .getResources()
+      .pipe(
+        map((backendList) => {
+          const match = backendList.find((r) => r.id === id);
+          return match ? mapResourceToDetail(match) : null;
+        }),
+        switchMap((foundInBackend) => {
+          if (foundInBackend) return of(foundInBackend);
+          return loadMockResources(this.http).pipe(
+            map((mockList) => mockList.find((r) => r.id === id) || null)
+          );
+        }),
+        catchError(() => {
+          return loadMockResources(this.http).pipe(
+            map((mockList) => mockList.find((r) => r.id === id) || null)
+          );
+        })
+      )
+      .subscribe({
+        next: (found) => {
+          if (found) {
+            this.resource.set(found);
+            this.checkFavoriteStatus(found.id);
           } else {
-            this.router.navigate(['/student/resources']);
+            const fallback = this.allResources().find((r) => r.id === id);
+            if (fallback) {
+              this.resource.set(fallback);
+              this.checkFavoriteStatus(fallback.id);
+            } else {
+              this.resource.set(null);
+            }
           }
-        }
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading resource:', err);
-        this.isLoading.set(false);
-      },
-    });
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading resource:', err);
+          this.isLoading.set(false);
+        },
+      });
   }
 
-  private mapResourceToDetail(r: Resource): ResourceDetail {
-    return {
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      category: r.category || 'General',
-      type: (r.type as any) || 'document',
-      url: r.url || '#',
-      imageUrl: r.imageUrl || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400',
-      badge: r.badge || 'Académico',
-      isFeatured: r.isFeatured || false,
-      uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-      publishDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-      lastUpdated: new Date(),
-      downloads: 145,
-      views: 420,
-      rating: 4.8,
-      tags: [r.category?.toLowerCase() || 'académico', r.type],
-      format: (r.type || 'PDF').toUpperCase(),
-      language: 'Español',
-      fileSize: r.fileSize || '2.5 MB',
-      author: {
-        name: 'Plataforma Lumina',
-        title: 'Recurso Académico',
-        avatar: 'https://ui-avatars.com/api/?name=Lumina+Core&background=4f46e5&color=fff'
-      },
-      isFavorite: false
-    };
-  }
-
-  downloadResource(): void {
-    const resource = this.resource();
-    if (resource) {
-      window.open(resource.url, '_blank');
+  private checkFavoriteStatus(id: string): void {
+    try {
+      const favorites: string[] = JSON.parse(
+        localStorage.getItem('lumina_favorite_resources') || '[]'
+      );
+      this.isFavorite.set(favorites.includes(id));
+    } catch {
+      this.isFavorite.set(false);
     }
   }
 
-  // Actions
-  goToRelated(resourceId: string): void {
-    this.router.navigate(['/student/resources/detail', resourceId]);
-  }
-
   toggleFavorite(): void {
-    // Implement toggle logic or mock
-    console.log('Toggle favorite');
+    const current = this.resource();
+    if (!current) return;
+    try {
+      let favorites: string[] = JSON.parse(
+        localStorage.getItem('lumina_favorite_resources') || '[]'
+      );
+      if (favorites.includes(current.id)) {
+        favorites = favorites.filter((f) => f !== current.id);
+        this.isFavorite.set(false);
+      } else {
+        favorites.push(current.id);
+        this.isFavorite.set(true);
+      }
+      localStorage.setItem('lumina_favorite_resources', JSON.stringify(favorites));
+    } catch {
+      this.isFavorite.update((v) => !v);
+    }
   }
 
-  isFavorite = signal(false);
+  downloadResource(): void {
+    const res = this.resource();
+    if (res && res.url && res.url !== '#') {
+      window.open(res.url, '_blank');
+    }
+  }
 
   shareResource(): void {
-    console.log('Share resource');
-    // Mock share
-    if (navigator.share) {
+    if (navigator.share && this.resource()) {
       navigator
         .share({
           title: this.resource()?.title,
           text: this.resource()?.description,
           url: window.location.href,
         })
-        .catch(console.error);
+        .catch(() => this.copyToClipboard());
     } else {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        this.linkCopied.set(true);
-        setTimeout(() => this.linkCopied.set(false), 2500);
-      });
+      this.copyToClipboard();
     }
+  }
+
+  private copyToClipboard(): void {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2500);
+    });
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== this.defaultPlaceholder) {
+      img.src = this.defaultPlaceholder;
+    }
+  }
+
+  goToRelated(resourceId: string): void {
+    this.router.navigate(['/student/resources/detail', resourceId]);
   }
 
   goBack(): void {
     this.router.navigate(['/student/resources']);
   }
 
-  getResourceColor(type: string): string {
-    const colors: Record<string, string> = {
-      pdf: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      video: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      book: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-      code: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      link: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
+  // Shared helpers
+  getBadgeClass(type: string): string {
+    return getResourceBadgeColor(type);
   }
 
-  getResourceIcon(type: string): string {
-    const icons: Record<string, string> = {
-      pdf: '📄',
-      video: '🎥',
-      link: '🔗',
-      document: '📝',
-      book: '📚',
-      code: '💻',
-    };
-    return icons[type] || '📁';
+  getEmoji(type: string): string {
+    return getResourceEmoji(type);
   }
 
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  formatDate(date: Date | string | undefined | null): string {
+    return formatResourceDate(date);
   }
 
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  formatSize(size: number | string | undefined | null): string {
+    return formatFileSize(size);
   }
 }

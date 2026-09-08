@@ -4,6 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Resource, ResourceCategory } from '@features/student/domain/models/resource.model';
 import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import {
+  DEFAULT_RESOURCE_PLACEHOLDER,
+  getResourceBadgeColor,
+  getResourceEmoji,
+} from './resource.utils';
 
 @Component({
   selector: 'app-resources',
@@ -16,6 +21,8 @@ export class ResourcesComponent implements OnInit {
   searchQuery = '';
   private router = inject(Router);
   private resourcesRepository = inject(ResourcesRepository);
+
+  readonly defaultPlaceholder = DEFAULT_RESOURCE_PLACEHOLDER;
 
   categories: ResourceCategory[] = [
     {
@@ -146,7 +153,7 @@ export class ResourcesComponent implements OnInit {
           this.featuredResources = featured;
         }
       },
-      error: (err) => console.warn('[Resources] Error fetching featured resources:', err)
+      error: (err) => console.warn('[Resources] Error fetching featured resources:', err),
     });
 
     this.resourcesRepository.getResources().subscribe({
@@ -155,13 +162,19 @@ export class ResourcesComponent implements OnInit {
           this.recentResources = resources.slice(0, 4);
         }
       },
-      error: (err) => console.warn('[Resources] Error fetching recent resources:', err)
+      error: (err) => console.warn('[Resources] Error fetching recent resources:', err),
     });
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== this.defaultPlaceholder) {
+      img.src = this.defaultPlaceholder;
+    }
   }
 
   search(): void {
     if (this.searchQuery.trim()) {
-      // Navegar a una vista de búsqueda global (todas las categorías)
       this.router.navigate(['/student/resources/category', 'all'], {
         queryParams: { q: this.searchQuery },
       });
@@ -173,40 +186,22 @@ export class ResourcesComponent implements OnInit {
   }
 
   downloadResource(resource: Resource): void {
-    console.log('Downloading:', resource.title);
-    // Navegar al detalle del recurso
     this.router.navigate(['/student/resources/detail', resource.id]);
   }
 
   accessResource(resource: Resource): void {
-    // Navegar al detalle del recurso
     this.router.navigate(['/student/resources/detail', resource.id]);
   }
 
   viewAllResources(): void {
-    // Navegar a vista global de todos los recursos
     this.router.navigate(['/student/resources/category', 'all']);
   }
 
   getResourceIcon(type: string): string {
-    const icons: Record<string, string> = {
-      pdf: 'document',
-      video: 'play',
-      code: 'code',
-      link: 'link',
-      book: 'book',
-    };
-    return icons[type] || 'document';
+    return getResourceEmoji(type);
   }
 
   getResourceColor(type: string): string {
-    const colors: Record<string, string> = {
-      pdf: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-      video: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-      code: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-      link: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-      book: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-600';
+    return getResourceBadgeColor(type);
   }
 }

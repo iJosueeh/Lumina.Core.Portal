@@ -68,8 +68,9 @@
         <!-- Image -->
         <div class="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-700">
           <img
-            [src]="resource.imageUrl"
+            [src]="resource.imageUrl || defaultPlaceholder"
             [alt]="resource.title"
+            (error)="onImageError($event)"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div *ngIf="resource.badge" class="absolute top-3 left-3">
