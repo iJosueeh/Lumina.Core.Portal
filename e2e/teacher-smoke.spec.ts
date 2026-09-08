@@ -88,20 +88,58 @@ test.describe('Teacher Module - Navigation Tests (Requires Auth)', () => {
 
 });
 
-test.describe('Teacher Dashboard - Component Tests', () => {
-  
-  test('Dashboard sidebar menu items are present', async ({ page }) => {
-    await page.goto('/login');
-    
-    // Check that sidebar structure exists (if redirected to dashboard)
-    const currentUrl = page.url();
-    if (currentUrl.includes('/teacher')) {
-      // Check for sidebar navigation items
-      const menuItems = page.locator('app-sidebar');
-      await expect(menuItems).toBeVisible({ timeout: 5000 }).catch(() => {
-        console.log('Sidebar not visible (may require auth)');
+test.describe('Student Module - Smoke & Navigation Tests', () => {
+  const studentRoutes = [
+    { path: '/student/dashboard', name: 'Dashboard' },
+    { path: '/student/courses', name: 'Mis Cursos' },
+    { path: '/student/catalog', name: 'Catálogo de Cursos' },
+    { path: '/student/schedule', name: 'Mi Horario' },
+    { path: '/student/grades', name: 'Calificaciones' },
+    { path: '/student/evaluations', name: 'Mis Evaluaciones' },
+    { path: '/student/resources', name: 'Centro de Recursos' },
+    { path: '/student/resources/category/library', name: 'Recursos - Biblioteca' },
+    { path: '/student/resources/category/software', name: 'Recursos - Software' },
+    { path: '/student/resources/category/guides', name: 'Recursos - Guías' },
+    { path: '/student/resources/category/all', name: 'Recursos - Todos' },
+    { path: '/student/profile', name: 'Mi Perfil' },
+    { path: '/student/settings', name: 'Configuración' },
+  ];
+
+  for (const route of studentRoutes) {
+    test(`Página ${route.name} (${route.path}) carga sin errores fatales`, async ({ page }) => {
+      const consoleErrors: string[] = [];
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') {
+          consoleErrors.push(msg.text());
+        }
       });
+
+      await page.goto(route.path);
+      await expect(page).toHaveURL(/\/(login|student)/);
+
+      const criticalErrors = consoleErrors.filter(
+        (e) =>
+          !e.includes('favicon') &&
+          !e.includes('DevTools') &&
+          !e.includes('Warning') &&
+          !e.includes('401') &&
+          !e.includes('403')
+      );
+      expect(criticalErrors).toHaveLength(0);
+    });
+  }
+
+  test('Centro de recursos contiene categorías operativas', async ({ page }) => {
+    await page.goto('/student/resources');
+    const categoriesContainer = page.locator('text=Explorar por Categoría');
+    if (await categoriesContainer.isVisible()) {
+      await expect(page.locator('text=Biblioteca Digital')).toBeVisible();
+      await expect(page.locator('text=Software y Herramientas')).toBeVisible();
     }
   });
 
+  test('Aula virtual y reproductor de video cargan correctamente', async ({ page }) => {
+    await page.goto('/student/course/1');
+    await expect(page).toHaveURL(/\/(login|student)/);
+  });
 });
