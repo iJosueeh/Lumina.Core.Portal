@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
+import { NotificationService } from '@shared/services/notification.service';
 import { Leccion } from '@shared/models/course-management.models';
 
 interface AdditionalFile {
@@ -32,6 +33,7 @@ export class AddContentModalComponent implements OnInit, OnChanges {
 
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private notificationService = inject(NotificationService);
   contentForm: FormGroup;
   isSaving = signal(false);
   isEditMode = signal(false);
@@ -272,11 +274,10 @@ export class AddContentModalComponent implements OnInit, OnChanges {
       
       this.onSaved.emit();
       this.onClose.emit();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving content:', error);
-      if (error instanceof HttpErrorResponse) {
-        console.error('Detalles del error:', error.error);
-      }
+      const errorMsg = error?.error?.error || error?.message || 'Error al guardar el contenido.';
+      this.notificationService.show('error', errorMsg);
     } finally {
       this.isSaving.set(false);
     }

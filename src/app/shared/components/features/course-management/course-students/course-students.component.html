@@ -1,5 +1,14 @@
 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-    @if (students()?.length) {
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <h3 class="font-bold text-slate-800 text-sm">Alumnos Matriculados</h3>
+            <span class="px-2.5 py-0.5 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-full">{{ students().length || 0 }}</span>
+        </div>
+        <button (click)="onAssignClick.emit()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i class="fas fa-user-plus text-[10px]"></i> Asignar
+        </button>
+    </div>
+    @if (students().length) {
         <div class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
             @for (student of students(); track student.id) {
                 <a [routerLink]="['/teacher/student', student.id]"

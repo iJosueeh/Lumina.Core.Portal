@@ -55,13 +55,11 @@ import { TeacherQueryService } from '@features/teacher/infrastructure/queries/te
     QuestionEditorComponent, 
     AssignStudentModalComponent,
     CourseHeroComponent,
-    CourseStatsComponent,
     CourseStudentsComponent,
     CourseCurriculumComponent,
     CourseEvaluationsComponent,
     FilePreviewModalComponent,
     TabNavComponent,
-    SkeletonLoaderComponent,
     AddContentModalComponent,
     AddModuleModalComponent,
   ],
@@ -390,9 +388,13 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
     }
   }
 
-  openQuestionEditor(ev: { id: string, titulo: string }): void {
+  openQuestionEditor(ev: { id: string, titulo: string, puntajeMaximo?: number }): void {
     this.editingQuizzId.set(ev.id);
     this.editingQuizzTitle.set(ev.titulo);
+    const found = this.courseEvaluaciones().find(e => e.id === ev.id);
+    if (found) {
+      this.editingEvaluacion.set(found);
+    }
     this.showQuestionEditor.set(true);
   }
 

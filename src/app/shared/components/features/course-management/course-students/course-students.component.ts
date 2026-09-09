@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CourseStudent } from '@shared/models/course-management.models';
@@ -11,6 +11,7 @@ import { CourseStudent } from '@shared/models/course-management.models';
 })
 export class CourseStudentsComponent {
   students = input.required<CourseStudent[]>();
+  onAssignClick = output<void>();
 
   private brokenAvatars = new Set<string>();
 
