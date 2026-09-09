@@ -34,7 +34,7 @@ test.describe('Teacher Course Management (/teacher/course/:id) Verification', ()
     // 3. Verificar Header / Hero
     console.log('3. Verificando Header Hero...');
     await expect(page.locator('app-course-hero')).toBeVisible();
-    const backBtn = page.locator('app-course-hero button:has-text("Volver")');
+    const backBtn = page.getByRole('button', { name: /Volver/i });
     await expect(backBtn).toBeVisible();
 
     // 4. Verificar pestaña 'Contenido y Alumnos'
@@ -44,58 +44,61 @@ test.describe('Teacher Course Management (/teacher/course/:id) Verification', ()
 
     // 5. Probar botón "Crear Nueva Sección / Módulo"
     console.log('5. Probando botón Crear Nueva Sección / Módulo...');
-    const createModuleBtn = page.locator('button:has-text("Crear Nueva Sección / Módulo")');
+    const createModuleBtn = page.getByRole('button', { name: /Crear Nueva Sección/i });
     if (await createModuleBtn.isVisible()) {
       await createModuleBtn.click();
       await page.waitForTimeout(600);
-      const moduleTitle = page.locator('text=Nueva Sección, text=Configurar Sección');
-      await expect(moduleTitle.first()).toBeVisible();
+      const moduleHeading = page.getByRole('heading', { name: /Nueva Sección|Configurar Sección/i });
+      await expect(moduleHeading).toBeVisible();
       console.log('✅ Modal de Nuevo Módulo abierto.');
       
       // Cerrar modal
-      const cancelBtn = page.locator('button:has-text("Cancelar"), app-add-module-modal button i.fa-times');
-      await cancelBtn.first().click();
+      const cancelBtn = page.getByRole('button', { name: /Cancelar/i });
+      await cancelBtn.click();
       await page.waitForTimeout(600);
+      await expect(moduleHeading).not.toBeVisible();
       console.log('✅ Modal de Nuevo Módulo cerrado correctamente.');
     }
 
     // 6. Probar botón "Asignar Estudiante"
     console.log('6. Probando botón Asignar Estudiante...');
-    const assignBtn = page.locator('app-course-students button:has-text("Asignar")');
+    const assignBtn = page.locator('app-course-students').getByRole('button', { name: /Asignar/i });
     if (await assignBtn.isVisible()) {
       await assignBtn.click();
       await page.waitForTimeout(600);
-      const assignHeader = page.locator('text=Asignar Estudiante, text=Matricular');
-      await expect(assignHeader.first()).toBeVisible();
+      const assignHeader = page.getByRole('heading', { name: /Asignar Estudiante|Matricular/i });
+      await expect(assignHeader).toBeVisible();
       console.log('✅ Modal Asignar Estudiante abierto.');
       
       // Cerrar modal
-      const closeAssignBtn = page.locator('app-assign-student-modal button:has-text("Cancelar"), app-assign-student-modal button i.fa-times');
-      await closeAssignBtn.first().click();
+      const closeAssignBtn = page.locator('app-assign-student-modal').getByRole('button', { name: /Cancelar|Cerrar/i });
+      await closeAssignBtn.click();
       await page.waitForTimeout(600);
+      await expect(assignHeader).not.toBeVisible();
       console.log('✅ Modal Asignar Estudiante cerrado correctamente.');
     }
 
     // 7. Cambiar a pestaña 'Evaluaciones'
     console.log('7. Cambiando a pestaña Evaluaciones...');
-    const evalTabBtn = page.locator('app-tab-nav button:has-text("Evaluaciones")');
-    await evalTabBtn.click();
+    const evalTab = page.getByRole('tab', { name: /Evaluaciones/i });
+    await evalTab.click();
     await page.waitForTimeout(1000);
 
     // 8. Probar botón "Crear Evaluación"
     console.log('8. Probando botón Crear Evaluación...');
-    const createEvalBtn = page.locator('button:has-text("Crear Evaluación")');
+    const createEvalBtn = page.getByRole('button', { name: /Crear Evaluación/i });
     await expect(createEvalBtn).toBeVisible();
     await createEvalBtn.click();
     await page.waitForTimeout(600);
-    const evalHeader = page.locator('text=Nueva Evaluación, text=Crear Evaluación');
-    await expect(evalHeader.first()).toBeVisible();
+    const evalHeader = page.getByRole('heading', { name: /Nueva Evaluación|Crear Evaluación/i });
+    await expect(evalHeader).toBeVisible();
     console.log('✅ Modal Crear Evaluación abierto.');
 
     // Cerrar modal
-    const closeEvalBtn = page.locator('app-evaluacion-modal button:has-text("Cancelar"), app-evaluacion-modal button i.fa-times');
-    await closeEvalBtn.first().click();
+    const closeEvalBtn = page.locator('app-evaluacion-modal').getByRole('button', { name: /Cancelar/i });
+    await closeEvalBtn.click();
     await page.waitForTimeout(600);
+    await expect(evalHeader).not.toBeVisible();
     console.log('✅ Modal Crear Evaluación cerrado correctamente.');
 
     // 9. Verificar botón 'Volver'
