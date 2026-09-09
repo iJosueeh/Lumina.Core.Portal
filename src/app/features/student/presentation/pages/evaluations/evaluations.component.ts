@@ -132,11 +132,43 @@ export class EvaluationsComponent implements OnInit {
   }
 
   navigateToCourse(courseId: string, evaluationId?: string): void {
-    const queryParams: Record<string, string> = { tab: 'evaluations' };
+    const queryParams: Record<string, string> = { tab: 'evaluaciones' };
     if (evaluationId) {
       queryParams['evaluationId'] = evaluationId;
     }
     this.router.navigate(['/student/course', courseId], { queryParams });
+  }
+
+  printEvaluations(): void {
+    window.print();
+  }
+
+  exportCSV(): void {
+    const data = this.filteredEvaluations();
+    if (!data.length) return;
+
+    const headers = ['Curso', 'Evaluación', 'Dificultad', 'Intentos Usados', 'Intentos Permitidos', 'Nota Final (/20)', 'Estado', 'Vence'];
+    const rows = data.map(e => [
+      `"${e.courseName.replace(/"/g, '""')}"`,
+      `"${e.title.replace(/"/g, '""')}"`,
+      `"${this.getDifficultyLabel(e.difficulty)}"`,
+      e.attemptsUsed,
+      e.attemptsAllowed,
+      e.bestScore !== undefined ? normalizeToVigesimal(e.bestScore).toFixed(1) : 'N/A',
+      `"${this.getStatusBadge(e.status).text}"`,
+      `"${e.timeRemaining || 'N/A'}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Mis_Evaluaciones_${this.selectedYear()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   // --- Delegated to shared utils ---

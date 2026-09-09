@@ -227,6 +227,15 @@ export class CourseDetailComponent implements OnInit {
   ngOnInit(): void {
     this.courseId.set(this.route.snapshot.params['id'] || '1');
 
+    const tabParam = this.route.snapshot.queryParams['tab'];
+    if (tabParam === 'evaluaciones' || tabParam === 'evaluations') {
+      this.activeTab.set('evaluaciones');
+    } else if (tabParam === 'content' || tabParam === 'contenido') {
+      this.activeTab.set('content');
+    } else if (tabParam === 'description' || tabParam === 'descripcion') {
+      this.activeTab.set('description');
+    }
+
     // Resolve studentId from userId
     const userId = this.authService.getUserId() || '';
     if (userId) {

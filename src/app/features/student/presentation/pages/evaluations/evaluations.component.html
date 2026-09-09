@@ -8,13 +8,19 @@
         <p class="mt-1 text-xs uppercase tracking-[0.18em] text-blue-200">Escala vigesimal | Ciclo {{ selectedYear() }}</p>
       </div>
       <div class="flex items-center gap-3">
-        <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition-colors text-white font-semibold text-sm">
+        <button
+          (click)="exportCSV()"
+          title="Descargar reporte en CSV"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition-colors text-white font-semibold text-sm cursor-pointer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Exportar
         </button>
-        <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition-colors text-white font-semibold text-sm">
+        <button
+          (click)="printEvaluations()"
+          title="Imprimir resumen de evaluaciones"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition-colors text-white font-semibold text-sm cursor-pointer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V4h12v5M6 18h12M6 14h12M6 9H5a2 2 0 00-2 2v5a2 2 0 002 2h1M18 9h1a2 2 0 012 2v5a2 2 0 01-2 2h-1" />
           </svg>
