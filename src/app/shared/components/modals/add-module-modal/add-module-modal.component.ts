@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
   selector: 'app-add-module-modal',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  styles: [`:host { display: block; }`],
   template: `
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-6">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="handleClose()"></div>
