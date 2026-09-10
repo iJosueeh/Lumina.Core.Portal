@@ -82,139 +82,138 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
             return of(cachedData);
         }
 
-        // 1. Fetch evaluaciones del estudiante
-        return this.http
-            .get<{ evaluaciones: EvaluacionResponse[] } | EvaluacionResponse[]>(
-                `${this.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`
-            )
-            .pipe(
-                map((response) => {
-                    // Normalize: backend may return array or { evaluaciones: [...] }
-                    let evaluaciones: EvaluacionResponse[];
-                    if (Array.isArray(response)) {
-                        evaluaciones = response;
-                    } else if (response && 'evaluaciones' in response) {
-                        evaluaciones = (response as any).evaluaciones;
-                    } else {
-                        evaluaciones = [];
+        return forkJoin({
+            evaluacionesResp: this.http
+                .get<{ evaluaciones: EvaluacionResponse[] } | EvaluacionResponse[]>(
+                    `${this.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`
+                )
+                .pipe(
+                    map((response) => {
+                        if (Array.isArray(response)) return response;
+                        if (response && 'evaluaciones' in response) return (response as any).evaluaciones;
+                        return [];
+                    }),
+                    catchError(() => of([] as EvaluacionResponse[]))
+                ),
+            enrolledResp: this.http
+                .get<any>(`${environment.estudiantesApiUrl}/estudiantes/${studentId}/cursos-matriculados`)
+                .pipe(
+                    map((response) => response?.value || response || []),
+                    catchError(() => of([]))
+                ),
+        }).pipe(
+            switchMap(({ evaluacionesResp, enrolledResp }) => {
+                const cursoMap = new Map<string, EvaluacionResponse[]>();
+                evaluacionesResp.forEach((ev: EvaluacionResponse) => {
+                    if (!cursoMap.has(ev.cursoId)) {
+                        cursoMap.set(ev.cursoId, []);
                     }
-                    return evaluaciones;
-                }),
-                switchMap((evaluaciones) => {
-                    if (evaluaciones.length === 0) {
-                        return of([] as CourseGrade[]);
-                    }
+                    cursoMap.get(ev.cursoId)!.push(ev);
+                });
 
-                    // 2. Group by cursoId
-                    const cursoMap = new Map<string, EvaluacionResponse[]>();
-                    evaluaciones.forEach((ev) => {
-                        if (!cursoMap.has(ev.cursoId)) {
-                            cursoMap.set(ev.cursoId, []);
-                        }
-                        cursoMap.get(ev.cursoId)!.push(ev);
-                    });
+                const enrolledIds = (Array.isArray(enrolledResp) ? enrolledResp : []).map(
+                    (c: any) => c.id?.value || c.id || c.Id || c.courseId
+                ).filter(Boolean);
 
-                    const cursoIds = Array.from(cursoMap.keys());
-                    const cursoDetailRequests = cursoIds.map((id) =>
-                        this.http.get<CursoResponse>(`${this.cursosApiUrl}/cursos/${id}`).pipe(
-                            catchError(() =>
-                                of({
-                                    id,
-                                    titulo: `Curso ${id.substring(0, 8).toUpperCase()}`,
-                                    codigo: id.substring(0, 8).toUpperCase(),
-                                    creditos: 4,
-                                } as CursoResponse)
-                            )
+                const allCursoIdsSet = new Set<string>([...cursoMap.keys(), ...enrolledIds]);
+                const cursoIds = Array.from(allCursoIdsSet);
+
+                if (cursoIds.length === 0) {
+                    return of([] as CourseGrade[]);
+                }
+
+                const cursoDetailRequests = cursoIds.map((id) =>
+                    this.http.get<CursoResponse>(`${this.cursosApiUrl}/cursos/${id}`).pipe(
+                        catchError(() =>
+                            of({
+                                id,
+                                titulo: `Curso ${id.substring(0, 8).toUpperCase()}`,
+                                codigo: id.substring(0, 8).toUpperCase(),
+                                creditos: 4,
+                            } as CursoResponse)
                         )
-                    );
-                    const cursoPromedioRequests = cursoIds.map((cursoId) =>
-                        this.http.get<{ promedio: number }>(
-                            `${this.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/curso/${cursoId}/promedio`
-                        ).pipe(
-                            map((r) => ({ cursoId, promedio: r.promedio ?? 0 })),
-                            catchError(() => of({ cursoId, promedio: 0 }))
-                        )
-                    );
+                    )
+                );
+                const cursoPromedioRequests = cursoIds.map((cursoId) =>
+                    this.http.get<{ promedio: number }>(
+                        `${this.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/curso/${cursoId}/promedio`
+                    ).pipe(
+                        map((r) => ({ cursoId, promedio: r.promedio ?? 0 })),
+                        catchError(() => of({ cursoId, promedio: 0 }))
+                    )
+                );
 
-                    return forkJoin({
-                        cursos: forkJoin(cursoDetailRequests),
-                        promedios: forkJoin(cursoPromedioRequests),
-                    }).pipe(
-                        map(({ cursos, promedios }) => {
-                            const cursoDetails = new Map<string, CursoResponse>();
-                            cursos.forEach((c) => cursoDetails.set(c.id, c));
-                            const promedioMap = new Map<string, number>();
-                            promedios.forEach((p) => promedioMap.set(p.cursoId, p.promedio));
+                return forkJoin({
+                    cursos: forkJoin(cursoDetailRequests),
+                    promedios: forkJoin(cursoPromedioRequests),
+                }).pipe(
+                    map(({ cursos, promedios }) => {
+                        const cursoDetails = new Map<string, CursoResponse>();
+                        cursos.forEach((c) => cursoDetails.set(c.id, c));
+                        const promedioMap = new Map<string, number>();
+                        promedios.forEach((p) => promedioMap.set(p.cursoId, p.promedio));
 
-                            // 4. Build CourseGrade[]
-                            return cursoIds.map((cursoId): CourseGrade => {
-                                const evs = cursoMap.get(cursoId)!;
-                                const cursoDetail = cursoDetails.get(cursoId);
+                        return cursoIds.map((cursoId): CourseGrade => {
+                            const evs = cursoMap.get(cursoId) || [];
+                            const cursoDetail = cursoDetails.get(cursoId);
 
-                                const totalEvaluaciones = evs.length;
-                                const evsCompletadas = evs.filter(
-                                    (e) => e.estado === 'Vencido' || e.intentos > 0
-                                );
+                            const totalEvaluaciones = evs.length;
+                            const evsCompletadas = evs.filter(
+                                (e) => e.estado === 'Vencido' || e.intentos > 0 || (e.nota && e.nota > 0)
+                            );
 
-                                const avance =
-                                    totalEvaluaciones > 0
-                                        ? Math.round(
-                                              (evsCompletadas.length / totalEvaluaciones) * 100
-                                          )
-                                        : 0;
+                            const avance =
+                                totalEvaluaciones > 0
+                                    ? Math.round(
+                                          (evsCompletadas.length / totalEvaluaciones) * 100
+                                      )
+                                    : 0;
 
-                                // Map evaluations with real grades from API
-                                const evaluacionesMapped: Evaluation[] = evs.map((e) => ({
-                                    actividad: e.titulo,
-                                    peso: e.puntajeMaximo,
-                                    nota: e.nota ?? 0,
-                                    estado: (e.estadoNota as 'Completado' | 'Pendiente') ?? 'Pendiente',
-                                }));
+                            const evaluacionesMapped: Evaluation[] = evs.map((e) => ({
+                                actividad: e.titulo,
+                                peso: e.puntajeMaximo,
+                                nota: e.nota ?? 0,
+                                estado: (e.estadoNota as 'Completado' | 'Pendiente') ?? (e.intentos > 0 ? 'Completado' : 'Pendiente'),
+                            }));
 
-                                // Estado determined by grade (Peru scale: approved≥14, at-risk 10-13, failed<10)
-                                const promedio = promedioMap.get(cursoId) ?? 0;
+                            const promedio = promedioMap.get(cursoId) ?? 0;
 
-                                console.log('[GradesRepo] Building course:', cursoId, {
-                                    evaluacionesCount: evaluacionesMapped.length,
-                                    sampleEv: evaluacionesMapped[0],
-                                    promedio,
-                                });
-                                let estado: 'Aprobado' | 'En Curso' | 'En Riesgo';
-                                if (promedio >= 14) {
-                                    estado = 'Aprobado';
-                                } else if (promedio > 0 && promedio < 14) {
-                                    estado = 'En Riesgo';
-                                } else {
-                                    estado = 'En Riesgo'; // 0 = no grades yet = at risk
-                                }
+                            let estado: 'Aprobado' | 'En Curso' | 'En Riesgo' = 'En Curso';
+                            if (promedio >= 14) {
+                                estado = 'Aprobado';
+                            } else if (promedio > 0 && promedio < 11) {
+                                estado = 'En Riesgo';
+                            } else {
+                                estado = 'En Curso';
+                            }
 
-                                return {
-                                    id: cursoId,
-                                    nombre: cursoDetail?.titulo ?? `Curso ${cursoId.substring(0, 8).toUpperCase()}`,
-                                    codigo: cursoDetail?.codigo ?? cursoId.substring(0, 8).toUpperCase(),
-                                    profesor: cursoDetail?.instructor?.nombre ?? 'Por definir',
-                                    creditos: cursoDetail?.creditos ?? 4,
-                                    avance,
-                                    promedio,
-                                    estado,
-                                    evaluaciones: evaluacionesMapped,
-                                    promedioClase: 0,
-                                    posicionamiento: 0,
-                                    totalEstudiantes: 0,
-                                    isExpanded: false,
-                                };
-                            });
-                        })
-                    );
-                }),
-                tap((grades) => {
-                    this.cacheService.set(cacheKey, grades, this.CACHE_TTL);
-                }),
-                catchError((error) => {
-                    console.error('[GRADES] Error loading grades:', error);
-                    throw error;
-                })
-            );
+                            return {
+                                id: cursoId,
+                                nombre: cursoDetail?.titulo ?? `Curso ${cursoId.substring(0, 8).toUpperCase()}`,
+                                codigo: cursoDetail?.codigo ?? cursoId.substring(0, 8).toUpperCase(),
+                                profesor: cursoDetail?.instructor?.nombre ?? 'Docente Asignado',
+                                creditos: cursoDetail?.creditos ?? 4,
+                                avance,
+                                promedio,
+                                estado,
+                                evaluaciones: evaluacionesMapped,
+                                promedioClase: 0,
+                                posicionamiento: 0,
+                                totalEstudiantes: 0,
+                                isExpanded: false,
+                            };
+                        });
+                    })
+                );
+            }),
+            tap((grades) => {
+                this.cacheService.set(cacheKey, grades, this.CACHE_TTL);
+            }),
+            catchError((error) => {
+                console.error('[GRADES] Error loading grades:', error);
+                return of([] as CourseGrade[]);
+            })
+        );
     }
 
     override getGradeStats(studentId: string): Observable<GradeStats> {

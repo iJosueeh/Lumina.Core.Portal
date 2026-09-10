@@ -1,13 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { GradeStats, CourseGrade, Evaluation } from '@features/student/domain/models/grade.model';
 import { GetStudentGradesUseCase } from '@features/student/application/use-cases/get-student-grades.usecase';
 import { GetGradeStatsUseCase } from '@features/student/application/use-cases/get-grade-stats.usecase';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
-import { environment } from '@environments/environment';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 
 type SemesterFilter = '2026' | '2025' | 'all';
 
@@ -22,7 +21,7 @@ export class GradesComponent {
   private getStudentGradesUseCase = inject(GetStudentGradesUseCase);
   private getGradeStatsUseCase = inject(GetGradeStatsUseCase);
   private authRepository = inject(AuthRepository);
-  private http = inject(HttpClient);
+  private enrollmentService = inject(EnrollmentService);
 
   activeSemester = signal<SemesterFilter>('2026');
   isLoading = signal(true);
@@ -32,8 +31,8 @@ export class GradesComponent {
     const semester = this.activeSemester();
     const all = this.allCourses();
     if (semester === 'all') return all;
-    if (semester === '2026') return all.filter(c => c.promedio > 0).slice(0, 3);
-    if (semester === '2025') return all.filter(c => c.promedio > 0).slice(3);
+    if (semester === '2026') return all.length > 3 ? all.slice(0, 3) : all;
+    if (semester === '2025') return all.length > 3 ? all.slice(3) : [];
     return all;
   });
 
@@ -75,19 +74,19 @@ export class GradesComponent {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    // 1. Primero resolver el estudianteId desde el perfil del estudiante
-    this.http.get<{ estudianteId: string }>(`${environment.estudiantesApiUrl}/perfil-estudiante/estudiante-id`).pipe(
-      switchMap(({ estudianteId }) => {
-        console.log('[GRADES] EstudianteId resolved:', estudianteId);
+    // Resolver studentId a través de EnrollmentService
+    this.enrollmentService.getStudentIdByUserId(currentUser.id).pipe(
+      switchMap((studentId) => {
+        const idToQuery = studentId || currentUser.id;
+        console.log('[GRADES] EstudianteId resolved:', idToQuery);
 
-        // 2. Fetch grades and stats in parallel
         return forkJoin({
-          grades: this.getStudentGradesUseCase.execute(estudianteId),
-          stats: this.getGradeStatsUseCase.execute(estudianteId),
+          grades: this.getStudentGradesUseCase.execute(idToQuery),
+          stats: this.getGradeStatsUseCase.execute(idToQuery),
         });
       }),
       catchError((err) => {
-        console.error('[GRADES] Error resolving estudianteId or loading data:', err);
+        console.error('[GRADES] Error loading grades data:', err);
         this.errorMessage.set('Error al cargar las calificaciones. Intenta nuevamente.');
         this.isLoading.set(false);
         return of(null);
