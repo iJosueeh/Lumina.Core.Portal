@@ -1,32 +1,32 @@
 <!-- Path: src/app/features/student/presentation/components/quiz-results/quiz-results.component.html -->
-<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto modal-container">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] my-8 overflow-hidden flex flex-col border border-slate-200 modal-card">
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto modal-container">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[96vh] sm:max-h-[90vh] my-auto sm:my-8 overflow-hidden flex flex-col border border-slate-200 modal-card">
 
     <!-- Header -->
     <div
-      class="p-5 border-b border-slate-200"
+      class="p-4 sm:p-5 border-b border-slate-200"
       [ngClass]="passedQuiz() ? 'bg-gradient-to-r from-emerald-50 to-teal-50' : 'bg-gradient-to-r from-red-50 to-orange-50'"
     >
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900">{{ quiz.title }}</h2>
-          <p class="text-slate-500 text-sm mt-1">Resultados de tu evaluación</p>
+      <div class="flex items-center justify-between mb-3 sm:mb-4">
+        <div class="min-w-0 pr-2">
+          <h2 class="text-lg sm:text-2xl font-bold text-slate-900 truncate">{{ quiz.title }}</h2>
+          <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Resultados de tu evaluación</p>
         </div>
         <button
           (click)="close()"
-          class="p-2 hover:bg-black/5 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+          class="p-2 hover:bg-black/5 rounded-lg transition-colors text-slate-400 hover:text-slate-600 shrink-0 cursor-pointer"
           aria-label="Cerrar"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
 
       <!-- Score Display -->
-      <div class="flex items-center justify-center gap-8">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center sm:text-left">
         <!-- Circular Progress -->
-        <div class="relative w-24 h-24">
+        <div class="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
           <svg class="w-full h-full transform -rotate-90">
             <circle cx="48" cy="48" r="42" stroke="currentColor" stroke-width="8" class="text-slate-100" fill="none"/>
             <circle
@@ -40,37 +40,38 @@
             />
           </svg>
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-bold text-slate-800">{{ scorePercentage().toFixed(1) }}</span>
+            <span class="text-xl sm:text-2xl font-bold text-slate-800">{{ scorePercentage().toFixed(1) }}</span>
           </div>
         </div>
 
         <!-- Stats -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-3">
+        <div class="space-y-1.5 sm:space-y-2">
+          <div class="flex items-center justify-center sm:justify-start gap-2 sm:gap-3">
             @if (passedQuiz()) {
-              <svg class="w-8 h-8 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
                 <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
               </svg>
-              <span class="text-2xl font-bold text-emerald-600">¡Aprobado!</span>
+              <span class="text-xl sm:text-2xl font-bold text-emerald-600">¡Aprobado!</span>
             } @else {
-              <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 sm:w-8 sm:h-8 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd"/>
               </svg>
-              <span class="text-2xl font-bold text-red-600">No Aprobado</span>
+              <span class="text-xl sm:text-2xl font-bold text-red-600">No Aprobado</span>
             }
           </div>
 
-          <div class="text-slate-600">
-            <p class="text-lg">
+          <div class="text-slate-600 text-sm sm:text-base">
+            <p>
               <span class="font-bold" [ngClass]="passedQuiz() ? 'text-emerald-600' : 'text-red-600'">{{ scorePercentage().toFixed(1) }}</span>
               <span class="text-slate-400"> / 20 pts</span>
             </p>
-            <p class="text-sm text-slate-400">{{ correctAnswersCount() }} correctas, {{ incorrectAnswersCount() }} incorrectas</p>
-            <p class="text-sm text-slate-400">Tiempo: {{ timeSpentDisplay() }}</p>
+            <p class="text-xs sm:text-sm text-slate-400">{{ correctAnswersCount() }} correctas, {{ incorrectAnswersCount() }} incorrectas</p>
+            <p class="text-xs sm:text-sm text-slate-400">Tiempo: {{ timeSpentDisplay() }}</p>
           </div>
         </div>
       </div>
     </div>
+
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-3 gap-3 p-4 bg-slate-50 border-b border-slate-200">

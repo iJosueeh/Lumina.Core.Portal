@@ -1,31 +1,32 @@
-<div class="fixed inset-0 z-[80] flex items-center justify-center p-6">
+<div class="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-6">
   <!-- Backdrop -->
   <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="onClose.emit()"></div>
 
   <!-- Modal -->
-  <div class="relative w-full max-w-5xl h-[85vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+  <div class="relative w-full max-w-5xl h-[92vh] sm:h-[85vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
     <!-- Header -->
-    <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-slate-200 bg-white">
-      <div class="min-w-0">
+    <div class="flex items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 bg-white">
+      <div class="min-w-0 pr-2">
         <p class="text-[10px] uppercase font-black text-indigo-500 tracking-[0.2em] mb-0.5">{{ subtitle() }}</p>
-        <h3 class="text-base font-bold text-slate-900 truncate">{{ file().titulo }}</h3>
+        <h3 class="text-sm sm:text-base font-bold text-slate-900 truncate">{{ file().titulo }}</h3>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           (click)="onDownload.emit(file())"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-sm">
+          class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-sm cursor-pointer">
           <i class="fas fa-download text-[10px]"></i>
-          Descargar
+          <span class="hidden xs:inline">Descargar</span>
         </button>
 
         <button
           (click)="onClose.emit()"
-          class="w-9 h-9 inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-all">
+          class="w-8 h-8 sm:w-9 sm:h-9 inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-all cursor-pointer">
           <i class="fas fa-times text-sm"></i>
         </button>
       </div>
     </div>
+
 
     <!-- Viewer Body -->
     <div class="flex-1 relative overflow-hidden">
