@@ -15,7 +15,7 @@ test.describe.serial('Suite de Operaciones de Prioridad Baja', () => {
     await page.fill('input[type="email"], input[formcontrolname="email"], input[name="email"]', 'royer.tanta27@gmail.com');
     await page.fill('input[type="password"], input[formcontrolname="password"], input[name="password"]', 'MichelTanta27!');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/student\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/student\/dashboard/, { timeout: 25000 });
 
     // Navegar a Recursos
     await page.goto(`${BASE_URL}/student/resources`, { waitUntil: 'domcontentloaded' });

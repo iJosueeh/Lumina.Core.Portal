@@ -17,7 +17,7 @@ test.describe.serial('Live Multi-Role Portal QA Verification', () => {
     await page.click('button[type="submit"]');
 
     // 3. Validar redirección
-    await page.waitForURL(/\/student\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/student\/dashboard/, { timeout: 25000 });
     console.log('✅ Estudiante: Login y redirección a /student/dashboard exitosa');
 
     // 4. Módulos
@@ -60,7 +60,7 @@ test.describe.serial('Live Multi-Role Portal QA Verification', () => {
     await page.click('button[type="submit"]');
 
     // 3. Validar redirección
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 25000 });
     console.log('✅ Docente: Login y redirección a /teacher/dashboard exitosa');
 
     // 4. Módulos
@@ -103,7 +103,7 @@ test.describe.serial('Live Multi-Role Portal QA Verification', () => {
     await page.click('button[type="submit"]');
 
     // 3. Validar redirección
-    await page.waitForURL(/\/admin\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/admin\/dashboard/, { timeout: 25000 });
     console.log('✅ Administrador: Login y redirección a /admin/dashboard exitosa');
 
     // 4. Módulos

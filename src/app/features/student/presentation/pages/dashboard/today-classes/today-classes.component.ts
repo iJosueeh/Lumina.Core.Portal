@@ -1,4 +1,4 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CursoConHorarios } from '@features/student/domain/models/horario.model';
 
@@ -10,8 +10,8 @@ import { CursoConHorarios } from '@features/student/domain/models/horario.model'
   styleUrl: './today-classes.component.css'
 })
 export class TodayClassesComponent {
-  @Input() courses: CursoConHorarios[] = [];
-  @Input() isLoading = false;
+  courses = input<CursoConHorarios[]>([]);
+  isLoading = input<boolean>(false);
 
   todayName = computed(() => {
     const dayIndex = new Date().getDay();
@@ -23,7 +23,7 @@ export class TodayClassesComponent {
     const today = this.todayName();
     const classes: { course: string; time: string; room: string; modalidad: string }[] = [];
 
-    this.courses.forEach(course => {
+    this.courses().forEach(course => {
       if (course.horarios) {
         course.horarios.forEach(h => {
           if (h.diaSemana === today) {

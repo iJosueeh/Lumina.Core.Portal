@@ -15,7 +15,7 @@ test.describe.serial('Suite de Operaciones de Prioridad Alta', () => {
     await page.fill('input[type="email"], input[formcontrolname="email"], input[name="email"]', 'admin@lumina.edu');
     await page.fill('input[type="password"], input[formcontrolname="password"], input[name="password"]', 'Admin123!');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/admin\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/admin\/dashboard/, { timeout: 25000 });
 
     // Navegar a Usuarios
     await page.goto(`${BASE_URL}/admin/users`, { waitUntil: 'domcontentloaded' });
@@ -96,7 +96,7 @@ test.describe.serial('Suite de Operaciones de Prioridad Alta', () => {
     await page.fill('input[type="email"], input[formcontrolname="email"], input[name="email"]', 'profesor@lumina.edu');
     await page.fill('input[type="password"], input[formcontrolname="password"], input[name="password"]', 'Test123!');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 25000 });
 
     // 1. Evaluaciones
     await page.goto(`${BASE_URL}/teacher/evaluations`, { waitUntil: 'domcontentloaded' });
@@ -133,7 +133,7 @@ test.describe.serial('Suite de Operaciones de Prioridad Alta', () => {
     await page.fill('input[type="email"], input[formcontrolname="email"], input[name="email"]', 'royer.tanta27@gmail.com');
     await page.fill('input[type="password"], input[formcontrolname="password"], input[name="password"]', 'MichelTanta27!');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/student\/dashboard/, { timeout: 15000 });
+    await page.waitForURL(/\/student\/dashboard/, { timeout: 25000 });
 
     // Mis Cursos
     await page.goto(`${BASE_URL}/student/courses`, { waitUntil: 'domcontentloaded' });

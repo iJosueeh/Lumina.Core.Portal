@@ -1,5 +1,5 @@
 <div class="space-y-3">
-    @if (isLoading) {
+    @if (isLoading()) {
         @for (i of [1,2,3]; track i) {
             <div class="h-16 bg-white rounded-xl border border-slate-200 animate-pulse shadow-sm"></div>
         }
