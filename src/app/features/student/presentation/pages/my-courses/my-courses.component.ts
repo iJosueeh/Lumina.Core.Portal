@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { GetStudentCoursesUseCase } from '@features/student/application/use-cases/get-student-courses.usecase';
 import { CourseProgress } from '@features/student/domain/models/course-progress.model';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
+import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 
 type FilterType = 'all' | 'in-progress' | 'completed';
 
@@ -17,6 +18,7 @@ type FilterType = 'all' | 'in-progress' | 'completed';
 export class MyCoursesComponent implements OnInit {
   private getCoursesUseCase = inject(GetStudentCoursesUseCase);
   private authRepository = inject(AuthRepository);
+  private enrollmentService = inject(EnrollmentService);
   private router = inject(Router);
 
   allCourses = signal<CourseProgress[]>([]);
@@ -27,7 +29,7 @@ export class MyCoursesComponent implements OnInit {
   filteredCourses = computed(() => {
     const courses = this.allCourses();
     const filter = this.activeFilter();
-    if (filter === 'in-progress') return courses.filter(c => c.progreso > 0 && c.progreso < 100);
+    if (filter === 'in-progress') return courses.filter(c => c.progreso < 100);
     if (filter === 'completed') return courses.filter(c => c.progreso === 100);
     return courses;
   });
@@ -53,15 +55,32 @@ export class MyCoursesComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.getCoursesUseCase.execute(currentUser.id).subscribe({
-      next: (courses) => {
-        this.allCourses.set(courses);
-        this.isLoading.set(false);
+    this.enrollmentService.getStudentIdByUserId(currentUser.id).subscribe({
+      next: (studentId) => {
+        const idToQuery = studentId || currentUser.id;
+        this.getCoursesUseCase.execute(idToQuery).subscribe({
+          next: (courses) => {
+            this.allCourses.set(courses);
+            this.isLoading.set(false);
+          },
+          error: () => {
+            this.error.set('No se pudieron cargar los cursos. Por favor, reintenta.');
+            this.isLoading.set(false);
+          },
+        });
       },
       error: () => {
-        this.error.set('No se pudieron cargar los cursos. Por favor, reintenta.');
-        this.isLoading.set(false);
-      },
+        this.getCoursesUseCase.execute(currentUser.id).subscribe({
+          next: (courses) => {
+            this.allCourses.set(courses);
+            this.isLoading.set(false);
+          },
+          error: () => {
+            this.error.set('No se pudieron cargar los cursos. Por favor, reintenta.');
+            this.isLoading.set(false);
+          },
+        });
+      }
     });
   }
 
