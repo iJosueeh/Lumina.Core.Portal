@@ -73,11 +73,9 @@ export class ScheduleComponent implements OnInit {
 
   private loadData() {
     this.isLoading.set(true);
-    this.coursesService.getAllCourses().pipe(
-      switchMap(cursos => cursos.length ? forkJoin(cursos.map(c => this.coursesService.getCourseById(c.id))) : of([])),
-    ).subscribe({
+    this.coursesService.getAllCoursesWithSchedules().subscribe({
       next: (cursos) => {
-        const evs = this.mapper.transformSchedulesToEvents(cursos.filter(c => !!c) as CursoConHorarios[]);
+        const evs = this.mapper.transformSchedulesToEvents(cursos);
         this.events.set(evs);
         this.upcomingEvents.set(this.mapper.generateUpcomingEvents(evs));
         this.isLoading.set(false);

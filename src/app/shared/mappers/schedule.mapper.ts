@@ -14,7 +14,8 @@ export class ScheduleMapper {
   transformSchedulesToEvents(cursos: CursoConHorarios[]): CalendarEvent[] {
     const events: CalendarEvent[] = [];
     const daysMap: { [key: string]: number } = {
-      Lunes: 0, Martes: 1, Miércoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Domingo: 6,
+      Lunes: 0, Martes: 1, Miércoles: 2, Miercoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Sabado: 5, Domingo: 6,
+      lunes: 0, martes: 1, miércoles: 2, miercoles: 2, jueves: 3, viernes: 4, sábado: 5, sabado: 5, domingo: 6,
     };
 
     cursos.forEach((curso) => {

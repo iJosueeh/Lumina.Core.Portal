@@ -47,16 +47,34 @@ export class CoursesService {
    * Obtiene todos los cursos con sus horarios
    */
   getAllCoursesWithSchedules(): Observable<CursoConHorarios[]> {
-    return this.getAllCourses().pipe(
-      switchMap((cursos) => {
-        if (cursos.length === 0) {
-          return of([]);
-        }
-        // Para cada curso, obtener su detalle con horarios
-        const cursosDetalle$ = cursos.map((curso) => this.getCourseById(curso.id));
-        return forkJoin(cursosDetalle$);
+    return this.http.get<any[]>(`${this.apiUrl}/public`).pipe(
+      map((cursos) => {
+        const list = Array.isArray(cursos) ? cursos : (cursos as any)?.value || [];
+        return list.map((c: any) => ({
+          id: c.id || c.Id,
+          titulo: c.titulo || c.Titulo || c.nombreCurso || 'Curso',
+          descripcion: c.descripcion || c.Descripcion || '',
+          categoria: c.categoria || c.Categoria || 'General',
+          duracion: c.duracion || c.Duracion || '0h',
+          nivel: c.nivel || c.Nivel || 'General',
+          precio: c.precio || c.Precio || 0,
+          imagen: c.imagen || c.imagenUrl || '',
+          instructor: c.instructor || { nombre: 'Docente Asignado', cargo: 'Instructor', bio: '', avatar: '' },
+          modulos: c.modulos || [],
+          requisitos: c.requisitos || [],
+          testimonios: c.testimonios || [],
+          horarios: (c.horarios || c.Horarios || []).map((h: any) => ({
+            id: h.id || h.Id,
+            diaSemana: h.diaSemana || h.DiaSemana,
+            horaInicio: h.horaInicio || h.HoraInicio,
+            horaFin: h.horaFin || h.HoraFin,
+            ubicacion: h.ubicacion || h.aula || h.Aula || (h.modalidad === 'Virtual' ? 'Plataforma Online' : 'Campus Principal'),
+            modalidad: h.modalidad || h.Modalidad || 'Virtual',
+            tipoSesion: h.tipoSesion || h.tipo || h.Tipo || 'Clase',
+            enlaceVirtual: h.enlaceVirtual || h.enlaceReunion || h.EnlaceReunion
+          }))
+        }));
       }),
-      map((cursosConDetalles) => cursosConDetalles.filter((c) => c !== null) as CursoConHorarios[]),
       catchError((error) => {
         console.error('Error loading courses with schedules:', error);
         return of([]);
