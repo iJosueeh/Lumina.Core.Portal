@@ -18,8 +18,8 @@ export class AllTasksModalComponent {
   activeFilter: FilterType = 'all';
 
   filters = [
-    { label: 'Todas', value: 'all' as FilterType },
-    { label: 'Urgentes', value: 'urgent' as FilterType },
+    { label: 'Todas las Clases', value: 'all' as FilterType },
+    { label: 'Próximas (48h)', value: 'urgent' as FilterType },
     { label: 'Esta Semana', value: 'thisWeek' as FilterType },
   ];
 

@@ -49,19 +49,17 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
       await firstEvent.click();
       await page.waitForTimeout(1000);
 
-      const modal = page.locator('app-event-detail-modal, [class*="modal"], [role="dialog"]').first();
+      const modal = page.locator('app-event-detail-modal').first();
       if (await modal.isVisible()) {
         console.log('✅ Modal de Detalle de Sesión abierto');
-        await expect(modal).toContainText(/Modalidad|Horario|Docente|Ubicación|Enlace|Aula/i);
+        await expect(modal).toContainText(/Clase|Evaluación|Taller|Horario|Profesor|Ubicación|Enlace/i);
         console.log('✅ Información detallada de clase (hora, modalidad, docente) validada');
 
         // Cerrar modal
-        const closeBtn = modal.locator('button').filter({ hasText: /Cerrar|Entendido|×/i }).first();
-        if (await closeBtn.isVisible()) {
-          await closeBtn.click();
-          await page.waitForTimeout(500);
-          console.log('✅ Modal cerrado correctamente');
-        }
+        const closeBtn = modal.locator('button').last();
+        await closeBtn.click();
+        await page.waitForTimeout(600);
+        console.log('✅ Modal cerrado correctamente');
       }
     }
 
@@ -88,6 +86,22 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
       await weekViewBtn.click();
       await page.waitForTimeout(800);
       console.log('✅ Retorno a "Vista Semana" confirmado');
+    }
+
+    // Probar modal de Todas las Clases
+    const seeAllBtn = page.locator('button').filter({ hasText: /Ver Todo/i }).first();
+    if (await seeAllBtn.isVisible()) {
+      await seeAllBtn.click();
+      await page.waitForTimeout(800);
+      const allTasksModal = page.locator('app-all-tasks-modal').first();
+      if (await allTasksModal.isVisible()) {
+        console.log('✅ Modal "Todas las Clases y Sesiones" abierto');
+        await expect(allTasksModal).toContainText(/Todas las Clases|Esta Semana|Próximas/i);
+        const modalClose = allTasksModal.locator('button').last();
+        await modalClose.click();
+        await page.waitForTimeout(500);
+        console.log('✅ Modal "Todas las Clases" cerrado correctamente');
+      }
     }
 
     console.log('--- 5. Verificación de Consola ---');

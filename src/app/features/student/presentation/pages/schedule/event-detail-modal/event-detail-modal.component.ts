@@ -12,4 +12,14 @@ import { CalendarEvent } from '@features/student/domain/models/calendar-event.mo
 export class EventDetailModalComponent {
   @Input({ required: true }) event!: CalendarEvent;
   @Output() close = new EventEmitter<void>();
+
+  getTypeLabel(type?: string): string {
+    switch (type?.toLowerCase()) {
+      case 'class': return 'Clase';
+      case 'exam': return 'Evaluación';
+      case 'workshop': return 'Taller';
+      case 'meeting': return 'Mentoría / Sesión';
+      default: return 'Sesión Académica';
+    }
+  }
 }

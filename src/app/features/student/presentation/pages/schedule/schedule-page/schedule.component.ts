@@ -59,7 +59,7 @@ export class ScheduleComponent implements OnInit {
     const start = new Date(current);
     start.setDate(current.getDate() - (current.getDay() === 0 ? 6 : current.getDay() - 1));
     const end = new Date(start);
-    end.setDate(start.getDate() + 5);
+    end.setDate(start.getDate() + 6);
     return `Semana del ${start.getDate()} al ${end.getDate()} de ${this.currentMonth()}`;
   });
 
@@ -92,8 +92,8 @@ export class ScheduleComponent implements OnInit {
   private generateWeekDays(current: Date) {
     const start = new Date(current);
     start.setDate(current.getDate() - (current.getDay() === 0 ? 6 : current.getDay() - 1));
-    const names = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
-    this.weekDays.set(Array.from({ length: 6 }, (_, i) => {
+    const names = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+    this.weekDays.set(Array.from({ length: 7 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       return { name: names[i], date: d.getDate().toString(), isToday: DateUtils.isSameDate(d, new Date()) };
@@ -113,7 +113,7 @@ export class ScheduleComponent implements OnInit {
   }
 
   private generateTimeSlots() {
-    this.timeSlots = Array.from({ length: 14 }, (_: unknown, i: number) => `${(i + 7).toString().padStart(2, '0')}:00`);
+    this.timeSlots = Array.from({ length: 16 }, (_: unknown, i: number) => `${(i + 7).toString().padStart(2, '0')}:00`);
   }
 
   getEventsForDay(dayIndex: number) {
@@ -201,20 +201,18 @@ export class ScheduleComponent implements OnInit {
   getEventStyle(layoutItem: {event: CalendarEvent, col: number, colSpan: number}, totalCols: number) {
     const [sh, sm] = layoutItem.event.startTime.split(':').map(Number);
     const [eh, em] = layoutItem.event.endTime.split(':').map(Number);
-    const top = ((sh - 7) * 60 + sm) * 1.06;
-    const height = ((eh - sh) * 60 + (em - sm)) * 1.06;
+    const pxPerMinute = 64 / 60;
+    const top = ((sh - 7) * 60 + sm) * pxPerMinute;
+    const height = Math.max(((eh - sh) * 60 + (em - sm)) * pxPerMinute, 36);
 
-    // Calcular width y left basado en columna
-    // Columna 0 = left-1, columna 1 = left-1 + width+gap, etc.
-    const minWidth = 85 / totalCols;
-    const left = 4 + layoutItem.col * (minWidth + 4);
-    const widthPct = (minWidth * layoutItem.colSpan) - 4;
+    const widthPct = (96 / totalCols);
+    const left = 2 + layoutItem.col * widthPct;
 
     return {
       top: `${top}px`,
       height: `${height}px`,
       left: `${left}%`,
-      width: `${widthPct}%`
+      width: `${widthPct - 2}%`
     };
   }
 
