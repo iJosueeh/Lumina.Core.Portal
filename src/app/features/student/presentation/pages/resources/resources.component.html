@@ -35,6 +35,7 @@
         <input
           type="text"
           [(ngModel)]="searchQuery"
+          (keyup.enter)="search()"
           placeholder="Buscar libros, software, guías, tutoriales..."
           class="w-full pl-12 pr-24 py-3 border border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-dark-card dark:text-dark-text"
         />

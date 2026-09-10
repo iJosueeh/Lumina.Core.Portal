@@ -6,6 +6,7 @@ import { map, switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ResourceDetail } from '@features/student/domain/models/resource.model';
 import { ResourcesRepository } from '@features/student/domain/repositories/resources.repository';
+import { NotificationService } from '@shared/services/notification.service';
 import {
   RESOURCE_CATEGORY_MAP,
   getResourceBadgeColor,
@@ -29,6 +30,8 @@ export class ResourceDetailComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private resourcesRepository = inject(ResourcesRepository);
+  private notificationService = inject(NotificationService);
+
 
   // Signals
   resource = signal<ResourceDetail | null>(null);
@@ -174,6 +177,8 @@ export class ResourceDetailComponent implements OnInit {
     const res = this.resource();
     if (res && res.url && res.url !== '#') {
       window.open(res.url, '_blank');
+    } else {
+      this.notificationService.show('info', 'El enlace de descarga o acceso externo no está disponible para este recurso.');
     }
   }
 
