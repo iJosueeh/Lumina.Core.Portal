@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, OnDestroy, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectQuery, injectQueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
@@ -42,6 +42,22 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   private layoutService = inject(LayoutService);
   private videoClassroomService = inject(VideoClassroomService);
   private studentProgressService = inject(StudentProgressService);
+
+  constructor() {
+    effect(() => {
+      const lesson = this.activeLesson();
+      const courseId = this.courseId();
+      const studentId = this.studentId();
+      if (lesson && courseId) {
+        this.progressStorage.saveLastActiveSession({
+          courseId,
+          lessonId: lesson.lessonId,
+          lessonTitle: lesson.title,
+          studentId: studentId || undefined
+        });
+      }
+    });
+  }
 
   classroomQuery = injectQuery(() => ({
     queryKey: ['course-video-classroom', this.courseId()],

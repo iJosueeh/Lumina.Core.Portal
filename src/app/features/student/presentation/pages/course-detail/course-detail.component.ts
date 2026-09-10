@@ -324,7 +324,33 @@ export class CourseDetailComponent implements OnInit {
   continueCurrentLesson(): void {
     const courseData = this.course();
     if (!courseData?.modules?.length) return;
-    this.openLesson({ module: courseData.modules[0], lesson: courseData.modules[0].lessons[0] });
+
+    // 1. Verificar si hay una última lección registrada para este curso
+    const lastLessonId = this.progressStorage.getLastLessonForCourse(this.courseId(), this.studentId());
+    if (lastLessonId) {
+      for (const m of courseData.modules) {
+        const found = m.lessons.find(l => l.id === lastLessonId);
+        if (found && !found.isLocked) {
+          this.openLesson({ module: m, lesson: found });
+          return;
+        }
+      }
+    }
+
+    // 2. Buscar la primera lección no completada y desbloqueada
+    for (const m of courseData.modules) {
+      const pending = m.lessons.find(l => !l.isCompleted && !l.isLocked);
+      if (pending) {
+        this.openLesson({ module: m, lesson: pending });
+        return;
+      }
+    }
+
+    // 3. Fallback: primera lección del primer módulo
+    const firstModule = courseData.modules[0];
+    if (firstModule.lessons?.length) {
+      this.openLesson({ module: firstModule, lesson: firstModule.lessons[0] });
+    }
   }
 
   async startQuiz(quiz: QuizSummary): Promise<void> {

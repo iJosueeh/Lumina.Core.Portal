@@ -20,6 +20,7 @@ import { CacheService } from '@core/services/cache.service';
 import { CoursesService } from '@features/student/infrastructure/services/courses.service';
 import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { StudentStatsService, StudentDashboardStats } from '@features/student/infrastructure/services/student-stats.service';
+import { LearningNavigationService } from '@features/student/infrastructure/services/learning-navigation.service';
 
 // Sub-components
 import { WelcomeHeaderComponent } from './welcome-header/welcome-header.component';
@@ -50,6 +51,7 @@ export class DashboardComponent {
   private coursesService = inject(CoursesService);
   private enrollmentService = inject(EnrollmentService);
   private studentStatsService = inject(StudentStatsService);
+  private learningNavService = inject(LearningNavigationService);
 
   // Signals de Estado
   userName = signal('Estudiante');
@@ -145,7 +147,13 @@ export class DashboardComponent {
     }
   }
 
+  handleResumeLearning(): void {
+    const user = this.authRepository.getCurrentUser();
+    this.learningNavService.resumeLearning(this.courses(), user?.id);
+  }
+
   navigateToCourse(id: string): void {
-    this.router.navigate(['/student/course', id]);
+    const user = this.authRepository.getCurrentUser();
+    this.learningNavService.continueCourse(id, user?.id);
   }
 }

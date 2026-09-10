@@ -1,5 +1,15 @@
 import { Injectable } from '@angular/core';
 
+export interface LastActiveSession {
+  courseId: string;
+  courseTitle?: string;
+  lessonId: string;
+  lessonTitle?: string;
+  moduleId?: string;
+  studentId?: string;
+  updatedAt: string;
+}
+
 interface LessonProgress {
   lessonId: string;
   isCompleted: boolean;
@@ -9,6 +19,7 @@ interface LessonProgress {
 interface CourseProgress {
   courseId: string;
   studentId: string;
+  lastLessonId?: string;
   lessons: LessonProgress[];
   lastUpdated: Date;
 }
@@ -18,14 +29,63 @@ interface CourseProgress {
 })
 export class ProgressStorageService {
   private readonly STORAGE_KEY = 'lumina_course_progress';
+  private readonly LAST_SESSION_KEY = 'lumina_last_learning_session';
 
   constructor() {}
+
+  /**
+   * Guarda la última sesión activa de aprendizaje del estudiante
+   */
+  saveLastActiveSession(session: { courseId: string; courseTitle?: string; lessonId: string; lessonTitle?: string; moduleId?: string; studentId?: string }): void {
+    try {
+      const payload: LastActiveSession = {
+        ...session,
+        updatedAt: new Date().toISOString()
+      };
+      const key = session.studentId ? `${this.LAST_SESSION_KEY}_${session.studentId}` : this.LAST_SESSION_KEY;
+      localStorage.setItem(key, JSON.stringify(payload));
+      localStorage.setItem(this.LAST_SESSION_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.error('Error guardando última sesión activa:', e);
+    }
+  }
+
+  /**
+   * Obtiene la última sesión activa de aprendizaje
+   */
+  getLastActiveSession(studentId?: string): LastActiveSession | null {
+    try {
+      const key = studentId ? `${this.LAST_SESSION_KEY}_${studentId}` : this.LAST_SESSION_KEY;
+      const data = localStorage.getItem(key) || localStorage.getItem(this.LAST_SESSION_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      console.error('Error obteniendo última sesión activa:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Obtiene la última lección vista de un curso específico
+   */
+  getLastLessonForCourse(courseId: string, studentId?: string): string | null {
+    if (!studentId) {
+      const session = this.getLastActiveSession();
+      return session?.courseId === courseId ? session.lessonId : null;
+    }
+    const progress = this.getCourseProgress(courseId, studentId);
+    if (progress.lastLessonId) {
+      return progress.lastLessonId;
+    }
+    const session = this.getLastActiveSession(studentId);
+    return session?.courseId === courseId ? session.lessonId : null;
+  }
 
   /**
    * Guarda el progreso de una lección
    */
   saveLessonProgress(courseId: string, studentId: string, lessonId: string, isCompleted: boolean): void {
     const progress = this.getCourseProgress(courseId, studentId);
+    progress.lastLessonId = lessonId;
     
     const existingLesson = progress.lessons.find(l => l.lessonId === lessonId);
     

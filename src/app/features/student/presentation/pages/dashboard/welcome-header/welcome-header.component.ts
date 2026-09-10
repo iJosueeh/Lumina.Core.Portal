@@ -12,4 +12,5 @@ export class WelcomeHeaderComponent {
   @Input() userName: string = 'Estudiante';
   @Input() isLoading: boolean = false;
   @Output() onRefresh = new EventEmitter<void>();
+  @Output() onResumeLearning = new EventEmitter<void>();
 }
