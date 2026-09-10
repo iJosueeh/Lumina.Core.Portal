@@ -50,20 +50,20 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 sm:gap-3">
+        <div class="flex flex-col sm:flex-row justify-end pt-12 sm:pt-4 gap-2 sm:gap-3">
           <button
             (click)="copyProfileLink()"
-            class="w-full sm:w-auto px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm md:text-base"
+            class="w-full sm:w-auto px-3.5 sm:px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-xs sm:text-sm md:text-base font-medium"
             [class]="linkCopied() ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
           >
-            <span class="flex items-center gap-2">
+            <span class="flex items-center justify-center gap-2">
               @if (linkCopied()) {
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 ¡Copiado!
               } @else {
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -77,20 +77,20 @@
           </button>
           <a
             routerLink="/student/profile/edit"
-            class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm md:text-base"
+            class="w-full sm:w-auto text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs sm:text-sm md:text-base font-medium"
           >
             Editar Perfil
           </a>
           <a
             routerLink="/student/settings"
-            class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm md:text-base"
+            class="w-full sm:w-auto text-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-xs sm:text-sm md:text-base font-medium"
           >
             Configuración
           </a>
         </div>
 
         <!-- Name and Info -->
-        <div class="mt-12 md:mt-20">
+        <div class="mt-4 sm:mt-8 md:mt-12">
           <h1 class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
             {{ fullName() }}
           </h1>
@@ -301,7 +301,7 @@
               Redes Sociales
             </h2>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
               @for (social of socialLinksArray(); track social.platform) {
                 <button
                   (click)="openSocialLink(social.url)"
@@ -318,7 +318,7 @@
                       <path [attr.d]="social.icon"></path>
                     </svg>
                   </div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{
                     social.platform
                   }}</span>
                 </button>

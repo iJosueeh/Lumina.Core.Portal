@@ -55,16 +55,16 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
       <!-- Tab Headers -->
       <div class="border-b border-gray-200 dark:border-gray-700">
-        <nav class="flex -mb-px">
+        <nav class="flex overflow-x-auto no-scrollbar -mb-px">
           <button
             (click)="setActiveTab('security')"
             [class.border-blue-500]="activeTab() === 'security'"
             [class.text-blue-600]="activeTab() === 'security'"
             [class.dark:text-blue-400]="activeTab() === 'security'"
-            class="flex-1 py-4 px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400"
+            class="flex-shrink-0 sm:flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap text-xs sm:text-sm"
           >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -81,10 +81,10 @@
             [class.border-blue-500]="activeTab() === 'notifications'"
             [class.text-blue-600]="activeTab() === 'notifications'"
             [class.dark:text-blue-400]="activeTab() === 'notifications'"
-            class="flex-1 py-4 px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400"
+            class="flex-shrink-0 sm:flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap text-xs sm:text-sm"
           >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -101,10 +101,10 @@
             [class.border-blue-500]="activeTab() === 'privacy'"
             [class.text-blue-600]="activeTab() === 'privacy'"
             [class.dark:text-blue-400]="activeTab() === 'privacy'"
-            class="flex-1 py-4 px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400"
+            class="flex-shrink-0 sm:flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap text-xs sm:text-sm"
           >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -121,10 +121,10 @@
             [class.border-blue-500]="activeTab() === 'account'"
             [class.text-blue-600]="activeTab() === 'account'"
             [class.dark:text-blue-400]="activeTab() === 'account'"
-            class="flex-1 py-4 px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400"
+            class="flex-shrink-0 sm:flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center border-b-2 font-medium transition hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap text-xs sm:text-sm"
           >
-            <span class="flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -145,7 +145,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <!-- Security Tab -->
         @if (activeTab() === 'security') {
           <div class="space-y-6">

@@ -142,31 +142,31 @@
                 </p>
 
                 <!-- Stats Grid in Light Theme -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
-                  <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 text-center sm:text-left">
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Descargas</p>
-                    <p class="text-lg font-bold text-slate-900 mt-0.5">{{ res.downloads }}</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 mb-6">
+                  <div class="bg-slate-50 rounded-xl p-3 sm:p-3.5 border border-slate-100 text-center sm:text-left">
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Descargas</p>
+                    <p class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">{{ res.downloads }}</p>
                   </div>
-                  <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 text-center sm:text-left">
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Vistas</p>
-                    <p class="text-lg font-bold text-slate-900 mt-0.5">{{ res.views }}</p>
+                  <div class="bg-slate-50 rounded-xl p-3 sm:p-3.5 border border-slate-100 text-center sm:text-left">
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Vistas</p>
+                    <p class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">{{ res.views }}</p>
                   </div>
-                  <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 text-center sm:text-left">
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Calificación</p>
-                    <p class="text-lg font-bold text-amber-600 mt-0.5">★ {{ res.rating || 4.8 }}/5</p>
+                  <div class="bg-slate-50 rounded-xl p-3 sm:p-3.5 border border-slate-100 text-center sm:text-left">
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Calificación</p>
+                    <p class="text-base sm:text-lg font-bold text-amber-600 mt-0.5">★ {{ res.rating || 4.8 }}/5</p>
                   </div>
-                  <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 text-center sm:text-left">
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Tamaño</p>
-                    <p class="text-lg font-bold text-slate-900 mt-0.5">{{ formatSize(res.fileSize) }}</p>
+                  <div class="bg-slate-50 rounded-xl p-3 sm:p-3.5 border border-slate-100 text-center sm:text-left">
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Tamaño</p>
+                    <p class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">{{ formatSize(res.fileSize) }}</p>
                   </div>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-3 border-t border-slate-100">
                 <button
                   (click)="downloadResource()"
-                  class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold shadow-sm shadow-indigo-200 transition-all text-sm"
+                  class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold shadow-sm shadow-indigo-200 transition-all text-sm"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -177,7 +177,7 @@
                 <button
                   (click)="toggleFavorite()"
                   [class]="isFavorite() ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'"
-                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium border text-sm transition-all"
+                  class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium border text-sm transition-all"
                 >
                   <span>{{ isFavorite() ? '❤️' : '🤍' }}</span>
                   <span>{{ isFavorite() ? 'Guardado en Favoritos' : 'Guardar' }}</span>
@@ -186,7 +186,7 @@
                 <button
                   (click)="shareResource()"
                   [class]="linkCopied() ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'"
-                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium border text-sm transition-all"
+                  class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium border text-sm transition-all"
                 >
                   <span>{{ linkCopied() ? '✓' : '🔗' }}</span>
                   <span>{{ linkCopied() ? '¡Enlace copiado!' : 'Compartir' }}</span>
