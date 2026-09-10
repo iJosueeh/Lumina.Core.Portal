@@ -178,13 +178,20 @@ export class GradesHttpRepositoryImpl extends GradesRepository {
 
                             const promedio = promedioMap.get(cursoId) ?? 0;
 
-                            let estado: 'Aprobado' | 'En Curso' | 'En Riesgo' = 'En Curso';
-                            if (promedio >= 14) {
-                                estado = 'Aprobado';
-                            } else if (promedio > 0 && promedio < 11) {
-                                estado = 'En Riesgo';
+                            const totalEvs = evaluacionesMapped.length;
+                            const completedEvs = evaluacionesMapped.filter(e => e.estado === 'Completado').length;
+                            const isCourseConcluded = totalEvs > 0 && completedEvs >= totalEvs;
+
+                            let estado: 'Aprobado' | 'En Curso' | 'En Riesgo' | 'Desaprobado' = 'En Curso';
+                            if (isCourseConcluded) {
+                                estado = promedio >= 12 ? 'Aprobado' : 'Desaprobado';
                             } else {
-                                estado = 'En Curso';
+                                // El curso sigue en progreso al faltar evaluaciones
+                                if (promedio > 0 && promedio < 12) {
+                                    estado = 'En Riesgo';
+                                } else {
+                                    estado = 'En Curso';
+                                }
                             }
 
                             return {

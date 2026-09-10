@@ -120,16 +120,17 @@ export class GradesComponent {
     const colors: Record<string, string> = {
       Aprobado: 'text-emerald-700 bg-emerald-50 border-emerald-200',
       'En Curso': 'text-blue-700 bg-blue-50 border-blue-200',
-      'En Riesgo': 'text-red-700 bg-red-50 border-red-200',
+      'En Riesgo': 'text-amber-700 bg-amber-50 border-amber-200',
+      Desaprobado: 'text-red-700 bg-red-50 border-red-200',
     };
     return colors[estado] || 'text-slate-700 bg-slate-50 border-slate-200';
   }
 
   getPromedioColor(promedio: number): string {
-    if (promedio >= 17) return 'text-emerald-700 font-bold';
-    if (promedio >= 14) return 'text-blue-700 font-bold';
-    if (promedio >= 10.5) return 'text-amber-700 font-bold';
-    return 'text-red-700 font-bold';
+    if (promedio >= 16) return 'text-emerald-700 font-bold';
+    if (promedio >= 12) return 'text-blue-700 font-bold';
+    if (promedio > 0 && promedio < 12) return 'text-red-700 font-bold';
+    return 'text-slate-500 font-medium';
   }
 
   getEstadoBadge(estado: string): string {

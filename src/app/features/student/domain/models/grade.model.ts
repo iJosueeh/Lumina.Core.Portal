@@ -23,7 +23,7 @@ export interface CourseGrade {
     creditos: number;
     avance: number;
     promedio: number;
-    estado: 'Aprobado' | 'En Curso' | 'En Riesgo';
+    estado: 'Aprobado' | 'En Curso' | 'En Riesgo' | 'Desaprobado';
     evaluaciones: Evaluation[];
     promedioClase: number;
     posicionamiento: number;
