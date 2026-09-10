@@ -50,15 +50,43 @@
         <!-- Calendar Grid -->
         <div class="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
 
+          <!-- Mobile & Quick Day Selector Strip (LUN - DOM) -->
+          <div class="p-3 bg-slate-50/80 border-b border-slate-200 overflow-x-auto no-scrollbar">
+            <div class="flex items-center justify-between sm:justify-start gap-2 min-w-max">
+              @for (day of weekDays(); track day.name) {
+                <button
+                  (click)="selectDay(day)"
+                  [class.bg-indigo-600]="day.isSelected"
+                  [class.text-white]="day.isSelected"
+                  [class.shadow-sm]="day.isSelected"
+                  [class.border-indigo-600]="day.isSelected"
+                  [class.bg-white]="!day.isSelected"
+                  [class.text-slate-700]="!day.isSelected"
+                  [class.border-slate-200]="!day.isSelected"
+                  class="flex flex-col items-center justify-center min-w-[50px] sm:min-w-[62px] py-2 px-2.5 rounded-xl border transition-all text-center cursor-pointer hover:border-indigo-300">
+                  <span class="text-[10px] font-bold uppercase tracking-wider" [class.text-indigo-200]="day.isSelected" [class.text-slate-400]="!day.isSelected">{{ day.name }}</span>
+                  <span class="text-base font-bold leading-tight">{{ day.date }}</span>
+                  @if (day.eventCount > 0) {
+                    <span class="mt-1 w-1.5 h-1.5 rounded-full" [class.bg-white]="day.isSelected" [class.bg-indigo-500]="!day.isSelected"></span>
+                  } @else {
+                    <span class="mt-1 w-1.5 h-1.5 opacity-0"></span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
           <!-- Week View -->
           @if (viewMode() === 'week') {
-            <div class="overflow-x-auto">
+            <!-- Desktop: 8-Column Grid -->
+            <div class="hidden md:block overflow-x-auto">
               <div class="min-w-[800px]">
                 <!-- Week Days Header -->
                 <div class="grid grid-cols-8 border-b border-slate-200">
                   <div class="p-4"></div>
                   @for (day of weekDays(); track day.name) {
-                    <div class="p-4 text-center"
+                    <div class="p-4 text-center cursor-pointer hover:bg-slate-50 transition-colors"
+                      (click)="selectDayAndSwitchToDayView(day)"
                       [class.bg-indigo-50]="day.isToday"
                       [class.border-l-2]="day.isToday"
                       [class.border-indigo-500]="day.isToday">
@@ -114,6 +142,57 @@
               </div>
             </div>
 
+            <!-- Mobile: Selected Day Classes List -->
+            <div class="block md:hidden p-4">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div>
+                  <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Horario del Día</p>
+                  <h3 class="text-lg font-bold text-slate-900">{{ selectedDayTitle() }}</h3>
+                </div>
+                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200">
+                  {{ getDayEvents().length }} clase{{ getDayEvents().length === 1 ? '' : 's' }}
+                </span>
+              </div>
+
+              @if (getDayEvents().length > 0) {
+                <div class="space-y-3">
+                  @for (event of getDayEvents(); track event.id) {
+                    <div
+                      (click)="openEventDetail(event)"
+                      [class]="event.color"
+                      class="p-4 rounded-xl cursor-pointer hover:opacity-95 transition-all shadow-sm text-white">
+                      <div class="flex items-start justify-between gap-2 mb-2">
+                        <h4 class="font-bold text-base leading-snug">{{ event.title }}</h4>
+                        @if (event.isUrgent) {
+                          <span class="px-2 py-0.5 bg-red-500/30 border border-red-400/50 rounded-full text-[10px] font-semibold shrink-0">
+                            Urgente
+                          </span>
+                        }
+                      </div>
+                      @if (event.professor) {
+                        <p class="text-white/80 text-xs mb-3 flex items-center gap-1.5">
+                          <i class="fas fa-chalkboard-teacher text-[10px]"></i>
+                          {{ event.professor }}
+                        </p>
+                      }
+                      <div class="flex flex-wrap items-center gap-3 text-white/90 text-xs border-t border-white/20 pt-2.5">
+                        <span class="flex items-center gap-1"><i class="far fa-clock"></i> {{ event.startTime }} - {{ event.endTime }}</span>
+                        <span class="flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> {{ event.location }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-10 bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+                  <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-calendar-day text-xl text-slate-300"></i>
+                  </div>
+                  <h4 class="text-base font-semibold text-slate-700">Sin clases para este día</h4>
+                  <p class="text-xs text-slate-400 mt-1">Selecciona otro día en la barra superior para ver tus horarios.</p>
+                </div>
+              }
+            </div>
+
             @if (events().length === 0) {
               <div class="p-12 text-center">
                 <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -127,16 +206,16 @@
 
           <!-- Day View -->
           @if (viewMode() === 'day') {
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
               <div class="mb-6 pb-4 border-b border-slate-200">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h2 class="text-2xl font-bold text-slate-900">{{ weekDays()[0]?.name }}</h2>
-                    <p class="text-slate-500 text-sm mt-1">{{ weekDays()[0]?.date }} de {{ currentMonth() }}</p>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900">{{ selectedDayTitle() }}</h2>
+                    <p class="text-slate-500 text-sm mt-0.5">Clases y actividades registradas</p>
                   </div>
                   <div class="text-right">
-                    <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Eventos</p>
-                    <p class="text-3xl font-bold text-indigo-600">{{ getDayEvents().length }}</p>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Clases</p>
+                    <p class="text-2xl sm:text-3xl font-bold text-indigo-600">{{ getDayEvents().length }}</p>
                   </div>
                 </div>
               </div>
@@ -161,7 +240,7 @@
                           </span>
                         }
                       </div>
-                      <div class="flex items-center gap-4 text-white/90 text-sm">
+                      <div class="flex flex-wrap items-center gap-4 text-white/90 text-sm">
                         <span><i class="far fa-clock mr-1"></i> {{ event.startTime }} - {{ event.endTime }}</span>
                         <span><i class="fas fa-map-marker-alt mr-1"></i> {{ event.location }}</span>
                       </div>
@@ -179,6 +258,7 @@
               }
             </div>
           }
+
 
           <!-- Month View -->
           @if (viewMode() === 'month') {

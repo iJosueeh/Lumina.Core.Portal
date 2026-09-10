@@ -32,6 +32,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   selectedLessonId = signal<string | null>(null);
   autoplayEnabled = signal(false);
   activeTab = signal<'resources' | 'description'>('resources');
+  isPlaylistOpenMobile = signal(false);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -156,6 +157,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
 
   selectLesson(lesson: ClassroomLesson): void {
     this.selectedLessonId.set(lesson.lessonId);
+    this.isPlaylistOpenMobile.set(false);
     this.router.navigate(['/student/course', this.courseId(), 'learn', lesson.lessonId]);
   }
 

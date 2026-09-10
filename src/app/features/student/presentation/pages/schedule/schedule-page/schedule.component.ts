@@ -11,7 +11,15 @@ import { ScheduleMapper } from '../../../../../../shared/mappers/schedule.mapper
 
 type ViewMode = 'day' | 'week' | 'month';
 
-interface WeekDay { name: string; date: string; isToday: boolean; }
+interface WeekDay {
+  name: string;
+  fullName: string;
+  date: string;
+  fullDate: Date;
+  isToday: boolean;
+  isSelected: boolean;
+  eventCount: number;
+}
 
 @Component({
   selector: 'app-schedule',
@@ -50,10 +58,18 @@ export class ScheduleComponent implements OnInit {
 
   currentMonth = computed(() => DateUtils.formatMonthYear(this.selectedDate()));
 
+  selectedDayTitle = computed(() => {
+    const sel = this.selectedDate();
+    const dayName = sel.toLocaleDateString('es-ES', { weekday: 'long' });
+    const dayNumber = sel.getDate();
+    const monthName = sel.toLocaleDateString('es-ES', { month: 'long' });
+    return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${dayNumber} de ${monthName}`;
+  });
+
   currentWeek = computed(() => {
     const current = this.selectedDate();
     if (this.viewMode() === 'day') {
-      return current.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+      return this.selectedDayTitle();
     }
     if (this.viewMode() === 'month') return this.currentMonth();
     const start = new Date(current);
@@ -84,21 +100,45 @@ export class ScheduleComponent implements OnInit {
 
   private updateView() {
     const current = this.selectedDate();
-    if (this.viewMode() === 'month') this.generateMonthView();
-    else if (this.viewMode() === 'week') this.generateWeekDays(current);
-    else this.weekDays.set([{ name: 'HOY', date: current.getDate().toString(), isToday: true }]);
+    this.generateWeekDays(current);
+    if (this.viewMode() === 'month') {
+      this.generateMonthView();
+    }
   }
 
   private generateWeekDays(current: Date) {
     const start = new Date(current);
     start.setDate(current.getDate() - (current.getDay() === 0 ? 6 : current.getDay() - 1));
-    const names = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+    const shortNames = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+    const fullNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
     this.weekDays.set(Array.from({ length: 7 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      return { name: names[i], date: d.getDate().toString(), isToday: DateUtils.isSameDate(d, new Date()) };
+      const dayEvs = this.filteredEvents().filter(e => e.dayOfWeek === i || DateUtils.isSameDate(e.date, d));
+      return {
+        name: shortNames[i],
+        fullName: fullNames[i],
+        date: d.getDate().toString(),
+        fullDate: d,
+        isToday: DateUtils.isSameDate(d, new Date()),
+        isSelected: DateUtils.isSameDate(d, this.selectedDate()),
+        eventCount: dayEvs.length
+      };
     }));
   }
+
+  selectDay(day: WeekDay) {
+    this.selectedDate.set(day.fullDate);
+    this.updateView();
+  }
+
+  selectDayAndSwitchToDayView(day: WeekDay) {
+    this.selectedDate.set(day.fullDate);
+    this.viewMode.set('day');
+    this.updateView();
+  }
+
 
   private generateMonthView() {
     const d = this.selectedDate();
