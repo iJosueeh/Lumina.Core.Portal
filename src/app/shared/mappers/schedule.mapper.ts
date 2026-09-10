@@ -72,26 +72,41 @@ export class ScheduleMapper {
   /**
    * Generates upcoming events from calendar events.
    */
-  generateUpcomingEvents(events: CalendarEvent[]): UpcomingEvent[] {
+  generateUpcomingEvents(events: CalendarEvent[], limit?: number): UpcomingEvent[] {
     const today = new Date();
-    return events
-      .filter((event) => event.date >= today)
-      .sort((a, b) => a.date.getTime() - b.date.getTime())
-      .slice(0, 5)
-      .map((event) => {
-        const daysUntil = Math.ceil(
-          (event.date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-        );
-        return {
-          id: event.id,
-          title: event.title,
-          course: event.title,
-          date: event.date,
-          time: `${event.startTime} - ${event.endTime}`,
-          month: event.date.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase(),
-          day: event.date.getDate(),
-          daysUntil: daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `En ${daysUntil} días`,
-        };
-      });
+    today.setHours(0, 0, 0, 0);
+
+    const filtered = events
+      .filter((event) => {
+        const evDate = new Date(event.date);
+        evDate.setHours(0, 0, 0, 0);
+        return evDate >= today;
+      })
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const items = limit ? filtered.slice(0, limit) : filtered;
+
+    return items.map((event) => {
+      const diffMs = event.date.getTime() - new Date().getTime();
+      const daysUntilNum = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      const daysUntil = daysUntilNum <= 0 ? 'Hoy' : daysUntilNum === 1 ? 'Mañana' : `En ${daysUntilNum} días`;
+      const typeLabel = event.type === 'class' ? 'Clase' : event.type === 'exam' ? 'Evaluación' : event.type === 'workshop' ? 'Taller' : 'Sesión';
+
+      return {
+        id: event.id,
+        title: event.title,
+        course: `${typeLabel} • ${event.location || (event.locationType === 'virtual' ? 'Virtual' : 'Presencial')}`,
+        location: event.location,
+        locationType: event.locationType,
+        professor: event.professor,
+        type: event.type,
+        color: event.color,
+        date: event.date,
+        time: `${event.startTime} - ${event.endTime}`,
+        month: event.date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '').toUpperCase(),
+        day: event.date.getDate(),
+        daysUntil: daysUntil,
+      };
+    });
   }
 }

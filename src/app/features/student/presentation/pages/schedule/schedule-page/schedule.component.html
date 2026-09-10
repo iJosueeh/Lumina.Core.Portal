@@ -299,6 +299,6 @@
   }
 
   @if (showAllTasksModal()) {
-    <app-all-tasks-modal [tasks]="upcomingEvents()" (close)="closeAllTasksModal()"></app-all-tasks-modal>
+    <app-all-tasks-modal [tasks]="allUpcomingEvents()" (close)="closeAllTasksModal()"></app-all-tasks-modal>
   }
 </div>

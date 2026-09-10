@@ -5,10 +5,7 @@ import { CalendarEvent, UpcomingEvent, MonthDay } from '@features/student/domain
 import { AddEventModalComponent } from '../add-event-modal/add-event-modal.component';
 import { EventDetailModalComponent } from '../event-detail-modal/event-detail-modal.component';
 import { AllTasksModalComponent } from '../all-tasks-modal/all-tasks-modal.component';
-import { switchMap } from 'rxjs/operators';
-import { forkJoin, of } from 'rxjs';
 import { CoursesService } from '@features/student/infrastructure/services/courses.service';
-import { CursoConHorarios } from '@features/student/domain/models/horario.model';
 import { DateUtils } from '../../../../../../shared/utils/date.utils';
 import { ScheduleMapper } from '../../../../../../shared/mappers/schedule.mapper';
 
@@ -31,7 +28,8 @@ export class ScheduleComponent implements OnInit {
   viewMode = signal<ViewMode>('week');
   selectedDate = signal(new Date());
   events = signal<CalendarEvent[]>([]);
-  upcomingEvents = signal<UpcomingEvent[]>([]);
+  allUpcomingEvents = signal<UpcomingEvent[]>([]);
+  upcomingEvents = computed(() => this.allUpcomingEvents().slice(0, 5));
   searchQuery = signal('');
   isLoading = signal(false);
   showAddEventModal = signal(false);
@@ -77,7 +75,7 @@ export class ScheduleComponent implements OnInit {
       next: (cursos) => {
         const evs = this.mapper.transformSchedulesToEvents(cursos);
         this.events.set(evs);
-        this.upcomingEvents.set(this.mapper.generateUpcomingEvents(evs));
+        this.allUpcomingEvents.set(this.mapper.generateUpcomingEvents(evs));
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),

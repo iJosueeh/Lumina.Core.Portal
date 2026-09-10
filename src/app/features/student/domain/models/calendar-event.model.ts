@@ -19,6 +19,11 @@ export interface UpcomingEvent {
   id: string;
   title: string;
   course: string;
+  location?: string;
+  locationType?: 'virtual' | 'presencial';
+  professor?: string;
+  type?: 'class' | 'exam' | 'workshop' | 'meeting';
+  color?: string;
   date: Date;
   time: string;
   month: string;
