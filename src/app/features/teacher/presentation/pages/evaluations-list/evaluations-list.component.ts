@@ -145,15 +145,26 @@ export class EvaluationsListComponent implements OnInit {
   }
 
   // ─── Create Evaluation ──────────────────────────────────
-  openCreateModal(): void {
-    const courseList = this.courses();
+  async openCreateModal(): Promise<void> {
+    let courseList = this.courses();
+    if (courseList.length === 0) {
+      const user = this.authRepository.getCurrentUser();
+      const userId = user?.id || (user as any)?.sub || '';
+      if (userId) {
+        try {
+          courseList = await this.teacherQueryService.getTeacherCourses(userId);
+          this.courses.set(courseList);
+        } catch {}
+      }
+    }
+
     if (courseList.length === 0) {
       this.notificationService.show('info', 'No tienes asignaturas disponibles para crear evaluaciones.');
       return;
     }
 
     const currentFilter = this.selectedCourseId();
-    const defaultCourseId = currentFilter !== 'all' ? currentFilter : courseList[0].id;
+    const defaultCourseId = (currentFilter && currentFilter !== 'all') ? currentFilter : courseList[0].id;
     this.selectedCourseIdForCreate.set(defaultCourseId);
     this.showCreateModal.set(true);
   }
