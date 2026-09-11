@@ -92,7 +92,7 @@ test.describe('Auditoría Integral de Mis Calificaciones (/student/grades)', () 
       console.log('✅ Acordeón desplegado: Sub-tabla de evaluaciones visibles');
 
       // Validar métricas internas del curso
-      await expect(page.locator('tbody')).toContainText(/Promedio|completadas/i);
+      await expect(page.locator('tbody').first()).toContainText(/Promedio|completadas/i);
       console.log('✅ Desglose de promedio y evaluaciones completadas validado');
 
       // Contraer acordeón

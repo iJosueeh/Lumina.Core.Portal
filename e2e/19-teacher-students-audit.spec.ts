@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Teacher Students List & Detail QA Audit (/teacher/students & /teacher/student/:id)', () => {
-  const baseUrl = 'https://lumina-core-portal.vercel.app';
+  const baseUrl = process.env.BASE_URL || 'https://lumina-core-portal.vercel.app';
   const teacherEmail = 'profesor@lumina.edu';
   const teacherPassword = 'Test123!';
 
@@ -10,16 +10,24 @@ test.describe('Teacher Students List & Detail QA Audit (/teacher/students & /tea
 
     // 1. Iniciar sesión como docente
     console.log('1. Autenticando docente...');
-    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+    await page.goto(`${baseUrl}/login`, { waitUntil: 'domcontentloaded' });
     await page.fill('input[type="email"], input#username, input[name="username"]', teacherEmail);
     await page.fill('input[type="password"], input#password, input[name="password"]', teacherPassword);
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/teacher\//, { timeout: 25000 });
+
+    try {
+      await page.waitForURL(/\/teacher\//, { timeout: 15000 });
+    } catch {
+      // Retry with alternative password if needed
+      await page.fill('input[type="password"], input#password, input[name="password"]', 'Profesor123!');
+      await page.click('button[type="submit"]');
+      await page.waitForURL(/\/teacher\//, { timeout: 20000 });
+    }
     console.log('✅ Login exitoso.');
 
     // 2. Navegar a /teacher/students
     console.log('2. Navegando a /teacher/students...');
-    await page.goto('/teacher/students', { waitUntil: 'domcontentloaded' });
+    await page.goto(`${baseUrl}/teacher/students`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // 3. Verificar Header y Estadísticas

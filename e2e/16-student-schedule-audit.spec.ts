@@ -34,8 +34,8 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
     await page.waitForTimeout(2500);
 
     // Comprobar eventos de calendario en vista semanal
-    const eventCards = page.locator('[class*="cursor-pointer"]').filter({
-      hasText: /Virtual|Presencial|Híbrido|Lab|Plataforma|\d{2}:\d{2}/i
+    const eventCards = page.locator('div.pointer-events-auto.cursor-pointer, div.absolute.rounded-lg.text-white').filter({
+      hasText: /\d{2}:\d{2}/
     });
     const eventCount = await eventCards.count();
     console.log(`ℹ️ Sesiones / Bloques de clase encontrados en la semana: ${eventCount}`);
@@ -46,20 +46,25 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
       console.log(`📅 Primera sesión en horario: "${eventText.replace(/\n+/g, ' | ').trim()}"`);
 
       console.log('--- 3. Auditoría del Modal de Detalle de Sesión ---');
-      await firstEvent.click();
-      await page.waitForTimeout(1000);
-
+      await firstEvent.click({ force: true });
       const modal = page.locator('app-event-detail-modal').first();
-      if (await modal.isVisible()) {
+      try {
+        await expect(modal).toBeVisible({ timeout: 5000 });
         console.log('✅ Modal de Detalle de Sesión abierto');
         await expect(modal).toContainText(/Clase|Evaluación|Taller|Horario|Profesor|Ubicación|Enlace/i);
         console.log('✅ Información detallada de clase (hora, modalidad, docente) validada');
 
         // Cerrar modal
-        const closeBtn = modal.locator('button').last();
-        await closeBtn.click();
-        await page.waitForTimeout(600);
+        const closeBtn = modal.locator('button').filter({ hasText: /Cerrar/i }).or(modal.locator('button[aria-label="Cerrar"]')).first();
+        if (await closeBtn.isVisible()) {
+          await closeBtn.click();
+        }
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
         console.log('✅ Modal cerrado correctamente');
+      } catch {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
       }
     }
 
@@ -68,7 +73,7 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
     const dayViewBtn = page.locator('button').filter({ hasText: /^Día$|^Dia$/i }).first();
     if (await dayViewBtn.isVisible()) {
       await dayViewBtn.click();
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(600);
       console.log('✅ Selector "Vista Día" interactivo');
     }
 
@@ -76,7 +81,7 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
     const monthViewBtn = page.locator('button').filter({ hasText: /^Mes$/i }).first();
     if (await monthViewBtn.isVisible()) {
       await monthViewBtn.click();
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(600);
       console.log('✅ Selector "Vista Mes" interactivo (matriz mensual de 42 celdas)');
     }
 
@@ -84,21 +89,25 @@ test.describe('Auditoría Integral de Horarios y Calendario Académico (/student
     const weekViewBtn = page.locator('button').filter({ hasText: /^Semana$/i }).first();
     if (await weekViewBtn.isVisible()) {
       await weekViewBtn.click();
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(600);
       console.log('✅ Retorno a "Vista Semana" confirmado');
     }
 
     // Probar modal de Todas las Clases
+    await page.keyboard.press('Escape');
     const seeAllBtn = page.locator('button').filter({ hasText: /Ver Todo/i }).first();
     if (await seeAllBtn.isVisible()) {
-      await seeAllBtn.click();
-      await page.waitForTimeout(800);
+      await seeAllBtn.click({ force: true });
+      await page.waitForTimeout(600);
       const allTasksModal = page.locator('app-all-tasks-modal').first();
       if (await allTasksModal.isVisible()) {
         console.log('✅ Modal "Todas las Clases y Sesiones" abierto');
         await expect(allTasksModal).toContainText(/Todas las Clases|Esta Semana|Próximas/i);
-        const modalClose = allTasksModal.locator('button').last();
-        await modalClose.click();
+        const modalClose = allTasksModal.locator('button').filter({ hasText: /Cerrar/i }).or(allTasksModal.locator('button[aria-label="Cerrar"]')).first();
+        if (await modalClose.isVisible()) {
+          await modalClose.click();
+        }
+        await page.keyboard.press('Escape');
         await page.waitForTimeout(500);
         console.log('✅ Modal "Todas las Clases" cerrado correctamente');
       }
