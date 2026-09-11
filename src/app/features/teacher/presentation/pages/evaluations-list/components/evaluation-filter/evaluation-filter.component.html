@@ -4,7 +4,8 @@
     <app-input
       label="Buscar Evaluación"
       placeholder="Título, descripción o curso..."
-      [(ngModel)]="searchTerm"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
       icon="search"
     />
   </div>
@@ -12,11 +13,19 @@
   <!-- Filtro por Curso -->
   <div>
     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Filtrar por Curso</label>
-    <app-select [(ngModel)]="selectedCourseId">
-      <option value="all">Todos los cursos</option>
-      @for (course of courses(); track course.id) {
-        <option [value]="course.id">{{ course.titulo }}</option>
-      }
-    </app-select>
+    <div class="relative">
+      <select
+        [ngModel]="selectedCourseId()"
+        (ngModelChange)="selectedCourseId.set($event)"
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer">
+        <option value="all">Todos los cursos</option>
+        @for (course of courses(); track course.id) {
+          <option [value]="course.id">{{ course.titulo }} ({{ course.codigo }})</option>
+        }
+      </select>
+      <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400 text-xs">
+        <i class="fas fa-chevron-down"></i>
+      </div>
+    </div>
   </div>
 </div>

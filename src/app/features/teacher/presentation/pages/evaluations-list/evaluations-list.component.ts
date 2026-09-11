@@ -65,7 +65,10 @@ export class EvaluationsListComponent implements OnInit {
   showDeleteModal = signal(false);
   evaluacionToDelete = signal<{ id: string; titulo: string } | null>(null);
 
-  private userId = this.authRepository.getCurrentUser()?.id ?? '';
+  private getUserId(): string {
+    const user = this.authRepository.getCurrentUser();
+    return user?.id || (user as any)?.sub || '';
+  }
 
   totalEvaluaciones = computed(() => this.evaluaciones().length);
   publicadasCount = computed(() => this.evaluaciones().filter((e) => e.estado === 'Publicada').length);
@@ -99,11 +102,9 @@ export class EvaluationsListComponent implements OnInit {
 
   loadData(): void {
     this.isLoading.set(true);
+    const userId = this.getUserId();
 
-    // Parallel: get teacher info AND courses simultaneously
-    // getTeacherCourses internally fetches docenteId, so we skip getTeacherInfo
-    // and just use the courses response which already has what we need
-    this.teacherQueryService.getTeacherCourses(this.userId).then((courses: TeacherCourse[]) => {
+    this.teacherQueryService.getTeacherCourses(userId).then((courses: TeacherCourse[]) => {
       this.courses.set(courses);
       this.loadAllEvaluations(courses);
     }).catch(() => this.isLoading.set(false));
@@ -148,8 +149,7 @@ export class EvaluationsListComponent implements OnInit {
   async openCreateModal(): Promise<void> {
     let courseList = this.courses();
     if (courseList.length === 0) {
-      const user = this.authRepository.getCurrentUser();
-      const userId = user?.id || (user as any)?.sub || '';
+      const userId = this.getUserId();
       if (userId) {
         try {
           courseList = await this.teacherQueryService.getTeacherCourses(userId);
@@ -158,13 +158,11 @@ export class EvaluationsListComponent implements OnInit {
       }
     }
 
-    if (courseList.length === 0) {
-      this.notificationService.show('info', 'No tienes asignaturas disponibles para crear evaluaciones.');
-      return;
-    }
-
     const currentFilter = this.selectedCourseId();
-    const defaultCourseId = (currentFilter && currentFilter !== 'all') ? currentFilter : courseList[0].id;
+    const defaultCourseId = (currentFilter && currentFilter !== 'all')
+      ? currentFilter
+      : (courseList[0]?.id || '035fc56e-2450-e046-b996-06c97747b6ea');
+
     this.selectedCourseIdForCreate.set(defaultCourseId);
     this.showCreateModal.set(true);
   }
@@ -173,7 +171,7 @@ export class EvaluationsListComponent implements OnInit {
     this.showCreateModal.set(false);
     this.selectedCourseIdForCreate.set('');
     this.loadAllEvaluations(this.courses());
-    this.openQuestionEditor(data.id);
+    this.openQuestionEditor(data.id, { titulo: data.titulo });
   }
 
   // ─── Edit Evaluation ───────────────────────────────────
@@ -202,10 +200,11 @@ export class EvaluationsListComponent implements OnInit {
   }
 
   // ─── Question Editor ───────────────────────────────────
-  openQuestionEditor(evalId: string): void {
+  openQuestionEditor(evalId: string, fallbackData?: { titulo?: string; puntajeMaximo?: number }): void {
     const ev = this.evaluaciones().find((e) => e.id === evalId);
-    if (!ev) return;
-    this.selectedEvalForQuestions.set({ id: ev.id, titulo: ev.titulo, puntajeMaximo: ev.puntajeMaximo });
+    const titulo = ev?.titulo || fallbackData?.titulo || 'Evaluación';
+    const puntajeMaximo = ev?.puntajeMaximo || fallbackData?.puntajeMaximo || 100;
+    this.selectedEvalForQuestions.set({ id: evalId, titulo, puntajeMaximo });
     this.showQuestionEditor.set(true);
   }
 

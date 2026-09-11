@@ -9,7 +9,7 @@ import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.mo
 @Component({
   selector: 'app-evaluation-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, InputComponent],
   templateUrl: './evaluation-filter.component.html',
   styleUrl: './evaluation-filter.component.css'
 })

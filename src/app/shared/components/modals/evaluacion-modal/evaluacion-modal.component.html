@@ -41,11 +41,10 @@
                     <div class="space-y-1.5">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Tipo de Evaluación</label>
                         <select formControlName="tipoEvaluacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm font-medium appearance-none">
-                            <option [ngValue]="null" disabled>Seleccionar tipo...</option>
-                            <option [ngValue]="1">Examen</option>
-                            <option [ngValue]="2">Tarea</option>
-                            <option [ngValue]="3">Proyecto</option>
-                            <option [ngValue]="4">Quizz / Test</option>
+                            <option [value]="1">Examen</option>
+                            <option [value]="2">Tarea</option>
+                            <option [value]="3">Proyecto</option>
+                            <option [value]="4">Quizz / Test</option>
                         </select>
                     </div>
 

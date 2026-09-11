@@ -101,6 +101,28 @@ export class TeacherGradesService {
     };
   }
 
+  /**
+   * Calcula el promedio de un estudiante considerando el peso de cada evaluación.
+   * Si las evaluaciones tienen peso ponderado (>0), calcula la media ponderada;
+   * caso contrario, calcula la media aritmética simple.
+   */
+  public calcStudentAverage(notas: Record<string, number | null>, evaluaciones: EvaluacionGrades[]): number {
+    const evalMap = new Map<string, number>(evaluaciones.map(e => [e.id, Number(e.peso) || 0]));
+    const validEntries = Object.entries(notas).filter(([_, n]) => n != null && !isNaN(Number(n))) as [string, number][];
+    
+    if (!validEntries.length) return 0;
+    
+    const totalWeight = validEntries.reduce((acc, [id]) => acc + (evalMap.get(id) || 0), 0);
+    
+    if (totalWeight > 0) {
+      const weightedSum = validEntries.reduce((acc, [id, nota]) => acc + (Number(nota) * (evalMap.get(id) || 0)), 0);
+      return Number((weightedSum / totalWeight).toFixed(2));
+    } else {
+      const sum = validEntries.reduce((acc, [_, nota]) => acc + Number(nota), 0);
+      return Number((sum / validEntries.length).toFixed(2));
+    }
+  }
+
   private mapCalificaciones(estudiantes: any[], califResp: any, evaluaciones: EvaluacionGrades[]): any[] {
     const estudiantesMap = new Map<string, any>();
 
@@ -131,17 +153,14 @@ export class TeacherGradesService {
       for (const [evalId, nota] of Object.entries(notasPorEval)) {
         entry.notas[evalId] = nota?.nota ?? null;
       }
-      // Calcular promedio
-      const notasArr = Object.values(entry.notas).filter((n: any) => n != null) as number[];
-      entry.promedio = notasArr.length
-        ? Number((notasArr.reduce((a, b) => a + b, 0) / notasArr.length).toFixed(2))
-        : 0;
+      // Calcular promedio con pesos
+      entry.promedio = this.calcStudentAverage(entry.notas, evaluaciones);
     }
 
     return Array.from(estudiantesMap.values());
   }
 
-  private calcStats(calificaciones: any[]) {
+  public calcStats(calificaciones: any[]) {
     if (!calificaciones.length) {
       return { promedioGeneral: 0, notaMasAlta: 0, notaMasBaja: 0, aprobados: 0, reprobados: 0, enRiesgo: 0, totalEstudiantes: 0, porcentajeAprobados: 0 };
     }

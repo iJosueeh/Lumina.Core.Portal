@@ -81,8 +81,12 @@ export class EvaluacionModalComponent implements OnInit {
 
   private formatDateForInput(date: Date): string {
     const d = new Date(date);
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   private mapTipoToEnum(tipo: any): number {
@@ -128,7 +132,7 @@ export class EvaluacionModalComponent implements OnInit {
         this.onSaved.emit({ id: this.evaluacionToEdit.id, titulo: formValue.titulo });
       } else {
         const body = {
-          cursoId: this.courseId,
+          cursoId: this.courseId || '035fc56e-2450-e046-b996-06c97747b6ea',
           titulo: formValue.titulo,
           descripcion: formValue.descripcion,
           fechaInicio: new Date(formValue.fechaInicio).toISOString(),

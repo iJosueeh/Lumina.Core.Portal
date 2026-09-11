@@ -144,10 +144,9 @@ export class GradesManagementComponent implements OnInit {
     const calif = data.calificaciones.find(c => c.estudianteId === event.estudianteId);
     if (calif) {
       calif.notas[event.evaluacionId] = event.nota;
-      const notasArr = Object.values(calif.notas).filter((n): n is number => n != null);
-      calif.promedio = notasArr.length
-        ? Number((notasArr.reduce((a, b) => a + b, 0) / notasArr.length).toFixed(2))
-        : 0;
+      calif.promedio = this.gradesService.calcStudentAverage(calif.notas, data.evaluaciones);
+      data.estadisticas = this.gradesService.calcStats(data.calificaciones);
+      this.courseGradesData.set({ ...data, calificaciones: [...data.calificaciones] });
     }
   }
 
