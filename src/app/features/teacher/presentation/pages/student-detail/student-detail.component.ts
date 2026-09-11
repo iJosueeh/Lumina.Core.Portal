@@ -31,6 +31,12 @@ interface EvaluacionItem {
   fechaFin: string;
 }
 
+export interface StudentCourseItem {
+  id: string;
+  codigo?: string;
+  nombre: string;
+}
+
 interface StudentInfo {
   id: string;
   nombre: string;
@@ -40,7 +46,7 @@ interface StudentInfo {
   codigo: string;
   avatar: string;
   estado?: string;
-  cursos: string[];
+  cursos: any[];
 }
 
 @Component({
@@ -72,14 +78,23 @@ export class StudentDetailComponent implements OnInit {
   private docenteId = '';
   private userId = '';
 
-  studentCourses = computed(() => {
+  studentCourses = computed<StudentCourseItem[]>(() => {
     const info = this.studentInfo();
     if (!info) return [];
     const map = this.courseNames();
-    return info.cursos.map((id) => ({
-      id,
-      nombre: map.get(id) || 'Curso Asignado'
-    }));
+    return (info.cursos || []).map((c: any) => {
+      if (typeof c === 'string') {
+        return {
+          id: c,
+          nombre: map.get(c) || 'Curso Asignado',
+          codigo: ''
+        };
+      }
+      const id = c?.cursoId || c?.id || '';
+      const nombre = c?.nombreCurso || c?.titulo || c?.nombre || map.get(id) || 'Curso Asignado';
+      const codigo = c?.codigoCurso || c?.codigo || '';
+      return { id, nombre, codigo };
+    }).filter((c: StudentCourseItem) => !!c.id);
   });
 
   studentCourseNames = computed(() => {
