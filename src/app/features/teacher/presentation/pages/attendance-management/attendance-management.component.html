@@ -143,8 +143,8 @@
                 <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estudiante</th>
                 <th class="px-4 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actividad de Aula en la Fecha</th>
                 <th class="px-4 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tiempo Hoy</th>
+                <th class="px-4 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avance Aula Virtual</th>
                 <th class="px-4 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado</th>
-                <th class="px-4 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Histórico</th>
                 <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Acciones</th>
               </tr>
             </thead>
@@ -163,8 +163,14 @@
                       </div>
                       <div>
                         <span class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate block">{{ stat.studentName }}</span>
-                        <span class="text-[11px] text-slate-400 font-medium group-hover:text-indigo-400 transition-colors flex items-center gap-1">
-                          <i class="fas fa-chart-line text-[9px]"></i> Ver telemetría de aula
+                        <span class="text-[11px] text-slate-400 font-medium group-hover:text-indigo-500 transition-colors flex items-center gap-1.5 mt-0.5">
+                          <span
+                            class="w-2 h-2 rounded-full inline-block"
+                            [class.bg-emerald-500]="formatLastActivity(stat.lastActivityAt) === 'En línea'"
+                            [class.bg-amber-400]="formatLastActivity(stat.lastActivityAt).startsWith('Hace')"
+                            [class.bg-slate-300]="formatLastActivity(stat.lastActivityAt) === 'Sin conexión'">
+                          </span>
+                          <span>{{ formatLastActivity(stat.lastActivityAt) }}</span>
                         </span>
                       </div>
                     </button>
@@ -208,6 +214,28 @@
                     }
                   </td>
 
+                  <!-- Avance Aula Virtual -->
+                  <td class="px-4 py-4 text-center">
+                    <div class="inline-flex flex-col items-center min-w-[120px]">
+                      <div class="flex items-center justify-between w-full text-[11px] font-bold text-slate-700 mb-1">
+                        <span>{{ stat.progressPercent }}%</span>
+                        <span class="text-[10px] text-slate-400 font-medium">
+                          {{ stat.completedLessons }}/{{ stat.totalLessons > 0 ? stat.totalLessons : '—' }} lecc.
+                        </span>
+                      </div>
+                      <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          class="h-full rounded-full transition-all duration-500"
+                          [class.bg-emerald-500]="stat.progressPercent >= 80"
+                          [class.bg-indigo-500]="stat.progressPercent >= 40 && stat.progressPercent < 80"
+                          [class.bg-amber-500]="stat.progressPercent > 0 && stat.progressPercent < 40"
+                          [class.bg-slate-300]="stat.progressPercent === 0"
+                          [style.width.%]="stat.progressPercent">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
                   <!-- Estado en la Fecha (Alternable con feedback claro) -->
                   <td class="px-4 py-4 text-center">
                     <div class="inline-flex items-center justify-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
@@ -235,26 +263,6 @@
                     </div>
                   </td>
 
-                  <!-- Histórico (% Asistencia y Clases) -->
-                  <td class="px-4 py-4 text-center">
-                    <div class="inline-flex flex-col items-center">
-                      <span
-                        class="px-2 py-0.5 rounded-md text-xs font-bold border inline-block"
-                        [class.bg-emerald-50]="stat.porcentaje >= 80"
-                        [class.text-emerald-700]="stat.porcentaje >= 80"
-                        [class.border-emerald-200]="stat.porcentaje >= 80"
-                        [class.bg-amber-50]="stat.porcentaje >= 50 && stat.porcentaje < 80"
-                        [class.text-amber-700]="stat.porcentaje >= 50 && stat.porcentaje < 80"
-                        [class.border-amber-200]="stat.porcentaje >= 50 && stat.porcentaje < 80"
-                        [class.bg-red-50]="stat.porcentaje < 50"
-                        [class.text-red-700]="stat.porcentaje < 50"
-                        [class.border-red-200]="stat.porcentaje < 50">
-                        {{ stat.porcentaje }}%
-                      </span>
-                      <span class="text-[10px] text-slate-400 font-medium mt-0.5">({{ stat.total }} sesiones)</span>
-                    </div>
-                  </td>
-
                   <!-- Acciones (Ver Detalle) -->
                   <td class="px-6 py-4 text-center">
                     <button
@@ -275,90 +283,90 @@
 
   </main>
 
-  <!-- Modal: Telemetría y Línea de Tiempo del Alumno -->
+  <!-- Modal: Telemetría y Línea de Tiempo del Alumno (Light Theme) -->
   @if (selectedStudentDetail(); as detail) {
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in"
       (click)="closeStudentDetail()">
       <div
-        class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full overflow-hidden animate-scale-up"
+        class="bg-white rounded-3xl shadow-xl border border-slate-200 max-w-2xl w-full overflow-hidden animate-scale-up text-slate-800"
         (click)="$event.stopPropagation()">
         
-        <!-- Header Modal -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 relative">
+        <!-- Header Modal (Light Theme) -->
+        <div class="bg-slate-50/80 border-b border-slate-100 p-6 relative">
           <button
             type="button"
             (click)="closeStudentDetail()"
-            class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all cursor-pointer">
-            <i class="fas fa-times text-sm"></i>
+            class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-200/60 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times text-xs"></i>
           </button>
 
           <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 font-bold text-2xl shadow-inner">
+            <div class="w-13 h-13 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl shadow-xs">
               {{ detail.studentName.charAt(0).toUpperCase() }}
             </div>
             <div>
               <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
                   Telemetría de Aula Virtual
                 </span>
-                <span class="text-[10px] text-slate-400 font-medium">
+                <span class="text-[11px] text-slate-400 font-medium">
                   Fecha: {{ selectedDate() }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold text-white">{{ detail.studentName }}</h3>
+              <h3 class="text-lg font-bold text-slate-900">{{ detail.studentName }}</h3>
             </div>
           </div>
         </div>
 
-        <!-- Metric Highlights in Modal -->
-        <div class="grid grid-cols-3 gap-3 p-6 bg-slate-50 border-b border-slate-200/80">
-          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
+        <!-- Metric Highlights in Modal (Light Clean Cards) -->
+        <div class="grid grid-cols-3 gap-3 p-6 bg-white border-b border-slate-100">
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-center">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tiempo Hoy</span>
-            <span class="text-lg font-black text-indigo-600">{{ detail.totalMinutos }} min</span>
+            <span class="text-base font-black text-indigo-600">{{ detail.totalMinutos }} min</span>
           </div>
-          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-center">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Acciones Hoy</span>
-            <span class="text-lg font-black text-slate-800">{{ detail.actividades.length }}</span>
+            <span class="text-base font-black text-slate-800">{{ detail.actividades.length }}</span>
           </div>
-          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Asistencia Global</span>
-            <span class="text-lg font-black text-emerald-600">{{ detail.porcentaje }}%</span>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-center">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Avance Curso</span>
+            <span class="text-base font-black text-emerald-600">{{ detail.progressPercent }}%</span>
           </div>
         </div>
 
-        <!-- Activity Timeline -->
+        <!-- Activity Timeline (Clean Light Design) -->
         <div class="p-6 max-h-[380px] overflow-y-auto space-y-4">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <i class="fas fa-stream text-indigo-500"></i>
             Eventos Registrados en la Sesión
           </h4>
 
           @if (detail.actividades.length === 0) {
             <div class="text-center py-8 text-slate-400">
-              <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-2 text-slate-400">
-                <i class="fas fa-user-clock text-xl"></i>
+              <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-2 text-slate-400">
+                <i class="fas fa-user-clock text-lg"></i>
               </div>
-              <p class="text-sm font-semibold text-slate-600">Sin eventos telemétricos hoy</p>
-              <p class="text-xs text-slate-400 mt-0.5">El estudiante aún no ha reproducido videos ni interactuado con los recursos hoy.</p>
+              <p class="text-xs font-bold text-slate-700">Sin eventos telemétricos hoy</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">El estudiante aún no ha reproducido videos ni interactuado con los recursos en esta fecha.</p>
             </div>
           } @else {
-            <div class="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+            <div class="relative pl-6 space-y-3.5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
               @for (act of detail.actividades; track $index) {
                 <div class="relative flex items-start gap-3">
                   <!-- Timeline marker dot -->
                   <div
-                    class="absolute -left-6 top-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center shadow-xs"
+                    class="absolute -left-6 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center shadow-xs"
                     [class.bg-blue-500]="act.t === 'video'"
                     [class.bg-emerald-500]="act.t === 'material'"
                     [class.bg-purple-500]="act.t === 'evaluacion'">
                   </div>
 
-                  <div class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
+                  <div class="flex-1 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5">
                     <div class="flex items-center justify-between mb-1">
                       <span
                         class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                        [class]="act.t === 'video' ? 'bg-blue-100 text-blue-700' : act.t === 'material' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'">
+                        [class]="act.t === 'video' ? 'bg-blue-50 text-blue-700 border border-blue-100' : act.t === 'material' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-purple-50 text-purple-700 border border-purple-100'">
                         {{ act.t === 'video' ? '🎬 Reproducción de Video' : act.t === 'material' ? '📄 Descarga de Material' : '✅ Evaluación Enviada' }}
                       </span>
                       @if (act.h) {
@@ -380,8 +388,8 @@
           }
         </div>
 
-        <!-- Footer Actions in Modal -->
-        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <!-- Footer Actions in Modal (Light Clean Design) -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="text-xs font-medium text-slate-500">Estado hoy:</span>
             <button

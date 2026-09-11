@@ -32,6 +32,10 @@ export interface AttendanceStats {
   activos: number;
   pendientes: number;
   porcentaje: number;
+  progressPercent: number;
+  completedLessons: number;
+  totalLessons: number;
+  lastActivityAt: string | null;
 }
 
 export interface AttendanceCourse {
@@ -48,6 +52,9 @@ export interface StudentDetailModalData {
   porcentaje: number;
   totalLecciones: number;
   totalMinutos: number;
+  progressPercent: number;
+  completedLessons: number;
+  lastActivityAt: string | null;
 }
 
 @Component({
@@ -220,8 +227,30 @@ export class AttendanceManagementComponent implements OnInit {
         return;
       }
 
+      // Fetch batch virtual classroom progress
+      const progressMap = new Map<string, { progressPercent: number; completedLessons: number; totalLessons: number; lastActivityAt: string | null }>();
+      try {
+        const studentIdsParam = students.map(s => s.id).join(',');
+        const batchResults = await firstValueFrom(
+          this.http.get<any[]>(`${environment.estudiantesApiUrl}/matricula/aula-virtual-progress/batch?cursoId=${courseId}&estudianteIds=${studentIdsParam}`)
+        );
+        if (Array.isArray(batchResults)) {
+          batchResults.forEach(r => {
+            progressMap.set(r.estudianteId, {
+              progressPercent: r.progressPercent ?? 0,
+              completedLessons: r.completedLessons ?? 0,
+              totalLessons: r.totalLessons ?? 0,
+              lastActivityAt: r.lastActivityAt ?? null,
+            });
+          });
+        }
+      } catch {
+        // Fallback silently if batch endpoint is not populated yet
+      }
+
       // Parallelize student metric requests with Promise.all
       const statsPromises = students.map(async (student) => {
+        const prog = progressMap.get(student.id);
         try {
           const data = await firstValueFrom(
             this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
@@ -238,6 +267,10 @@ export class AttendanceManagementComponent implements OnInit {
             activos,
             pendientes,
             porcentaje,
+            progressPercent: prog?.progressPercent ?? (prog?.totalLessons ? Math.round((prog.completedLessons / prog.totalLessons) * 100) : 0),
+            completedLessons: prog?.completedLessons ?? 0,
+            totalLessons: prog?.totalLessons ?? 0,
+            lastActivityAt: prog?.lastActivityAt ?? null,
           };
         } catch {
           return {
@@ -247,6 +280,10 @@ export class AttendanceManagementComponent implements OnInit {
             activos: 0,
             pendientes: 0,
             porcentaje: 0,
+            progressPercent: prog?.progressPercent ?? 0,
+            completedLessons: prog?.completedLessons ?? 0,
+            totalLessons: prog?.totalLessons ?? 0,
+            lastActivityAt: prog?.lastActivityAt ?? null,
           };
         }
       });
@@ -289,6 +326,28 @@ export class AttendanceManagementComponent implements OnInit {
   getStudentMinutosHoy(studentId: string): number {
     const acts = this.parseActividades(this.getObservacionForStudent(studentId));
     return acts.reduce((acc, a) => acc + (a.d || 0), 0);
+  }
+
+  formatLastActivity(lastActivityAt: string | null): string {
+    if (!lastActivityAt) return 'Sin conexión';
+    try {
+      const date = new Date(lastActivityAt);
+      if (isNaN(date.getTime())) return 'Sin conexión';
+      const now = new Date();
+      const diffMs = Math.max(0, now.getTime() - date.getTime());
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 5) return 'En línea';
+      if (diffMins < 60) return `Hace ${diffMins}m`;
+      if (diffHours < 24) return `Hace ${diffHours}h`;
+      if (diffDays === 1) return 'Ayer';
+      if (diffDays < 7) return `Hace ${diffDays}d`;
+      return date.toLocaleDateString();
+    } catch {
+      return 'Sin conexión';
+    }
   }
 
   parseActividades(observacion: string | null): ActividadItem[] {
@@ -353,17 +412,18 @@ export class AttendanceManagementComponent implements OnInit {
       this.notification.show('info', 'No hay registros para exportar.');
       return;
     }
-    const headers = ['Estudiante', 'Estado Hoy', 'Minutos Hoy', 'Actividades Hoy', 'Histórico (%)', 'Total Sesiones'];
+    const headers = ['Estudiante', 'Estado Hoy', 'Minutos Hoy', 'Avance Aula (%)', 'Lecciones', 'Última Actividad', 'Histórico (%)', 'Total Sesiones'];
     const rows = stats.map(s => {
       const estado = this.getEstadoForStudent(s.studentId);
       const minutos = this.getStudentMinutosHoy(s.studentId);
-      const acts = this.parseActividades(this.getObservacionForStudent(s.studentId));
-      const actsText = acts.map(a => `${a.t}: ${a.r}`).join('; ');
+      const lastAct = this.formatLastActivity(s.lastActivityAt);
       return [
         `"${s.studentName}"`,
         `"${estado}"`,
         minutos,
-        `"${actsText}"`,
+        `${s.progressPercent}%`,
+        `"${s.completedLessons}/${s.totalLessons}"`,
+        `"${lastAct}"`,
         `${s.porcentaje}%`,
         s.total,
       ];
@@ -393,6 +453,9 @@ export class AttendanceManagementComponent implements OnInit {
       porcentaje: stat.porcentaje,
       totalLecciones: stat.total,
       totalMinutos,
+      progressPercent: stat.progressPercent,
+      completedLessons: stat.completedLessons,
+      lastActivityAt: stat.lastActivityAt,
     });
   }
 
