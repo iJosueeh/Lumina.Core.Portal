@@ -161,13 +161,13 @@
           </div>
 
           <!-- Performance Pill -->
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
             <span
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border"
+              class="px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap"
               [ngClass]="[promedioPerformanceLabel().bg, promedioPerformanceLabel().color, promedioPerformanceLabel().border]">
               {{ promedioPerformanceLabel().label }}
             </span>
-            <span class="text-[10px] text-slate-400 font-semibold">{{ promedioPorcentaje() }}% de escala</span>
+            <span class="text-[10px] text-slate-400 font-semibold whitespace-nowrap">{{ promedioPorcentaje() }}% de escala</span>
           </div>
         </div>
 
