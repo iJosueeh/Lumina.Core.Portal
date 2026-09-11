@@ -112,15 +112,15 @@ test.describe('Teacher Course Full Interactive CRUD Test', () => {
     await expect(page.locator('.animate-pulse')).not.toBeVisible({ timeout: 30000 });
 
     // Re-expandir módulo si se cerró tras recarga
-    const currentModuleCard = page.locator('.bg-white.border.border-slate-200', { has: page.locator(`h4:has-text("${moduleTitleUpdated}")`) });
-    if (!(await currentModuleCard.getByRole('button', { name: /Añadir Contenido al Módulo/i }).isVisible())) {
-      await currentModuleCard.locator('button').first().click();
-      await page.waitForTimeout(800);
+    const currentModuleCard = page.locator('.bg-white.border.border-slate-200', { has: page.locator(`h4:has-text("${moduleTitleUpdated}")`) }).first();
+    const lessonItem = currentModuleCard.locator(`p:has-text("${lessonTitle}")`);
+    if (!(await lessonItem.isVisible())) {
+      await currentModuleCard.locator('h4').first().click();
+      await page.waitForTimeout(600);
     }
 
     // Verificar que la lección aparezca dentro del módulo
     console.log(`Verificando presencia de la lección "${lessonTitle}"...`);
-    const lessonItem = page.locator(`p:has-text("${lessonTitle}")`);
     await expect(lessonItem).toBeVisible({ timeout: 20000 });
     console.log('✅ Lección creada y listada en el módulo.');
 
