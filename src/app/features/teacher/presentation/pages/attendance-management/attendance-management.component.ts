@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
@@ -86,6 +86,7 @@ export class AttendanceManagementComponent implements OnInit {
   // Private cache
   private docenteId = '';
   private studentsCache = new Map<string, { id: string; nombre: string }[]>();
+  private courseLessonsCache = new Map<string, number>();
 
   filteredStats = computed(() => {
     const stats = this.allStats();
@@ -158,42 +159,32 @@ export class AttendanceManagementComponent implements OnInit {
       this.docenteId = teacherInfo.id;
 
       const courses = await this.teacherQuery.getTeacherCourses(userId);
-      this.courses.set(courses.map((c) => ({ id: c.id, codigo: c.codigo, titulo: c.titulo })));
+      this.courses.set(courses);
 
-      if (this.courses().length > 0) {
-        this.selectedCourseId.set(this.courses()[0].id);
+      if (courses.length > 0 && !this.selectedCourseId()) {
+        this.selectedCourseId.set(courses[0].id);
         await Promise.all([
           this.loadAttendanceForDate(),
           this.loadAllStats(),
         ]);
       }
     } catch {
-      this.notification.show('error', 'Error al cargar los cursos asignados.');
+      this.notification.show('error', 'Error al cargar asignaturas asignadas.');
     }
   }
 
   private async loadAttendanceForDate(): Promise<void> {
     const courseId = this.selectedCourseId();
-    const fecha = this.selectedDate();
-    if (!courseId || !fecha) return;
+    const date = this.selectedDate();
+    if (!courseId || !date) return;
 
-    this.isLoading.set(true);
     try {
       const data = await firstValueFrom(
-        this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias?cursoId=${courseId}&fecha=${fecha}`)
+        this.http.get<any[]>(`${environment.estudiantesApiUrl}/asistencias?cursoId=${courseId}&fecha=${date}`)
       );
-      const records: AsistenciaRegistro[] = (data.value || data || []).map((r: any) => ({
-        id: r.id,
-        estudianteId: r.estudianteId,
-        estado: r.estado === 'Activo' ? 'Activo' : 'Pendiente',
-        observacion: r.observacion || null,
-        fecha: r.fecha,
-      }));
-      this.dateAttendance.set(records);
+      this.dateAttendance.set(data || []);
     } catch {
       this.dateAttendance.set([]);
-    } finally {
-      this.isLoading.set(false);
     }
   }
 
@@ -205,7 +196,11 @@ export class AttendanceManagementComponent implements OnInit {
     }
 
     try {
-      const students = await this.getStudentsForCourse(courseId);
+      const [students, courseTotalLessons] = await Promise.all([
+        this.getStudentsForCourse(courseId),
+        this.getCourseTotalLessons(courseId),
+      ]);
+
       if (!students.length) {
         this.allStats.set([]);
         return;
@@ -214,16 +209,20 @@ export class AttendanceManagementComponent implements OnInit {
       // Fetch batch virtual classroom progress
       const progressMap = new Map<string, { progressPercent: number; completedLessons: number; totalLessons: number; lastActivityAt: string | null }>();
       try {
-        const studentIdsParam = students.map(s => s.id).join(',');
+        let params = new HttpParams().set('cursoId', courseId);
+        for (const s of students) {
+          params = params.append('estudianteIds', s.id);
+        }
+
         const batchResults = await firstValueFrom(
-          this.http.get<any[]>(`${environment.estudiantesApiUrl}/matricula/aula-virtual-progress/batch?cursoId=${courseId}&estudianteIds=${studentIdsParam}`)
+          this.http.get<any[]>(`${environment.estudiantesApiUrl}/matricula/aula-virtual-progress/batch`, { params })
         );
         if (Array.isArray(batchResults)) {
           batchResults.forEach(r => {
             progressMap.set(r.estudianteId, {
               progressPercent: r.progressPercent ?? 0,
               completedLessons: r.completedLessons ?? 0,
-              totalLessons: r.totalLessons ?? 0,
+              totalLessons: (r.totalLessons && r.totalLessons > 0) ? r.totalLessons : courseTotalLessons,
               lastActivityAt: r.lastActivityAt ?? null,
             });
           });
@@ -235,6 +234,12 @@ export class AttendanceManagementComponent implements OnInit {
       // Parallelize student metric requests with Promise.all
       const statsPromises = students.map(async (student) => {
         const prog = progressMap.get(student.id);
+        const resolvedTotalLessons = (prog?.totalLessons && prog.totalLessons > 0) ? prog.totalLessons : courseTotalLessons;
+        const resolvedCompletedLessons = prog?.completedLessons ?? 0;
+        const calculatedPercent = resolvedTotalLessons > 0 
+          ? Math.round((resolvedCompletedLessons / resolvedTotalLessons) * 100) 
+          : (prog?.progressPercent ?? 0);
+
         try {
           const data = await firstValueFrom(
             this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
@@ -251,9 +256,9 @@ export class AttendanceManagementComponent implements OnInit {
             activos,
             pendientes,
             porcentaje,
-            progressPercent: prog?.progressPercent ?? (prog?.totalLessons ? Math.round((prog.completedLessons / prog.totalLessons) * 100) : 0),
-            completedLessons: prog?.completedLessons ?? 0,
-            totalLessons: prog?.totalLessons ?? 0,
+            progressPercent: calculatedPercent,
+            completedLessons: resolvedCompletedLessons,
+            totalLessons: resolvedTotalLessons,
             lastActivityAt: prog?.lastActivityAt ?? null,
           };
         } catch {
@@ -264,9 +269,9 @@ export class AttendanceManagementComponent implements OnInit {
             activos: 0,
             pendientes: 0,
             porcentaje: 0,
-            progressPercent: prog?.progressPercent ?? 0,
-            completedLessons: prog?.completedLessons ?? 0,
-            totalLessons: prog?.totalLessons ?? 0,
+            progressPercent: calculatedPercent,
+            completedLessons: resolvedCompletedLessons,
+            totalLessons: resolvedTotalLessons,
             lastActivityAt: prog?.lastActivityAt ?? null,
           };
         }
@@ -276,6 +281,27 @@ export class AttendanceManagementComponent implements OnInit {
       this.allStats.set(stats);
     } catch {
       this.allStats.set([]);
+    }
+  }
+
+  private async getCourseTotalLessons(courseId: string): Promise<number> {
+    if (this.courseLessonsCache.has(courseId)) {
+      return this.courseLessonsCache.get(courseId)!;
+    }
+    try {
+      const modules = await firstValueFrom(
+        this.http.get<any[]>(`${environment.cursosApiUrl}/cursos/${courseId}/modulos`)
+      );
+      let total = 0;
+      if (Array.isArray(modules)) {
+        modules.forEach(m => {
+          total += m.lecciones?.length || 0;
+        });
+      }
+      this.courseLessonsCache.set(courseId, total);
+      return total;
+    } catch {
+      return 0;
     }
   }
 
