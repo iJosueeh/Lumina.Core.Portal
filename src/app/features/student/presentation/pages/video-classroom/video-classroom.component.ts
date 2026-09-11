@@ -10,6 +10,7 @@ import { AuthService } from '@core/services/auth.service';
 import { EnrollmentService } from '@features/student/infrastructure/services/enrollment.service';
 import { LayoutService } from '@features/student/domain/services/layout.service';
 import { VideoClassroomService } from '@features/student/infrastructure/services/video-classroom.service';
+import { AttendanceService } from '@features/student/infrastructure/services/attendance.service';
 
 import { ClassroomPlayerComponent } from '@shared/components/features/classroom/classroom-player/classroom-player.component';
 import { ClassroomPlaylistComponent, ClassroomLesson } from '@shared/components/features/classroom/classroom-playlist/classroom-playlist.component';
@@ -43,6 +44,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   private layoutService = inject(LayoutService);
   private videoClassroomService = inject(VideoClassroomService);
   private studentProgressService = inject(StudentProgressService);
+  private attendanceService = inject(AttendanceService);
 
   constructor() {
     effect(() => {
@@ -56,6 +58,11 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
           lessonTitle: lesson.title,
           studentId: studentId || undefined
         });
+
+        if (studentId) {
+          const durationMins = parseInt(lesson.duration || '15', 10) || 15;
+          this.reportActivity('video', lesson.title, durationMins);
+        }
       }
     });
   }
@@ -166,6 +173,10 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
     console.log('[VideoClassroom] Toggle lesson:', lesson.lessonId, '→', nextState);
     this.updateLocalProgress(lesson.lessonId, nextState);
 
+    if (nextState) {
+      this.reportActivity('leccion', lesson.title);
+    }
+
     try {
       console.log('[VideoClassroom] Calling backend:', this.courseId(), lesson.lessonId);
       await lastValueFrom(this.videoClassroomService.updateLessonCompletion(this.courseId(), lesson.lessonId, {
@@ -196,6 +207,23 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
     this.progressStorage.saveLessonProgress(this.courseId(), this.studentId(), lessonId, completed);
   }
 
+  private reportActivity(tipo: 'video' | 'material' | 'leccion' | 'evaluacion', recurso: string, duracionMinutos?: number): void {
+    const studentId = this.studentId();
+    const courseId = this.courseId();
+    if (!studentId || !courseId) return;
+
+    this.attendanceService.registrarActividadAula(
+      studentId,
+      courseId,
+      tipo,
+      recurso,
+      duracionMinutos
+    ).subscribe({
+      next: () => {},
+      error: () => {} // Non-blocking telemetry
+    });
+  }
+
   goBack(): void {
     this.router.navigate(['/student/course', this.courseId()]);
   }
@@ -211,6 +239,7 @@ export class VideoClassroomComponent implements OnInit, OnDestroy {
   }
 
   downloadResource(res: ClassroomResource): void {
+    this.reportActivity('material', res.title);
     window.open(res.url, '_blank');
   }
 }

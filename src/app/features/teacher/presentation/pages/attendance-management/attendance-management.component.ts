@@ -40,6 +40,16 @@ export interface AttendanceCourse {
   titulo: string;
 }
 
+export interface StudentDetailModalData {
+  studentId: string;
+  studentName: string;
+  estado: 'Activo' | 'Pendiente' | null;
+  actividades: ActividadItem[];
+  porcentaje: number;
+  totalLecciones: number;
+  totalMinutos: number;
+}
+
 @Component({
   selector: 'app-attendance-management',
   standalone: true,
@@ -60,6 +70,9 @@ export class AttendanceManagementComponent implements OnInit {
   isSaving = signal(false);
   searchTerm = signal('');
 
+  // Timeline / Student Telemetry Modal
+  selectedStudentDetail = signal<StudentDetailModalData | null>(null);
+
   // Live attendance & metrics
   dateAttendance = signal<AsistenciaRegistro[]>([]);
   allStats = signal<AttendanceStats[]>([]);
@@ -75,6 +88,37 @@ export class AttendanceManagementComponent implements OnInit {
     return stats.filter(s => s.studentName.toLowerCase().includes(term));
   });
 
+  engagementRate = computed(() => {
+    const stats = this.allStats();
+    if (!stats.length) return 0;
+    const activeToday = stats.filter(s => {
+      const reg = this.dateAttendance().find(a => a.estudianteId === s.studentId);
+      return reg?.estado === 'Activo';
+    }).length;
+    return Math.round((activeToday / stats.length) * 100);
+  });
+
+  totalMinutosHoy = computed(() => {
+    let sum = 0;
+    this.dateAttendance().forEach(reg => {
+      const acts = this.parseActividades(reg.observacion);
+      acts.forEach(a => {
+        if (a.d) sum += a.d;
+      });
+    });
+    return sum;
+  });
+
+  activeCountToday = computed(() => {
+    return this.dateAttendance().filter(a => a.estado === 'Activo').length;
+  });
+
+  inactiveCountToday = computed(() => {
+    const total = this.allStats().length;
+    const active = this.activeCountToday();
+    return Math.max(0, total - active);
+  });
+
   averages = computed(() => {
     const stats = this.allStats();
     if (!stats.length) return { promedio: 0, activos: 0, pendientes: 0 };
@@ -87,6 +131,19 @@ export class AttendanceManagementComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.loadCourses();
+  }
+
+  async onRefresh(): Promise<void> {
+    this.isLoading.set(true);
+    try {
+      await Promise.all([
+        this.loadAttendanceForDate(),
+        this.loadAllStats(),
+      ]);
+      this.notification.show('success', 'Telemetría actualizada correctamente.');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   async onCourseChange(): Promise<void> {
@@ -220,12 +277,18 @@ export class AttendanceManagementComponent implements OnInit {
     }
   }
 
-  getEstadoForStudent(studentId: string): 'Activo' | 'Pendiente' | null {
-    return this.dateAttendance().find(a => a.estudianteId === studentId)?.estado ?? null;
+  getEstadoForStudent(studentId: string): 'Activo' | 'Pendiente' {
+    const reg = this.dateAttendance().find(a => a.estudianteId === studentId);
+    return reg ? reg.estado : 'Pendiente';
   }
 
   getObservacionForStudent(studentId: string): string | null {
     return this.dateAttendance().find(a => a.estudianteId === studentId)?.observacion ?? null;
+  }
+
+  getStudentMinutosHoy(studentId: string): number {
+    const acts = this.parseActividades(this.getObservacionForStudent(studentId));
+    return acts.reduce((acc, a) => acc + (a.d || 0), 0);
   }
 
   parseActividades(observacion: string | null): ActividadItem[] {
@@ -277,48 +340,10 @@ export class AttendanceManagementComponent implements OnInit {
         ]);
       }
 
-      this.notification.show('success', `Asistencia actualizada a ${estado}.`);
+      this.notification.show('success', `Estado actualizado a ${estado}.`);
       await this.loadAllStats();
     } catch {
-      this.notification.show('error', 'Error al registrar la asistencia.');
-    }
-  }
-
-  async onMarkAllActive(): Promise<void> {
-    const courseId = this.selectedCourseId();
-    const fecha = this.selectedDate();
-    if (!courseId) return;
-
-    this.isSaving.set(true);
-    try {
-      const students = await this.getStudentsForCourse(courseId);
-      const registros = students.map(s => {
-        const existing = this.dateAttendance().find(a => a.estudianteId === s.id);
-        return {
-          estudianteId: s.id,
-          estado: 'Activo' as const,
-          observacion: existing?.observacion || null,
-        };
-      });
-
-      await firstValueFrom(
-        this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
-          cursoId: courseId,
-          docenteId: this.docenteId,
-          fecha,
-          registros,
-        })
-      );
-
-      await Promise.all([
-        this.loadAttendanceForDate(),
-        this.loadAllStats(),
-      ]);
-      this.notification.show('success', 'Todos los estudiantes fueron marcados como Activos.');
-    } catch {
-      this.notification.show('error', 'Error al guardar la asistencia masiva.');
-    } finally {
-      this.isSaving.set(false);
+      this.notification.show('error', 'Error al actualizar el estado.');
     }
   }
 
@@ -328,16 +353,50 @@ export class AttendanceManagementComponent implements OnInit {
       this.notification.show('info', 'No hay registros para exportar.');
       return;
     }
-    const headers = ['Estudiante', 'Total Lecciones', 'Activos', 'Pendientes', '% Asistencia'];
-    const rows = stats.map(s => [`"${s.studentName}"`, s.total, s.activos, s.pendientes, s.porcentaje + '%']);
+    const headers = ['Estudiante', 'Estado Hoy', 'Minutos Hoy', 'Actividades Hoy', 'Histórico (%)', 'Total Sesiones'];
+    const rows = stats.map(s => {
+      const estado = this.getEstadoForStudent(s.studentId);
+      const minutos = this.getStudentMinutosHoy(s.studentId);
+      const acts = this.parseActividades(this.getObservacionForStudent(s.studentId));
+      const actsText = acts.map(a => `${a.t}: ${a.r}`).join('; ');
+      return [
+        `"${s.studentName}"`,
+        `"${estado}"`,
+        minutos,
+        `"${actsText}"`,
+        `${s.porcentaje}%`,
+        s.total,
+      ];
+    });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `asistencia_${this.selectedDate()}.csv`;
+    link.download = `telemetria_aula_${this.selectedDate()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    this.notification.show('success', 'Reporte CSV descargado correctamente.');
+    this.notification.show('success', 'Reporte CSV de telemetría descargado correctamente.');
+  }
+
+  openStudentDetail(stat: AttendanceStats): void {
+    const observacion = this.getObservacionForStudent(stat.studentId);
+    const actividades = this.parseActividades(observacion);
+    const estado = this.getEstadoForStudent(stat.studentId);
+    const totalMinutos = actividades.reduce((acc, a) => acc + (a.d || 0), 0);
+
+    this.selectedStudentDetail.set({
+      studentId: stat.studentId,
+      studentName: stat.studentName,
+      estado,
+      actividades,
+      porcentaje: stat.porcentaje,
+      totalLecciones: stat.total,
+      totalMinutos,
+    });
+  }
+
+  closeStudentDetail(): void {
+    this.selectedStudentDetail.set(null);
   }
 }
