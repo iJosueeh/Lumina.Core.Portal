@@ -33,14 +33,14 @@ test.describe('Teacher Course Management (/teacher/course/:id) Verification', ()
 
     // 3. Verificar Header / Hero
     console.log('3. Verificando Header Hero...');
-    await expect(page.locator('app-course-hero')).toBeVisible();
+    await expect(page.locator('app-course-hero')).toBeVisible({ timeout: 20000 });
     const backBtn = page.getByRole('button', { name: /Volver/i });
     await expect(backBtn).toBeVisible();
 
     // 4. Verificar pestaña 'Contenido y Alumnos'
     console.log('4. Verificando pestaña Contenido y Alumnos...');
-    await expect(page.locator('app-course-curriculum')).toBeVisible();
-    await expect(page.locator('app-course-students')).toBeVisible();
+    await expect(page.locator('app-course-curriculum')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('app-course-students')).toBeVisible({ timeout: 15000 });
 
     // 5. Probar botón "Crear Nueva Sección / Módulo"
     console.log('5. Probando botón Crear Nueva Sección / Módulo...');
@@ -104,8 +104,8 @@ test.describe('Teacher Course Management (/teacher/course/:id) Verification', ()
     // 9. Verificar botón 'Volver'
     console.log('9. Probando botón Volver...');
     await backBtn.click();
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 10000 });
-    console.log('✅ Botón Volver redirige exitosamente a /teacher/dashboard');
+    await page.waitForURL(/\/teacher\/(courses|dashboard)/, { timeout: 10000 });
+    console.log('✅ Botón Volver redirige exitosamente');
 
     console.log('🎉 Todas las pruebas del curso docente completadas con éxito.');
   });

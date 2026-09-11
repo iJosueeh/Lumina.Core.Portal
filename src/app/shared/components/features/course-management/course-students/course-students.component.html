@@ -11,7 +11,7 @@
     @if (students().length) {
         <div class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
             @for (student of students(); track student.id) {
-                <a [routerLink]="['/teacher/student', student.id]"
+                <a [routerLink]="['/teacher/students']" [queryParams]="{ search: student.nombre }"
                    class="group flex items-center justify-between px-5 py-4 hover:bg-indigo-50/60 transition-all">
                     <!-- Left: Avatar + Name -->
                     <div class="flex items-center gap-3 min-w-0">

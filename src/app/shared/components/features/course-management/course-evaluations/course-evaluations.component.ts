@@ -1,12 +1,11 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EvaluacionApi } from '@shared/models/course-management.models';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-course-evaluations',
   standalone: true,
-  imports: [CommonModule, SkeletonLoaderComponent],
+  imports: [CommonModule],
   templateUrl: './course-evaluations.component.html',
 })
 export class CourseEvaluationsComponent {

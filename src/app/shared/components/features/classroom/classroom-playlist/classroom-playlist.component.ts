@@ -1,7 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonComponent } from '@shared/components/ui/button/button.component';
 
 export interface ClassroomLesson {
   lessonId: string;
@@ -22,7 +21,7 @@ export interface ClassroomSection {
 @Component({
   selector: 'app-classroom-playlist',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './classroom-playlist.component.html',
   styleUrl: './classroom-playlist.component.css'
 })

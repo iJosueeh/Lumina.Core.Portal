@@ -13,7 +13,6 @@ import { NotificationService } from '@shared/services/notification.service';
 import { ClassroomPlayerComponent } from '@shared/components/features/classroom/classroom-player/classroom-player.component';
 import { ClassroomPlaylistComponent } from '@shared/components/features/classroom/classroom-playlist/classroom-playlist.component';
 import { ClassroomResourcesComponent, ClassroomResource } from '@shared/components/features/classroom/classroom-resources/classroom-resources.component';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 import { AddContentModalComponent } from '@shared/components/modals/add-content-modal/add-content-modal.component';
 
 @Component({
@@ -24,7 +23,6 @@ import { AddContentModalComponent } from '@shared/components/modals/add-content-
     ClassroomPlayerComponent, 
     ClassroomPlaylistComponent, 
     ClassroomResourcesComponent, 
-    SkeletonLoaderComponent,
     AddContentModalComponent
   ],
   templateUrl: './video-classroom.component.html',

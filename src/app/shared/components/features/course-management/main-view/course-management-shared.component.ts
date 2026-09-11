@@ -432,7 +432,7 @@ export class CourseManagementSharedComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void { 
-    const target = this.role === 'teacher' ? '/teacher/dashboard' : '/admin/courses';
+    const target = this.role === 'teacher' ? '/teacher/courses' : '/admin/courses';
     this.router.navigate([target]); 
   }
 }
