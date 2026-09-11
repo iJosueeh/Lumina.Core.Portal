@@ -5,16 +5,19 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
+import { NotificationService } from '@shared/services/notification.service';
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
+import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
 import { environment } from '@environments/environment';
 
-interface ActividadItem {
+export interface ActividadItem {
   t: string;
   r: string;
   d?: number;
   h?: string;
 }
 
-interface AsistenciaRegistro {
+export interface AsistenciaRegistro {
   id: string;
   estudianteId: string;
   estado: 'Activo' | 'Pendiente';
@@ -22,7 +25,7 @@ interface AsistenciaRegistro {
   fecha: string;
 }
 
-interface AttendanceStats {
+export interface AttendanceStats {
   studentId: string;
   studentName: string;
   total: number;
@@ -31,7 +34,7 @@ interface AttendanceStats {
   porcentaje: number;
 }
 
-interface AttendanceCourse {
+export interface AttendanceCourse {
   id: string;
   codigo: string;
   titulo: string;
@@ -40,34 +43,34 @@ interface AttendanceCourse {
 @Component({
   selector: 'app-attendance-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent, StatCardComponent],
   templateUrl: './attendance-management.component.html',
 })
 export class AttendanceManagementComponent implements OnInit {
   private http = inject(HttpClient);
   private authRepo = inject(AuthRepository);
   private teacherQuery = inject(TeacherQueryService);
+  private notification = inject(NotificationService);
 
   // State
   courses = signal<AttendanceCourse[]>([]);
   selectedCourseId = signal<string>('');
-  selectedDate = signal<string>(new Date().toISOString().slice(0, 10));
+  selectedDate = signal<string>(new Date().toLocaleDateString('sv'));
   isLoading = signal(false);
   isSaving = signal(false);
-  saveSuccess = signal(false);
   searchTerm = signal('');
 
-  // Live attendance
+  // Live attendance & metrics
   dateAttendance = signal<AsistenciaRegistro[]>([]);
   allStats = signal<AttendanceStats[]>([]);
 
-  // Private state
+  // Private cache
   private docenteId = '';
   private studentsCache = new Map<string, { id: string; nombre: string }[]>();
 
   filteredStats = computed(() => {
     const stats = this.allStats();
-    const term = this.searchTerm().toLowerCase();
+    const term = this.searchTerm().toLowerCase().trim();
     if (!term) return stats;
     return stats.filter(s => s.studentName.toLowerCase().includes(term));
   });
@@ -88,8 +91,10 @@ export class AttendanceManagementComponent implements OnInit {
 
   async onCourseChange(): Promise<void> {
     this.dateAttendance.set([]);
-    await this.loadAttendanceForDate();
-    await this.loadAllStats();
+    await Promise.all([
+      this.loadAttendanceForDate(),
+      this.loadAllStats(),
+    ]);
   }
 
   async onDateChange(): Promise<void> {
@@ -109,11 +114,13 @@ export class AttendanceManagementComponent implements OnInit {
 
       if (this.courses().length > 0) {
         this.selectedCourseId.set(this.courses()[0].id);
-        await this.loadAttendanceForDate();
-        await this.loadAllStats();
+        await Promise.all([
+          this.loadAttendanceForDate(),
+          this.loadAllStats(),
+        ]);
       }
-    } catch (err) {
-
+    } catch {
+      this.notification.show('error', 'Error al cargar los cursos asignados.');
     }
   }
 
@@ -144,29 +151,50 @@ export class AttendanceManagementComponent implements OnInit {
 
   private async loadAllStats(): Promise<void> {
     const courseId = this.selectedCourseId();
-    if (!courseId) return;
+    if (!courseId) {
+      this.allStats.set([]);
+      return;
+    }
 
     try {
       const students = await this.getStudentsForCourse(courseId);
-      const stats: AttendanceStats[] = [];
+      if (!students.length) {
+        this.allStats.set([]);
+        return;
+      }
 
-      for (const student of students) {
+      // Parallelize student metric requests with Promise.all
+      const statsPromises = students.map(async (student) => {
         try {
           const data = await firstValueFrom(
             this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
           );
-          stats.push({
+          const activos = data?.activos ?? data?.presentes ?? 0;
+          const pendientes = data?.pendientes ?? data?.ausentes ?? 0;
+          const total = data?.totalClases ?? (activos + pendientes);
+          const porcentaje = data?.porcentajeAsistencia ?? (total > 0 ? Math.round((activos / total) * 100) : 0);
+
+          return {
             studentId: student.id,
             studentName: student.nombre,
-            total: data.totalClases ?? 0,
-            activos: data.presentes ?? 0, // "Presente" backend → "Activo" frontend
-            pendientes: data.ausentes ?? 0, // "Ausente" backend → "Pendiente" frontend
-            porcentaje: data.porcentajeAsistencia ?? 0,
-          });
+            total,
+            activos,
+            pendientes,
+            porcentaje,
+          };
         } catch {
-          // Student has no attendance records yet
+          return {
+            studentId: student.id,
+            studentName: student.nombre,
+            total: 0,
+            activos: 0,
+            pendientes: 0,
+            porcentaje: 0,
+          };
         }
-      }
+      });
+
+      const stats = await Promise.all(statsPromises);
       this.allStats.set(stats);
     } catch {
       this.allStats.set([]);
@@ -214,71 +242,81 @@ export class AttendanceManagementComponent implements OnInit {
   async onEstadoChange(studentId: string, estado: 'Activo' | 'Pendiente'): Promise<void> {
     const existing = this.dateAttendance().find(a => a.estudianteId === studentId);
     const courseId = this.selectedCourseId();
+    const fecha = this.selectedDate();
 
-    if (existing) {
-      await firstValueFrom(
-        this.http.put<any>(
-          `${environment.estudiantesApiUrl}/asistencias/${existing.id}`,
-          { asistenciaId: existing.id, estado, observacion: existing.observacion }
-        )
-      );
-      this.dateAttendance.update(list =>
-        list.map(a => a.estudianteId === studentId ? { ...a, estado } : a)
-      );
-    } else {
-      const result = await firstValueFrom(
-        this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
-          cursoId: courseId,
-          docenteId: this.docenteId,
-          fecha: this.selectedDate(),
-          registros: [{ estudianteId: studentId, estado, observacion: null }],
-        })
-      );
-      const updated = [...this.dateAttendance()];
-      updated.push({
-        id: (result as any).registros?.[0]?.id || crypto.randomUUID(),
-        estudianteId: studentId,
-        estado,
-        observacion: null,
-        fecha: this.selectedDate(),
-      });
-      this.dateAttendance.set(updated);
+    try {
+      if (existing) {
+        await firstValueFrom(
+          this.http.put<any>(
+            `${environment.estudiantesApiUrl}/asistencias/${existing.id}`,
+            { asistenciaId: existing.id, estado, observacion: existing.observacion }
+          )
+        );
+        this.dateAttendance.update(list =>
+          list.map(a => a.estudianteId === studentId ? { ...a, estado } : a)
+        );
+      } else {
+        const result = await firstValueFrom(
+          this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
+            cursoId: courseId,
+            docenteId: this.docenteId,
+            fecha,
+            registros: [{ estudianteId: studentId, estado, observacion: null }],
+          })
+        );
+        const newId = (result as any)?.registros?.[0]?.id || (result as any)?.id || crypto.randomUUID();
+        this.dateAttendance.update(list => [
+          ...list,
+          {
+            id: newId,
+            estudianteId: studentId,
+            estado,
+            observacion: null,
+            fecha,
+          }
+        ]);
+      }
+
+      this.notification.show('success', `Asistencia actualizada a ${estado}.`);
+      await this.loadAllStats();
+    } catch {
+      this.notification.show('error', 'Error al registrar la asistencia.');
     }
-
-    await this.loadAllStats();
-
-    this.saveSuccess.set(true);
-    setTimeout(() => this.saveSuccess.set(false), 3000);
   }
 
-  async onSaveAll(): Promise<void> {
+  async onMarkAllActive(): Promise<void> {
     const courseId = this.selectedCourseId();
     const fecha = this.selectedDate();
     if (!courseId) return;
 
-    const students = await this.getStudentsForCourse(courseId);
-    const registros = students.map(s => {
-      const existing = this.dateAttendance().find(a => a.estudianteId === s.id);
-      return {
-        estudianteId: s.id,
-        estado: existing?.estado || 'Pendiente',
-        observacion: existing?.observacion || null,
-      };
-    });
-
     this.isSaving.set(true);
     try {
+      const students = await this.getStudentsForCourse(courseId);
+      const registros = students.map(s => {
+        const existing = this.dateAttendance().find(a => a.estudianteId === s.id);
+        return {
+          estudianteId: s.id,
+          estado: 'Activo' as const,
+          observacion: existing?.observacion || null,
+        };
+      });
+
       await firstValueFrom(
         this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
-          cursoId: courseId, docenteId: this.docenteId, fecha, registros,
+          cursoId: courseId,
+          docenteId: this.docenteId,
+          fecha,
+          registros,
         })
       );
-      await this.loadAttendanceForDate();
-      await this.loadAllStats();
-      this.saveSuccess.set(true);
-      setTimeout(() => this.saveSuccess.set(false), 3000);
-    } catch (err) {
 
+      await Promise.all([
+        this.loadAttendanceForDate(),
+        this.loadAllStats(),
+      ]);
+      this.notification.show('success', 'Todos los estudiantes fueron marcados como Activos.');
+    } catch {
+      this.notification.show('error', 'Error al guardar la asistencia masiva.');
     } finally {
       this.isSaving.set(false);
     }
@@ -286,8 +324,11 @@ export class AttendanceManagementComponent implements OnInit {
 
   exportToCSV(): void {
     const stats = this.filteredStats();
-    if (!stats.length) return;
-    const headers = ['Estudiante', 'Total', 'Activos', 'Pendientes', '%'];
+    if (!stats.length) {
+      this.notification.show('info', 'No hay registros para exportar.');
+      return;
+    }
+    const headers = ['Estudiante', 'Total Lecciones', 'Activos', 'Pendientes', '% Asistencia'];
     const rows = stats.map(s => [`"${s.studentName}"`, s.total, s.activos, s.pendientes, s.porcentaje + '%']);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -297,5 +338,6 @@ export class AttendanceManagementComponent implements OnInit {
     link.download = `asistencia_${this.selectedDate()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    this.notification.show('success', 'Reporte CSV descargado correctamente.');
   }
 }
