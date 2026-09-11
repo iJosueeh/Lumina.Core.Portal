@@ -1,171 +1,363 @@
 <div class="min-h-screen bg-gray-50 text-slate-900 font-sans">
 
   <!-- Header -->
-  <header class="bg-white border-b border-slate-200 z-20">
-    <div class="max-w-5xl mx-auto px-6 py-6 flex items-center gap-4">
-      <button
-        (click)="goBack()"
-        class="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors">
-        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <div>
-        <h1 class="text-xl font-bold text-slate-900">Detalle del Estudiante</h1>
-        <p class="text-slate-500 text-sm">Información académica y evaluaciones</p>
-      </div>
-    </div>
-  </header>
+  <app-page-header
+    badge="Expediente Académico"
+    title="Detalle del Estudiante"
+    subtitle="Seguimiento de rendimiento, cumplimiento de evaluaciones y métricas por asignatura">
+    <button
+      (click)="goBack()"
+      class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm cursor-pointer">
+      <i class="fas fa-arrow-left text-xs text-slate-400"></i>
+      Volver a Alumnos
+    </button>
+  </app-page-header>
 
-  <!-- Main -->
-  <main class="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
-    <!-- Loading -->
+    <!-- Loading State -->
     @if (isLoading()) {
-      <div class="flex items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+      <div class="space-y-6 animate-pulse">
+        <div class="h-44 bg-white rounded-2xl border border-slate-200 p-6"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="h-32 bg-white rounded-2xl border border-slate-200"></div>
+          <div class="h-32 bg-white rounded-2xl border border-slate-200"></div>
+          <div class="h-32 bg-white rounded-2xl border border-slate-200"></div>
+        </div>
+        <div class="h-64 bg-white rounded-2xl border border-slate-200"></div>
       </div>
     }
 
-    <!-- Error -->
+    <!-- Error State -->
     @if (!isLoading() && errorMsg()) {
-      <div class="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-sm">
-        <svg class="w-14 h-14 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <p class="text-lg text-red-500 font-medium">{{ errorMsg() }}</p>
+      <div class="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-sm max-w-lg mx-auto my-12">
+        <div class="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100">
+          <i class="fas fa-exclamation-triangle text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">No se pudo cargar el estudiante</h3>
+        <p class="text-sm text-slate-500 mb-6">{{ errorMsg() }}</p>
         <button
           (click)="goBack()"
-          class="mt-4 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors text-sm"
-        >Volver</button>
+          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all text-sm shadow-sm">
+          Volver a la lista
+        </button>
       </div>
     }
 
-    <!-- Content -->
-    @if (!isLoading() && !errorMsg() && studentInfo()) {
-      <!-- Student Card -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          <!-- Avatar -->
-          <img
-            [src]="studentInfo()!.avatar"
-            [alt]="studentInfo()!.nombreCompleto"
-            class="w-20 h-20 rounded-xl object-cover border-2 border-slate-100 flex-shrink-0"
-          />
-          <!-- Info -->
-          <div class="flex-1 text-center sm:text-left">
-            <h2 class="text-xl font-bold text-slate-900">{{ studentInfo()!.nombreCompleto }}</h2>
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2">
-              <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-mono border border-indigo-200">
-                {{ studentInfo()!.codigo }}
-              </span>
-              @if (studentInfo()!.email) {
-                <span class="text-slate-500 text-sm flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {{ studentInfo()!.email }}
-                </span>
-              }
+    <!-- Content Loaded -->
+    @if (!isLoading() && !errorMsg() && studentInfo(); as info) {
+
+      <!-- Student Hero Card -->
+      <section class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+
+          <!-- Left Info: Avatar + Details -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 min-w-0">
+            <!-- Avatar -->
+            <div class="relative flex-shrink-0">
+              <img
+                [src]="info.avatar"
+                [alt]="info.nombreCompleto"
+                class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-slate-100 shadow-sm"
+              />
+              <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white bg-green-500" title="Matriculado"></div>
             </div>
-            <!-- Courses tags -->
-            @if (studentCourseNames().length > 0) {
-              <div class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
-                @for (course of studentCourseNames(); track course) {
-                  <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-lg text-xs border border-slate-200">
-                    {{ course }}
-                  </span>
+
+            <!-- Identidad -->
+            <div class="space-y-1.5 min-w-0">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate">
+                  {{ info.nombreCompleto }}
+                </h2>
+                <app-status-badge status="Activo"></app-status-badge>
+              </div>
+
+              <!-- Código y Email -->
+              <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-500">
+                <button
+                  (click)="copyCode(info.codigo)"
+                  title="Copiar código de estudiante"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-bold text-xs transition-colors cursor-pointer">
+                  <i class="fas fa-id-badge text-indigo-500"></i>
+                  <span>{{ info.codigo }}</span>
+                  <i class="fas fa-copy text-[10px] text-slate-400 ml-0.5"></i>
+                </button>
+
+                @if (info.email) {
+                  <a [href]="'mailto:' + info.email"
+                     class="inline-flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 transition-colors font-medium">
+                    <i class="fas fa-envelope text-indigo-500"></i>
+                    <span class="truncate max-w-[220px] sm:max-w-xs">{{ info.email }}</span>
+                  </a>
                 }
               </div>
+
+              <!-- Cursos Asignados Tags -->
+              @if (studentCourses().length > 0) {
+                <div class="flex flex-wrap items-center gap-2 pt-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cursos:</span>
+                  @for (c of studentCourses(); track c.id) {
+                    <a [routerLink]="['/teacher/course', c.id]"
+                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold border border-indigo-100 transition-colors">
+                      <i class="fas fa-book-open text-[10px]"></i>
+                      <span class="truncate max-w-[180px]">{{ c.nombre }}</span>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Quick Actions Right -->
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+            <a routerLink="/teacher/grades"
+               class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 text-slate-700 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+              <i class="fas fa-chart-line"></i>
+              Calificaciones
+            </a>
+            @if (info.email) {
+              <a [href]="'mailto:' + info.email"
+                 class="flex-1 sm:flex-none px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                Contactar
+              </a>
+            }
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Rendimiento Académico / KPI Grid (3 Tarjetas) -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+
+        <!-- 1. Promedio General -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Promedio General</span>
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <i class="fas fa-graduation-cap text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-black text-slate-900">
+                {{ promedioValue() > 0 ? (promedioValue() | number: '1.1-1') : '—' }}
+              </span>
+              <span class="text-sm font-bold text-slate-400">/ 20</span>
+            </div>
+
+            <!-- Barra de Avance -->
+            <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all duration-500"
+                [class.bg-green-500]="promedioValue() >= 14"
+                [class.bg-indigo-500]="promedioValue() >= 11 && promedioValue() < 14"
+                [class.bg-orange-500]="promedioValue() > 0 && promedioValue() < 11"
+                [class.bg-slate-300]="promedioValue() === 0"
+                [style.width.%]="promedioPorcentaje()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Pill -->
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span
+              class="px-2.5 py-1 rounded-lg text-xs font-bold border"
+              [ngClass]="[promedioPerformanceLabel().bg, promedioPerformanceLabel().color, promedioPerformanceLabel().border]">
+              {{ promedioPerformanceLabel().label }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-semibold">{{ promedioPorcentaje() }}% de escala</span>
+          </div>
+        </div>
+
+        <!-- 2. Cumplimiento de Evaluaciones -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cumplimiento</span>
+              <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <i class="fas fa-tasks text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-black text-slate-900">
+                {{ promedioData()?.evaluacionesCompletadas ?? 0 }}
+              </span>
+              <span class="text-sm font-bold text-slate-400">
+                de {{ promedioData()?.totalEvaluaciones ?? evaluaciones().length }} rendidas
+              </span>
+            </div>
+
+            <!-- Barra de Avance -->
+            <div class="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+              <div class="h-full bg-blue-500 rounded-full transition-all duration-500"
+                   [style.width.%]="cumplimientoPorcentaje()">
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">
+              {{ cumplimientoPorcentaje() }}% Completado
+            </span>
+            <span class="text-[10px] text-slate-400 font-semibold">
+              {{ ((promedioData()?.totalEvaluaciones ?? 0) - (promedioData()?.evaluacionesCompletadas ?? 0)) }} pendientes
+            </span>
+          </div>
+        </div>
+
+        <!-- 3. Rango de Notas -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rango de Calificaciones</span>
+              <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                <i class="fas fa-chart-bar text-xs"></i>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-1">
+              <div class="bg-green-50/70 border border-green-100 rounded-xl p-3 text-center">
+                <p class="text-[9px] font-bold text-green-700 uppercase tracking-wider mb-0.5">
+                  <i class="fas fa-arrow-up text-[8px] mr-1"></i> Máxima
+                </p>
+                <p class="text-xl font-black text-green-700">
+                  {{ promedioData()?.notaMasAlta != null ? (promedioData()!.notaMasAlta! | number: '1.1-1') : '—' }}
+                </p>
+              </div>
+
+              <div class="bg-amber-50/70 border border-amber-100 rounded-xl p-3 text-center">
+                <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-0.5">
+                  <i class="fas fa-arrow-down text-[8px] mr-1"></i> Mínima
+                </p>
+                <p class="text-xl font-black text-amber-700">
+                  {{ promedioData()?.notaMasBaja != null ? (promedioData()!.notaMasBaja! | number: '1.1-1') : '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 text-center">
+            <span class="text-[11px] font-semibold text-slate-500">
+              Desempeño registrado en el periodo actual
+            </span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Tabla de Evaluaciones Asociadas -->
+      <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+
+        <!-- Cabecera de la sección & Filtros -->
+        <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900">Registro de Evaluaciones</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Historial de exámenes, tareas y proyectos correspondientes a sus asignaturas</p>
+          </div>
+
+          <!-- Buscador y Filtro -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <!-- Search -->
+            <div class="relative">
+              <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input
+                type="text"
+                [ngModel]="evaluationsSearch()"
+                (ngModelChange)="evaluationsSearch.set($event)"
+                placeholder="Buscar evaluación..."
+                class="w-full sm:w-56 bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+            </div>
+
+            <!-- Selector de Curso si hay más de 1 curso -->
+            @if (studentCourses().length > 1) {
+              <select
+                [ngModel]="selectedCourseFilter()"
+                (ngModelChange)="selectedCourseFilter.set($event)"
+                class="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                <option value="all">Todos los Cursos</option>
+                @for (c of studentCourses(); track c.id) {
+                  <option [value]="c.id">{{ c.nombre }}</option>
+                }
+              </select>
             }
           </div>
         </div>
-      </div>
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Promedio</p>
-          <p class="text-2xl font-bold" [ngClass]="promedioColor()">
-            {{ promedioData() ? (promedioData()!.promedioGeneral | number: '1.1-1') : '—' }}
-          </p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Eval.</p>
-          <p class="text-2xl font-bold text-slate-900">{{ promedioData()?.totalEvaluaciones ?? evaluaciones().length }}</p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Completadas</p>
-          <p class="text-2xl font-bold text-indigo-600">{{ promedioData()?.evaluacionesCompletadas ?? 0 }}</p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nota más alta</p>
-          <p class="text-2xl font-bold text-green-600">
-            {{ promedioData()?.notaMasAlta != null ? (promedioData()!.notaMasAlta! | number: '1.1-1') : '—' }}
-          </p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nota más baja</p>
-          <p class="text-2xl font-bold text-red-500">
-            {{ promedioData()?.notaMasBaja != null ? (promedioData()!.notaMasBaja! | number: '1.1-1') : '—' }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Evaluaciones -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div class="p-5 border-b border-slate-100">
-          <h3 class="text-base font-bold text-slate-900">Evaluaciones</h3>
-          <p class="text-sm text-slate-500 mt-0.5">{{ evaluaciones().length }} evaluaciones asociadas</p>
-        </div>
-
-        @if (evaluaciones().length === 0) {
-          <div class="py-12 text-center text-slate-400">
-            <svg class="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p class="text-sm">Sin evaluaciones registradas</p>
+        <!-- Tabla -->
+        @if (filteredEvaluaciones().length === 0) {
+          <div class="py-16 text-center text-slate-400 px-4">
+            <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-slate-200">
+              <i class="fas fa-clipboard-list text-xl text-slate-400"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-700 mb-1">Sin evaluaciones disponibles</h4>
+            <p class="text-xs text-slate-400 max-w-xs mx-auto">No se encontraron actividades de evaluación registradas bajo los criterios seleccionados.</p>
           </div>
         } @else {
           <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-slate-50">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50/80 border-b border-slate-100">
                 <tr>
-                  <th class="px-6 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Evaluación</th>
-                  <th class="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tipo</th>
-                  <th class="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado</th>
-                  <th class="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Puntaje Máx.</th>
-                  <th class="px-4 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha Límite</th>
+                  <th class="px-6 py-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actividad / Título</th>
+                  <th class="px-4 py-3.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tipo</th>
+                  <th class="px-4 py-3.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Puntaje Máximo</th>
+                  <th class="px-4 py-3.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha Límite</th>
+                  <th class="px-6 py-3.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                @for (ev of evaluaciones(); track ev.id) {
-                  <tr class="hover:bg-slate-50 transition-colors">
+                @for (ev of filteredEvaluaciones(); track ev.id) {
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <!-- Título -->
                     <td class="px-6 py-4">
-                      <p class="text-sm font-medium text-slate-900">{{ ev.titulo }}</p>
+                      <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                          <i class="fas fa-file-signature text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                          <p class="text-sm font-bold text-slate-900 truncate">{{ ev.titulo }}</p>
+                          <p class="text-[10px] text-slate-400 font-medium">{{ getTipoLabel(ev.tipoEvaluacion) }}</p>
+                        </div>
+                      </div>
                     </td>
+
+                    <!-- Tipo -->
                     <td class="px-4 py-4 text-center">
-                      <span class="px-2 py-1 rounded-lg text-xs bg-slate-100 text-slate-600 border border-slate-200">
+                      <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                         {{ getTipoLabel(ev.tipoEvaluacion) }}
                       </span>
                     </td>
-                    <td class="px-4 py-4 text-center">
-                      <span class="px-2 py-1 rounded-lg text-xs" [ngClass]="getEstadoColor(ev.estado)">
+
+                    <!-- Puntaje Máximo -->
+                    <td class="px-4 py-4 text-center text-sm font-bold text-slate-800">
+                      {{ ev.puntajeMaximo }} pts
+                    </td>
+
+                    <!-- Fecha Límite -->
+                    <td class="px-4 py-4 text-center text-xs font-medium text-slate-500">
+                      <div class="inline-flex items-center gap-1.5">
+                        <i class="far fa-calendar-alt text-slate-400"></i>
+                        <span>{{ formatDate(ev.fechaFin) }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Estado -->
+                    <td class="px-6 py-4 text-center">
+                      <span class="px-2.5 py-1 rounded-lg text-xs font-bold border inline-block"
+                            [ngClass]="getEstadoColor(ev.estado)">
                         {{ ev.estado }}
                       </span>
                     </td>
-                    <td class="px-4 py-4 text-center text-sm text-slate-600">{{ ev.puntajeMaximo }}</td>
-                    <td class="px-4 py-4 text-center text-sm text-slate-500">{{ formatDate(ev.fechaFin) }}</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
         }
-      </div>
+      </section>
+
     }
   </main>
 </div>
+

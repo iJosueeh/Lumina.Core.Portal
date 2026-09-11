@@ -1,11 +1,15 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
+import { NotificationService } from '@shared/services/notification.service';
+import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
+import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-badge.component';
 import { environment } from '@environments/environment';
 
 interface PromedioResponse {
@@ -19,6 +23,7 @@ interface PromedioResponse {
 
 interface EvaluacionItem {
   id: string;
+  cursoId?: string;
   titulo: string;
   tipoEvaluacion: string;
   estado: string;
@@ -34,13 +39,14 @@ interface StudentInfo {
   email: string;
   codigo: string;
   avatar: string;
+  estado?: string;
   cursos: string[];
 }
 
 @Component({
   selector: 'app-student-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PageHeaderComponent, StatusBadgeComponent],
   templateUrl: './student-detail.component.html',
   styles: ``,
 })
@@ -50,6 +56,7 @@ export class StudentDetailComponent implements OnInit {
   private http = inject(HttpClient);
   private authRepo = inject(AuthRepository);
   private teacherQuery = inject(TeacherQueryService);
+  private notification = inject(NotificationService);
 
   studentId = signal('');
   studentInfo = signal<StudentInfo | null>(null);
@@ -59,21 +66,74 @@ export class StudentDetailComponent implements OnInit {
   isLoading = signal(true);
   errorMsg = signal('');
 
+  selectedCourseFilter = signal<string>('all');
+  evaluationsSearch = signal<string>('');
+
   private docenteId = '';
   private userId = '';
 
-  studentCourseNames = computed(() => {
+  studentCourses = computed(() => {
     const info = this.studentInfo();
     if (!info) return [];
     const map = this.courseNames();
-    return info.cursos.map((id) => map.get(id) ?? null).filter(Boolean) as string[];
+    return info.cursos.map((id) => ({
+      id,
+      nombre: map.get(id) || 'Curso Asignado'
+    }));
   });
 
-  promedioColor = computed(() => {
-    const p = this.promedioData()?.promedioGeneral ?? 0;
-    if (p >= 14) return 'text-green-600';
-    if (p >= 10.5) return 'text-orange-500';
-    return p > 0 ? 'text-red-500' : 'text-slate-400';
+  studentCourseNames = computed(() => {
+    return this.studentCourses().map(c => c.nombre);
+  });
+
+  studentInitials = computed(() => {
+    const info = this.studentInfo();
+    if (!info) return 'E';
+    const n = (info.nombre || '').trim().charAt(0);
+    const a = (info.apellidos || '').trim().charAt(0);
+    return (n + a).toUpperCase() || 'E';
+  });
+
+  promedioValue = computed(() => {
+    return this.promedioData()?.promedioGeneral ?? 0;
+  });
+
+  promedioPorcentaje = computed(() => {
+    const p = this.promedioValue();
+    return Math.min(100, Math.max(0, Math.round((p / 20) * 100)));
+  });
+
+  promedioPerformanceLabel = computed(() => {
+    const p = this.promedioValue();
+    if (p >= 14) return { label: 'Rendimiento Destacado', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
+    if (p >= 11) return { label: 'Rendimiento Regular', color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' };
+    if (p > 0) return { label: 'En Riesgo Académico', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' };
+    return { label: 'Sin Calificaciones', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-200' };
+  });
+
+  cumplimientoPorcentaje = computed(() => {
+    const data = this.promedioData();
+    if (!data || !data.totalEvaluaciones) return 0;
+    return Math.min(100, Math.round((data.evaluacionesCompletadas / data.totalEvaluaciones) * 100));
+  });
+
+  filteredEvaluaciones = computed(() => {
+    let list = this.evaluaciones();
+    const course = this.selectedCourseFilter();
+    const search = this.evaluationsSearch().toLowerCase().trim();
+
+    if (course !== 'all') {
+      list = list.filter(e => e.cursoId === course);
+    }
+
+    if (search) {
+      list = list.filter(e =>
+        e.titulo.toLowerCase().includes(search) ||
+        e.tipoEvaluacion.toLowerCase().includes(search)
+      );
+    }
+
+    return list;
   });
 
   ngOnInit(): void {
@@ -197,6 +257,15 @@ export class StudentDetailComponent implements OnInit {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('es-ES', {
       day: '2-digit', month: 'short', year: 'numeric',
+    });
+  }
+
+  copyCode(code: string): void {
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+      this.notification.show('success', 'Código copiado al portapapeles.');
+    }).catch(() => {
+      this.notification.show('info', `Código: ${code}`);
     });
   }
 }

@@ -10,7 +10,7 @@ test.describe('Teacher Students List & Detail QA Audit (/teacher/students & /tea
 
     // 1. Iniciar sesión como docente
     console.log('1. Autenticando docente...');
-    await page.goto(`${baseUrl}/login`, { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
     await page.fill('input[type="email"], input#username, input[name="username"]', teacherEmail);
     await page.fill('input[type="password"], input#password, input[name="password"]', teacherPassword);
     await page.click('button[type="submit"]');
@@ -19,7 +19,7 @@ test.describe('Teacher Students List & Detail QA Audit (/teacher/students & /tea
 
     // 2. Navegar a /teacher/students
     console.log('2. Navegando a /teacher/students...');
-    await page.goto(`${baseUrl}/teacher/students`, { waitUntil: 'domcontentloaded' });
+    await page.goto('/teacher/students', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // 3. Verificar Header y Estadísticas
@@ -79,10 +79,10 @@ test.describe('Teacher Students List & Detail QA Audit (/teacher/students & /tea
       // 7. Verificar Vista Detalle del Estudiante
       console.log('7. Verificando vista detalle del estudiante...');
       await expect(page.getByRole('heading', { name: /Detalle del Estudiante/i })).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('.animate-spin')).not.toBeVisible({ timeout: 25000 });
+      await expect(page.locator('.animate-pulse')).not.toBeVisible({ timeout: 25000 });
 
       // Probar botón Volver
-      const backBtn = page.getByRole('button').first();
+      const backBtn = page.getByRole('button', { name: /Volver/i });
       await backBtn.click();
       await page.waitForURL(/\/teacher\/students/, { timeout: 15000 });
       console.log('✅ Botón Volver redirige correctamente a /teacher/students.');
