@@ -155,7 +155,7 @@ export class QuestionEditorComponent implements OnInit {
 
     this.isSaving.set(true);
     try {
-      for (const q of existingQuestions) {
+      const updatePromises = existingQuestions.map(q => {
         const updateBody = {
           texto: q.texto,
           puntos: q.puntos,
@@ -164,10 +164,10 @@ export class QuestionEditorComponent implements OnInit {
           imagenUrl: null,
           opciones: q.opciones.map((o, oIdx) => ({ texto: o.texto, esCorrecta: o.esCorrecta, orden: oIdx + 1 })),
         };
-        await firstValueFrom(this.http.put(`${environment.evaluacionesApiUrl}/evaluaciones/${this.quizzId}/preguntas/${q.id}`, updateBody));
-      }
+        return firstValueFrom(this.http.put(`${environment.evaluacionesApiUrl}/evaluaciones/${this.quizzId}/preguntas/${q.id}`, updateBody));
+      });
 
-      for (const { q, orden } of newQuestionsWithOrder) {
+      const createPromises = newQuestionsWithOrder.map(({ q, orden }) => {
         const createBody = {
           evaluacionId: this.quizzId,
           tipoPregunta: 1, // OpcionMultiple
@@ -178,14 +178,15 @@ export class QuestionEditorComponent implements OnInit {
           respuestaCorrecta: null,
           opciones: q.opciones.map((o, oIdx) => ({ texto: o.texto, esCorrecta: o.esCorrecta, orden: oIdx + 1 })),
         };
-        await firstValueFrom(this.http.post(`${environment.evaluacionesApiUrl}/evaluaciones/${this.quizzId}/preguntas`, createBody));
-      }
+        return firstValueFrom(this.http.post(`${environment.evaluacionesApiUrl}/evaluaciones/${this.quizzId}/preguntas`, createBody));
+      });
+
+      await Promise.all([...updatePromises, ...createPromises]);
 
       this.notificationService.show('success', 'Preguntas guardadas correctamente.');
       this.onSaved.emit();
       this.onClose.emit();
-    } catch (err) {
-
+    } catch {
       this.notificationService.show('error', 'Ocurrió un error al guardar las preguntas.');
     } finally {
       this.isSaving.set(false);

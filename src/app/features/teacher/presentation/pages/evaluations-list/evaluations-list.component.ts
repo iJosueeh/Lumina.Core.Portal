@@ -14,6 +14,7 @@ import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.mo
 import { EvaluationMapper } from '../../../infrastructure/mappers/evaluation.mapper';
 
 import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
+import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
 import { EvaluationFilterComponent } from './components/evaluation-filter/evaluation-filter.component';
 import { EvaluationCardComponent } from './components/evaluation-card/evaluation-card.component';
 import { EvaluacionModalComponent } from '@shared/components/modals/evaluacion-modal/evaluacion-modal.component';
@@ -25,6 +26,7 @@ import { QuestionEditorComponent } from '../course-management/components/questio
   imports: [
     CommonModule,
     PageHeaderComponent,
+    StatCardComponent,
     EvaluationFilterComponent,
     EvaluationCardComponent,
     EvaluacionModalComponent,
@@ -46,6 +48,10 @@ export class EvaluationsListComponent implements OnInit {
   searchTerm = signal('');
   isLoading = signal(true);
 
+  // Create modal
+  showCreateModal = signal(false);
+  selectedCourseIdForCreate = signal('');
+
   // Edit modal
   showEditModal = signal(false);
   selectedEvalToEdit = signal<EvaluacionApi | null>(null);
@@ -60,6 +66,11 @@ export class EvaluationsListComponent implements OnInit {
   evaluacionToDelete = signal<{ id: string; titulo: string } | null>(null);
 
   private userId = this.authRepository.getCurrentUser()?.id ?? '';
+
+  totalEvaluaciones = computed(() => this.evaluaciones().length);
+  publicadasCount = computed(() => this.evaluaciones().filter((e) => e.estado === 'Publicada').length);
+  pendientesCount = computed(() => this.evaluaciones().filter((e) => e.estado === 'Pendiente' || e.estado === 'Borrador').length);
+  cursosConEvaluaciones = computed(() => new Set(this.evaluaciones().map((e) => e.cursoId)).size);
 
   filteredEvaluaciones = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -131,6 +142,27 @@ export class EvaluationsListComponent implements OnInit {
       },
       error: () => this.isLoading.set(false),
     });
+  }
+
+  // ─── Create Evaluation ──────────────────────────────────
+  openCreateModal(): void {
+    const courseList = this.courses();
+    if (courseList.length === 0) {
+      this.notificationService.show('info', 'No tienes asignaturas disponibles para crear evaluaciones.');
+      return;
+    }
+
+    const currentFilter = this.selectedCourseId();
+    const defaultCourseId = currentFilter !== 'all' ? currentFilter : courseList[0].id;
+    this.selectedCourseIdForCreate.set(defaultCourseId);
+    this.showCreateModal.set(true);
+  }
+
+  onCreateSaved(data: { id: string; titulo: string }): void {
+    this.showCreateModal.set(false);
+    this.selectedCourseIdForCreate.set('');
+    this.loadAllEvaluations(this.courses());
+    this.openQuestionEditor(data.id);
   }
 
   // ─── Edit Evaluation ───────────────────────────────────

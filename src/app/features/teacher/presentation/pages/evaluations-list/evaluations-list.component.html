@@ -4,10 +4,55 @@
   <app-page-header
     badge="Banco de Evaluaciones"
     title="Mis Evaluaciones"
-    subtitle="Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos" />
+    subtitle="Consulta, edita y gestiona todos los exámenes y tareas programadas en tus cursos">
+    <button
+      type="button"
+      (click)="openCreateModal()"
+      class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer flex-shrink-0">
+      <i class="fas fa-plus"></i>
+      <span>Nueva Evaluación</span>
+    </button>
+  </app-page-header>
 
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Tarjetas de Estadísticas / KPIs -->
+    @if (evaluaciones().length > 0) {
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <app-stat-card
+          label="Total Evaluaciones"
+          [value]="totalEvaluaciones().toString()"
+          icon="clipboard-list"
+          description="En todos tus cursos"
+          color="indigo">
+        </app-stat-card>
+
+        <app-stat-card
+          label="Publicadas"
+          [value]="publicadasCount().toString()"
+          icon="check-circle"
+          description="Visibles para alumnos"
+          color="green">
+        </app-stat-card>
+
+        <app-stat-card
+          label="Pendientes / Borrador"
+          [value]="pendientesCount().toString()"
+          icon="clock"
+          description="Por publicar o revisar"
+          color="orange">
+        </app-stat-card>
+
+        <app-stat-card
+          label="Asignaturas"
+          [value]="cursosConEvaluaciones().toString()"
+          icon="book-open"
+          description="Con evaluaciones creadas"
+          color="blue">
+        </app-stat-card>
+      </section>
+    }
 
     <!-- Filtros -->
     <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
@@ -55,6 +100,15 @@
       }
     </div>
   </main>
+
+  <!-- Modal: Crear Evaluación -->
+  @if (showCreateModal()) {
+    <app-evaluacion-modal
+      [courseId]="selectedCourseIdForCreate()"
+      (onClose)="showCreateModal.set(false)"
+      (onSaved)="onCreateSaved($event)"
+    />
+  }
 
   <!-- Modal: Editar Evaluación -->
   @if (showEditModal() && selectedEvalToEdit()) {
