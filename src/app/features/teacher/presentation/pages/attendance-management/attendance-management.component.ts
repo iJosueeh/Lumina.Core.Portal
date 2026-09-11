@@ -108,12 +108,15 @@ export class AttendanceManagementComponent implements OnInit {
 
   totalMinutosHoy = computed(() => {
     let sum = 0;
-    this.dateAttendance().forEach(reg => {
-      const acts = this.parseActividades(reg.observacion);
-      acts.forEach(a => {
-        if (a.d) sum += a.d;
+    const list = this.dateAttendance();
+    if (Array.isArray(list)) {
+      list.forEach(reg => {
+        const acts = this.parseActividades(reg?.observacion);
+        acts.forEach(a => {
+          if (a.d) sum += a.d;
+        });
       });
-    });
+    }
     return sum;
   });
 
@@ -179,10 +182,18 @@ export class AttendanceManagementComponent implements OnInit {
     if (!courseId || !date) return;
 
     try {
-      const data = await firstValueFrom(
-        this.http.get<any[]>(`${environment.estudiantesApiUrl}/asistencias?cursoId=${courseId}&fecha=${date}`)
+      const resp = await firstValueFrom(
+        this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias?cursoId=${courseId}&fecha=${date}`)
       );
-      this.dateAttendance.set(data || []);
+      const rawList = Array.isArray(resp) ? resp : (resp?.value || []);
+      const records: AsistenciaRegistro[] = (Array.isArray(rawList) ? rawList : []).map((r: any) => ({
+        id: r.id,
+        estudianteId: r.estudianteId,
+        estado: r.estado === 'Activo' ? 'Activo' : 'Pendiente',
+        observacion: r.observacion || null,
+        fecha: r.fecha,
+      }));
+      this.dateAttendance.set(records);
     } catch {
       this.dateAttendance.set([]);
     }
@@ -214,11 +225,12 @@ export class AttendanceManagementComponent implements OnInit {
           params = params.append('estudianteIds', s.id);
         }
 
-        const batchResults = await firstValueFrom(
-          this.http.get<any[]>(`${environment.estudiantesApiUrl}/matricula/aula-virtual-progress/batch`, { params })
+        const batchResp = await firstValueFrom(
+          this.http.get<any>(`${environment.estudiantesApiUrl}/matricula/aula-virtual-progress/batch`, { params })
         );
+        const batchResults = Array.isArray(batchResp) ? batchResp : (batchResp?.value || []);
         if (Array.isArray(batchResults)) {
-          batchResults.forEach(r => {
+          batchResults.forEach((r: any) => {
             progressMap.set(r.estudianteId, {
               progressPercent: r.progressPercent ?? 0,
               completedLessons: r.completedLessons ?? 0,
@@ -241,9 +253,10 @@ export class AttendanceManagementComponent implements OnInit {
           : (prog?.progressPercent ?? 0);
 
         try {
-          const data = await firstValueFrom(
+          const resp = await firstValueFrom(
             this.http.get<any>(`${environment.estudiantesApiUrl}/asistencias/resumen?estudianteId=${student.id}&cursoId=${courseId}`)
           );
+          const data = resp?.value ?? resp;
           const activos = data?.activos ?? data?.presentes ?? 0;
           const pendientes = data?.pendientes ?? data?.ausentes ?? 0;
           const total = data?.totalClases ?? (activos + pendientes);
@@ -289,12 +302,13 @@ export class AttendanceManagementComponent implements OnInit {
       return this.courseLessonsCache.get(courseId)!;
     }
     try {
-      const modules = await firstValueFrom(
-        this.http.get<any[]>(`${environment.cursosApiUrl}/cursos/${courseId}/modulos`)
+      const resp = await firstValueFrom(
+        this.http.get<any>(`${environment.cursosApiUrl}/cursos/${courseId}/modulos`)
       );
+      const modules = Array.isArray(resp) ? resp : (resp?.value || []);
       let total = 0;
       if (Array.isArray(modules)) {
-        modules.forEach(m => {
+        modules.forEach((m: any) => {
           total += m.lecciones?.length || 0;
         });
       }
@@ -310,9 +324,10 @@ export class AttendanceManagementComponent implements OnInit {
       return this.studentsCache.get(courseId)!;
     }
     try {
-      const students = await firstValueFrom(
-        this.http.get<any[]>(`${environment.estudiantesApiUrl}/estudiantes/por-curso/${courseId}`)
+      const resp = await firstValueFrom(
+        this.http.get<any>(`${environment.estudiantesApiUrl}/estudiantes/por-curso/${courseId}`)
       );
+      const students = Array.isArray(resp) ? resp : (resp?.value || []);
       const mapped = (students || []).map((e: any) => ({
         id: e.id || e.estudianteId,
         nombre: e.nombreCompleto || e.NombreCompleto || `${e.nombres ?? ''} ${e.apellidos ?? ''}`.trim(),
@@ -325,7 +340,9 @@ export class AttendanceManagementComponent implements OnInit {
   }
 
   getObservacionForStudent(studentId: string): string | null {
-    return this.dateAttendance().find(a => a.estudianteId === studentId)?.observacion ?? null;
+    const list = this.dateAttendance();
+    if (!Array.isArray(list)) return null;
+    return list.find(a => a?.estudianteId === studentId)?.observacion ?? null;
   }
 
   getStudentMinutosHoy(studentId: string): number {
