@@ -2,6 +2,8 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { environment } from '@environments/environment';
@@ -92,20 +94,18 @@ export class StudentDetailComponent implements OnInit {
       this.docenteId = teacherInfo.id;
 
       const [students, promedioResp, evalResp, courses] = await Promise.all([
-        this.http
-          .get<any[]>(`${environment.estudiantesApiUrl}/estudiantes/por-docente/${this.docenteId}`)
-          .toPromise()
-          .catch(() => []),
-        this.http
-          .get<PromedioResponse>(
-            `${environment.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/promedio`,
-          )
-          .toPromise()
-          .catch(() => null),
-        this.http
-          .get<any>(`${environment.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`)
-          .toPromise()
-          .catch(() => null),
+        firstValueFrom(
+          this.http.get<any[]>(`${environment.estudiantesApiUrl}/estudiantes/por-docente/${this.docenteId}`)
+            .pipe(catchError(() => of([])))
+        ),
+        firstValueFrom(
+          this.http.get<PromedioResponse>(`${environment.evaluacionesApiUrl}/evaluaciones/estudiante/${studentId}/promedio`)
+            .pipe(catchError(() => of(null)))
+        ),
+        firstValueFrom(
+          this.http.get<any>(`${environment.evaluacionesApiUrl}/evaluaciones?estudianteId=${studentId}`)
+            .pipe(catchError(() => of(null)))
+        ),
         this.teacherQuery.getTeacherCourses(this.userId),
       ]);
 
@@ -172,7 +172,7 @@ export class StudentDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    history.back();
+    this.router.navigate(['/teacher/students']);
   }
 
   getEstadoColor(estado: string): string {

@@ -219,6 +219,14 @@ export const routes: Routes = [
         title: 'Alumnos - Portal Docente',
       },
       {
+        path: 'student/:id',
+        loadComponent: () =>
+          import(
+            '@features/teacher/presentation/pages/student-detail/student-detail.component'
+          ).then((m) => m.StudentDetailComponent),
+        title: 'Detalle del Estudiante - Portal Docente',
+      },
+      {
         path: 'grades',
         loadComponent: () =>
           import(

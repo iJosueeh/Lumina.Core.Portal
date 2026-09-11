@@ -1,7 +1,7 @@
-import { Component, signal, computed, inject, effect } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
@@ -21,7 +21,6 @@ import { TeacherStudentMapper, CourseStudentUI } from '../../../infrastructure/m
 
 // Components
 import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
-import { SkeletonLoaderComponent } from '@shared/components/ui/skeleton-loader/skeleton-loader.component';
 import { StudentStatsComponent } from './components/student-stats/student-stats.component';
 import { StudentFilterComponent } from './components/student-filter/student-filter.component';
 import { StudentCardComponent } from './components/student-card/student-card.component';
@@ -34,14 +33,14 @@ import { StudentCardComponent } from './components/student-card/student-card.com
     FormsModule,
     RouterModule,
     PageHeaderComponent,
-    SkeletonLoaderComponent,
     StudentStatsComponent,
     StudentFilterComponent,
     StudentCardComponent
   ],
   templateUrl: './students-list.component.html',
 })
-export class StudentsListComponent {
+export class StudentsListComponent implements OnInit {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authRepository = inject(AuthRepository);
   private courseRepository = inject(TeacherCourseRepository);
@@ -61,6 +60,17 @@ export class StudentsListComponent {
   selectedStatus = signal<string>('all');
   private courseNamesCache = signal<Map<string, string>>(new Map());
   private metricasCache = signal<Map<string, EstudianteMetricasCompletas>>(new Map());
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['search']) {
+        this.searchTerm.set(params['search']);
+      }
+      if (params['courseId']) {
+        this.selectedCourse.set(params['courseId']);
+      }
+    });
+  }
 
   // New Student Modal
   showNewStudentModal = signal(false);
