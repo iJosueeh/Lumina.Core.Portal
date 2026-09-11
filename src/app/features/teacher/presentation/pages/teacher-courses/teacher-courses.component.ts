@@ -1,9 +1,8 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GetTeacherCoursesUseCase } from '@features/teacher/application/use-cases/get-teacher-courses.usecase';
-import { TeacherCourse } from '@features/teacher/domain/models/teacher-course.model';
+import { useTeacherCourses } from '@features/teacher/infrastructure/queries/teacher-query-hooks';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 
 // UI Components
@@ -24,14 +23,16 @@ import { StatusBadgeComponent } from '@shared/components/ui/status-badge/status-
     ],
     templateUrl: './teacher-courses.component.html',
 })
-export class TeacherCoursesComponent implements OnInit {
-    private getCoursesUseCase = inject(GetTeacherCoursesUseCase);
+export class TeacherCoursesComponent {
     private authRepository = inject(AuthRepository);
     private router = inject(Router);
 
-    // Signals para el estado
-    courses = signal<TeacherCourse[]>([]);
-    isLoading = signal(true);
+    private currentUserId = computed(() => this.authRepository.getCurrentUser()?.id ?? '');
+    coursesQuery = useTeacherCourses(this.currentUserId());
+
+    courses = computed(() => this.coursesQuery.data() || []);
+    isLoading = computed(() => this.coursesQuery.isPending());
+
     searchTerm = signal('');
     selectedFilter = signal<'Todos' | 'Activos' | 'Archivados'>('Todos');
 
@@ -61,27 +62,6 @@ export class TeacherCoursesComponent implements OnInit {
     totalCoursesCount = computed(() => this.courses().length);
     activeCoursesCount = computed(() => this.courses().filter(c => c.estadoCurso === 'Activo').length);
     archivedCoursesCount = computed(() => this.courses().filter(c => c.estadoCurso === 'Finalizado').length);
-
-    ngOnInit(): void {
-        const currentUser = this.authRepository.getCurrentUser();
-        if (currentUser) {
-            this.loadCourses(currentUser.id);
-        }
-    }
-
-    loadCourses(teacherId: string): void {
-        this.isLoading.set(true);
-        this.getCoursesUseCase.execute(teacherId).subscribe({
-            next: (data) => {
-                this.courses.set(data);
-                this.isLoading.set(false);
-            },
-            error: (error) => {
-
-                this.isLoading.set(false);
-            }
-        });
-    }
 
     setFilter(filter: 'Todos' | 'Activos' | 'Archivados'): void {
         this.selectedFilter.set(filter);
