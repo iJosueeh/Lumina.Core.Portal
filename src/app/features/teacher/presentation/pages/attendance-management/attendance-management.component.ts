@@ -47,13 +47,13 @@ export interface AttendanceCourse {
 export interface StudentDetailModalData {
   studentId: string;
   studentName: string;
-  estado: 'Activo' | 'Pendiente' | null;
   actividades: ActividadItem[];
   porcentaje: number;
   totalLecciones: number;
   totalMinutos: number;
   progressPercent: number;
   completedLessons: number;
+  totalLessons: number;
   lastActivityAt: string | null;
 }
 
@@ -74,7 +74,6 @@ export class AttendanceManagementComponent implements OnInit {
   selectedCourseId = signal<string>('');
   selectedDate = signal<string>(new Date().toLocaleDateString('sv'));
   isLoading = signal(false);
-  isSaving = signal(false);
   searchTerm = signal('');
 
   // Timeline / Student Telemetry Modal
@@ -95,14 +94,15 @@ export class AttendanceManagementComponent implements OnInit {
     return stats.filter(s => s.studentName.toLowerCase().includes(term));
   });
 
-  engagementRate = computed(() => {
+  averageProgress = computed(() => {
     const stats = this.allStats();
     if (!stats.length) return 0;
-    const activeToday = stats.filter(s => {
-      const reg = this.dateAttendance().find(a => a.estudianteId === s.studentId);
-      return reg?.estado === 'Activo';
-    }).length;
-    return Math.round((activeToday / stats.length) * 100);
+    const sum = stats.reduce((acc, s) => acc + (s.progressPercent || 0), 0);
+    return Math.round(sum / stats.length);
+  });
+
+  totalCompletedLessons = computed(() => {
+    return this.allStats().reduce((acc, s) => acc + (s.completedLessons || 0), 0);
   });
 
   totalMinutosHoy = computed(() => {
@@ -116,24 +116,8 @@ export class AttendanceManagementComponent implements OnInit {
     return sum;
   });
 
-  activeCountToday = computed(() => {
-    return this.dateAttendance().filter(a => a.estado === 'Activo').length;
-  });
-
-  inactiveCountToday = computed(() => {
-    const total = this.allStats().length;
-    const active = this.activeCountToday();
-    return Math.max(0, total - active);
-  });
-
-  averages = computed(() => {
-    const stats = this.allStats();
-    if (!stats.length) return { promedio: 0, activos: 0, pendientes: 0 };
-    return {
-      promedio: Math.round(stats.reduce((sum, s) => sum + s.porcentaje, 0) / stats.length),
-      activos: stats.reduce((sum, s) => sum + s.activos, 0),
-      pendientes: stats.reduce((sum, s) => sum + s.pendientes, 0),
-    };
+  activeStudentsCount = computed(() => {
+    return this.allStats().filter(s => (s.completedLessons || 0) > 0 || this.getStudentMinutosHoy(s.studentId) > 0).length;
   });
 
   async ngOnInit(): Promise<void> {
@@ -147,7 +131,7 @@ export class AttendanceManagementComponent implements OnInit {
         this.loadAttendanceForDate(),
         this.loadAllStats(),
       ]);
-      this.notification.show('success', 'Telemetría actualizada correctamente.');
+      this.notification.show('success', 'Progreso de aula virtual actualizado.');
     } finally {
       this.isLoading.set(false);
     }
@@ -314,11 +298,6 @@ export class AttendanceManagementComponent implements OnInit {
     }
   }
 
-  getEstadoForStudent(studentId: string): 'Activo' | 'Pendiente' {
-    const reg = this.dateAttendance().find(a => a.estudianteId === studentId);
-    return reg ? reg.estado : 'Pendiente';
-  }
-
   getObservacionForStudent(studentId: string): string | null {
     return this.dateAttendance().find(a => a.estudianteId === studentId)?.observacion ?? null;
   }
@@ -326,6 +305,16 @@ export class AttendanceManagementComponent implements OnInit {
   getStudentMinutosHoy(studentId: string): number {
     const acts = this.parseActividades(this.getObservacionForStudent(studentId));
     return acts.reduce((acc, a) => acc + (a.d || 0), 0);
+  }
+
+  getStudentStatusLabel(stat: AttendanceStats): { text: string; colorClass: string; bgClass: string; borderClass: string } {
+    if (stat.progressPercent >= 100 || (stat.completedLessons > 0 && stat.completedLessons === stat.totalLessons)) {
+      return { text: 'Completado', colorClass: 'text-emerald-700', bgClass: 'bg-emerald-50', borderClass: 'border-emerald-200' };
+    }
+    if (stat.completedLessons > 0 || stat.progressPercent > 0 || this.getStudentMinutosHoy(stat.studentId) > 0) {
+      return { text: 'En Progreso', colorClass: 'text-indigo-700', bgClass: 'bg-indigo-50', borderClass: 'border-indigo-200' };
+    }
+    return { text: 'Sin Iniciar', colorClass: 'text-slate-500', bgClass: 'bg-slate-100', borderClass: 'border-slate-200' };
   }
 
   formatLastActivity(lastActivityAt: string | null): string {
@@ -361,71 +350,25 @@ export class AttendanceManagementComponent implements OnInit {
     return [];
   }
 
-  async onEstadoChange(studentId: string, estado: 'Activo' | 'Pendiente'): Promise<void> {
-    const existing = this.dateAttendance().find(a => a.estudianteId === studentId);
-    const courseId = this.selectedCourseId();
-    const fecha = this.selectedDate();
-
-    try {
-      if (existing) {
-        await firstValueFrom(
-          this.http.put<any>(
-            `${environment.estudiantesApiUrl}/asistencias/${existing.id}`,
-            { asistenciaId: existing.id, estado, observacion: existing.observacion }
-          )
-        );
-        this.dateAttendance.update(list =>
-          list.map(a => a.estudianteId === studentId ? { ...a, estado } : a)
-        );
-      } else {
-        const result = await firstValueFrom(
-          this.http.post<any>(`${environment.estudiantesApiUrl}/asistencias`, {
-            cursoId: courseId,
-            docenteId: this.docenteId,
-            fecha,
-            registros: [{ estudianteId: studentId, estado, observacion: null }],
-          })
-        );
-        const newId = (result as any)?.registros?.[0]?.id || (result as any)?.id || crypto.randomUUID();
-        this.dateAttendance.update(list => [
-          ...list,
-          {
-            id: newId,
-            estudianteId: studentId,
-            estado,
-            observacion: null,
-            fecha,
-          }
-        ]);
-      }
-
-      this.notification.show('success', `Estado actualizado a ${estado}.`);
-      await this.loadAllStats();
-    } catch {
-      this.notification.show('error', 'Error al actualizar el estado.');
-    }
-  }
-
   exportToCSV(): void {
     const stats = this.filteredStats();
     if (!stats.length) {
       this.notification.show('info', 'No hay registros para exportar.');
       return;
     }
-    const headers = ['Estudiante', 'Estado Hoy', 'Minutos Hoy', 'Avance Aula (%)', 'Lecciones', 'Última Actividad', 'Histórico (%)', 'Total Sesiones'];
+    const headers = ['Estudiante', 'Estado Formativo', 'Avance Aula (%)', 'Lecciones Completadas', 'Lecciones Totales', 'Tiempo Hoy (min)', 'Última Conexión'];
     const rows = stats.map(s => {
-      const estado = this.getEstadoForStudent(s.studentId);
+      const status = this.getStudentStatusLabel(s).text;
       const minutos = this.getStudentMinutosHoy(s.studentId);
       const lastAct = this.formatLastActivity(s.lastActivityAt);
       return [
         `"${s.studentName}"`,
-        `"${estado}"`,
-        minutos,
+        `"${status}"`,
         `${s.progressPercent}%`,
-        `"${s.completedLessons}/${s.totalLessons}"`,
+        s.completedLessons,
+        s.totalLessons,
+        minutos,
         `"${lastAct}"`,
-        `${s.porcentaje}%`,
-        s.total,
       ];
     });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -433,28 +376,27 @@ export class AttendanceManagementComponent implements OnInit {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `telemetria_aula_${this.selectedDate()}.csv`;
+    link.download = `progreso_lecciones_${this.selectedDate()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    this.notification.show('success', 'Reporte CSV de telemetría descargado correctamente.');
+    this.notification.show('success', 'Reporte CSV de progreso descargado correctamente.');
   }
 
   openStudentDetail(stat: AttendanceStats): void {
     const observacion = this.getObservacionForStudent(stat.studentId);
     const actividades = this.parseActividades(observacion);
-    const estado = this.getEstadoForStudent(stat.studentId);
     const totalMinutos = actividades.reduce((acc, a) => acc + (a.d || 0), 0);
 
     this.selectedStudentDetail.set({
       studentId: stat.studentId,
       studentName: stat.studentName,
-      estado,
       actividades,
       porcentaje: stat.porcentaje,
       totalLecciones: stat.total,
       totalMinutos,
       progressPercent: stat.progressPercent,
       completedLessons: stat.completedLessons,
+      totalLessons: stat.totalLessons,
       lastActivityAt: stat.lastActivityAt,
     });
   }
