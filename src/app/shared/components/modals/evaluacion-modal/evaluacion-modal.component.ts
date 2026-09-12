@@ -47,10 +47,10 @@ export class EvaluacionModalComponent implements OnInit {
       this.isEditMode.set(true);
       this.evaluacionForm.patchValue({
         titulo: this.evaluacionToEdit.titulo,
-        descripcion: '',
-        fechaInicio: this.formatDateForInput(new Date(this.evaluacionToEdit.fechaInicio)),
-        fechaFin: this.formatDateForInput(new Date(this.evaluacionToEdit.fechaFin)),
-        puntajeMaximo: this.evaluacionToEdit.puntajeMaximo,
+        descripcion: (this.evaluacionToEdit as any).descripcion || 'Evaluación del curso',
+        fechaInicio: this.formatDateForInput(this.evaluacionToEdit.fechaInicio) || this.formatDateForInput(new Date()),
+        fechaFin: this.formatDateForInput(this.evaluacionToEdit.fechaFin) || this.formatDateForInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+        puntajeMaximo: this.evaluacionToEdit.puntajeMaximo || 100,
         tipoEvaluacion: this.mapTipoToEnum(this.evaluacionToEdit.tipoEvaluacion),
         intentosPermitidos: (this.evaluacionToEdit as any).intentosPermitidos || 1
       });
@@ -69,7 +69,7 @@ export class EvaluacionModalComponent implements OnInit {
       console.log('📦 [EVAL-MODAL] Detalle cargado:', detail);
 
       this.evaluacionForm.patchValue({
-        descripcion: detail.descripcion || '',
+        descripcion: detail.descripcion || (this.evaluacionToEdit as any).descripcion || 'Evaluación del curso',
         tipoEvaluacion: this.mapTipoToEnum(detail.tipoEvaluacion),
         intentosPermitidos: detail.intentosPermitidos || 1
       }, { emitEvent: false }); // Evitar marcar como dirty inmediatamente
@@ -79,8 +79,10 @@ export class EvaluacionModalComponent implements OnInit {
     }
   }
 
-  private formatDateForInput(date: Date): string {
+  private formatDateForInput(date: any): string {
+    if (!date) return '';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -131,12 +133,17 @@ export class EvaluacionModalComponent implements OnInit {
         this.notificationService.show('success', 'Evaluación actualizada correctamente.');
         this.onSaved.emit({ id: this.evaluacionToEdit.id, titulo: formValue.titulo });
       } else {
+        const startDate = formValue.fechaInicio ? new Date(formValue.fechaInicio) : new Date();
+        const validStart = startDate.getTime() < Date.now() - 3600000 ? new Date() : startDate;
+        const endDate = formValue.fechaFin ? new Date(formValue.fechaFin) : new Date(validStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const validEnd = endDate.getTime() <= validStart.getTime() ? new Date(validStart.getTime() + 7 * 24 * 60 * 60 * 1000) : endDate;
+
         const body = {
           cursoId: this.courseId || '035fc56e-2450-e046-b996-06c97747b6ea',
           titulo: formValue.titulo,
           descripcion: formValue.descripcion,
-          fechaInicio: new Date(formValue.fechaInicio).toISOString(),
-          fechaFin: new Date(formValue.fechaFin).toISOString(),
+          fechaInicio: validStart.toISOString(),
+          fechaFin: validEnd.toISOString(),
           puntajeMaximo: Number(formValue.puntajeMaximo),
           tipoEvaluacion: Number(formValue.tipoEvaluacion),
           intentosPermitidos: Number(formValue.intentosPermitidos)

@@ -55,7 +55,8 @@ export class GradesManagementComponent implements OnInit {
   }
 
   async loadInitialData() {
-    const userId = this.authRepository.getCurrentUser()?.id || '';
+    const user = this.authRepository.getCurrentUser();
+    const userId = user?.id || (user as any)?.sub || '';
     const cursoIdFromQuery = this.route.snapshot.queryParams['cursoId'];
     try {
       const data = await this.teacherQueryService.getTeacherCourses(userId);

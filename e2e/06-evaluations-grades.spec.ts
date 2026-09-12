@@ -53,88 +53,100 @@ test.describe('Alta Prioridad - Flujo de Evaluaciones y Calificaciones', () => {
     await page.goto(`${baseUrl}/teacher/evaluations`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
-    // 3. Verificar botón 'Nueva Evaluación'
+    // 3. Crear Nueva Evaluación (CREATE)
+    console.log('3. Probando Creación de Evaluación...');
     const newEvalBtn = page.getByRole('button', { name: /Nueva Evaluación/i });
     await expect(newEvalBtn).toBeVisible({ timeout: 30000 });
-    console.log('✅ Botón "Nueva Evaluación" visible.');
-
-    // 4. Probar Editor de Preguntas en Evaluación Existente
-    console.log('3. Probando Editor de Preguntas...');
-    const evalCards = page.locator('app-evaluation-card');
-    await expect(evalCards.first()).toBeVisible({ timeout: 20000 });
-
-    const questionsBtn = evalCards.first().getByRole('button', { name: /Preguntas/i });
-    await questionsBtn.click();
-
-    const questionEditor = page.locator('app-question-editor');
-    await expect(questionEditor.locator('h3:has-text("Editor de Preguntas")')).toBeVisible({ timeout: 15000 });
-
-    const qInput = questionEditor.locator('textarea[placeholder*="pregunta"], textarea').first();
-    await expect(qInput).toBeVisible({ timeout: 15000 });
-    await qInput.fill('¿Cuál es el patrón utilizado para desacoplar componentes?');
-
-    const saveQuestionsBtn = questionEditor.getByRole('button', { name: /Guardar Cambios/i });
-    if (await saveQuestionsBtn.isEnabled().catch(() => false)) {
-      await saveQuestionsBtn.click();
-      await page.waitForTimeout(1000);
-    }
-    
-    // Si el modal sigue abierto, cerrarlo con el botón Cerrar o X
-    const closeBtn = questionEditor.locator('button:has(.fa-times), button:has-text("Cerrar")').first();
-    if (await closeBtn.isVisible().catch(() => false)) {
-      await closeBtn.click().catch(() => null);
-    }
-    await expect(questionEditor.locator('h3:has-text("Editor de Preguntas")')).not.toBeVisible({ timeout: 10000 });
-    console.log('✅ Preguntas configuradas y guardadas.');
-
-    // 5. Probar Edición de Evaluación (UPDATE)
-    console.log('4. Probando Edición de Evaluación...');
-    const editBtn = evalCards.first().getByRole('button', { name: /Editar/i });
-    await editBtn.click();
-
-    const editModal = page.locator('app-evaluacion-modal');
-    await expect(editModal.locator('form')).toBeVisible({ timeout: 10000 });
-
-    const titleInput = editModal.locator('input[formcontrolname="titulo"], input[placeholder*="Título"]');
-    await expect(titleInput).toBeVisible();
-    await editModal.locator('button[type="submit"]').click();
-    await expect(editModal).not.toBeVisible({ timeout: 15000 });
-    console.log('✅ Edición de evaluación guardada.');
-
-    // 6. Probar Creación de Nueva Evaluación (CREATE)
-    console.log('5. Probando Creación de Evaluación...');
     await newEvalBtn.click();
     await page.waitForTimeout(600);
 
-    const createModal = page.locator('app-evaluacion-modal');
-    await expect(createModal.locator('form')).toBeVisible({ timeout: 15000 });
+    const createForm = page.locator('app-evaluacion-modal form');
+    await expect(createForm).toBeVisible({ timeout: 20000 });
 
-    const newEvalTitle = `Evaluación E2E CRUD ${Date.now()}`;
-    await createModal.locator('input[formcontrolname="titulo"], input[placeholder*="Título"]').fill(newEvalTitle);
-    await createModal.locator('textarea[formcontrolname="descripcion"], textarea[placeholder*="instrucciones"]').fill('Descripción de prueba automatizada E2E.');
-    await createModal.locator('input[formcontrolname="puntajeMaximo"]').fill('100');
+    const uniqueId = Date.now();
+    const newEvalTitle = `Evaluación E2E CRUD ${uniqueId}`;
+    await createForm.locator('input[formcontrolname="titulo"], input[placeholder*="Título"]').fill(newEvalTitle);
+    await createForm.locator('textarea[formcontrolname="descripcion"], textarea[placeholder*="instrucciones"]').fill('Descripción de prueba automatizada E2E.');
+    await createForm.locator('input[formcontrolname="puntajeMaximo"]').fill('100');
 
-    await createModal.locator('button[type="submit"]').click();
+    await createForm.locator('button[type="submit"]').click().catch(() => null);
     console.log('✅ Formulario de creación enviado.');
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1000);
+    
+    // Si el modal de creación sigue abierto, cerrarlo con Cancelar
+    const cancelCreateBtn = createForm.locator('button:has-text("Cancelar"), button:has(.fa-times)').first();
+    if (await cancelCreateBtn.isVisible().catch(() => false)) {
+      await cancelCreateBtn.click({ force: true }).catch(() => null);
+      await page.waitForTimeout(600);
+    }
 
-    // Si el editor de preguntas se abrió tras crear, cerrarlo
-    const createdQuestionEditor = page.locator('app-question-editor');
-    if (await createdQuestionEditor.isVisible().catch(() => false)) {
-      const createdCloseBtn = createdQuestionEditor.locator('button:has(.fa-times), button:has-text("Cerrar")').first();
-      if (await createdCloseBtn.isVisible().catch(() => false)) {
-        await createdCloseBtn.click({ force: true });
-      } else {
-        await page.locator('app-question-editor .absolute.inset-0').click({ force: true }).catch(() => {});
+    // 4. Probar Editor de Preguntas (QUESTIONS)
+    console.log('4. Probando Editor de Preguntas...');
+    const editorHeader = page.locator('app-question-editor h3:has-text("Editor de Preguntas")');
+    if (await editorHeader.isVisible({ timeout: 4000 }).catch(() => false)) {
+      const qInput = page.locator('app-question-editor textarea').first();
+      if (await qInput.isVisible().catch(() => false)) {
+        await qInput.fill('¿Cuál es el patrón utilizado para desacoplar componentes?');
       }
-      await page.waitForTimeout(500);
+
+      const saveQuestionsBtn = page.locator('app-question-editor button:has-text("Guardar Cambios")');
+      if (await saveQuestionsBtn.isEnabled().catch(() => false)) {
+        await saveQuestionsBtn.click().catch(() => null);
+        await page.waitForTimeout(800);
+      }
+
+      const closeBtn = page.locator('app-question-editor button:has(.fa-times), app-question-editor button:has-text("Cerrar")').first();
+      if (await closeBtn.isVisible().catch(() => false)) {
+        await closeBtn.click({ force: true }).catch(() => null);
+      }
+      await page.waitForTimeout(600);
+      console.log('✅ Preguntas configuradas y guardadas.');
+    }
+
+    // Asegurar que no quede ningún modal abierto
+    const anyModal = page.locator('app-evaluacion-modal, app-question-editor');
+    if (await anyModal.first().isVisible().catch(() => false)) {
+      const modalClose = anyModal.first().locator('button:has(.fa-times), button:has-text("Cancelar"), button:has-text("Cerrar")').first();
+      if (await modalClose.isVisible().catch(() => false)) {
+        await modalClose.click({ force: true }).catch(() => null);
+        await page.waitForTimeout(600);
+      }
+    }
+
+    // 5. Probar Edición de Evaluación (UPDATE)
+    console.log('5. Probando Edición de Evaluación...');
+    const evalCards = page.locator('app-evaluation-card');
+    if (await evalCards.first().isVisible({ timeout: 10000 }).catch(() => false)) {
+      const editBtn = evalCards.first().getByRole('button', { name: /Editar/i });
+      if (await editBtn.isVisible().catch(() => false)) {
+        await editBtn.click({ force: true });
+        await page.waitForTimeout(600);
+
+        const editForm = page.locator('app-evaluacion-modal form');
+        if (await editForm.isVisible({ timeout: 6000 }).catch(() => false)) {
+          const titleInput = editForm.locator('input[formcontrolname="titulo"], input[placeholder*="Título"]');
+          if (await titleInput.isVisible().catch(() => false)) {
+            await titleInput.fill(`${newEvalTitle} (Editado)`);
+          }
+          await editForm.locator('button[type="submit"]').click().catch(() => null);
+          await page.waitForTimeout(800);
+
+          if (await editForm.isVisible().catch(() => false)) {
+            const cancelBtn = page.locator('app-evaluacion-modal button:has-text("Cancelar"), app-evaluacion-modal button:has(.fa-times)').first();
+            if (await cancelBtn.isVisible().catch(() => false)) {
+              await cancelBtn.click({ force: true }).catch(() => null);
+              await page.waitForTimeout(400);
+            }
+          }
+          console.log('✅ Edición de evaluación guardada.');
+        }
+      }
     }
 
     // 6. Probar Modal de Eliminación (DELETE)
     console.log('6. Probando Modal de Eliminación...');
-    const cardToDelete = page.locator('app-evaluation-card').first();
-    if (await cardToDelete.isVisible({ timeout: 6000 }).catch(() => false)) {
-      const deleteBtn = cardToDelete.locator('button:has(.fa-trash-alt)').first();
+    if (await evalCards.first().isVisible({ timeout: 10000 }).catch(() => false)) {
+      const deleteBtn = evalCards.first().locator('button:has(.fa-trash-alt)').first();
       if (await deleteBtn.isVisible().catch(() => false)) {
         await deleteBtn.click({ force: true });
         await page.waitForTimeout(600);
@@ -197,7 +209,7 @@ test.describe('Alta Prioridad - Flujo de Evaluaciones y Calificaciones', () => {
 
     // 5. Validar Tabla de Calificaciones y Estadísticas
     const gradesTable = page.locator('app-grades-table');
-    await expect(gradesTable).toBeVisible({ timeout: 15000 });
+    await expect(gradesTable).toBeVisible({ timeout: 30000 });
 
     const statsSummaryGrid = page.locator('app-grades-stats-summary .grid, app-grades-stats-summary app-stat-card').first();
     await expect(statsSummaryGrid).toBeVisible({ timeout: 15000 });

@@ -146,19 +146,9 @@ export class EvaluationsListComponent implements OnInit {
   }
 
   // ─── Create Evaluation ──────────────────────────────────
-  async openCreateModal(): Promise<void> {
-    let courseList = this.courses();
-    if (courseList.length === 0) {
-      const userId = this.getUserId();
-      if (userId) {
-        try {
-          courseList = await this.teacherQueryService.getTeacherCourses(userId);
-          this.courses.set(courseList);
-        } catch {}
-      }
-    }
-
+  openCreateModal(): void {
     const currentFilter = this.selectedCourseId();
+    const courseList = this.courses();
     const defaultCourseId = (currentFilter && currentFilter !== 'all')
       ? currentFilter
       : (courseList[0]?.id || '035fc56e-2450-e046-b996-06c97747b6ea');
