@@ -1,103 +1,139 @@
-<div class="p-6 lg:p-8 space-y-8 min-h-screen bg-slate-50/50">
+<div class="min-h-screen bg-gray-50 text-slate-900 font-sans pb-12">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Gestión de Materiales</h1>
-            <p class="text-slate-500 font-medium">Sube y organiza recursos educativos para tus estudiantes.</p>
+    <app-page-header
+        badge="Gestión Académica"
+        title="Materiales y Recursos"
+        subtitle="Sube, organiza y comparte recursos educativos para tus asignaturas.">
+        <div class="flex items-center gap-3">
+            <app-button (onClick)="openAdd()">
+                <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Material
+            </app-button>
         </div>
-        <app-button (onClick)="openAdd()">
-            <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Material
-        </app-button>
-    </div>
+    </app-page-header>
 
-    <!-- Filters Bar -->
-    <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
-        <div class="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
-            <div class="w-full md:w-64">
-                <app-select [ngModel]="selectedCourseId()" (ngModelChange)="selectedCourseId.set($event)">
-                    <option value="all">Todos los cursos</option>
-                    @for (c of courses(); track c.id) {
-                        <option [value]="c.id">{{ c.titulo }}</option>
-                    }
-                </app-select>
-            </div>
-            <div class="w-full md:w-48">
-                <app-select [ngModel]="selectedTipo()" (ngModelChange)="selectedTipo.set($event)">
-                    <option value="all">Todos los tipos</option>
-                    @for (t of tipos; track t) {
-                        <option [value]="t">{{ t }}</option>
-                    }
-                </app-select>
-            </div>
-            <div class="w-full md:w-80">
-                <app-input 
-                    [ngModel]="searchTerm()" 
-                    (ngModelChange)="searchTerm.set($event)"
-                    placeholder="Buscar por título o descripción...">
-                </app-input>
-            </div>
-        </div>
-        <div class="text-sm font-bold text-slate-400 px-4">
-            {{ filteredMaterials().length }} Recursos encontrados
-        </div>
-    </div>
-
-    <!-- Materials Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        @if (isLoading()) {
-            @for (i of [1,2,3,4,5,6]; track i) {
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 animate-pulse">
-                    <div class="flex gap-4">
-                        <app-skeleton-loader variant="rect" height="48px" width="48px"></app-skeleton-loader>
-                        <div class="flex-1 space-y-2">
-                            <app-skeleton-loader height="20px" width="70%"></app-skeleton-loader>
-                            <app-skeleton-loader height="14px" width="40%"></app-skeleton-loader>
-                        </div>
-                    </div>
-                </div>
-            }
-        } @else {
-            @for (mat of filteredMaterials(); track mat.id) {
-                <app-material-card 
-                    [material]="mat" 
-                    (edit)="openEdit($event)"
-                    (delete)="delete($event)">
-                </app-material-card>
-            } @empty {
-                <div class="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100 opacity-50">
-                    <i class="fas fa-folder-open text-5xl mb-4 text-slate-300"></i>
-                    <p class="text-xl font-bold text-slate-500">No se encontraron materiales</p>
-                </div>
-            }
-        }
-    </div>
-
-    <!-- Upload/Edit Modal -->
-    @if (showModal()) {
-        <app-modal-container 
-            [title]="isEditing() ? 'Editar Material' : 'Subir Nuevo Material'" 
-            (close)="showModal.set(false)"
-            [showFooter]="true">
-            
-            <div class="space-y-6">
-                <app-form-field label="Curso Destino" [required]="true">
-                    <app-select [(ngModel)]="form.courseId">
-                        <option value="" disabled>Seleccione un curso</option>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <!-- Filters Bar -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto flex-1">
+                <div>
+                    <app-select [ngModel]="selectedCourseId()" (ngModelChange)="selectedCourseId.set($event)">
+                        <option value="all">Todas las Asignaturas</option>
                         @for (c of courses(); track c.id) {
                             <option [value]="c.id">{{ c.titulo }}</option>
                         }
                     </app-select>
-                </app-form-field>
+                </div>
+                <div>
+                    <app-select [ngModel]="selectedTipo()" (ngModelChange)="selectedTipo.set($event)">
+                        <option value="all">Todos los Formatos</option>
+                        @for (t of tipos; track t) {
+                            <option [value]="t">{{ t }}</option>
+                        }
+                    </app-select>
+                </div>
+                <div>
+                    <app-input 
+                        [ngModel]="searchTerm()" 
+                        (ngModelChange)="searchTerm.set($event)"
+                        placeholder="Buscar material o tema...">
+                    </app-input>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 self-end lg:self-center flex-shrink-0">
+                <i class="fas fa-layer-group text-indigo-500"></i>
+                <span>{{ filteredMaterials().length }} materiales</span>
+            </div>
+        </div>
+
+        <!-- Materials Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            @if (isLoading()) {
+                @for (i of [1,2,3,4,5,6]; track i) {
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 animate-pulse space-y-4">
+                        <div class="flex gap-3">
+                            <app-skeleton-loader variant="rect" height="40px" width="40px"></app-skeleton-loader>
+                            <div class="flex-1 space-y-2">
+                                <app-skeleton-loader height="16px" width="60%"></app-skeleton-loader>
+                                <app-skeleton-loader height="12px" width="40%"></app-skeleton-loader>
+                            </div>
+                        </div>
+                        <app-skeleton-loader height="12px" width="90%"></app-skeleton-loader>
+                        <div class="flex justify-between pt-2">
+                            <app-skeleton-loader height="12px" width="30%"></app-skeleton-loader>
+                            <app-skeleton-loader height="12px" width="20%"></app-skeleton-loader>
+                        </div>
+                    </div>
+                }
+            } @else {
+                @for (mat of filteredMaterials(); track mat.id) {
+                    <app-material-card 
+                        [material]="mat" 
+                        (edit)="openEdit($event)"
+                        (delete)="delete($event)">
+                    </app-material-card>
+                } @empty {
+                    <div class="col-span-full py-20 text-center bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <i class="fas fa-folder-open text-2xl"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-1">No se encontraron materiales</h3>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                            No hay recursos que coincidan con los filtros actuales. Prueba cambiando el curso o sube un nuevo recurso.
+                        </p>
+                    </div>
+                }
+            }
+        </div>
+    </main>
+
+    <!-- Upload/Edit Modal -->
+    @if (showModal()) {
+        <app-modal-container 
+            [title]="isEditing() ? 'Configurar Material' : 'Subir Nuevo Material'" 
+            (close)="showModal.set(false)"
+            [showFooter]="true">
+            
+            <div class="space-y-5">
+                <!-- Drop / Browse area -->
+                <div class="border-2 border-dashed border-slate-200 hover:border-indigo-300 rounded-2xl p-6 text-center bg-slate-50/50 transition-all cursor-pointer group"
+                    (click)="fileInput.click()">
+                    <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.zip,.rar,.txt">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-cloud-upload-alt text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 mb-0.5">
+                        {{ selectedFile() ? selectedFile()!.name : 'Haz clic para seleccionar archivo' }}
+                    </p>
+                    <p class="text-[10px] text-slate-400 font-semibold">
+                        {{ selectedFile() ? form.tamano : 'Formatos: PDF, Word, PowerPoint, MP4, ZIP (Hasta 100MB)' }}
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <app-form-field label="Asignatura Destino" [required]="true">
+                        <app-select [(ngModel)]="form.courseId">
+                            <option value="" disabled>Seleccione un curso</option>
+                            @for (c of courses(); track c.id) {
+                                <option [value]="c.id">{{ c.titulo }}</option>
+                            }
+                        </app-select>
+                    </app-form-field>
+
+                    <app-form-field label="Módulo / Tema">
+                        <app-input [(ngModel)]="form.modulo" placeholder="Ej: Semana 1, Módulo General"></app-input>
+                    </app-form-field>
+                </div>
 
                 <app-form-field label="Título del Material" [required]="true">
-                    <app-input [(ngModel)]="form.titulo" placeholder="Ej: Guía de Estudio Semana 5"></app-input>
+                    <app-input [(ngModel)]="form.titulo" placeholder="Ej: Guía de Arquitectura de Software"></app-input>
                 </app-form-field>
 
                 <app-form-field label="Descripción Corta">
-                    <app-input [(ngModel)]="form.descripcion" placeholder="Resumen del contenido..."></app-input>
+                    <app-input [(ngModel)]="form.descripcion" placeholder="Resumen o instrucciones para los estudiantes..."></app-input>
                 </app-form-field>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <app-form-field label="Tipo de Recurso">
                         <app-select [(ngModel)]="form.tipo">
                             @for (t of tipos; track t) {
@@ -105,20 +141,23 @@
                             }
                         </app-select>
                     </app-form-field>
-                    <app-form-field label="Tamaño / Duración">
-                        <app-input [(ngModel)]="form.tamano" placeholder="Ej: 5 MB / 15 min"></app-input>
+
+                    <app-form-field label="URL / Enlace Opcional">
+                        <app-input [(ngModel)]="form.url" placeholder="https://drive.google.com/..."></app-input>
                     </app-form-field>
                 </div>
-
-                <app-form-field label="URL del Recurso">
-                    <app-input [(ngModel)]="form.url" placeholder="https://..."></app-input>
-                </app-form-field>
             </div>
 
             <div footer class="flex gap-3">
-                <app-button variant="ghost" (onClick)="showModal.set(false)">Cancelar</app-button>
-                <app-button (onClick)="save()">
-                    {{ isEditing() ? 'Guardar Cambios' : 'Publicar Material' }}
+                <app-button variant="ghost" (onClick)="showModal.set(false)" [disabled]="isSaving()">
+                    Cancelar
+                </app-button>
+                <app-button (onClick)="save()" [disabled]="isSaving()">
+                    @if (isSaving()) {
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Guardando...
+                    } @else {
+                        {{ isEditing() ? 'Actualizar Material' : 'Publicar Material' }}
+                    }
                 </app-button>
             </div>
         </app-modal-container>

@@ -51,6 +51,7 @@ export class TeacherLayoutComponent {
                     { icon: 'clipboard-check', label: 'Asistencia', route: '/teacher/attendance', category: 'Gestión' },
                     { icon: 'file-alt', label: 'Mis Evaluaciones', route: '/teacher/evaluations', category: 'Académico' },
                     { icon: 'chart-bar', label: 'Calificaciones', route: '/teacher/grades', category: 'Académico' },
+                    { icon: 'folder-open', label: 'Materiales', route: '/teacher/materials', category: 'Académico' },
                     { icon: 'calendar-alt', label: 'Horario', route: '/teacher/schedule', category: 'Académico' }
                 ]
     };

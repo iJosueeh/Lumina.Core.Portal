@@ -8,6 +8,7 @@ test.describe('Módulo Docente - Navegación y Gestión', () => {
     { path: '/teacher/evaluations', name: 'Evaluaciones' },
     { path: '/teacher/grades', name: 'Calificaciones' },
     { path: '/teacher/attendance', name: 'Asistencia' },
+    { path: '/teacher/materials', name: 'Materiales' },
     { path: '/teacher/schedule', name: 'Horario' },
   ];
 

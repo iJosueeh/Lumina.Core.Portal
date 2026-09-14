@@ -1,34 +1,54 @@
-<div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 group">
-    <div class="flex items-start gap-4">
-        <app-file-type-icon [type]="material.tipo" size="lg"></app-file-type-icon>
-        
-        <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between mb-1">
-                <h3 class="text-base font-bold text-slate-800 truncate group-hover:text-teal-600 transition-colors">{{ material.titulo }}</h3>
-                <div class="flex items-center gap-1">
-                    <app-button variant="ghost" (onClick)="edit.emit(material)" class="!p-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                        <i class="fas fa-edit text-slate-400"></i>
-                    </app-button>
-                    <app-button variant="ghost" (onClick)="delete.emit(material.id)" class="!p-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                        <i class="fas fa-trash-alt text-red-400"></i>
-                    </app-button>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-300 flex flex-col justify-between group h-full">
+    <div>
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <app-file-type-icon [type]="material.tipo" size="md"></app-file-type-icon>
+                <div class="min-w-0">
+                    <span class="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 truncate max-w-[160px]">
+                        {{ material.courseName || 'Curso Asignado' }}
+                    </span>
+                    <span class="ml-1 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        • {{ material.modulo || 'General' }}
+                    </span>
                 </div>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">{{ material.descripcion }}</p>
             
-            <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                <div class="flex items-center gap-3">
-                    <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <i class="fas fa-database opacity-50"></i> {{ material.tamano }}
-                    </span>
-                    <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <i class="fas fa-calendar opacity-50"></i> {{ material.fechaSubida | date:'dd MMM, yyyy' }}
-                    </span>
-                </div>
-                <div class="flex items-center gap-1 text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg">
-                    <i class="fas fa-download"></i> {{ material.descargas }}
-                </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button (click)="edit.emit(material); $event.stopPropagation()" title="Editar"
+                    class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center text-xs">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button (click)="delete.emit(material.id); $event.stopPropagation()" title="Eliminar"
+                    class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all flex items-center justify-center text-xs">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </div>
+        </div>
+
+        <h3 class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition-colors mb-1" [title]="material.titulo">
+            {{ material.titulo }}
+        </h3>
+        <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
+            {{ material.descripcion || 'Sin descripción adicional para este recurso.' }}
+        </p>
+    </div>
+
+    <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-semibold">
+        <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1"><i class="fas fa-hdd opacity-60"></i> {{ material.tamano }}</span>
+            <span class="flex items-center gap-1"><i class="far fa-calendar-alt opacity-60"></i> {{ material.fechaSubida | date:'dd/MM/yyyy' }}</span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-bold">
+                <i class="fas fa-download mr-1"></i>{{ material.descargas }}
+            </span>
+            @if (material.url && material.url !== '#') {
+                <a [href]="material.url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()"
+                    class="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="Abrir recurso">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+            }
         </div>
     </div>
 </div>

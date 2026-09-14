@@ -7,7 +7,7 @@ import { Material } from '../../../../features/teacher/presentation/pages/materi
 @Component({
   selector: 'app-material-card',
   standalone: true,
-  imports: [CommonModule, FileTypeIconComponent, ButtonComponent],
+  imports: [CommonModule, FileTypeIconComponent],
   templateUrl: './material-card.component.html',
   styleUrl: './material-card.component.css'
 })
