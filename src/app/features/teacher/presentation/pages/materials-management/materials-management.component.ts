@@ -105,7 +105,7 @@ export class MaterialsManagementComponent implements OnInit {
 
     await Promise.all(courses.map(async (course) => {
       try {
-        // 1. Obtener detalle del curso con sus módulos y lecciones
+        // Obtener detalle completo del curso con sus módulos y lecciones
         const courseDetail = await lastValueFrom(
           this.http.get<any>(`${environment.cursosApiUrl}/cursos/${course.id}`)
         );
@@ -120,7 +120,7 @@ export class MaterialsManagementComponent implements OnInit {
             allMaterials.push(this.mapper.mapFromBackend(m, course, modTitle));
           }
 
-          // Materiales asociados a las lecciones
+          // Materiales asociados a las lecciones del módulo
           const lecciones = modulo.lecciones ?? modulo.Lecciones ?? [];
           for (const leccion of lecciones) {
             const lessonTitle = leccion.titulo ?? leccion.Titulo ?? '';
@@ -129,34 +129,6 @@ export class MaterialsManagementComponent implements OnInit {
               allMaterials.push(this.mapper.mapFromBackend(m, course, `${modTitle} • ${lessonTitle}`));
             }
           }
-        }
-
-        // 2. Consultar colección dedicada de materiales (/api/cursos/{cursoId}/materiales)
-        try {
-          const extraMats = await lastValueFrom(
-            this.http.get<any[]>(`${environment.cursosApiUrl}/cursos/${course.id}/materiales`)
-          );
-          if (Array.isArray(extraMats)) {
-            for (const em of extraMats) {
-              if (!allMaterials.some(existing => existing.id === em.id || (em.url && existing.url === em.url))) {
-                allMaterials.push({
-                  id: String(em.id || `mat-${Date.now()}-${Math.random()}`),
-                  courseId: course.id,
-                  courseName: course.titulo,
-                  titulo: em.titulo || 'Material de Clase',
-                  descripcion: em.descripcion || 'Recurso académico',
-                  tipo: this.mapper.normalizeTipo(em.tipo),
-                  url: em.url || '#',
-                  tamano: em.tamano || '1.0 MB',
-                  fechaSubida: em.fechaCreacion || new Date().toISOString(),
-                  modulo: em.moduloNombre || 'General',
-                  descargas: em.descargas || 0
-                });
-              }
-            }
-          }
-        } catch {
-          // Si el endpoint no retorna colección extra, se mantienen los de módulos/lecciones
         }
       } catch (err) {
         console.warn(`Error loading materials for course ${course.id}:`, err);
