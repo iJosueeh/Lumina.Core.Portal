@@ -5,44 +5,36 @@ import { Material, MaterialTipo } from '../../features/teacher/presentation/page
   providedIn: 'root'
 })
 export class MaterialsMapper {
-  
-  generateMockMaterials(courses: any[]): Material[] {
-    const templatesByCourse = [
-      [
-        { titulo: 'Introducción al Curso', tipo: 'PDF' as MaterialTipo, modulo: 'Módulo 1', tamano: '2.4 MB', desc: 'Guía de inicio y objetivos del curso' },
-        { titulo: 'Slides — Fundamentos', tipo: 'Presentación' as MaterialTipo, modulo: 'Módulo 1', tamano: '8.1 MB', desc: 'Presentación de conceptos fundamentales' },
-        { titulo: 'Video Clase 1', tipo: 'Video' as MaterialTipo, modulo: 'Módulo 1', tamano: '45 min', desc: 'Grabación de la primera sesión teórica' },
-      ],
-      [
-        { titulo: 'Syllabus del Curso', tipo: 'PDF' as MaterialTipo, modulo: 'Módulo 1', tamano: '1.1 MB', desc: 'Plan de estudios y cronograma' },
-        { titulo: 'Tutorial en Video', tipo: 'Video' as MaterialTipo, modulo: 'Módulo 2', tamano: '32 min', desc: 'Demostración práctica paso a paso' },
-      ]
-    ];
 
-    const now = new Date();
-    const result: Material[] = [];
+  normalizeTipo(tipo: string): MaterialTipo {
+    const t = (tipo || '').toLowerCase();
+    if (t.includes('pdf')) return 'PDF';
+    if (t.includes('video') || t.includes('mp4') || t.includes('stream')) return 'Video';
+    if (t.includes('ppt') || t.includes('present')) return 'Presentación';
+    if (t.includes('doc') || t.includes('word') || t.includes('txt') || t.includes('sheet') || t.includes('excel')) return 'Documento';
+    if (t.includes('link') || t.includes('enlace') || t.includes('http')) return 'Enlace';
+    return 'Documento';
+  }
 
-    courses.forEach((course, idx) => {
-      const templates = templatesByCourse[idx % templatesByCourse.length];
-      templates.forEach((t, tIdx) => {
-        const fecha = new Date(now);
-        fecha.setDate(now.getDate() - (idx * 5 + tIdx));
-        result.push({
-          id: `mat-${course.id.slice(0, 8)}-${tIdx}`,
-          courseId: course.id,
-          courseName: course.titulo,
-          titulo: t.titulo,
-          descripcion: t.desc,
-          tipo: t.tipo,
-          url: '#',
-          tamano: t.tamano,
-          fechaSubida: fecha.toISOString(),
-          modulo: t.modulo,
-          descargas: Math.floor(Math.random() * 100)
-        });
-      });
-    });
+  mapFromBackend(raw: any, course: any, moduloName: string = 'General'): Material {
+    const rawType = raw.tipo ?? raw.Tipo ?? raw.tipoArchivo ?? 'PDF';
+    const sizeBytes = raw.tamañoBytes ?? raw.tamanoBytes ?? raw.TamañoBytes ?? 0;
+    const sizeMB = sizeBytes > 0 
+      ? `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB` 
+      : (raw.tamano || '1.0 MB');
 
-    return result;
+    return {
+      id: String(raw.id ?? raw.Id ?? `mat-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`),
+      courseId: course.id,
+      courseName: course.titulo,
+      titulo: raw.titulo ?? raw.Titulo ?? raw.nombreOriginal ?? raw.NombreOriginal ?? 'Material de Clase',
+      descripcion: raw.descripcion ?? raw.Descripcion ?? 'Recurso académico',
+      tipo: this.normalizeTipo(rawType),
+      url: raw.url ?? raw.Url ?? '#',
+      tamano: sizeMB,
+      fechaSubida: raw.fechaCreacion ?? raw.FechaCreacion ?? new Date().toISOString(),
+      modulo: moduloName || 'General',
+      descargas: raw.descargas ?? 0
+    };
   }
 }

@@ -85,12 +85,85 @@ export class MaterialsManagementComponent implements OnInit {
       const userId = user?.id || (user as any)?.sub || '';
       const data = await this.teacherQuery.getTeacherCourses(userId);
       this.courses.set(data);
-      this.materials.set(this.mapper.generateMockMaterials(data));
+
+      if (data && data.length > 0) {
+        const backendMaterials = await this.loadMaterialsFromBackend(data);
+        this.materials.set(backendMaterials);
+      } else {
+        this.materials.set([]);
+      }
     } catch (err) {
       console.warn('Error loading teacher courses for materials:', err);
+      this.materials.set([]);
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private async loadMaterialsFromBackend(courses: any[]): Promise<Material[]> {
+    const allMaterials: Material[] = [];
+
+    await Promise.all(courses.map(async (course) => {
+      try {
+        // 1. Obtener detalle del curso con sus módulos y lecciones
+        const courseDetail = await lastValueFrom(
+          this.http.get<any>(`${environment.cursosApiUrl}/cursos/${course.id}`)
+        );
+
+        const modulos = courseDetail?.modulos ?? courseDetail?.Modulos ?? [];
+        for (const modulo of modulos) {
+          const modTitle = modulo.titulo ?? modulo.Titulo ?? 'General';
+          
+          // Materiales directos del módulo
+          const moduloMats = modulo.materiales ?? modulo.Materiales ?? [];
+          for (const m of moduloMats) {
+            allMaterials.push(this.mapper.mapFromBackend(m, course, modTitle));
+          }
+
+          // Materiales asociados a las lecciones
+          const lecciones = modulo.lecciones ?? modulo.Lecciones ?? [];
+          for (const leccion of lecciones) {
+            const lessonTitle = leccion.titulo ?? leccion.Titulo ?? '';
+            const lessonMats = leccion.materiales ?? leccion.Materiales ?? leccion.materialesAdicionales ?? [];
+            for (const m of lessonMats) {
+              allMaterials.push(this.mapper.mapFromBackend(m, course, `${modTitle} • ${lessonTitle}`));
+            }
+          }
+        }
+
+        // 2. Consultar colección dedicada de materiales (/api/cursos/{cursoId}/materiales)
+        try {
+          const extraMats = await lastValueFrom(
+            this.http.get<any[]>(`${environment.cursosApiUrl}/cursos/${course.id}/materiales`)
+          );
+          if (Array.isArray(extraMats)) {
+            for (const em of extraMats) {
+              if (!allMaterials.some(existing => existing.id === em.id || (em.url && existing.url === em.url))) {
+                allMaterials.push({
+                  id: String(em.id || `mat-${Date.now()}-${Math.random()}`),
+                  courseId: course.id,
+                  courseName: course.titulo,
+                  titulo: em.titulo || 'Material de Clase',
+                  descripcion: em.descripcion || 'Recurso académico',
+                  tipo: this.mapper.normalizeTipo(em.tipo),
+                  url: em.url || '#',
+                  tamano: em.tamano || '1.0 MB',
+                  fechaSubida: em.fechaCreacion || new Date().toISOString(),
+                  modulo: em.moduloNombre || 'General',
+                  descargas: em.descargas || 0
+                });
+              }
+            }
+          }
+        } catch {
+          // Si el endpoint no retorna colección extra, se mantienen los de módulos/lecciones
+        }
+      } catch (err) {
+        console.warn(`Error loading materials for course ${course.id}:`, err);
+      }
+    }));
+
+    return allMaterials;
   }
 
   private emptyForm() {
@@ -125,6 +198,13 @@ export class MaterialsManagementComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      const MAX_SIZE_MB = 100;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        this.notificationService.show('error', `El archivo supera el límite de ${MAX_SIZE_MB}MB.`);
+        event.target.value = '';
+        return;
+      }
+
       this.selectedFile.set(file);
       if (!this.form.titulo) {
         this.form.titulo = file.name.replace(/\.[^/.]+$/, '');
@@ -132,11 +212,11 @@ export class MaterialsManagementComponent implements OnInit {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
       this.form.tamano = `${sizeMB} MB`;
       
-      const ext = file.name.split('.').pop()?.toLowerCase();
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
       if (ext === 'pdf') this.form.tipo = 'PDF';
-      else if (['mp4', 'webm', 'mov'].includes(ext || '')) this.form.tipo = 'Video';
-      else if (['ppt', 'pptx'].includes(ext || '')) this.form.tipo = 'Presentación';
-      else if (['doc', 'docx', 'txt'].includes(ext || '')) this.form.tipo = 'Documento';
+      else if (['mp4', 'webm', 'mov'].includes(ext)) this.form.tipo = 'Video';
+      else if (['ppt', 'pptx'].includes(ext)) this.form.tipo = 'Presentación';
+      else if (['doc', 'docx', 'txt'].includes(ext)) this.form.tipo = 'Documento';
     }
   }
 
@@ -155,6 +235,8 @@ export class MaterialsManagementComponent implements OnInit {
 
     try {
       let finalUrl = this.form.url;
+
+      // 1. Subida de archivo a Storage backend (MinIO / S3)
       if (this.selectedFile()) {
         try {
           const formData = new FormData();
@@ -166,6 +248,19 @@ export class MaterialsManagementComponent implements OnInit {
           }
         } catch (uploadErr) {
           console.warn('Backend MinIO upload fallback to local state:', uploadErr);
+        }
+      } else if (this.form.url && this.form.url.startsWith('http')) {
+        // Enlace externo: registrar en backend si aplica
+        try {
+          await lastValueFrom(
+            this.http.post(`${environment.cursosApiUrl}/cursos/${this.form.courseId}/materiales/enlace`, {
+              titulo: this.form.titulo,
+              url: this.form.url,
+              moduloId: null
+            })
+          );
+        } catch {
+          // Continuar con actualización reactiva
         }
       }
 
@@ -197,10 +292,19 @@ export class MaterialsManagementComponent implements OnInit {
     }
   }
 
-  delete(id: string) {
+  async delete(id: string) {
     const item = this.materials().find(m => m.id === id);
     const name = item ? `"${item.titulo}"` : 'este material';
     if (confirm(`¿Estás seguro de eliminar ${name}?`)) {
+      if (item?.courseId && id && !id.startsWith('mat-')) {
+        try {
+          await lastValueFrom(
+            this.http.delete(`${environment.cursosApiUrl}/cursos/${item.courseId}/materiales/${id}`)
+          );
+        } catch (err) {
+          console.warn('Backend deletion call skipped/fallback:', err);
+        }
+      }
       this.materials.update(list => list.filter(m => m.id !== id));
       this.notificationService.show('success', `Material eliminado.`);
     }
