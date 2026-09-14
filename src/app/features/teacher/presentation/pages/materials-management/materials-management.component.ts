@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 import { AuthRepository } from '@features/auth/domain/repositories/auth.repository';
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { MaterialsMapper } from '@shared/mappers/materials.mapper';
@@ -153,8 +154,27 @@ export class MaterialsManagementComponent implements OnInit {
     const course = this.courses().find(c => c.id === this.form.courseId);
 
     try {
+      let finalUrl = this.form.url;
+      if (this.selectedFile()) {
+        try {
+          const formData = new FormData();
+          formData.append('file', this.selectedFile()!);
+          const uploadUrl = `${environment.cursosApiUrl}/cursos/upload`;
+          const res = await lastValueFrom(this.http.post<{ url: string; fileName: string }>(uploadUrl, formData));
+          if (res?.url) {
+            finalUrl = res.url;
+          }
+        } catch (uploadErr) {
+          console.warn('Backend MinIO upload fallback to local state:', uploadErr);
+        }
+      }
+
       if (this.isEditing()) {
-        this.materials.update(list => list.map(m => m.id === this.form.id ? { ...this.form, courseName: course?.titulo || m.courseName } : m));
+        this.materials.update(list => list.map(m => m.id === this.form.id ? { 
+          ...this.form, 
+          url: finalUrl || m.url,
+          courseName: course?.titulo || m.courseName 
+        } : m));
         this.notificationService.show('success', `Material "${this.form.titulo}" actualizado.`);
       } else {
         const newMaterial: Material = {
@@ -163,7 +183,7 @@ export class MaterialsManagementComponent implements OnInit {
           courseName: course?.titulo || 'Curso Asignado',
           fechaSubida: new Date().toISOString(),
           descargas: 0,
-          url: this.form.url || '#'
+          url: finalUrl || '#'
         };
         this.materials.update(list => [newMaterial, ...list]);
         this.notificationService.show('success', `Material "${this.form.titulo}" publicado correctamente.`);
