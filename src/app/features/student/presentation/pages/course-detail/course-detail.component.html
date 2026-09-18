@@ -45,7 +45,7 @@
     />
 
     <!-- Navigation Tabs -->
-    <div class="max-w-7xl mx-auto px-5 md:px-8 mt-4">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 mt-4 overflow-x-auto no-scrollbar">
       <app-tab-nav
         [tabs]="tabs"
         [activeTabId]="activeTab()"
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-5 md:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-5 sm:py-8">
       @switch (activeTab()) {
         @case ('description') {
           <app-course-description [course]="courseData" />

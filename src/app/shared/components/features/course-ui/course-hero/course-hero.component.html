@@ -1,12 +1,12 @@
 <header class="bg-white border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-10">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-10">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 md:gap-8">
 
       <div class="min-w-0 flex-1">
         <!-- Back Button -->
         <button
           (click)="onBack.emit()"
-          class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-500 transition-colors mb-6 group"
+          class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-500 transition-colors mb-4 sm:mb-6 group cursor-pointer"
           aria-label="Volver al dashboard"
         >
           <div class="w-8 h-8 rounded-lg border border-indigo-200 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
@@ -14,55 +14,55 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </div>
-          <span class="text-[10px] font-bold uppercase tracking-widest">Volver</span>
+          <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest">Volver</span>
         </button>
 
         <!-- Course Meta Badges -->
-        <div class="flex flex-wrap items-center gap-2 mb-4">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
           @if (data().codigo) {
-            <span class="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-bold uppercase tracking-widest">
+            <span class="px-2.5 sm:px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-bold uppercase tracking-widest">
               {{ data().codigo }}
             </span>
           }
           @if (data().nivel) {
-            <span class="px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold uppercase tracking-widest">
+            <span class="px-2.5 sm:px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold uppercase tracking-widest">
               {{ data().nivel }}
             </span>
           }
           @if (data().modalidad) {
-            <span class="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest">
+            <span class="px-2.5 sm:px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest">
               {{ data().modalidad }}
             </span>
           }
 
           @if (role() === 'teacher') {
-            <span class="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <span class="px-2.5 sm:px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
               <i class="fas fa-users text-[8px]" aria-hidden="true"></i> {{ data().totalAlumnos }} Estudiantes
             </span>
-            <span class="px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <span class="px-2.5 sm:px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
               <i class="fas fa-star text-[8px]" aria-hidden="true"></i> Promedio: {{ (data().promedioGeneral | number: '1.1-1') || '0.0' }}
             </span>
           }
         </div>
 
         <!-- Title -->
-        <h1 class="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6 break-words">
           {{ data().titulo }}
         </h1>
 
         <!-- Instructor & Primary Action -->
-        <div class="flex flex-wrap items-center gap-4 md:gap-6">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6">
           @if (data().instructor; as instructor) {
             <div class="flex items-center gap-3">
               <img
                 [src]="instructor.avatar"
                 [alt]="instructor.nombre"
                 (error)="onImageError($event)"
-                class="w-10 h-10 rounded-full border border-slate-200"
+                class="w-10 h-10 rounded-full border border-slate-200 object-cover flex-shrink-0"
               />
-              <div>
-                <p class="text-sm font-semibold text-slate-900 leading-none">{{ instructor.nombre }}</p>
-                <p class="text-[10px] text-slate-500 mt-1">{{ instructor.cargo }}</p>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-900 leading-none truncate">{{ instructor.nombre }}</p>
+                <p class="text-[10px] text-slate-500 mt-1 truncate">{{ instructor.cargo }}</p>
               </div>
             </div>
           }
@@ -71,18 +71,31 @@
             <button
               (click)="onPrimaryAction.emit()"
               [disabled]="primaryButtonLoading()"
-              class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all flex items-center gap-2"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-sm min-h-[44px]"
             >
               @if (primaryButtonLoading()) {
                 <i class="fas fa-spinner fa-spin text-xs"></i>
               }
-              {{ primaryButtonLabel() }}
+              <span>{{ primaryButtonLabel() }}</span>
             </button>
           }
         </div>
+
+        <!-- Mobile Progress Bar for Student -->
+        @if (role() === 'student' && data().progreso !== undefined) {
+          <div class="md:hidden w-full mt-4 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Progreso del Curso</span>
+              <span class="font-bold text-indigo-600">{{ data().progreso }}%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-indigo-600 rounded-full transition-all duration-500" [style.width.%]="data().progreso || 0"></div>
+            </div>
+          </div>
+        }
       </div>
 
-      <!-- Progress Section -->
+      <!-- Desktop Progress Section -->
       @if (role() === 'student' && data().progreso !== undefined) {
         <div class="hidden md:flex flex-col items-center gap-3 flex-shrink-0 mb-2">
           <div class="relative w-24 h-24">
