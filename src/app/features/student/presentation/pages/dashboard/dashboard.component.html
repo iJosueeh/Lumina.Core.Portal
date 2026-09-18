@@ -9,10 +9,10 @@
     />
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-6 pt-8 pb-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10">
       
       <!-- Stats Quick View -->
-      <div class="mb-8">
+      <div class="mb-6 sm:mb-8">
         <app-student-stats
           [coursesCount]="courses().length"
           [pendingAssignments]="pendingCount()"
@@ -22,7 +22,7 @@
         />
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <!-- Columna Izquierda: Cursos Activos -->
         <section class="lg:col-span-2 space-y-6">
             <div class="flex items-center justify-between">

@@ -1,32 +1,32 @@
 <header class="border-b border-slate-200 bg-white z-20">
-    <div class="max-w-7xl mx-auto px-6 py-10 md:py-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="space-y-2">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
+        <div class="space-y-1.5 sm:space-y-2">
             <div class="flex items-center gap-3">
-                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-[10px] font-bold uppercase tracking-widest">Dashboard Estudiante</span>
+                <span class="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-[10px] font-bold uppercase tracking-widest">Dashboard Estudiante</span>
             </div>
             
             @if (isLoading) {
                 <div class="space-y-3">
-                    <div class="h-10 w-64 bg-slate-100 rounded-lg animate-pulse"></div>
-                    <div class="h-4 w-80 bg-slate-100 rounded animate-pulse"></div>
+                    <div class="h-8 sm:h-10 w-48 sm:w-64 bg-slate-100 rounded-lg animate-pulse"></div>
+                    <div class="h-4 w-60 sm:w-80 bg-slate-100 rounded animate-pulse"></div>
                 </div>
             } @else {
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
                     Hola, {{ userName }}
                 </h1>
-                <p class="text-slate-500 font-medium max-w-lg">
+                <p class="text-xs sm:text-sm md:text-base text-slate-500 font-medium max-w-lg leading-relaxed">
                     Bienvenido a tu centro de aprendizaje. Tienes contenido nuevo esperándote hoy.
                 </p>
             }
         </div>
 
-        <div class="flex gap-3">
-            <button (click)="onRefresh.emit()" class="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all group shadow-sm" title="Actualizar datos">
-                <i class="fas fa-sync-alt text-slate-600 group-hover:rotate-180 transition-transform duration-500"></i>
+        <div class="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+            <button (click)="onRefresh.emit()" class="w-11 h-11 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all group shadow-xs flex items-center justify-center shrink-0" title="Actualizar datos" aria-label="Actualizar datos">
+                <i class="fas fa-sync-alt text-slate-600 group-hover:rotate-180 transition-transform duration-500 text-sm"></i>
             </button>
-            <button (click)="onResumeLearning.emit()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
+            <button (click)="onResumeLearning.emit()" class="flex-1 sm:flex-none justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-xs text-xs sm:text-sm flex items-center gap-2 min-h-[44px]">
                 <i class="fas fa-play text-xs"></i>
-                Continuar Aprendiendo
+                <span>Continuar Aprendiendo</span>
             </button>
         </div>
     </div>

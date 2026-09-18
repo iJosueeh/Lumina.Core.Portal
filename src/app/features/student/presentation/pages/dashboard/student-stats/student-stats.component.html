@@ -1,9 +1,9 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-6">
     @if (isLoading) {
         @for (i of [1,2,3,4]; track i) {
-            <div class="h-36 bg-white/5 rounded-[2.5rem] border border-white/5 p-7 flex flex-col justify-between">
-                <div class="h-4 w-20 bg-white/5 rounded-full animate-pulse"></div>
-                <div class="h-10 w-16 bg-white/5 rounded-xl animate-pulse mt-4"></div>
+            <div class="h-32 sm:h-36 bg-white rounded-xl border border-slate-200 p-5 flex flex-col justify-between shadow-xs animate-pulse">
+                <div class="h-3.5 w-20 bg-slate-100 rounded-full"></div>
+                <div class="h-8 w-16 bg-slate-100 rounded-lg mt-4"></div>
             </div>
         }
     } @else {
