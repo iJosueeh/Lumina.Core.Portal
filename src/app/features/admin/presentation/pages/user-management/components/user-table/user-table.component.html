@@ -1,4 +1,58 @@
-<div class="overflow-x-auto">
+<!-- Mobile Card View (< md) -->
+<div class="block md:hidden divide-y divide-slate-100">
+    @for (user of users; track user.id) {
+        <div class="p-4 space-y-3 bg-white">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shrink-0">
+                        {{ user.fullName[0] }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-slate-900 text-sm truncate">{{ user.fullName }}</p>
+                        <p class="text-xs text-slate-400 font-mono truncate">{{ user.email }}</p>
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    <app-status-badge [status]="user.status"></app-status-badge>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <span class="font-medium text-slate-700">{{ user.role }}</span>
+                <span class="text-slate-400 truncate max-w-[150px]">{{ user.department || 'Sin departamento' }}</span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="grid grid-cols-3 gap-2 pt-1">
+                <button (click)="edit.emit(user)"
+                    class="py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[38px] cursor-pointer">
+                    <i class="fas fa-pen text-[11px]"></i>
+                    <span>Editar</span>
+                </button>
+                <button (click)="resetPassword.emit(user)"
+                    class="py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[38px] cursor-pointer">
+                    <i class="fas fa-key text-[11px]"></i>
+                    <span>Clave</span>
+                </button>
+                <button (click)="delete.emit(user)"
+                    class="py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[38px] cursor-pointer">
+                    <i class="fas fa-trash text-[11px]"></i>
+                    <span>Borrar</span>
+                </button>
+            </div>
+        </div>
+    } @empty {
+        <div class="py-16 text-center">
+            <div class="flex flex-col items-center gap-2 text-slate-300">
+                <i class="fas fa-users text-3xl"></i>
+                <p class="text-xs font-bold text-slate-400">No se encontraron usuarios</p>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Desktop Table (>= md) -->
+<div class="hidden md:block overflow-x-auto">
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b border-slate-200">
@@ -32,15 +86,15 @@
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-1">
                             <button (click)="edit.emit(user)" title="Editar usuario"
-                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all cursor-pointer">
                                 <i class="fas fa-pen text-sm"></i>
                             </button>
                             <button (click)="resetPassword.emit(user)" title="Resetear contraseña"
-                                class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all">
+                                class="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all cursor-pointer">
                                 <i class="fas fa-key text-sm"></i>
                             </button>
                             <button (click)="delete.emit(user)" title="Eliminar usuario"
-                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer">
                                 <i class="fas fa-trash text-sm"></i>
                             </button>
                         </div>
