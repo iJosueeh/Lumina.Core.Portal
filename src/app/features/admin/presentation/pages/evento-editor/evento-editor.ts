@@ -20,6 +20,7 @@ export class EventoEditorComponent implements OnInit {
   eventoId = signal<string | null>(null);
   isSaving = signal(false);
   saveSuccess = signal(false);
+  activeMobileTab = signal<'form' | 'preview'>('form');
 
   titulo = signal('');
   fecha = signal('');

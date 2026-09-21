@@ -25,6 +25,7 @@ export class NoticiaEditorComponent implements OnInit {
   isLoading = signal(false);
   isSaving = signal(false);
   saveSuccess = signal(false);
+  activeMobileTab = signal<'form' | 'preview'>('form');
 
   // Form fields
   titulo = signal('');
