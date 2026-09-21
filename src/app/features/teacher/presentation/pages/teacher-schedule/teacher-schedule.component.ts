@@ -4,16 +4,22 @@ import { AuthRepository } from '@features/auth/domain/repositories/auth.reposito
 import { TeacherQueryService } from '@features/teacher/infrastructure/queries/teacher-query.service';
 import { HorarioSesion, TeacherScheduleData } from '../../../domain/models/teacher-schedule.model';
 import { PageHeaderComponent } from '@shared/components/ui/page-header/page-header.component';
+import { StatCardComponent } from '@shared/components/ui/stat-card/stat-card.component';
 
 @Component({
   selector: 'app-teacher-schedule',
   standalone: true,
-  imports: [CommonModule, PageHeaderComponent],
+  imports: [CommonModule, PageHeaderComponent, StatCardComponent],
   templateUrl: './teacher-schedule.component.html',
 })
 export class TeacherScheduleComponent implements OnInit {
+  private authRepo = inject(AuthRepository);
+  private teacherQuery = inject(TeacherQueryService);
+
   scheduleData = signal<TeacherScheduleData | null>(null);
   isLoading = signal(true);
+  selectedDay = signal<string>('Lunes');
+  selectedSesion = signal<HorarioSesion | null>(null);
 
   diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -28,9 +34,15 @@ export class TeacherScheduleComponent implements OnInit {
     const sesiones = this.sesiones();
     const agrupadas: Record<string, HorarioSesion[]> = {};
     this.diasSemana.forEach(dia => {
-      agrupadas[dia] = sesiones.filter((s: HorarioSesion) => s.dia === dia);
+      agrupadas[dia] = sesiones
+        .filter((s: HorarioSesion) => s.dia === dia)
+        .sort((a, b) => this.parseTime(a.horaInicio) - this.parseTime(b.horaInicio));
     });
     return agrupadas;
+  });
+
+  sesionesDiaSeleccionado = computed(() => {
+    return this.sesionesPorDia()[this.selectedDay()] || [];
   });
 
   totalSesiones = computed(() => this.sesiones().length);
@@ -43,11 +55,50 @@ export class TeacherScheduleComponent implements OnInit {
     }, 0);
   });
 
-  private authRepo = inject(AuthRepository);
-  private teacherQuery = inject(TeacherQueryService);
+  totalTeoricas = computed(() => this.sesiones().filter((s: HorarioSesion) => s.tipo === 'Teórica').length);
+  totalPracticas = computed(() => this.sesiones().filter((s: HorarioSesion) => s.tipo === 'Práctica').length);
+
+  todayName = computed(() => {
+    const dayMap: Record<number, string> = {
+      1: 'Lunes',
+      2: 'Martes',
+      3: 'Miércoles',
+      4: 'Jueves',
+      5: 'Viernes',
+      6: 'Sábado',
+      0: 'Lunes',
+    };
+    const dayIdx = new Date().getDay();
+    return dayMap[dayIdx] || 'Lunes';
+  });
 
   ngOnInit(): void {
+    this.selectedDay.set(this.todayName());
     this.loadSchedule();
+  }
+
+  selectDay(dia: string): void {
+    this.selectedDay.set(dia);
+  }
+
+  openSesionDetail(sesion: HorarioSesion): void {
+    this.selectedSesion.set(sesion);
+  }
+
+  closeSesionDetail(): void {
+    this.selectedSesion.set(null);
+  }
+
+  getShortDayName(dia: string): string {
+    const map: Record<string, string> = {
+      Lunes: 'LUN',
+      Martes: 'MAR',
+      Miércoles: 'MIÉ',
+      Jueves: 'JUE',
+      Viernes: 'VIE',
+      Sábado: 'SÁB',
+    };
+    return map[dia] || dia.slice(0, 3).toUpperCase();
   }
 
   private async loadSchedule(): Promise<void> {
@@ -109,7 +160,7 @@ export class TeacherScheduleComponent implements OnInit {
         sesiones,
       });
     } catch (err) {
-
+      // Graceful error handle
     } finally {
       this.isLoading.set(false);
     }
@@ -118,6 +169,12 @@ export class TeacherScheduleComponent implements OnInit {
   parseTime(time: string): number {
     const [hours, minutes] = time.split(':').map(Number);
     return hours + minutes / 60;
+  }
+
+  getSesionDuration(sesion: HorarioSesion): number {
+    const inicio = this.parseTime(sesion.horaInicio);
+    const fin = this.parseTime(sesion.horaFin);
+    return Math.round((fin - inicio) * 10) / 10;
   }
 
   getSesionPosition(sesion: HorarioSesion): { top: string; height: string } {
@@ -130,7 +187,8 @@ export class TeacherScheduleComponent implements OnInit {
 
   getTipoColor(tipo: string): string {
     return tipo === 'Teórica'
-      ? 'bg-blue-50 border-blue-300 text-blue-700'
-      : 'bg-purple-50 border-purple-300 text-purple-700';
+      ? 'bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100/90'
+      : 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100/90';
   }
 }
+
