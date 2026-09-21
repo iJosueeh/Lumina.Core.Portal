@@ -10,19 +10,26 @@ import { SiteConfigService } from '@core/services/site-config.service';
     standalone: true,
     imports: [CommonModule, RouterOutlet, SidebarComponent],
     template: `
-        <div class="min-h-screen bg-gray-50 text-slate-900 font-sans flex overflow-hidden">
+        <div class="min-h-screen bg-gray-50 text-slate-900 font-sans flex overflow-x-clip max-w-[100vw]">
             <app-sidebar 
                 #sidebar
                 [config]="sidebarConfig"
                 (logoutEvent)="handleLogout()">
             </app-sidebar>
 
-            <div class="flex-1 flex flex-col min-w-0 lg:ml-72 overflow-hidden relative">
-                <header class="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center px-6">
-                    <button (click)="sidebar.toggle()" class="p-2 text-slate-600">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="ml-4 font-bold text-slate-900">{{ siteName() }}</div>
+            <div class="flex-1 flex flex-col min-w-0 lg:ml-72 overflow-x-clip relative">
+                <header class="lg:hidden sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <button (click)="sidebar.toggle()" class="w-10 h-10 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors min-w-[44px] min-h-[44px] cursor-pointer" aria-label="Abrir menú">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-sm shadow-sm shadow-indigo-200 font-bold">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <span class="font-bold text-slate-900 text-base tracking-tight">{{ siteName() }}</span>
+                        </div>
+                    </div>
                 </header>
                 <main class="flex-1 overflow-y-auto">
                     <router-outlet></router-outlet>

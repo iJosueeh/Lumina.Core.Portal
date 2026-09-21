@@ -1,5 +1,5 @@
 @if (stats) {
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
     <app-stat-card 
         label="Promedio Grupal" 
         [value]="(stats.promedioGeneral || 0).toString()" 
@@ -15,12 +15,14 @@
         [trend]="(stats.porcentajeAprobados || 0) >= 70 ? 'Óptimo' : 'Bajo'"
         [trendType]="(stats.porcentajeAprobados || 0) >= 70 ? 'positive' : 'negative'">
     </app-stat-card>
-    <app-stat-card 
-        label="En Riesgo / Reprobados" 
-        [value]="(stats.reprobados || 0).toString()"
-        icon="user-slash" 
-        [description]="'Requieren seguimiento'"
-        color="orange">
-    </app-stat-card>
+    <div class="sm:col-span-2 md:col-span-1">
+        <app-stat-card 
+            label="En Riesgo / Reprobados" 
+            [value]="(stats.reprobados || 0).toString()"
+            icon="user-slash" 
+            [description]="'Requieren seguimiento académico'"
+            color="orange">
+        </app-stat-card>
+    </div>
 </div>
 }

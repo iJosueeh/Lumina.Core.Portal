@@ -5,22 +5,22 @@
     badge="Gestión de Notas"
     title="Calificaciones"
     subtitle="Registra y gestiona las calificaciones de tus estudiantes por evaluación">
-    <button (click)="saveAll()" [disabled]="isSaving()" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:scale-100 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-2">
+    <button (click)="saveAll()" [disabled]="isSaving()" class="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:scale-100 text-white font-semibold rounded-xl transition-all shadow-sm text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[44px] cursor-pointer">
       @if (isSaving()) {
-        <i class="fas fa-spinner fa-spin"></i>
-        Guardando...
+        <i class="fas fa-spinner fa-spin text-xs"></i>
+        <span>Guardando...</span>
       } @else {
-        <i class="fas fa-save"></i>
-        Guardar Cambios
+        <i class="fas fa-save text-xs"></i>
+        <span>Guardar Cambios</span>
       }
     </button>
   </app-page-header>
 
   <!-- Contenido Principal -->
-  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+  <main class="max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-5 sm:py-8 space-y-4 sm:space-y-6">
 
     <!-- Filtros -->
-    <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+    <div class="bg-white border border-slate-200/80 p-4 sm:p-6 rounded-2xl shadow-sm">
       <app-grades-filter-bar
         [courses]="courses()"
         [selectedCourseId]="selectedCourseId()"
@@ -35,9 +35,9 @@
     <app-grades-stats-summary [stats]="stats()" />
 
     <!-- Tabla de Calificaciones -->
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
       @if (isLoading()) {
-        <div class="p-8 space-y-4">
+        <div class="p-6 sm:p-8 space-y-3.5 sm:space-y-4">
           @for (i of [1,2,3,4,5]; track i) {
             <div class="h-14 w-full rounded-xl bg-slate-100 animate-pulse"></div>
           }
