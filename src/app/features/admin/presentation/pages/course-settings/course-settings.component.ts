@@ -28,6 +28,7 @@ export class CourseSettingsComponent implements OnInit, OnDestroy {
   isSaving = signal(false);
   isUploading = signal(false);
   loadingDocentes = signal(true);
+  activeMobileTab = signal<'form' | 'preview'>('form');
 
   docentes = signal<AdminDocente[]>([]);
   categories = [...COURSE_CATEGORIES];
