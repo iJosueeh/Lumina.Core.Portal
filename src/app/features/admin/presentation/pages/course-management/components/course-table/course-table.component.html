@@ -1,4 +1,97 @@
-<div class="overflow-x-auto">
+<!-- ============================================== -->
+<!-- VISTA MÓVIL / TABLET: Cards ( < 768px )        -->
+<!-- ============================================== -->
+<div class="block md:hidden p-3.5 sm:p-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    @for (course of courses(); track course.id) {
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col group">
+        <!-- Cover Image with Badges -->
+        <div class="relative h-36 w-full bg-slate-100 overflow-hidden shrink-0">
+          <img
+            [src]="course.coverImage"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            alt="Cover"
+            (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'">
+          
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
+
+          <!-- Status & Code badges -->
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[10px] font-mono text-indigo-700 font-bold uppercase tracking-tighter shadow-xs border border-white/40">
+              {{ course.code }}
+            </span>
+            <app-status-badge 
+              [status]="course.status" 
+              [label]="course.status === 'PUBLISHED' ? 'Público' : 'Borrador'">
+            </app-status-badge>
+          </div>
+
+          <div class="absolute bottom-2.5 left-2.5">
+            <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] font-bold text-white uppercase tracking-wider">
+              <i class="fas fa-layer-group mr-1 text-[9px]"></i> {{ course.modules }} Módulos
+            </span>
+          </div>
+        </div>
+
+        <!-- Course Info -->
+        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2">
+              {{ course.name }}
+            </h3>
+            
+            <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 font-medium">
+              <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 border border-slate-200 shrink-0">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <span class="truncate font-semibold text-slate-700">{{ course.teacherName }}</span>
+            </div>
+          </div>
+
+          <!-- Actions Grid -->
+          <div class="pt-3 border-t border-slate-100 grid grid-cols-4 gap-1.5">
+            <button 
+              class="h-10 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all flex flex-col items-center justify-center border border-indigo-100/80 cursor-pointer min-h-[40px]"
+              (click)="manageCourse(course.id!)"
+              title="Gestionar Curso (Vista Docente)">
+              <i class="fas fa-desktop text-xs"></i>
+              <span class="text-[8px] font-bold uppercase tracking-tight mt-0.5">Aula</span>
+            </button>
+
+            <button 
+              class="h-10 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition-all flex flex-col items-center justify-center border border-purple-100/80 cursor-pointer min-h-[40px]"
+              (click)="editContent(course.id!)"
+              title="Editor Multimedia">
+              <i class="fas fa-clapperboard text-xs"></i>
+              <span class="text-[8px] font-bold uppercase tracking-tight mt-0.5">Media</span>
+            </button>
+            
+            <button 
+              class="h-10 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-all flex flex-col items-center justify-center border border-blue-100/80 cursor-pointer min-h-[40px]"
+              (click)="openSettings(course.id!)"
+              title="Configuración del Curso">
+              <i class="fas fa-cog text-xs"></i>
+              <span class="text-[8px] font-bold uppercase tracking-tight mt-0.5">Ajustes</span>
+            </button>
+
+            <button 
+              class="h-10 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all flex flex-col items-center justify-center border border-red-100/80 cursor-pointer min-h-[40px]"
+              (click)="onDelete.emit(course)"
+              title="Eliminar Curso">
+              <i class="fas fa-trash-alt text-xs"></i>
+              <span class="text-[8px] font-bold uppercase tracking-tight mt-0.5">Borrar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- VISTA ESCRITORIO: Tabla ( >= 768px )           -->
+<!-- ============================================== -->
+<div class="hidden md:block overflow-x-auto">
   <table class="course-table">
     <thead>
       <tr>
@@ -54,7 +147,7 @@
           <td>
             <div class="flex items-center justify-end gap-2">
               <button 
-                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center border border-slate-200"
+                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center border border-slate-200 cursor-pointer"
                 (click)="manageCourse(course.id!)"
                 title="Gestionar Curso (Vista Docente)"
               >
@@ -62,7 +155,7 @@
               </button>
 
               <button 
-                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all flex items-center justify-center border border-slate-200"
+                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all flex items-center justify-center border border-slate-200 cursor-pointer"
                 (click)="editContent(course.id!)"
                 title="Editor Multimedia"
               >
@@ -70,7 +163,7 @@
               </button>
               
               <button 
-                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center border border-slate-200"
+                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center border border-slate-200 cursor-pointer"
                 (click)="openSettings(course.id!)"
                 title="Configuración del Curso"
               >
@@ -78,7 +171,7 @@
               </button>
 
               <button 
-                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all flex items-center justify-center border border-slate-200"
+                class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all flex items-center justify-center border border-slate-200 cursor-pointer"
                 (click)="onDelete.emit(course)"
                 title="Eliminar"
               >
@@ -91,3 +184,4 @@
     </tbody>
   </table>
 </div>
+
