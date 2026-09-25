@@ -76,12 +76,17 @@ export class DashboardComponent {
         this.userName.set(user.fullName.split(' ')[0]);
         // Limpiar cache para forzar consulta fresca a la API
         this.enrollmentService.clearStudentIdCache();
-        // Resolver studentId desde userId
-        this.enrollmentService.getStudentIdByUserId(user.id).subscribe(studentId => {
-          if (studentId) {
-            this.loadData(studentId);
+        // Resolver studentId desde userId (auto-creando perfil si hace falta)
+        this.enrollmentService.getStudentIdByUserId(user.id).subscribe({
+          next: (studentId) => {
+            this.loadData(studentId || user.id);
+          },
+          error: () => {
+            this.loadData(user.id);
           }
         });
+      } else {
+        this.isLoading.set(false);
       }
     });
   }
@@ -139,9 +144,14 @@ export class DashboardComponent {
     const user = this.authRepository.getCurrentUser();
     if (user) {
       this.cacheService.clear();
-      this.enrollmentService.getStudentIdByUserId(user.id).subscribe(studentId => {
-        if (studentId) {
-          this.loadData(studentId);
+      this.enrollmentService.clearStudentIdCache();
+      this.isLoading.set(true);
+      this.enrollmentService.getStudentIdByUserId(user.id).subscribe({
+        next: (studentId) => {
+          this.loadData(studentId || user.id);
+        },
+        error: () => {
+          this.loadData(user.id);
         }
       });
     }

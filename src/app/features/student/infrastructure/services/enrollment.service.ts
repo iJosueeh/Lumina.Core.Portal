@@ -27,25 +27,61 @@ export class EnrollmentService {
   }
 
   /**
-   * Llama a GET /api/estudiantes/by-usuario/{usuarioId}
+   * Llama a GET /api/estudiantes/by-usuario/{usuarioId}.
+   * Si no existe (404), auto-aprovisiona el registro Estudiante mediante POST /api/estudiantes.
    */
   getStudentIdByUserId(usuarioId: string): Observable<string | null> {
+    if (!usuarioId) return of(null);
+
     // Verificar cache
     if (this.studentIdCache.has(usuarioId)) {
-      return of(this.studentIdCache.get(usuarioId) ?? null);
+      const cached = this.studentIdCache.get(usuarioId);
+      if (cached) return of(cached);
     }
 
-    return this.http.get<{ id: string }>(
+    return this.http.get<any>(
       `${this.estudiantesApiUrl}/estudiantes/by-usuario/${usuarioId}`
     ).pipe(
       map(response => {
-        const studentId = response?.id || null;
-        this.studentIdCache.set(usuarioId, studentId);
+        const studentId = typeof response === 'string' ? response : (response?.id || response?.Id || response?.value || null);
+        if (studentId) {
+          this.studentIdCache.set(usuarioId, studentId);
+        }
         return studentId;
       }),
       catchError(() => {
-        this.studentIdCache.set(usuarioId, null);
-        return of(null);
+        // Si no existe (404), intentamos auto-crear la entidad Estudiante
+        return this.http.post<any>(`${this.estudiantesApiUrl}/estudiantes`, {
+          usuarioId: usuarioId,
+          UsuarioId: usuarioId
+        }).pipe(
+          map(createdResponse => {
+            const createdId = typeof createdResponse === 'string'
+              ? createdResponse
+              : (createdResponse?.id || createdResponse?.Id || createdResponse?.value || null);
+            if (createdId) {
+              this.studentIdCache.set(usuarioId, createdId);
+              return createdId;
+            }
+            return null;
+          }),
+          catchError(() => {
+            // Si falla el POST (por ej. por race condition), intentamos una última consulta
+            return this.http.get<any>(
+              `${this.estudiantesApiUrl}/estudiantes/by-usuario/${usuarioId}`
+            ).pipe(
+              map(lastTry => {
+                const id = typeof lastTry === 'string' ? lastTry : (lastTry?.id || lastTry?.Id || lastTry?.value || null);
+                this.studentIdCache.set(usuarioId, id);
+                return id;
+              }),
+              catchError(() => {
+                this.studentIdCache.set(usuarioId, null);
+                return of(null);
+              })
+            );
+          })
+        );
       })
     );
   }

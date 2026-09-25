@@ -29,8 +29,10 @@ export class CoursesHttpRepositoryImpl implements CoursesRepository {
                 timeout(this.ESTUDIANTES_TIMEOUT_MS),
                 retry({ count: 1, delay: 500 }),
                 map(response => {
-                    // Manejar tanto { success: true, data: [...] } como el array directo
-                    const courses = Array.isArray(response) ? response : (response.data || []);
+                    // Manejar tanto { success: true, data: [...] }, { value: [...] } como el array directo
+                    const courses = Array.isArray(response) 
+                        ? response 
+                        : (response?.value || response?.data || []);
 
                     return courses.map((course: any) => {
                         const rawTitulo = course.titulo || course.Titulo || course.nombreCurso || course.NombreCurso;
