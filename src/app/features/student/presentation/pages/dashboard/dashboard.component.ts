@@ -95,16 +95,6 @@ export class DashboardComponent {
     this.cacheService.invalidate(`student-courses-${studentId}`);
     this.isLoading.set(true);
 
-    // Fetch courses with horarios from Cursos API
-    this.coursesService.getAllCoursesWithSchedules().pipe(
-      catchError((error) => {
-        console.error('❌ [DASHBOARD] Error cargando cursos con horarios:', error);
-        return of([] as CursoConHorarios[]);
-      })
-    ).subscribe((coursesWithSchedules) => {
-      this.todayCourses.set(coursesWithSchedules);
-    });
-
     forkJoin({
       courses: this.getCoursesUseCase.execute(studentId).pipe(
         catchError((error) => {
@@ -130,13 +120,30 @@ export class DashboardComponent {
           horasEstudio: 0, cursosCompletados: 0, horasEstudioSemana: 0, asistenciaTotal: 0
         }))
       ),
+      allCoursesWithSchedules: this.coursesService.getAllCoursesWithSchedules().pipe(
+        catchError((error) => {
+          console.error('❌ [DASHBOARD] Error cargando cursos con horarios:', error);
+          return of([] as CursoConHorarios[]);
+        })
+      )
     })
       .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe(({ courses, assignments, announcements, stats }) => {
+      .subscribe(({ courses, assignments, announcements, stats, allCoursesWithSchedules }) => {
         this.courses.set(courses);
         this.assignments.set(assignments);
         this.announcements.set(announcements);
         this.stats.set(stats);
+
+        // Filtrar los horarios de hoy SOLO para los cursos en los que el estudiante está realmente matriculado
+        if (courses && courses.length > 0) {
+          const enrolledIds = new Set(courses.map(c => String(c.id).toLowerCase()));
+          const studentTodayCourses = (allCoursesWithSchedules || []).filter(c => 
+            enrolledIds.has(String(c.id).toLowerCase())
+          );
+          this.todayCourses.set(studentTodayCourses);
+        } else {
+          this.todayCourses.set([]);
+        }
       });
   }
 
