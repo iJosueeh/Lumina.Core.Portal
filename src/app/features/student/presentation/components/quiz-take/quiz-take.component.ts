@@ -133,17 +133,40 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     this.isSubmitting.set(true);
     this.stopTimer();
     const endTime = new Date();
-    const timeSpent = Math.floor((endTime.getTime() - this.startTime.getTime()) / 60000);
+    const timeSpent = Math.max(1, Math.floor((endTime.getTime() - this.startTime.getTime()) / 60000));
+
+    const totalQuestions = this.quiz.questions?.length || 1;
+    const defaultPointsPerQuestion = (this.quiz.totalPoints && this.quiz.totalPoints > 0)
+      ? this.quiz.totalPoints / totalQuestions
+      : 20 / totalQuestions;
 
     const questionAnswers: QuestionAnswer[] = this.quiz.questions.map(q => {
       const answer = this.answers().get(q.id);
-      return { questionId: q.id, answer: answer || '', isCorrect: this.checkAnswer(q, answer), pointsEarned: 0 };
+      const isCorrect = this.checkAnswer(q, answer);
+      const questionPoints = q.points && q.points > 0 ? q.points : defaultPointsPerQuestion;
+      const pointsEarned = isCorrect ? questionPoints : 0;
+      return {
+        questionId: q.id,
+        answer: answer || '',
+        isCorrect,
+        pointsEarned
+      };
     });
 
-    const totalPoints = questionAnswers.reduce((sum, ans) => sum + (ans.pointsEarned || 0), 0);
-    const grade = Math.round((totalPoints / this.quiz.totalPoints) * 200) / 10;
-    const percentage = grade;
-    const passed = grade >= 10.5;
+    const totalPointsEarned = questionAnswers.reduce((sum, ans) => sum + (ans.pointsEarned || 0), 0);
+    const maxPoints = this.quiz.totalPoints && this.quiz.totalPoints > 0
+      ? this.quiz.totalPoints
+      : this.quiz.questions.reduce((sum, q) => sum + (q.points || defaultPointsPerQuestion), 0) || 20;
+
+    const grade = maxPoints > 0
+      ? Math.min(20, Math.max(0, Math.round((totalPointsEarned / maxPoints) * 200) / 10))
+      : 0;
+
+    const passingThreshold = (this.quiz.config?.passingScore && this.quiz.config.passingScore <= 20)
+      ? this.quiz.config.passingScore
+      : (this.quiz.config?.passingScore ? (this.quiz.config.passingScore / 100) * 20 : 10.5);
+
+    const passed = grade >= passingThreshold;
 
     const attempt: QuizAttempt = {
       id: `attempt-${Date.now()}`,
@@ -155,8 +178,8 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
       startedAt: this.startTime,
       completedAt: endTime,
       timeSpent,
-      score: totalPoints,
-      percentage,
+      score: grade,
+      percentage: grade,
       passed,
     };
 
@@ -165,15 +188,37 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
 
   private checkAnswer(question: Question, answer: string | string[] | undefined): boolean {
     if (!answer) return false;
+    const answerStr = Array.isArray(answer) ? answer.join(', ') : answer.toString().trim();
+    if (!answerStr) return false;
+
     switch (question.type) {
       case 'multiple-choice':
-      case 'true-false':
-        return question.options?.find(o => o.isCorrect)?.id === answer;
+      case 'true-false': {
+        const correctOption = question.options?.find(o => o.isCorrect === true);
+        if (correctOption) {
+          return correctOption.id.toLowerCase() === answerStr.toLowerCase() ||
+                 correctOption.text.trim().toLowerCase() === answerStr.toLowerCase();
+        }
+        if (question.correctAnswer) {
+          const optionByCorrectAnswer = question.options?.find(opt =>
+            opt.id.toLowerCase() === question.correctAnswer!.toLowerCase() ||
+            opt.text.trim().toLowerCase() === question.correctAnswer!.trim().toLowerCase()
+          );
+          if (optionByCorrectAnswer) {
+            return optionByCorrectAnswer.id.toLowerCase() === answerStr.toLowerCase() ||
+                   optionByCorrectAnswer.text.trim().toLowerCase() === answerStr.toLowerCase();
+          }
+          return question.correctAnswer.toLowerCase() === answerStr.toLowerCase() ||
+                 question.correctAnswer.trim().toLowerCase() === answerStr.toLowerCase();
+        }
+        return false;
+      }
       case 'short-answer':
-        return typeof answer === 'string' && question.correctAnswer
-          ? answer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()
+        return typeof answerStr === 'string' && question.correctAnswer
+          ? answerStr.toLowerCase() === question.correctAnswer.toLowerCase().trim()
           : false;
-      default: return false;
+      default:
+        return false;
     }
   }
 

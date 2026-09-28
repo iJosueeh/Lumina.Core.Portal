@@ -9,14 +9,22 @@ export type EvaluationStatus = 'urgent' | 'upcoming' | 'available' | 'completed'
 export type EvaluationDifficulty = 'easy' | 'medium' | 'hard';
 
 /** Returns { text, badgeClasses } for a status pill. */
-export function getStatusBadge(status: EvaluationStatus): { text: string; class: string } {
+export function getStatusBadge(status: EvaluationStatus, score?: number): { text: string; class: string } {
   switch (status) {
     case 'urgent':
       return { text: 'En riesgo', class: 'bg-rose-50 text-rose-700 border border-rose-200' };
     case 'upcoming':
       return { text: 'En curso', class: 'bg-amber-50 text-amber-700 border border-amber-200' };
     case 'completed':
-      return { text: 'Aprobado', class: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+      if (score !== undefined) {
+        const normScore = normalizeToVigesimal(score);
+        if (normScore >= 10.5) {
+          return { text: 'Aprobado', class: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+        } else {
+          return { text: 'Desaprobado', class: 'bg-rose-50 text-rose-700 border border-rose-200' };
+        }
+      }
+      return { text: 'Completado', class: 'bg-blue-50 text-blue-700 border border-blue-200' };
     default:
       return { text: 'Disponible', class: 'bg-cyan-50 text-cyan-700 border border-cyan-200' };
   }

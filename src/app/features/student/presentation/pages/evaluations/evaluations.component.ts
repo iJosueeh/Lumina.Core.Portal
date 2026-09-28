@@ -344,8 +344,8 @@ export class EvaluationsComponent implements OnInit {
 
   // --- Delegated to shared utils ---
 
-  getStatusBadge(status: string) {
-    return getStatusBadge(status as EvaluationStatus);
+  getStatusBadge(status: string, score?: number) {
+    return getStatusBadge(status as EvaluationStatus, score);
   }
 
   getScoreColor(score: number | undefined): string {

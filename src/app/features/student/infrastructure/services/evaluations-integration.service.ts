@@ -127,9 +127,9 @@ export class EvaluationsIntegrationService {
       updatedAt: undefined,
       config: {
         timeLimit: e.duracionMinutos,
-        attemptsAllowed: e.intentosMaximos,
-        passingScore: 70,
-        showCorrectAnswers: false,
+        attemptsAllowed: e.intentosMaximos || 3,
+        passingScore: 10.5,
+        showCorrectAnswers: true,
         shuffleQuestions: false,
         shuffleOptions: false
       },
@@ -168,7 +168,7 @@ export class EvaluationsIntegrationService {
       config: {
         timeLimit: undefined,
         attemptsAllowed: 3,
-        passingScore: 70,
+        passingScore: 10.5,
         showCorrectAnswers: true,
         shuffleQuestions: false,
         shuffleOptions: false

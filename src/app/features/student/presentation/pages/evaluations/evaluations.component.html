@@ -212,8 +212,8 @@
 
                     <!-- Status Badge -->
                     <div>
-                      <span class="inline-flex px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold" [ngClass]="getStatusBadge(evaluation.status).class">
-                        {{ getStatusBadge(evaluation.status).text }}
+                      <span class="inline-flex px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold" [ngClass]="getStatusBadge(evaluation.status, evaluation.bestScore).class">
+                        {{ getStatusBadge(evaluation.status, evaluation.bestScore).text }}
                       </span>
                     </div>
 
