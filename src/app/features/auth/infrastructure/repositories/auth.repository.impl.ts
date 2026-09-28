@@ -8,6 +8,8 @@ import { environment } from '@environments/environment';
 import { AuthService } from '@core/services/auth.service';
 import { CacheService } from '@core/services/cache.service';
 
+import { UserAvatarService } from '@shared/services/user-avatar.service';
+
 interface AuthResponse {
     token: string;
     userInfo: {
@@ -28,7 +30,8 @@ export class AuthRepositoryImpl extends AuthRepository {
     constructor(
         private http: HttpClient,
         private authService: AuthService,
-        private cacheService: CacheService
+        private cacheService: CacheService,
+        private avatarService: UserAvatarService
     ) {
         super();
     }
@@ -56,9 +59,11 @@ export class AuthRepositoryImpl extends AuthRepository {
             tap(user => {
                 this.authService.setSession(user);
                 this.cacheService.clear();
+                this.avatarService.reloadAvatar();
             }),
             catchError((error: HttpErrorResponse) => {
                 this.authService.logout();
+                this.avatarService.clear();
                 return throwError(() => error);
             })
         );
@@ -67,6 +72,7 @@ export class AuthRepositoryImpl extends AuthRepository {
     override logout(): void {
         this.authService.logout();
         this.cacheService.clear();
+        this.avatarService.clear();
     }
 
     override getCurrentUser(): User | null {

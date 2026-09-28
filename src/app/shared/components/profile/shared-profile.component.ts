@@ -179,9 +179,9 @@ export class SharedProfileComponent implements OnInit {
                 this.populatePersonalForm(profile);
                 this.profile.set(profile);
 
-                // Guardar avatar en localStorage para que el sidebar lo use
+                // Guardar avatar en localStorage asociado al usuario para que el sidebar lo use
                 if (profile.fotoUrl) {
-                    this.avatarService.setAvatar(profile.fotoUrl);
+                    this.avatarService.setAvatar(profile.fotoUrl, profile.id);
                 }
 
                 // Step 2: Load role-specific data
@@ -599,9 +599,9 @@ export class SharedProfileComponent implements OnInit {
 
     private saveAvatarUrl(avatarUrl: string): void {
         const rol = this.profile()?.rol;
+        const p = this.profile();
         if (rol === 'Teacher') {
             // Teacher avatar goes through the existing docente endpoint
-            const p = this.profile();
             if (p?.docenteId) {
                 this.http.put<{ success: boolean }>(
                     `${environment.apiUrl}/docentes/${p.docenteId}`,
@@ -609,7 +609,7 @@ export class SharedProfileComponent implements OnInit {
                 ).subscribe({
                     next: () => {
                         if (p) { p.avatar = avatarUrl; this.profile.set({ ...p }); }
-                        this.avatarService.setAvatar(avatarUrl);
+                        this.avatarService.setAvatar(avatarUrl, p?.id);
                         this.successMessage.set('Foto de perfil actualizada.');
                     },
                     error: () => this.error.set('Error al guardar la foto.')
@@ -622,8 +622,9 @@ export class SharedProfileComponent implements OnInit {
                 { avatarUrl }
             ).subscribe({
                 next: () => {
-                    const p = this.profile();
-                    if (p) { p.fotoUrl = avatarUrl; this.profile.set({ ...p }); }
+                    const currentProf = this.profile();
+                    if (currentProf) { currentProf.fotoUrl = avatarUrl; this.profile.set({ ...currentProf }); }
+                    this.avatarService.setAvatar(avatarUrl, currentProf?.id);
                     this.successMessage.set('Foto de perfil actualizada.');
                 },
                 error: () => this.error.set('Error al guardar la foto.')

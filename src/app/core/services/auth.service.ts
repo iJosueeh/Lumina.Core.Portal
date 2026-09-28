@@ -168,11 +168,16 @@ export class AuthService {
    * Cierra sesión eliminando el token
    */
   logout(): void {
+    const currentId = this.getUserId();
     this.currentUser = null;
     this.cookieService.delete('auth_token', '/');
     this.cookieService.delete('current_user', '/');
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('lumina_avatar');
+    if (currentId) {
+      localStorage.removeItem(`lumina_avatar_${currentId}`);
+    }
   }
 
   /**
