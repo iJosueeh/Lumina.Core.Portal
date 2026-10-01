@@ -103,7 +103,10 @@
     <app-quiz-results
       [quiz]="activeResults().quiz"
       [attempt]="activeResults().attempt"
+      [attemptsUsed]="currentQuiz()?.attemptsUsed"
+      [attemptsAllowed]="currentQuiz()?.attemptsAllowed"
       (onClose)="isResultsActive.set(false)"
+      (onRetry)="retryQuiz()"
     />
   }
 </div>

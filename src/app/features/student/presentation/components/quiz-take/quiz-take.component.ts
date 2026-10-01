@@ -136,14 +136,12 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
     const timeSpent = Math.max(1, Math.floor((endTime.getTime() - this.startTime.getTime()) / 60000));
 
     const totalQuestions = this.quiz.questions?.length || 1;
-    const defaultPointsPerQuestion = (this.quiz.totalPoints && this.quiz.totalPoints > 0)
-      ? this.quiz.totalPoints / totalQuestions
-      : 20 / totalQuestions;
+    const hasCustomPoints = this.quiz.questions?.some(q => q.points !== undefined && q.points > 0);
 
     const questionAnswers: QuestionAnswer[] = this.quiz.questions.map(q => {
       const answer = this.answers().get(q.id);
       const isCorrect = this.checkAnswer(q, answer);
-      const questionPoints = q.points && q.points > 0 ? q.points : defaultPointsPerQuestion;
+      const questionPoints = (q.points !== undefined && q.points > 0) ? q.points : (20 / totalQuestions);
       const pointsEarned = isCorrect ? questionPoints : 0;
       return {
         questionId: q.id,
@@ -153,13 +151,25 @@ export class QuizTakeComponent implements OnInit, OnDestroy {
       };
     });
 
-    const totalPointsEarned = questionAnswers.reduce((sum, ans) => sum + (ans.pointsEarned || 0), 0);
-    const maxPoints = this.quiz.totalPoints && this.quiz.totalPoints > 0
-      ? this.quiz.totalPoints
-      : this.quiz.questions.reduce((sum, q) => sum + (q.points || defaultPointsPerQuestion), 0) || 20;
+    let totalPointsEarned = 0;
+    let maxPoints = 0;
+
+    if (hasCustomPoints) {
+      for (const q of this.quiz.questions) {
+        const qPts = (q.points !== undefined && q.points > 0) ? q.points : (20 / totalQuestions);
+        maxPoints += qPts;
+        const ans = questionAnswers.find(a => a.questionId === q.id);
+        if (ans?.isCorrect) {
+          totalPointsEarned += qPts;
+        }
+      }
+    } else {
+      maxPoints = totalQuestions;
+      totalPointsEarned = questionAnswers.filter(a => a.isCorrect === true).length;
+    }
 
     const grade = maxPoints > 0
-      ? Math.min(20, Math.max(0, Math.round((totalPointsEarned / maxPoints) * 200) / 10))
+      ? Math.min(20, Math.max(0, Math.round(((totalPointsEarned / maxPoints) * 20) * 10) / 10))
       : 0;
 
     const passingThreshold = (this.quiz.config?.passingScore && this.quiz.config.passingScore <= 20)

@@ -65,6 +65,7 @@ export class CourseDetailComponent implements OnInit {
   studentId = signal<string>('');
   selectedMaterial = signal<CourseMaterial | null>(null);
   showMaterialPreview = signal(false);
+  currentQuiz = signal<QuizSummary | null>(null);
 
   // Enrollment state
   isEnrolled = signal(false);
@@ -355,6 +356,7 @@ export class CourseDetailComponent implements OnInit {
 
   async startQuiz(quiz: QuizSummary): Promise<void> {
     this.isStartingQuizId.set(quiz.id);
+    this.currentQuiz.set(quiz);
     try {
       const studentId = this.studentId();
       if (!studentId) throw new Error('No student ID');
@@ -405,9 +407,18 @@ export class CourseDetailComponent implements OnInit {
         passed: result.calificacion >= 10.5
       };
 
+      this.currentQuiz.update(q => q ? {
+        ...q,
+        attemptsUsed: (q.attemptsUsed ?? 0) + 1,
+        status: 'completed'
+      } : null);
+
       this.activeResults.set({ quiz: this.activeQuiz(), attempt: completedAttempt });
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
+
+      this.evaluationsQuery.refetch();
+      this.attemptsQuery.refetch();
     } catch (error) {
       console.error('Error submitting quiz:', error);
     } finally {
@@ -417,6 +428,7 @@ export class CourseDetailComponent implements OnInit {
 
   async viewQuizResults(quiz: QuizSummary): Promise<void> {
     this.isViewingResultsId.set(quiz.id);
+    this.currentQuiz.set(quiz);
     try {
       const userId = this.authService.getUserId();
       if (!userId) { console.warn('[viewQuizResults] No userId'); return; }
@@ -457,6 +469,18 @@ export class CourseDetailComponent implements OnInit {
       console.error('[viewQuizResults] Error:', error);
     } finally {
       this.isViewingResultsId.set(null);
+    }
+  }
+
+  retryQuiz(): void {
+    const current = this.currentQuiz();
+    this.isResultsActive.set(false);
+    if (current) {
+      if ((current.attemptsUsed ?? 0) < current.attemptsAllowed) {
+        this.startQuiz(current);
+      } else {
+        this.notificationService.show('info', 'Has alcanzado el límite de intentos permitidos para esta evaluación.');
+      }
     }
   }
 }

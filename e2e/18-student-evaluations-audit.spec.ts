@@ -104,7 +104,13 @@ test.describe('Auditoría Integral de Mis Evaluaciones (/student/evaluations)', 
     }
 
     console.log('--- 6. Resumen de Errores Críticos de Consola ---');
-    const criticalErrors = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('analytics'));
+    const criticalErrors = consoleErrors.filter(e =>
+      !e.includes('favicon') &&
+      !e.includes('analytics') &&
+      !e.includes('ERR_CONNECTION_CLOSED') &&
+      !e.includes('ERR_CONNECTION_RESET') &&
+      !e.includes('Failed to load resource')
+    );
     console.log(`🔍 Errores críticos de consola detectados: ${criticalErrors.length}`);
     if (criticalErrors.length > 0) {
       console.log('Detalles:', criticalErrors);

@@ -226,6 +226,13 @@ export class EvaluationsComponent implements OnInit {
         passed: result.calificacion >= 10.5
       };
 
+      this.currentEvaluation.update(e => e ? {
+        ...e,
+        attemptsUsed: e.attemptsUsed + 1,
+        status: 'completed',
+        bestScore: Math.max(e.bestScore ?? 0, completedAttempt.score ?? 0)
+      } : null);
+
       this.activeResults.set({ quiz: this.activeQuiz(), attempt: completedAttempt });
       this.isQuizActive.set(false);
       this.isResultsActive.set(true);
@@ -297,8 +304,12 @@ export class EvaluationsComponent implements OnInit {
   retryQuiz(): void {
     const current = this.currentEvaluation();
     this.isResultsActive.set(false);
-    if (current && current.attemptsUsed < current.attemptsAllowed) {
-      this.startQuiz(current);
+    if (current) {
+      if (current.attemptsUsed < current.attemptsAllowed) {
+        this.startQuiz(current);
+      } else {
+        this.notificationService.show('info', 'Has alcanzado el límite de intentos permitidos para esta evaluación.');
+      }
     }
   }
 

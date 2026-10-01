@@ -272,6 +272,8 @@
   <app-quiz-results
     [quiz]="activeResults()!.quiz"
     [attempt]="activeResults()!.attempt"
+    [attemptsUsed]="currentEvaluation()?.attemptsUsed"
+    [attemptsAllowed]="currentEvaluation()?.attemptsAllowed"
     (onClose)="isResultsActive.set(false)"
     (onRetry)="retryQuiz()"
   />

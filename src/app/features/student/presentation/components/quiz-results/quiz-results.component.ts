@@ -23,46 +23,71 @@ import { Quiz, QuizAttempt } from '@features/student/domain/models/quiz.model';
 export class QuizResultsComponent {
   @Input() quiz!: Quiz;
   @Input() attempt!: QuizAttempt;
+  @Input() attemptsUsed?: number;
+  @Input() attemptsAllowed?: number;
   @Output() onClose = new EventEmitter<void>();
   @Output() onRetry = new EventEmitter<void>();
+
+  maxAttempts = computed(() => {
+    if (this.attemptsAllowed !== undefined && this.attemptsAllowed > 0) return this.attemptsAllowed;
+    if (this.quiz?.config?.attemptsAllowed !== undefined && this.quiz.config.attemptsAllowed > 0) {
+      return this.quiz.config.attemptsAllowed;
+    }
+    return 3;
+  });
+
+  currentAttemptsUsed = computed(() => {
+    if (this.attemptsUsed !== undefined && this.attemptsUsed >= 0) return this.attemptsUsed;
+    if (this.attempt?.attemptNumber !== undefined && this.attempt.attemptNumber >= 0) {
+      return this.attempt.attemptNumber;
+    }
+    return 1;
+  });
+
+  canRetry = computed(() => {
+    return this.currentAttemptsUsed() < this.maxAttempts();
+  });
 
   scorePercentage = computed(() => {
     const answers = this.attempt?.answers || [];
     const questions = this.quiz?.questions || [];
 
     if (answers.length > 0 && questions.length > 0) {
-      const defaultPoints = 20 / questions.length;
-      const totalPts = this.quiz.totalPoints && this.quiz.totalPoints > 0
-        ? this.quiz.totalPoints
-        : questions.reduce((s, q) => s + (q.points || defaultPoints), 0) || 20;
+      const hasCustomPoints = questions.some(q => q.points !== undefined && q.points > 0);
+      let earned = 0;
+      let totalPossible = 0;
 
-      const earned = answers.reduce((s, a) => {
-        if (a.pointsEarned !== undefined && a.pointsEarned > 0) return s + a.pointsEarned;
-        if (a.isCorrect) {
-          const q = this.getQuestionById(a.questionId);
-          return s + (q?.points || defaultPoints);
+      if (hasCustomPoints) {
+        for (const q of questions) {
+          const qPoints = (q.points !== undefined && q.points > 0) ? q.points : (20 / questions.length);
+          totalPossible += qPoints;
+          const ans = answers.find(a => a.questionId === q.id);
+          if (ans?.isCorrect) {
+            earned += (ans.pointsEarned !== undefined && ans.pointsEarned > 0) ? ans.pointsEarned : qPoints;
+          }
         }
-        return s;
-      }, 0);
-
-      if (totalPts > 0) {
-        return Math.min(20, Math.max(0, Math.round((earned / totalPts) * 200) / 10));
+      } else {
+        totalPossible = questions.length;
+        earned = answers.filter(a => a.isCorrect === true).length;
       }
-      const correct = answers.filter(a => a.isCorrect).length;
-      return Math.min(20, Math.max(0, Math.round((correct / questions.length) * 200) / 10));
+
+      if (totalPossible > 0) {
+        const vigesimal = (earned / totalPossible) * 20;
+        return Math.min(20, Math.max(0, Math.round(vigesimal * 10) / 10));
+      }
     }
 
-    const rawPercentage = this.attempt?.percentage;
     const rawScore = this.attempt?.score;
+    const rawPercentage = this.attempt?.percentage;
 
+    if (rawScore !== undefined && rawScore >= 0 && rawScore <= 20) {
+      return Math.round(rawScore * 10) / 10;
+    }
     if (rawPercentage !== undefined && rawPercentage >= 0 && rawPercentage <= 20) {
-      return rawPercentage;
+      return Math.round(rawPercentage * 10) / 10;
     }
     if (rawPercentage !== undefined && rawPercentage > 20) {
-      return (rawPercentage / 100) * 20;
-    }
-    if (rawScore !== undefined && rawScore >= 0 && rawScore <= 20) {
-      return rawScore;
+      return Math.round(((rawPercentage / 100) * 20) * 10) / 10;
     }
     return 0;
   });
@@ -101,8 +126,6 @@ export class QuizResultsComponent {
     if (minutes === 1) return '1 minuto';
     return `${minutes} minutos`;
   });
-
-  canRetry = computed(() => true);
 
   getQuestionById(questionId: string) {
     return this.quiz?.questions?.find(q => q.id === questionId);
